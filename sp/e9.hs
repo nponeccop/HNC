@@ -129,9 +129,7 @@ instance Show Fun where
 	show (Fun f) = "Fun"
 
 fun_incr (Snum n:[]) c = Snum (n+1)
-fun_incr (n:[]) c = Serr "err"
-fun_map (Sfun False f p:Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False f [v]) c) l)
-fun_map (a@(Sfun True f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
+fun_map (a@(Sfun b f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -179,7 +177,6 @@ eval (Sfun False a@(Sfun True f p1) p2) c =
 		o -> o
 
 eval a@(Sfun True f p) c =
---	add_to_true a
 	a
 
 add_to_true (Sfun True f p) =
