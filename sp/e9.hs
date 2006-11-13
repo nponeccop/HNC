@@ -233,6 +233,7 @@ tests = [
 	,Test "[,incr,incr]" "Sfun True (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") []]) []"
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
+	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
 	]
 
 main =
