@@ -131,7 +131,7 @@ instance Show Fun where
 fun_incr (Snum n:[]) c = Snum (n+1)
 fun_incr (n:[]) c = Serr "err"
 fun_map (Sfun False f p:Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False f [v]) c) l)
-fun_map (Sfun True f p:Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False f [v]) c) l)
+fun_map (a@(Sfun True f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -179,7 +179,8 @@ eval (Sfun False a@(Sfun True f p1) p2) c =
 		o -> o
 
 eval a@(Sfun True f p) c =
-	add_to_true a
+--	add_to_true a
+	a
 
 add_to_true (Sfun True f p) =
 	case f of
@@ -229,10 +230,10 @@ tests = [
 	,Test ",incr ,incr ,incr 3" "Snum 6"
 	,Test ",map incr,list 1 2 3 4 5" "Sl [Snum 2,Snum 3,Snum 4,Snum 5,Snum 6]"
 	,Test ",sum 1 2" "Snum 3"
-	,Test "[,sum 2]" "Sfun True (Sfun False (Sn \"sum\") [Snum 2,Sn \"_\"]) []"
+	,Test "[,sum 2]" "Sfun True (Sfun False (Sn \"sum\") [Snum 2]) []"
 	,Test ",[,sum 2] 3" "Snum 5"
 	,Test ",[incr] 2" "Snum 3"
-	,Test "[,incr,incr]" "Sfun True (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") [Sn \"_\"]]) []"
+	,Test "[,incr,incr]" "Sfun True (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") []]) []"
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	]
