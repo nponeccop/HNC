@@ -130,6 +130,10 @@ instance Show Fun where
 
 fun_incr (Snum n:[]) c = Snum (n+1)
 fun_map (a@(Sfun b f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
+fun_count (Snum n:a:[]) c =
+	case n of
+		0 -> Sl []
+		n -> Sl (a:tvl (fun_count ((Snum (n-1)):a:[]) c))
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -138,6 +142,7 @@ base = Context (M.fromList [
 	,("incr", Sfun False (Srun "incr" 1 (Fun fun_incr)) [])
 	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
 	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
+	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
 	])
 
 get :: [Char] -> Context -> Syntax
@@ -179,7 +184,7 @@ eval (Sfun False a@(Sfun True f p1) p2) c =
 eval a@(Sfun True f p) c =
 	a
 
-add_to_true (Sfun True f p) =
+add_to_true (Sfun True f p) = -- I don't like it
 	case f of
 		Sfun False _ _ -> Sfun True (add_to_last f) p
 		o -> Sfun True f (p++[Sn "_"])
@@ -234,6 +239,7 @@ tests = [
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
+	,Test ",count 5 10" "Sl [Snum 10,Snum 10,Snum 10,Snum 10,Snum 10]"
 	]
 
 main =
