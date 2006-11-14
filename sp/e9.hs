@@ -177,25 +177,25 @@ eval a@(Sfun False (Srun n i (Fun f)) p) c =
 -- True
 
 eval (Sfun False a@(Sfun True f p1) p2) c =
-	case add_to_true a of
-		Sfun True f p -> eval (Sfun False f p) (put "_" (head p2) c)
+	case add_to_true a (p1++p2) of
+		Sfun True f p -> eval (Sfun False f p) c
 		o -> o
 
 eval a@(Sfun True f p) c =
 	a
 
-add_to_true (Sfun True f p) = -- I don't like it
+add_to_true (Sfun True f p) params = -- I don't like it
 	case f of
 		Sfun False _ _ -> Sfun True (add_to_last f) p
-		o -> Sfun True f (p++[Sn "_"])
+		o -> Sfun True f (p++params)
 	where
 		add_to_last (Sfun False f p) =
 			case p of
 				x:xs ->
 					case last p of
 						Sfun False f2 p2 -> Sfun False f (init p ++ [add_to_last (last p)])
-						o -> Sfun False f (p++[Sn "_"])
-				[] -> Sfun False f [Sn "_"]
+						o -> Sfun False f (p++params)
+				[] -> Sfun False f params
 
 {- end of eval -}
 
@@ -239,7 +239,8 @@ tests = [
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
-	,Test ",count 5 10" "Sl [Snum 10,Snum 10,Snum 10,Snum 10,Snum 10]"
+	,Test ",count 5 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
+	,Test ",[,incr,sum] 2 3" "Snum 6"
 	]
 
 main =
