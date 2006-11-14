@@ -134,6 +134,7 @@ fun_count (Snum n:a:[]) c =
 	case n of
 		0 -> Sl []
 		n -> Sl (a:tvl (fun_count ((Snum (n-1)):a:[]) c))
+fun_comma p@(x:xs) c = eval (Sfun False (last p) (init p)) c
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -143,6 +144,7 @@ base = Context (M.fromList [
 	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
 	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
 	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
+	,("comma", Sfun False (Srun "comma" 2 (Fun fun_comma)) [])
 	])
 
 get :: [Char] -> Context -> Syntax
@@ -239,8 +241,9 @@ tests = [
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
-	,Test ",count 5 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
+	,Test ",count 3 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
 	,Test ",[,incr,sum] 2 3" "Snum 6"
+	,Test ",map [,comma 4],count 3 [,incr]" "Sl [Snum 5,Snum 5,Snum 5]"
 	]
 
 main =
