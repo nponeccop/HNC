@@ -29,7 +29,7 @@ tv (Snum d) = show d
 tv (Sfun b s p) = show s
 tvl (Sl s) = s
 
--- main tokens
+-- basic tokens
 call::Tokens -> [Char] -> Int -> Maybe (Int, Syntax)
 call Topen s o|o < length s && '(' == s!!o = Just (1, Sn [s!!o])
 call Tclose s o|o < length s && ')' == s!!o = Just (1, Sn [s!!o])
@@ -70,22 +70,11 @@ call Td s o =
 		([Tdpos],(\ls vs -> (ls, Snum (read (tv (vs!!0))))))]
 		s o
 
-{- s-expressions
-S-expr call Texpr s o =
-	p_or [([Topen,Texpr,Ts,Tparams,Tclose], \ls vs -> (ls, Sfun (vs!!1) (tvl (vs!!3)))),
-				([Tc], \ls vs -> (ls, vs!!0))]
-		s o
-
-call Tparams s o =
-	p_or [([Texpr,Ts,Tparams], \ls vs -> (ls, Sl ((vs!!0):(tvl (vs!!2))))),
-				([Texpr], \ls vs -> (ls, Sl ((vs!!0):[]))),
-				([], \ls vs -> (ls, Sl []))]
-		s o-}
-
 -- main tokens
 call Texpr s o =
 	p_or [([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
 				([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
+				([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])), -- will try to remove (expr) construction
 				([Tc], \ls vs -> (ls, vs!!0)),
 				([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
 				([Td], \ls vs -> (ls, vs!!0))]
@@ -243,7 +232,7 @@ tests = [
 	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
 	,Test ",count 3 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
 	,Test ",[,incr,sum] 2 3" "Snum 6"
-	,Test ",map [,comma 4],count 3 [,sum 2]" "Sl [Snum 6,Snum 6,Snum 6]"
+	,Test ",map [,comma 4],count (,incr 2) [,sum 2]" "Sl [Snum 6,Snum 6,Snum 6]"
 	]
 
 main =
