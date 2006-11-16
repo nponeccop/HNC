@@ -16,8 +16,11 @@ import System.Time as T
 
 {- parse -}
 
-data Syntax = Sn [Char] | Snum Int | Sbool Bool | Sfun Bool Syntax [Syntax] | Srun [Char] Int Fun | Serr [Char]
+data Syntax = Sn [Char] | Snum Int | Sbool Bool
+	| Srun [Char] Int Fun | Sfun Bool Syntax [Syntax]
+	| Sdep Syntax
 	| Sl [Syntax]
+	| Serr [Char]
 	deriving Show
 data Tokens = Ts1|Topen|Tclose|Topen2|Tclose2|Topen3|Tclose3
 	|Ts|Tsn|Tc1|Tc|Tdot|Tcomma|Tdotcom|Tmin|Td1|Td2|Tdpos|Tdmin|Td
@@ -128,6 +131,10 @@ fun_comma p@(x:xs) c = eval (Sfun False (last p) (init p)) c
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
 	("one", Snum 1)
+	,("t", Sbool True)
+	,("lnot", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
+	,("land", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
+	,("f", Sdep (Sfun True (Sfun False (Sn "lnot") [Sn "t"]) []))
 	,("sum", Sfun False (Srun "sum" 2 (Fun (\(Snum n1:Snum n2:[]) c -> Snum (n1+n2)))) [])
 	,("incr", Sfun False (Srun "incr" 1 (Fun fun_incr)) [])
 	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
@@ -148,7 +155,9 @@ put n e (Context c) =
 eval :: Syntax -> Context -> Syntax
 
 eval (Sn n) c =
-	get n c
+	case get n c of
+		Sdep f -> eval (Sfun False f []) c -- is it possibe to get dependence without checking result of "get" ?
+		v -> v
 
 eval (Snum n) c =
 	Snum n
@@ -194,7 +203,8 @@ make_code a = a
 
 run s =
 	case parse s of
-		Just (i,v) -> Just (eval (make_code v) base)
+		Just (i,v)|i == length s -> Just (eval (make_code v) base)
+		Just (i,v)|i < length s -> Nothing
 		Nothing -> Nothing
 
 {- test -}
@@ -233,6 +243,9 @@ tests = [
 	,Test ",count 3 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
 	,Test ",[,incr,sum] 2 3" "Snum 6"
 	,Test ",map [,comma 4],count (,incr 2) [,sum 2]" "Sl [Snum 6,Snum 6,Snum 6]"
+	,Test "t" "Sbool True"
+	,Test ",lnot t" "Sbool False"
+	,Test "f" "Sbool False"
 	]
 
 main =
