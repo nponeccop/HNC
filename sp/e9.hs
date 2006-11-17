@@ -132,9 +132,9 @@ data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
 	("one", Snum 1)
 	,("t", Sbool True)
-	,("lnot", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
-	,("land", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
-	,("f", Sdep (Sfun True (Sfun False (Sn "lnot") [Sn "t"]) []))
+	,("ln", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
+	,("la", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
+	,("f", Sdep (Sfun True (Sfun False (Sn "ln") [Sn "t"]) []))
 	,("sum", Sfun False (Srun "sum" 2 (Fun (\(Snum n1:Snum n2:[]) c -> Snum (n1+n2)))) [])
 	,("incr", Sfun False (Srun "incr" 1 (Fun fun_incr)) [])
 	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
@@ -244,8 +244,9 @@ tests = [
 	,Test ",[,incr,sum] 2 3" "Snum 6"
 	,Test ",map [,comma 4],count (,incr 2) [,sum 2]" "Sl [Snum 6,Snum 6,Snum 6]"
 	,Test "t" "Sbool True"
-	,Test ",lnot t" "Sbool False"
 	,Test "f" "Sbool False"
+	,Test ",la t f" "Sbool False"
+	,Test ",case [t] [1] [t] [2] [3]" ""
 	]
 
 main =
