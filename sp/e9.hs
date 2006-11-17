@@ -1,10 +1,5 @@
-
-{- syntax
-call function:
-
-,filter [,more 14] ,map square ,list 1 2 3 4 5
-
--}
+-- SPL
+-- Stream Programming Language
 
 module Main where
 
@@ -14,23 +9,27 @@ import Data.Map as M
 import System.Random as R
 import System.Time as T
 
-{- parse -}
-
+{- syntax type -}
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun | Sfun Bool Syntax [Syntax]
 	| Sdep Syntax
+	| Sif [(Syntax, Syntax)] Syntax
 	| Sl [Syntax]
 	| Serr [Char]
-	deriving Show
-data Tokens = Ts1|Topen|Tclose|Topen2|Tclose2|Topen3|Tclose3
-	|Ts|Tsn|Tc1|Tc|Tdot|Tcomma|Tdotcom|Tmin|Td1|Td2|Tdpos|Tdmin|Td
-	|Tval|Texpr|Tparams
 	deriving Show
 
 tv (Sn s) = s
 tv (Snum d) = show d
 tv (Sfun b s p) = show s
 tvl (Sl s) = s
+
+{- parse -}
+
+data Tokens = Ts1|Topen|Tclose|Topen2|Tclose2|Topen3|Tclose3
+	|Ts|Tsn|Tc1|Tc|Tdot|Tcomma|Tdotcom|Tmin|Td1|Td2|Tdpos|Tdmin|Td
+	|Tcc Char|Tss [Char]
+	|Texpr|Tparams
+	deriving Show
 
 -- basic tokens
 call::Tokens -> [Char] -> Int -> Maybe (Int, Syntax)
@@ -44,7 +43,8 @@ call Tdot s o|o < length s && '.' == s!!o = Just (1, Sn [s!!o])
 call Tcomma s o|o < length s && ',' == s!!o = Just (1, Sn [s!!o])
 call Tdotcom s o|o < length s && ';' == s!!o = Just (1, Sn [s!!o])
 call Tmin s o|o < length s && '-' == s!!o = Just (1, Sn [s!!o])
-call Ts1 s o|o < length s && s!!o `elem` " \t" = Just (1, Sn [s!!o])
+call (Tcc c) s o|o < length s && c == s!!o = Just (1, Sn [s!!o])
+call Ts1 s o|o < length s && s!!o `elem` " \t\n" = Just (1, Sn [s!!o])
 call Tc1 s o|o < length s && s!!o `elem` "_abcdefghijklmnopqrstuvwxyz" = Just (1, Sn [s!!o])
 call Td1 s o| o < length s && s!!o `elem` "1234567890" = Just (1, Sn [s!!o])
 call Tc s o =
@@ -58,6 +58,10 @@ call Ts s o =
 call Tsn s o =
 	p_or [([Ts1,Tsn],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1))))),
 		([],(\ls vs -> (ls, Sn "")))]
+		s o
+call (Tss "") s o = Just (0, Sn "")
+call (Tss (x:xs)) s o =
+	p_or [([Tcc x,Tss xs], (\ls vs -> (ls, Sn ((tv (vs!!0))++(tv (vs!!1))))))]
 		s o
 call Td2 s o =
 	p_or [([Td1,Td1],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1)))))] s o
@@ -75,19 +79,26 @@ call Td s o =
 
 -- main tokens
 call Texpr s o =
-	p_or [([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
-				([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
-				([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])), -- will try to remove (expr) construction
-				([Tc], \ls vs -> (ls, vs!!0)),
-				([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
-				([Td], \ls vs -> (ls, vs!!0))]
+	p_or [
+		([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
+		([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
+		([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])),
+		-- ^^^ will try to remove (expr) construction
+		([Tcc 'i',Tcc 'f',Topen2,Texpr,Tdotcom,Texpr,Tdotcom,Texpr,Tclose2], \ls vs -> (ls, Sif [(vs!!3,vs!!5)] (vs!!7))),
+		([Tc], \ls vs -> (ls, vs!!0)),
+		([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
+		([Td], \ls vs -> (ls, vs!!0))]
 		s o
 
 call Tparams s o =
-	p_or [([Tsn,Texpr,Tparams], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
-				([Tsn,Texpr], \ls vs -> (ls, Sl ((vs!!1):[]))),
-				([], \ls vs -> (ls, Sl []))]
+	p_or [
+		([Tsn,Texpr,Tparams], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
+		([Tsn,Texpr], \ls vs -> (ls, Sl ((vs!!1):[]))),
+		([], \ls vs -> (ls, Sl []))]
 		s o
+
+--call Tif_elem s o =
+--	...
 
 call _ _ _ = Nothing
 
@@ -174,6 +185,10 @@ eval a@(Sfun False (Srun n i (Fun f)) p) c =
 		l|l < i -> a
 		l|l > i -> Serr ("too_many_params for "++n++": "++(foldr1 (\x y -> x++"|"++y) (Prelude.map show p))++""))
 
+-- if
+eval (Sif l e) c =
+	Sn "if"
+
 -- True
 
 eval (Sfun False a@(Sfun True f p1) p2) c =
@@ -246,7 +261,7 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test ",la t f" "Sbool False"
-	,Test ",case [t] [1] [t] [2] [3]" ""
+	,Test "if[,lor t f;1;2]" ""
 	]
 
 main =
