@@ -13,7 +13,7 @@ import System.Time as T
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun | Sfun Bool Syntax [Syntax]
 	| Sdep Syntax
-	| Sif [(Syntax, Syntax)] Syntax
+	| Sif Syntax
 	| Sl [Syntax]
 	| Serr [Char]
 	deriving Show
@@ -83,8 +83,7 @@ call Texpr s o =
 		([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
 		([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
 		([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])),
-		-- ^^^ will try to remove (expr) construction
-		([Tcc 'i',Tcc 'f',Topen2,Texpr,Tdotcom,Texpr,Tdotcom,Texpr,Tclose2], \ls vs -> (ls, Sif [(vs!!3,vs!!5)] (vs!!7))),
+		([Topen3,Texpr,Tclose3], \ls vs -> (ls, Sif (vs!!1))),
 		([Tc], \ls vs -> (ls, vs!!0)),
 		([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
 		([Td], \ls vs -> (ls, vs!!0))]
@@ -158,7 +157,7 @@ get :: [Char] -> Context -> Syntax
 get n (Context c) =
 	case M.lookup n c of
 		Just a -> a
-		Nothing -> Sn ("not_found: "++n++"")
+		Nothing -> Serr ("not_found: "++n++"")
 put :: [Char] -> Syntax -> Context -> Context
 put n e (Context c) =
 	Context (M.insert n e c)
@@ -186,31 +185,26 @@ eval a@(Sfun False (Srun n i (Fun f)) p) c =
 		l|l > i -> Serr ("too_many_params for "++n++": "++(foldr1 (\x y -> x++"|"++y) (Prelude.map show p))++""))
 
 -- if
-eval (Sif l e) c =
-	Sn "if"
+--eval (Sif e) c =
+--	Sn "if"
 
 -- True
 
 eval (Sfun False a@(Sfun True f p1) p2) c =
-	case add_to_true a (p1++p2) of
-		Sfun True f p -> eval (Sfun False f p) c
-		o -> o
+		eval (add_to_last f (p1++p2)) c
+
+eval (Sfun False a@(Sif f) p1) c =
+	f
 
 eval a@(Sfun True f p) c =
 	a
 
-add_to_true (Sfun True f p) params = -- I don't like it
-	case f of
-		Sfun False _ _ -> Sfun True (add_to_last f) p
-		o -> Sfun True f (p++params)
-	where
-		add_to_last (Sfun False f p) =
-			case p of
-				x:xs ->
-					case last p of
-						Sfun False f2 p2 -> Sfun False f (init p ++ [add_to_last (last p)])
-						o -> Sfun False f (p++params)
-				[] -> Sfun False f params
+add_to_last (Sfun False f p@(x:xs)) params=
+	case last p of
+		Sfun False f2 p2 -> Sfun False f (init p ++ [add_to_last (last p) params])
+		o -> Sfun False f (p++params)
+add_to_last f params=
+		Sfun False f params
 
 {- end of eval -}
 
@@ -261,7 +255,7 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test ",la t f" "Sbool False"
-	,Test "if[,lor t f;1;2]" ""
+	,Test ",{,if 0 t} 0" ""
 	]
 
 main =
