@@ -14,6 +14,7 @@ data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun | Sfun Bool Syntax [Syntax]
 	| Sdep Syntax
 	| Sif Syntax
+	| Spair Syntax Syntax
 	| Sl [Syntax]
 	| Serr [Char]
 	deriving Show
@@ -137,6 +138,14 @@ fun_count (Snum n:a:[]) c =
 		0 -> Sl []
 		n -> Sl (a:tvl (fun_count ((Snum (n-1)):a:[]) c))
 fun_comma p@(x:xs) c = eval (Sfun False (last p) (init p)) c
+fun_ifc (Snum n1:p2:Spair (Sbool True) p3:[]) c =
+	Spair (Sbool True) p3
+fun_ifc (Snum n1:p2:Spair (Sbool False) p3:[]) c =
+	case p3 of
+		Sl (Snum n2:[])|n1 == n2 -> Spair (Sbool True) p2
+		Sl (Snum n2:[]) -> Spair (Sbool False) p3
+		Sl (Sfun b f p:[]) -> Spair (Sbool True) (Serr ("false and fun(" ++ show f++ ")"))
+		o -> Serr "false and not list"
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -151,6 +160,8 @@ base = Context (M.fromList [
 	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
 	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
 	,("comma", Sfun False (Srun "comma" 2 (Fun fun_comma)) [])
+	,("ifc", Sfun False (Srun "ifc" 3 (Fun fun_ifc)) [])
+	,("if", Sfun False (Srun "if" 3 (Fun fun_if)) [])
 	])
 
 get :: [Char] -> Context -> Syntax
@@ -169,8 +180,11 @@ eval (Sn n) c =
 		Sdep f -> eval (Sfun False f []) c -- is it possibe to get dependence without checking result of "get" ?
 		v -> v
 
-eval (Snum n) c =
-	Snum n
+eval a@(Snum n) c =
+	a
+
+eval x@(Spair a b) c =
+	x
 
 eval (Sfun False (Sfun False f p1) p2) c =
 	eval (Sfun False f (p1++p2)) c
@@ -184,17 +198,18 @@ eval a@(Sfun False (Srun n i (Fun f)) p) c =
 		l|l < i -> a
 		l|l > i -> Serr ("too_many_params for "++n++": "++(foldr1 (\x y -> x++"|"++y) (Prelude.map show p))++""))
 
--- if
---eval (Sif e) c =
---	Sn "if"
-
 -- True
 
 eval (Sfun False a@(Sfun True f p1) p2) c =
-		eval (add_to_last f (p1++p2)) c
+	eval (add_to_last f (p1++p2)) c
+
+-- if
 
 eval (Sfun False a@(Sif f) p1) c =
-	f
+	case eval (add_to_last f [(Spair (Sbool False) (Sl (Prelude.map (\p -> eval p c) p1)))]) c of
+		(Spair (Sbool True) r) -> r
+		(Spair (Sbool False) r) -> Serr "can't find case"
+--	add_to_last f [(Spair (Sbool False) (Sl p1))]
 
 eval a@(Sfun True f p) c =
 	a
@@ -255,7 +270,8 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test ",la t f" "Sbool False"
-	,Test ",{,if 0 t} 0" ""
+	,Test ",{,if 2 12,if 1 11} 1" "Snum 11"
+	,Test ",{,if 2 12,if 1 11},incr 1" "Snum 12"
 	]
 
 main =
