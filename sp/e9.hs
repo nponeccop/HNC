@@ -13,6 +13,7 @@ import System.Time as T
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun
 	| Sfun Bool Syntax [Syntax]
+	| Slambda Bool Syntax
 	| Sdep Syntax
 	| Sif Syntax
 	| Spair Syntax Syntax
@@ -84,7 +85,8 @@ call Td s o =
 call Texpr s o =
 	p_or [
 		([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
-		([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
+		([Topen2,Texpr,Tclose2], \ls vs -> (ls, Slambda False (vs!!1))),
+		([Tss "[*",Texpr,Tclose2], \ls vs -> (ls, Slambda True (vs!!1))),
 		([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])),
 		([Topen3,Texpr,Tclose3], \ls vs -> (ls, Sif (vs!!1))),
 		([Tc], \ls vs -> (ls, vs!!0)),
@@ -136,7 +138,7 @@ instance Show Fun where
 cmp (Snum n1:Snum n2:[]) c = Sbool (n1 == n2)
 cmp (Sbool n1:Sbool n2:[]) c = Sbool (n1 == n2)
 fun_incr (Snum n:[]) c = Snum (n+1)
-fun_map (a@(Sfun b f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
+fun_map (a@(Slambda _ f):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
 fun_count (Snum n:a:[]) c =
 	case n of
 		0 -> Sl []
@@ -149,33 +151,33 @@ fun_ifc (n1:p2:Spair (Sbool False) p3:[]) c =
 		Sl (n2:[])|tvb (cmp (n1:n2:[]) c) -> Spair (Sbool True) p2
 		Sl (n2:[]) -> Spair (Sbool False) p3
 		o -> Serr ("false and not list" ++ show o)
-fun_if (Sfun True f p1:p2:Spair (Sbool True) p3:[]) c =
+fun_if (Slambda _ f:p2:Spair (Sbool True) p3:[]) c =
 	Spair (Sbool True) p3
-fun_if (Sfun True f p1:p2:Spair (Sbool False) p3:[]) c =
+fun_if (Slambda b f:p2:Spair (Sbool False) p3:[]) c =
 	case fun_ifc (e:p2:Spair (Sbool False) (Sl ((Sbool True):[])):[]) c of
 		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (Sfun False p2 (tvl p3)) c)
 		o -> o
 	where
-		e = eval (Sfun False (Sfun True f p1) (tvl p3)) c
+		e = eval (Sfun False (Slambda b f) (tvl p3)) c
 	
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
 	("one", Snum 1)
 	,("t", Sbool True)
-	,("ln", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
-	,("la", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
-	,("f", Sdep (Sfun True (Sfun False (Sn "ln") [Sn "t"]) []))
-	,("me", Sfun False (Srun "more" 2 (Fun (\(Snum a:Snum b:[]) c -> Sbool (a>=b)))) [])
-	,("sum", Sfun False (Srun "sum" 2 (Fun (\(Snum n1:Snum n2:[]) c -> Snum (n1+n2)))) [])
-	,("incr", Sfun False (Srun "incr" 1 (Fun fun_incr)) [])
-	,("decr", Sfun False (Srun "decr" 1 (Fun (\(Snum n:[]) c -> Snum (n-1)))) [])
-	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
-	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
-	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
-	,("comma", Sfun False (Srun "comma" 2 (Fun fun_comma)) [])
-	,("ifc", Sfun False (Srun "ifc" 3 (Fun fun_ifc)) [])
-	,("if", Sfun False (Srun "if" 3 (Fun fun_if)) [])
+	,("ln", Slambda False (Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) []))
+	,("la", Slambda False (Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) []))
+	,("f", Sdep (Slambda False (Sfun False (Sn "ln") [Sn "t"])))
+	,("me", Slambda False (Sfun False (Srun "more" 2 (Fun (\(Snum a:Snum b:[]) c -> Sbool (a>=b)))) []))
+	,("sum", Slambda False (Sfun False (Srun "sum" 2 (Fun (\(Snum n1:Snum n2:[]) c -> Snum (n1+n2)))) []))
+	,("incr", Slambda False (Sfun False (Srun "incr" 1 (Fun fun_incr)) []))
+	,("decr", Slambda False (Sfun False (Srun "decr" 1 (Fun (\(Snum n:[]) c -> Snum (n-1)))) []))
+	,("list", Slambda False (Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) []))
+	,("map", Slambda False (Sfun False (Srun "map" 2 (Fun fun_map)) []))
+	,("count", Slambda False (Sfun False (Srun "count" 2 (Fun fun_count)) []))
+	,("comma", Slambda False (Sfun False (Srun "comma" 2 (Fun fun_comma)) []))
+	,("ifc", Slambda False (Sfun False (Srun "ifc" 3 (Fun fun_ifc)) []))
+	,("if", Slambda False (Sfun False (Srun "if" 3 (Fun fun_if)) []))
 	])
 
 get :: [Char] -> Context -> Syntax
@@ -214,8 +216,11 @@ eval a@(Sfun False (Srun n i (Fun f)) p) c =
 
 -- True
 
-eval (Sfun False a@(Sfun True f p1) p2) c =
-	eval (add_to_last f (p1++p2)) c
+eval (Sfun False a@(Slambda False f) p2) c =
+	eval (add_to_last f p2) c
+
+eval (Sfun False a@(Slambda True f) p2) c =
+	eval (add_to_last f p2) (put "_" (head p2) c)
 
 -- if
 
@@ -227,7 +232,7 @@ eval (Sfun False a@(Sif f) p1) c =
 		cc = (put "_c" (Sfun False a []) c)
 --	add_to_last f [(Spair (Sbool False) (Sl p1))]
 
-eval a@(Sfun True f p) c =
+eval a@(Slambda b f) c =
 	a
 
 add_to_last (Sfun False f p@(x:xs)) params=
@@ -263,7 +268,7 @@ call_test (Test req res) =
 {- end test -}
 
 tests = [
-	Test "incr" "Sfun False (Srun \"incr\" 1 Fun) []"
+	Test "incr" "Slambda False (Sfun False (Srun \"incr\" 1 Fun) [])"
 	,Test ",incr" "Sfun False (Srun \"incr\" 1 Fun) []"
 	,Test "1" "Snum 1"
 	,Test ",incr 1" "Snum 2"
@@ -273,10 +278,10 @@ tests = [
 	,Test ",incr ,incr ,incr 3" "Snum 6"
 	,Test ",map incr,list 1 2 3 4 5" "Sl [Snum 2,Snum 3,Snum 4,Snum 5,Snum 6]"
 	,Test ",sum 1 2" "Snum 3"
-	,Test "[,sum 2]" "Sfun True (Sfun False (Sn \"sum\") [Snum 2]) []"
+	,Test "[,sum 2]" "Slambda (Sfun False (Sn \"sum\") [Snum 2])"
 	,Test ",[,sum 2] 3" "Snum 5"
 	,Test ",[incr] 2" "Snum 3"
-	,Test "[,incr,incr]" "Sfun True (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") []]) []"
+	,Test "[,incr,incr]" "Slambda (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") []])"
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	,Test ",map [,sum 10],list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
@@ -290,7 +295,8 @@ tests = [
 	,Test ",{,ifc 2 12,ifc 1 11},incr 1" "Snum 12"
 	,Test ",[,ln,me 3] 3" "Sbool False"
 	,Test ",{,if [,ln,me 1] [,sum 10],ifc 1 11},incr 1" "Snum 12"
-	,Test ",{,if [,ln,me 1] [,_c,decr],ifc 1 1} 5" "Snum 12"
+	,Test "-1" "Snum (-1)"
+	,Test ",{,if [,ln,me 1] [*,sum (,_c,sum -2 _) ,_c,sum -1],ifc 0 1,ifc 1 1} 10" "Snum 89"
 	]
 
 {-
