@@ -11,7 +11,8 @@ import System.Time as T
 
 {- syntax type -}
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
-	| Srun [Char] Int Fun | Sfun Bool Syntax [Syntax]
+	| Srun [Char] Int Fun
+	| Sfun Bool Syntax [Syntax]
 	| Sdep Syntax
 	| Sif Syntax
 	| Spair Syntax Syntax
@@ -22,6 +23,7 @@ data Syntax = Sn [Char] | Snum Int | Sbool Bool
 tv (Sn s) = s
 tv (Snum d) = show d
 tv (Sfun b s p) = show s
+tvb (Sbool b) = b
 tvl (Sl s) = s
 
 {- parse -}
@@ -131,6 +133,8 @@ data Fun = Fun ([Syntax] -> Context -> Syntax)
 instance Show Fun where
 	show (Fun f) = "Fun"
 
+cmp (Snum n1:Snum n2:[]) c = Sbool (n1 == n2)
+cmp (Sbool n1:Sbool n2:[]) c = Sbool (n1 == n2)
 fun_incr (Snum n:[]) c = Snum (n+1)
 fun_map (a@(Sfun b f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
 fun_count (Snum n:a:[]) c =
@@ -140,12 +144,20 @@ fun_count (Snum n:a:[]) c =
 fun_comma p@(x:xs) c = eval (Sfun False (last p) (init p)) c
 fun_ifc (Snum n1:p2:Spair (Sbool True) p3:[]) c =
 	Spair (Sbool True) p3
-fun_ifc (Snum n1:p2:Spair (Sbool False) p3:[]) c =
+fun_ifc (n1:p2:Spair (Sbool False) p3:[]) c =
 	case p3 of
-		Sl (Snum n2:[])|n1 == n2 -> Spair (Sbool True) p2
-		Sl (Snum n2:[]) -> Spair (Sbool False) p3
-		Sl (Sfun b f p:[]) -> Spair (Sbool True) (Serr ("false and fun(" ++ show f++ ")"))
-		o -> Serr "false and not list"
+		Sl (n2:[])|tvb (cmp (n1:n2:[]) c) -> Spair (Sbool True) p2
+		Sl (n2:[]) -> Spair (Sbool False) p3
+		o -> Serr ("false and not list" ++ show o)
+fun_if (Sfun True f p1:p2:Spair (Sbool True) p3:[]) c =
+	Spair (Sbool True) p3
+fun_if (Sfun True f p1:p2:Spair (Sbool False) p3:[]) c =
+	case fun_ifc (e:p2:Spair (Sbool False) (Sl ((Sbool True):[])):[]) c of
+		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (Sfun False p2 (tvl p3)) c)
+		o -> o
+	where
+		e = eval (Sfun False (Sfun True f p1) (tvl p3)) c
+	
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -154,8 +166,10 @@ base = Context (M.fromList [
 	,("ln", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
 	,("la", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
 	,("f", Sdep (Sfun True (Sfun False (Sn "ln") [Sn "t"]) []))
+	,("me", Sfun False (Srun "more" 2 (Fun (\(Snum a:Snum b:[]) c -> Sbool (a>=b)))) [])
 	,("sum", Sfun False (Srun "sum" 2 (Fun (\(Snum n1:Snum n2:[]) c -> Snum (n1+n2)))) [])
 	,("incr", Sfun False (Srun "incr" 1 (Fun fun_incr)) [])
+	,("decr", Sfun False (Srun "decr" 1 (Fun (\(Snum n:[]) c -> Snum (n-1)))) [])
 	,("list", Sfun False (Srun "list" (-1) (Fun (\l c -> Sl l))) [])
 	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
 	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
@@ -206,9 +220,11 @@ eval (Sfun False a@(Sfun True f p1) p2) c =
 -- if
 
 eval (Sfun False a@(Sif f) p1) c =
-	case eval (add_to_last f [(Spair (Sbool False) (Sl (Prelude.map (\p -> eval p c) p1)))]) c of
+	case eval (add_to_last f [(Spair (Sbool False) (Sl (Prelude.map (\p -> eval p c) p1)))]) cc of
 		(Spair (Sbool True) r) -> r
 		(Spair (Sbool False) r) -> Serr "can't find case"
+	where
+		cc = (put "_c" (Sfun False a []) c)
 --	add_to_last f [(Spair (Sbool False) (Sl p1))]
 
 eval a@(Sfun True f p) c =
@@ -270,9 +286,18 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test ",la t f" "Sbool False"
-	,Test ",{,if 2 12,if 1 11} 1" "Snum 11"
-	,Test ",{,if 2 12,if 1 11},incr 1" "Snum 12"
+	,Test ",{,ifc 2 12,ifc 1 11} 1" "Snum 11"
+	,Test ",{,ifc 2 12,ifc 1 11},incr 1" "Snum 12"
+	,Test ",[,ln,me 3] 3" "Sbool False"
+	,Test ",{,if [,ln,me 1] [,sum 10],ifc 1 11},incr 1" "Snum 12"
+	,Test ",{,if [,ln,me 1] [,_c,decr],ifc 1 1} 5" "Snum 12"
 	]
+
+{-
+
+,{,ifc 1 1,if [,ln,me 1] [,sum (,_f,sum -1 _),_f,sum -2 _]}
+
+-}
 
 main =
 	putStr (tests_output ++ "\n" ++ (if tests_sum > 0 then "Failed: " ++ (show tests_sum) else "all passed") ++ "\n")
