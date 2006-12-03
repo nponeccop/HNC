@@ -28,24 +28,13 @@ tvl (Sl s) = s
 
 {- parse -}
 
-data Tokens = Ts1|Topen|Tclose|Topen2|Tclose2|Topen3|Tclose3
-	|Ts|Tsn|Tc1|Tc|Tdot|Tcomma|Tdotcom|Tmin|Td1|Td2|Tdpos|Tdmin|Td
+data Tokens = Ts1|Ts|Tsn|Tc1|Tc|Td1|Td2|Tdpos|Tdmin|Td
 	|Tcc Char|Tss [Char]
 	|Texpr|Tparams
 	deriving Show
 
 -- basic tokens
 call::Tokens -> [Char] -> Int -> Maybe (Int, Syntax)
-call Topen s o|o < length s && '(' == s!!o = Just (1, Sn [s!!o])
-call Tclose s o|o < length s && ')' == s!!o = Just (1, Sn [s!!o])
-call Topen2 s o|o < length s && '[' == s!!o = Just (1, Sn [s!!o])
-call Tclose2 s o|o < length s && ']' == s!!o = Just (1, Sn [s!!o])
-call Topen3 s o|o < length s && '{' == s!!o = Just (1, Sn [s!!o])
-call Tclose3 s o|o < length s && '}' == s!!o = Just (1, Sn [s!!o])
-call Tdot s o|o < length s && '.' == s!!o = Just (1, Sn [s!!o])
-call Tcomma s o|o < length s && ',' == s!!o = Just (1, Sn [s!!o])
-call Tdotcom s o|o < length s && ';' == s!!o = Just (1, Sn [s!!o])
-call Tmin s o|o < length s && '-' == s!!o = Just (1, Sn [s!!o])
 call (Tcc c) s o|o < length s && c == s!!o = Just (1, Sn [s!!o])
 call Ts1 s o|o < length s && s!!o `elem` " \t\n" = Just (1, Sn [s!!o])
 call Tc1 s o|o < length s && s!!o `elem` "_abcdefghijklmnopqrstuvwxyz" = Just (1, Sn [s!!o])
@@ -73,7 +62,7 @@ call Tdpos s o =
 		([Td1],(\ls vs -> (ls, vs!!0)))] -- was [] here
 		s o
 call Tdmin s o =
-	p_or [([Tmin,Tdpos],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1)))))]
+	p_or [([Tcc '-',Tdpos],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1)))))]
 		s o
 call Td s o =
 	p_or [([Tdmin],(\ls vs -> (ls, Snum (read (tv (vs!!0)))))),
@@ -83,10 +72,10 @@ call Td s o =
 -- main tokens
 call Texpr s o =
 	p_or [
-		([Tcomma,Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
-		([Topen2,Texpr,Tclose2], \ls vs -> (ls, Sfun True (vs!!1) [])),
-		([Topen,Texpr,Tclose], \ls vs -> (ls, Sfun False (vs!!1) [])),
-		([Topen3,Texpr,Tclose3], \ls vs -> (ls, Sif (vs!!1))),
+		([Tcc ',',Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
+		([Tcc '[',Texpr,Tcc ']'], \ls vs -> (ls, Sfun True (vs!!1) [])),
+		([Tcc '(',Texpr,Tcc ')'], \ls vs -> (ls, Sfun False (vs!!1) [])),
+		([Tcc '{',Texpr,Tcc '}'], \ls vs -> (ls, Sif (vs!!1))),
 		([Tc], \ls vs -> (ls, vs!!0)),
 		([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
 		([Td], \ls vs -> (ls, vs!!0))]
@@ -153,7 +142,9 @@ fun_if (Sfun True f p1:p2:Spair (Sbool True) p3:[]) c =
 	Spair (Sbool True) p3
 fun_if (Sfun True f p1:p2:Spair (Sbool False) p3:[]) c =
 	case fun_ifc (e:p2:Spair (Sbool False) (Sl ((Sbool True):[])):[]) c of
-		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (Sfun False p2 (tvl p3)) c)
+--		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (Sfun False p2 (tvl p3)) c)
+--		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (add_to_last p2 (tvl p3)) c)
+		Spair (Sbool True) p2 -> Spair (Sbool True) (add_to_last p2 (tvl p3))
 		o -> o
 	where
 		e = eval (Sfun False (Sfun True f p1) (tvl p3)) c
@@ -288,8 +279,9 @@ tests = [
 	,Test ",{,ifc 2 12,ifc 1 11} 1" "Snum 11"
 	,Test ",{,ifc 2 12,ifc 1 11},incr 1" "Snum 12"
 	,Test ",[,ln,me 3] 3" "Sbool False"
-	,Test ",{,if [,ln,me 1] [,sum 10],ifc 1 11},incr 1" "Snum 12"
-	,Test ",{,if [,ln,me 1] [,sum (,_c,sum -1 _)],ifc 1 1} 5" "Snum 12"
+	,Test ",[,sum _] 2" "Snum 4"
+	,Test ",sum (1) 2" ""
+	,Test ",{,if [,ln,me 1] [,sum (,_c,sum -1 _)],ifc 1 1,ifc 0 1} 5" "Snum 12"
 	]
 
 {-
