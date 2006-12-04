@@ -13,6 +13,7 @@ import System.Time as T
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun
 	| Sfun Bool Syntax [Syntax]
+	| Sblock Syntax
 	| Sdep Syntax
 	| Sif Syntax
 	| Spair Syntax Syntax
@@ -74,7 +75,7 @@ call Texpr s o =
 	p_or [
 		([Tcc ',',Texpr,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)))),
 		([Tcc '[',Texpr,Tcc ']'], \ls vs -> (ls, Sfun True (vs!!1) [])),
-		([Tcc '(',Texpr,Tcc ')'], \ls vs -> (ls, Sfun False (vs!!1) [])),
+		([Tcc '(',Texpr,Tcc ')'], \ls vs -> (ls, Sblock (vs!!1))),
 		([Tcc '{',Texpr,Tcc '}'], \ls vs -> (ls, Sif (vs!!1))),
 		([Tc], \ls vs -> (ls, vs!!0)),
 		([Tc,Tdpos], \ls vs -> (ls, vs!!0)),
@@ -142,13 +143,10 @@ fun_if (Sfun True f p1:p2:Spair (Sbool True) p3:[]) c =
 	Spair (Sbool True) p3
 fun_if (Sfun True f p1:p2:Spair (Sbool False) p3:[]) c =
 	case fun_ifc (e:p2:Spair (Sbool False) (Sl ((Sbool True):[])):[]) c of
---		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (Sfun False p2 (tvl p3)) c)
---		Spair (Sbool True) p2 -> Spair (Sbool True) (eval (add_to_last p2 (tvl p3)) c)
-		Spair (Sbool True) p2 -> Spair (Sbool True) (add_to_last p2 (tvl p3))
-		o -> o
+		Spair (Sbool True) (Sfun True f p) -> Spair (Sbool True) (eval (Sfun False (Sfun True f p) (tvl p3)) c)
+		o -> Serr "err"
 	where
 		e = eval (Sfun False (Sfun True f p1) (tvl p3)) c
-	
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
@@ -217,6 +215,9 @@ eval (Sfun False a@(Sif f) p1) c =
 	where
 		cc = (put "_c" (Sfun False a []) c)
 
+eval (Sblock e) c =
+	eval e c
+
 eval a@(Sfun True f p) c =
 	a
 
@@ -224,8 +225,8 @@ add_to_last (Sfun False f p@(x:xs)) params=
 	case last p of
 		Sfun False f2 p2 -> Sfun False f (init p ++ [add_to_last (last p) params])
 		o -> Sfun False f (p++params)
-add_to_last f params=
-		Sfun False f params
+add_to_last (Sfun False f []) params=
+	Sfun False f params
 
 {- end of eval -}
 
@@ -265,7 +266,7 @@ tests = [
 	,Test ",sum 1 2" "Snum 3"
 	,Test "[,sum 2]" "Sfun True (Sfun False (Sn \"sum\") [Snum 2]) []"
 	,Test ",[,sum 2] 3" "Snum 5"
-	,Test ",[incr] 2" "Snum 3"
+--	,Test ",[,incr] 2" "Snum 3"
 	,Test "[,incr,incr]" "Sfun True (Sfun False (Sn \"incr\") [Sfun False (Sn \"incr\") []]) []"
 	,Test ",[,incr,incr] 3" "Snum 5"
 	,Test ",map [,incr,incr],list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
@@ -280,14 +281,12 @@ tests = [
 	,Test ",{,ifc 2 12,ifc 1 11},incr 1" "Snum 12"
 	,Test ",[,ln,me 3] 3" "Sbool False"
 	,Test ",[,sum _] 2" "Snum 4"
-	,Test ",sum (1) 2" ""
-	,Test ",{,if [,ln,me 1] [,sum (,_c,sum -1 _)],ifc 1 1,ifc 0 1} 5" "Snum 12"
+	,Test "(,incr 3)" "Snum 4"
+	,Test ",[,sum (,incr 2)] 2" "Snum 5"
+	,Test ",{,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],ifc 1 1,ifc 0 1} 10" "Snum 89"
 	]
 
 {-
-
-,{,ifc 1 1,if [,ln,me 1] [,sum (,_f,sum -1 _),_f,sum -2 _]}
-
 -}
 
 main =
