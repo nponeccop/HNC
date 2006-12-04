@@ -283,7 +283,7 @@ tests = [
 	,Test ",[,sum _] 2" "Snum 4"
 	,Test "(,incr 3)" "Snum 4"
 	,Test ",[,sum (,incr 2)] 2" "Snum 5"
-	,Test ",{,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],ifc 1 1,ifc 0 1} 10" "Snum 89"
+	,Test ",{,ifc 1 1,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],ifc 0 1} 10" "Snum 89"
 	]
 
 {-
