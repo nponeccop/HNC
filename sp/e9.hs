@@ -29,7 +29,7 @@ tvl (Sl s) = s
 
 {- parse -}
 
-data Tokens = Ts1|Ts|Tsn|Tc1|Tc|Td1|Td2|Tdpos|Tdmin|Td
+data Tokens = Ts1|Ts|Tsn|Tc1|Tc|Td1|Tdpos|Tdmin|Td
 	|Tcc Char|Tss [Char]
 	|Texpr|Tparams
 	deriving Show
@@ -56,8 +56,6 @@ call (Tss "") s o = Just (0, Sn "")
 call (Tss (x:xs)) s o =
 	p_or [([Tcc x,Tss xs], (\ls vs -> (ls, Sn ((tv (vs!!0))++(tv (vs!!1))))))]
 		s o
-call Td2 s o =
-	p_or [([Td1,Td1],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1)))))] s o
 call Tdpos s o =
 	p_or [([Td1,Tdpos],(\ls vs -> (ls, Sn (tv (vs!!0)++tv (vs!!1))))),
 		([Td1],(\ls vs -> (ls, vs!!0)))] -- was [] here
@@ -123,8 +121,9 @@ data Fun = Fun ([Syntax] -> Context -> Syntax)
 instance Show Fun where
 	show (Fun f) = "Fun"
 
-cmp (Snum n1:Snum n2:[]) c = Sbool (n1 == n2)
-cmp (Sbool n1:Sbool n2:[]) c = Sbool (n1 == n2)
+fun_cmp (Snum n1:Snum n2:[]) c = Sbool (n1 == n2)
+fun_cmp (Sbool n1:Sbool n2:[]) c = Sbool (n1 == n2)
+
 fun_incr (Snum n:[]) c = Snum (n+1)
 fun_map (a@(Sfun b f p):Sl l:[]) c = Sl (Prelude.map (\v -> eval (Sfun False a [v]) c) l)
 fun_count (Snum n:a:[]) c =
@@ -132,26 +131,36 @@ fun_count (Snum n:a:[]) c =
 		0 -> Sl []
 		n -> Sl (a:tvl (fun_count ((Snum (n-1)):a:[]) c))
 fun_comma p@(x:xs) c = eval (Sfun False (last p) (init p)) c
-fun_ifc (Snum n1:p2:Spair (Sbool True) p3:[]) c =
+{-fun_ifc (Snum n1:p2:Spair (Sbool True) p3:[]) c =
 	Spair (Sbool True) p3
 fun_ifc (n1:p2:Spair (Sbool False) p3:[]) c =
 	case p3 of
-		Sl (n2:[])|tvb (cmp (n1:n2:[]) c) -> Spair (Sbool True) p2
+		Sl (n2:[])|tvb (fun_cmp (n1:n2:[]) c) -> Spair (Sbool True) p2
 		Sl (n2:[]) -> Spair (Sbool False) p3
-		o -> Serr ("false and not list" ++ show o)
-fun_if (Sfun True f p1:p2:Spair (Sbool True) p3:[]) c =
-	Spair (Sbool True) p3
-fun_if (Sfun True f p1:p2:Spair (Sbool False) p3:[]) c =
-	case fun_ifc (e:p2:Spair (Sbool False) (Sl ((Sbool True):[])):[]) c of
-		Spair (Sbool True) (Sfun True f p) -> Spair (Sbool True) (eval (Sfun False (Sfun True f p) (tvl p3)) c)
-		o -> Serr "err"
+		o -> Serr ("false and not list" ++ show o)-}
+
+fun_if (x:y:z@(Spair (Sbool True) p3):[]) c =
+	z
+fun_if (x:y:z@(Spair (Sbool False) p3):[]) c =
+	case b of
+		Sbool True ->
+			case y of
+				Sfun True f2 p2 -> Spair (Sbool True) (eval (Sfun False y (tvl p3)) c)
+				o -> Spair (Sbool True) o
+		Sbool False -> z
 	where
-		e = eval (Sfun False (Sfun True f p1) (tvl p3)) c
+		b =
+			case x of
+				Sfun True f1 p1 -> eval (Sfun False x (tvl p3)) c
+				o -> fun_cmp (x:(head (tvl p3)):[]) c								-- fix it
+fun_if (x:y:z:[]) c =
+	Serr ("IF_ERR: " ++ show z)
 
 data Context = Context (Map [Char] Syntax)
 base = Context (M.fromList [
 	("one", Snum 1)
 	,("t", Sbool True)
+	,("cmp", Sfun False (Srun "cmp" 2 (Fun fun_cmp)) [])
 	,("ln", Sfun False (Srun "lnot" 1 (Fun (\(Sbool b:[]) c -> Sbool (not b)))) [])
 	,("la", Sfun False (Srun "land" 2 (Fun (\(Sbool b1:Sbool b2:[]) c -> Sbool (b1 && b2)))) [])
 	,("f", Sdep (Sfun True (Sfun False (Sn "ln") [Sn "t"]) []))
@@ -163,7 +172,6 @@ base = Context (M.fromList [
 	,("map", Sfun False (Srun "map" 2 (Fun fun_map)) [])
 	,("count", Sfun False (Srun "count" 2 (Fun fun_count)) [])
 	,("comma", Sfun False (Srun "comma" 2 (Fun fun_comma)) [])
-	,("ifc", Sfun False (Srun "ifc" 3 (Fun fun_ifc)) [])
 	,("if", Sfun False (Srun "if" 3 (Fun fun_if)) [])
 	])
 
@@ -209,11 +217,9 @@ eval (Sfun False a@(Sfun True f p1) p2) c =
 -- if
 
 eval (Sfun False a@(Sif f) p1) c =
-	case eval (add_to_last f [(Spair (Sbool False) (Sl (Prelude.map (\p -> eval p c) p1)))]) cc of
+	case eval (add_to_last f [(Spair (Sbool False) (Sl (Prelude.map (\p -> eval p c) p1)))]) (put "_c" (Sfun False a []) c) of
 		(Spair (Sbool True) r) -> r
 		(Spair (Sbool False) r) -> Serr "can't find case"
-	where
-		cc = (put "_c" (Sfun False a []) c)
 
 eval (Sblock e) c =
 	eval e c
@@ -277,13 +283,17 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test ",la t f" "Sbool False"
-	,Test ",{,ifc 2 12,ifc 1 11} 1" "Snum 11"
-	,Test ",{,ifc 2 12,ifc 1 11},incr 1" "Snum 12"
+	,Test ",{,if [,cmp 2] [,sum 10],if [,cmp 1] [,sum 9]} 1" "Snum 10"
+	,Test ",{,if 2 10,if 1 9} 1" "Snum 9"
+	,Test ",{,if 2 12,if 1 11} 1" "Snum 11"
+	,Test ",{,if 2 12,if 1 11},incr 1" "Snum 12"
 	,Test ",[,ln,me 3] 3" "Sbool False"
 	,Test ",[,sum _] 2" "Snum 4"
 	,Test "(,incr 3)" "Snum 4"
 	,Test ",[,sum (,incr 2)] 2" "Snum 5"
-	,Test ",{,ifc 1 1,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],ifc 0 1} 10" "Snum 89"
+	,Test ",cmp 1 1" "Sbool True"
+	,Test ",cmp 2 1" "Sbool False"
+	,Test ",{,if 1 1,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],if 0 1} 10" "Snum 89"
 	]
 
 {-
