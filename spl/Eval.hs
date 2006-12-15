@@ -24,6 +24,9 @@ eval (Sn n) c =
 eval a@(Snum n) c =
 	a
 
+eval a@(Sl n) c =
+	a
+
 eval (Sfun a@(Serr n) p) c =
 	a
 
@@ -36,8 +39,13 @@ eval (Sfun (Sfun f p1) p2) c =
 eval (Sfun (Slambda N f p1) p2) c =
 	eval (Sfun (Sfun f p1) p2) c
 
+eval (Sfun a@(Slambda SN f p1) p2) c =
+	eval (Sfun (Sfun f p1) p2) (put "_f" a c)
+
+--eval (Sfun (Slambda L f p1) p2) c =
+--	eval (Sfun (add_to_last (Sfun f p1) p2) []) c
 eval (Sfun (Slambda L f p1) p2) c =
-	eval (Sfun (add_to_last (Sfun f p1) p2) []) c
+	eval (Sfun (add_to_last (Sfun f p1) p2) []) (put "_" (head p2) c)
 
 eval a@(Sfun (Srun n i (Fun f)) p) c =
 	(case length p of

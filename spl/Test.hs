@@ -52,15 +52,7 @@ tests = [
 	,Test ".if (,eq 3) (,sum 10) (,if (,eq 4) (,sum 11) (,sum -4)) 4" "Snum 15"
 	,Test ".fst 3 4" "Snum 3"
 	,Test ".if (,eq 3) (,fst 10) (,fst 0) 3" "Snum 10"
-{-	,Test ",la t f" "Sbool False"
-	,Test ",{,if [,cmp 2] [,sum 10],if 1 [,sum 9]},incr 1" "Snum 12"
-	,Test ",[,ln,me 3] 3" "Sbool False"
-	,Test ",[,sum _] 2" "Snum 4"
-	,Test "(,incr 3)" "Snum 4"
-	,Test ",[,sum (,incr 2)] 2" "Snum 5"
-	,Test ",cmp 1 1" "Sbool True"
-	,Test ",cmp 2 1" "Sbool False"
-	,Test ",{,if 1 1,if [,ln,me 1] [,sum (,_c,sum -1 _),_c,sum -2],if 0 1} 10" "Snum 89"-}
+	,Test ".(^if (,eq 0) (,fst 1) ,if (,eq 1) (,fst 1) (~sum (._f.sum -2 _) ._f.sum -1)) 10" "Snum 89"
 	]
 
 {-

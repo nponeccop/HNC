@@ -2,7 +2,7 @@ module Structure where
 
 import Data.Map as M
 
-data Lmod = N | L
+data Lmod = N | L | SN | SL
 	deriving Show
 
 {- syntax type -}
