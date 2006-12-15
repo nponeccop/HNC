@@ -50,6 +50,8 @@ tests = [
 	,Test ".if (,eq 3) (,sum 10) (,sum -3) 4" "Snum 1"
 	,Test ".(,if (,eq 3) (,sum 10) ,if (,eq 4) (,sum 11) (,sum -4)) 3" "Snum 13"
 	,Test ".if (,eq 3) (,sum 10) (,if (,eq 4) (,sum 11) (,sum -4)) 4" "Snum 15"
+	,Test ".fst 3 4" "Snum 3"
+	,Test ".if (,eq 3) (,fst 10) (,fst 0) 3" "Snum 10"
 {-	,Test ",la t f" "Sbool False"
 	,Test ",{,if [,cmp 2] [,sum 10],if 1 [,sum 9]},incr 1" "Snum 12"
 	,Test ",[,ln,me 3] 3" "Sbool False"
