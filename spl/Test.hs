@@ -1,4 +1,6 @@
 module Main where
+import Hugs.Observe
+import Structure
 import Parser
 import Base
 import Eval
@@ -29,8 +31,8 @@ tests = [
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
 	,Test "sum" "Slambda N (Srun \"sum\" 2 Fun) []"
-	,Test ".sum" "Sfun (Srun \"sum\" 2 Fun) []"
-	,Test ".sum 1" "Sfun (Srun \"sum\" 2 Fun) [Snum 1]"
+	,Test ".sum" "Slambda N (Sfun (Srun \"sum\" 2 Fun) []) []"
+	,Test ".sum 1" "Slambda N (Sfun (Srun \"sum\" 2 Fun) [Snum 1]) []"
 	,Test ".sum 1 2" "Snum 3"
 	,Test ".list 1 2 3 4 5" "Sl [Snum 1,Snum 2,Snum 3,Snum 4,Snum 5]"
 	,Test ".list" "Sl []"
@@ -52,7 +54,11 @@ tests = [
 	,Test ".if (,eq 3) (,sum 10) (,if (,eq 4) (,sum 11) (,sum -4)) 4" "Snum 15"
 	,Test ".fst 3 4" "Snum 3"
 	,Test ".if (,eq 3) (,fst 10) (,fst 0) 3" "Snum 10"
+	,Test ".(~sum _) 2" "Snum 4"
+	,Test ".(,sum _) 2" "Snum 4"
 	,Test ".(^if (,eq 0) (,fst 1) ,if (,eq 1) (,fst 1) (~sum (._f.sum -2 _) ._f.sum -1)) 10" "Snum 89"
+	,Test ".find (~not.less 3) .list 5 4 3 2 1" "Sl [Snum 3,Snum 2,Snum 1]"
+	,Test ".(^if (~eq 0.length) (,fst.list) (~join (._f.find (~not.less 3).tail _).list.head)) .list 1 2 3 5 4" ""
 	]
 
 {-

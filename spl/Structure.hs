@@ -21,6 +21,7 @@ instance Show Fun where
 	show (Fun f) = "Fun"
 
 data Context = Context (Map [Char] Syntax)
+	deriving Show
 
 tv (Sn s) = s
 tv (Snum d) = show d
