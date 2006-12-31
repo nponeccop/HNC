@@ -8,11 +8,12 @@ data Lmod = N | L | SN | SL
 {- syntax type -}
 data Syntax = Sn [Char] | Snum Int | Sbool Bool
 	| Srun [Char] Int Fun
-	| Sfun Syntax [Syntax]
-	| Slambda Lmod Syntax [Syntax]
+	| Sfun Bool Syntax [Syntax] [Syntax]
+	| Slambda Lmod Syntax [Syntax] [Syntax]
 	| Sdep Syntax
 	| Sif Syntax
 	| Sl [Syntax]
+	| Sset [Char] Syntax
 	| Serr [Char]
 	deriving Show
 
@@ -24,8 +25,6 @@ data Context = Context (Map [Char] Syntax)
 	deriving Show
 
 tv (Sn s) = s
-tv (Snum d) = show d
-tv (Sfun s p) = show s
 tvb (Sbool b) = b
 tvl (Sl s) = s
 

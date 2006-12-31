@@ -29,7 +29,7 @@ parse s =
 
 data Tokens = Ts1|Ts|Tsn|Tc1|Tc|Td1|Tdpos|Tdmin|Td
 	|Tcc Char|Tss [Char]
-	|Texpr|Tparams|Twhere|Tset
+	|Texpr|Tparams|Texprpar|Texprblock|Twhere|Tset
 	deriving Show
 
 -- basic tokens
@@ -69,10 +69,32 @@ call Td s o =
 -- main tokens
 call Texpr s o =
 	p_or [
-		([Tss ".",Texpr,Tparams,Twhere], \ls vs -> (ls, Sfun (vs!!1) (tvl (vs!!2)))),
-		([Tss ",",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda N (vs!!1) (tvl (vs!!2)))),
-		([Tss "^",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda SN (vs!!1) (tvl (vs!!2)))),
-		([Tss "~",Texpr,Tparams], \ls vs -> (ls, Slambda L (vs!!1) (tvl (vs!!2)))),
+		([Tss ".",Texpr,Tparams,Twhere], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss ",",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda N (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss "^",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda SN (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss "~",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda L (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss "(",Texpr,Tss ")"], \ls vs -> (ls, vs!!1)),
+		([Tc], \ls vs -> (ls, vs!!0)),
+		([Td], \ls vs -> (ls, vs!!0))]
+		s o
+
+call Texprpar s o =
+	p_or [
+		([Tss ".",Texprpar,Tparams], \ls vs -> (ls, Sfun False (vs!!1) (tvl (vs!!2)) [])),
+		([Tss ",",Texprpar,Tparams], \ls vs -> (ls, Slambda N (vs!!1) (tvl (vs!!2)) [])),
+		([Tss "^",Texprpar,Tparams], \ls vs -> (ls, Slambda SN (vs!!1) (tvl (vs!!2)) [])),
+		([Tss "~",Texprpar,Tparams], \ls vs -> (ls, Slambda L (vs!!1) (tvl (vs!!2)) [])),
+		([Tss "(",Texprblock,Tss ")"], \ls vs -> (ls, vs!!1)),
+		([Tc], \ls vs -> (ls, vs!!0)),
+		([Td], \ls vs -> (ls, vs!!0))]
+		s o
+
+call Texprblock s o =
+	p_or [
+		([Tss ".",Texpr,Tparams,Twhere], \ls vs -> (ls, Sfun True (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss ",",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda N (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss "^",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda SN (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
+		([Tss "~",Texpr,Tparams,Twhere], \ls vs -> (ls, Slambda L (vs!!1) (tvl (vs!!2)) (tvl (vs!!3)))),
 		([Tss "(",Texpr,Tss ")"], \ls vs -> (ls, vs!!1)),
 		([Tc], \ls vs -> (ls, vs!!0)),
 		([Td], \ls vs -> (ls, vs!!0))]
@@ -80,20 +102,20 @@ call Texpr s o =
 
 call Tparams s o =
 	p_or [
-		([Tsn,Texpr,Tparams], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
-		([Tsn,Texpr], \ls vs -> (ls, Sl ((vs!!1):[]))),
+		([Tsn,Texprpar,Tparams], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
+		([Tsn,Texprpar], \ls vs -> (ls, Sl ((vs!!1):[]))),
 		([], \ls vs -> (ls, Sl []))]
 		s o
 
 call Twhere s o =
 	p_or [
-		([Tsn,Tss "|",Tset,Twhere], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
-		([Tsn,Tss "|",Tset], \ls vs -> (ls, Sl ((vs!!1):[]))),
+		([Tsn,Tss "|",Tset,Twhere], \ls vs -> (ls, Sl ((vs!!2):(tvl (vs!!3))))),
+		([Tsn,Tss "|",Tset], \ls vs -> (ls, Sl ((vs!!2):[]))),
 		([], \ls vs -> (ls, Sl []))]
 		s o
 call Tset s o =
 	p_or [
-		([Tc,Tss ":",Texpr], \ls vs -> (ls, Sl ((vs!!1):(tvl (vs!!2))))),
+		([Tc,Tss ":",Texprpar], \ls vs -> (ls, Sset (tv (vs!!0)) (vs!!2))),
 		([], \ls vs -> (ls, Sl []))]
 		s o
 

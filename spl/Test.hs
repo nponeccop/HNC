@@ -1,15 +1,15 @@
 module Main where
-import Hugs.Observe
 import Structure
 import Parser
 import Base
 import Eval
+import Debug.Trace as D
 
 run s =
 	case parse s of
 		Just (i,v)|i == length s -> Just (eval (make_code v) base)
-		Just (i,v)|i < length s -> Nothing
-		Nothing -> Nothing
+		Just (i,v)|i < length s -> error "2"
+		Nothing -> error "3"
 
 {- test -}
 data Test = Test [Char] [Char]
@@ -30,24 +30,24 @@ tests = [
 	Test "1" "Snum 1"
 	,Test "t" "Sbool True"
 	,Test "f" "Sbool False"
-	,Test "sum" "Slambda N (Srun \"sum\" 2 Fun) []"
-	,Test ".sum" "Slambda N (Sfun (Srun \"sum\" 2 Fun) []) []"
-	,Test ".sum 1" "Slambda N (Sfun (Srun \"sum\" 2 Fun) [Snum 1]) []"
+	,Test "sum" "Slambda N (Srun \"sum\" 2 Fun) [] []"
+	,Test ".sum" "Slambda N (Sfun False (Srun \"sum\" 2 Fun) [] []) [] []"
+	,Test ".sum 1" "Slambda N (Sfun False (Srun \"sum\" 2 Fun) [Snum 1] []) [] []"
 	,Test ".sum 1 2" "Snum 3"
 	,Test ".list 1 2 3 4 5" "Sl [Snum 1,Snum 2,Snum 3,Snum 4,Snum 5]"
 	,Test ".list" "Sl []"
 	,Test ".sum 1 .sum 2 .sum 3 4" "Snum 10"
-	,Test ",sum 1" "Slambda N (Sn \"sum\") [Snum 1]"
-	,Test "(,sum 1)" "Slambda N (Sn \"sum\") [Snum 1]"
-	,Test "map" "Slambda N (Srun \"map\" 2 Fun) []"
+	,Test ",sum 1" "Slambda N (Sn \"sum\") [Snum 1] []"
+	,Test "(,sum 1)" "Slambda N (Sn \"sum\") [Snum 1] []"
+	,Test "map" "Slambda N (Srun \"map\" 2 Fun) [] []"
 	,Test ".map (,sum 1).list 1 2 3 4 5" "Sl [Snum 2,Snum 3,Snum 4,Snum 5,Snum 6]"
 	,Test ".(.sum 2) 3" "Snum 5"
 	,Test ".(sum) 2 3" "Snum 5"
 	,Test ".(~sum 2.sum 1) 3" "Snum 6"
 	,Test ".map (~sum 1.sum 1).list 1 2 3 4 5" "Sl [Snum 3,Snum 4,Snum 5,Snum 6,Snum 7]"
 	,Test ".map (,sum 10).list 1 2 3 4 5" "Sl [Snum 11,Snum 12,Snum 13,Snum 14,Snum 15]"
---	,Test ",count 3 ,list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
---	,Test ",map (.comma 4),count 3 (.sum 2)" "Sl [Snum 6,Snum 6,Snum 6]"
+	,Test ".count 3 .list 10" "Sl [Sl [Snum 10],Sl [Snum 10],Sl [Snum 10]]"
+	,Test ".map (.dot 4).count 3 (~sum 2)" "Sl [Snum 6,Snum 6,Snum 6]"
 	,Test ".if (,eq 3) (,sum 10) (,sum -3) 3" "Snum 13"
 	,Test ".if (,eq 3) (,sum 10) (,sum -3) 4" "Snum 1"
 	,Test ".(,if (,eq 3) (,sum 10) ,if (,eq 4) (,sum 11) (,sum -4)) 3" "Snum 13"
@@ -56,9 +56,12 @@ tests = [
 	,Test ".if (,eq 3) (,fst 10) (,fst 0) 3" "Snum 10"
 	,Test ".(~sum _) 2" "Snum 4"
 	,Test ".(,sum _) 2" "Snum 4"
+	,Test ".(~sum (.sum 1 4)) 3" "Snum 8"
 	,Test ".(^if (,eq 0) (,fst 1) ,if (,eq 1) (,fst 1) (~sum (._f.sum -2 _) ._f.sum -1)) 10" "Snum 89"
 	,Test ".find (~not.less 3) .list 5 4 3 2 1" "Sl [Snum 3,Snum 2,Snum 1]"
-	,Test ".(^if (~eq 0.length) (,fst.list) (~join (._f.find (~not.less 3).tail _).list.head)) .list 1 2 3 5 4" ""
+	,Test ".sum a.incr 2 |a:4 |incr:,sum 1" "Snum 7"
+	,Test ".(~sum 2.sum h |h:_) 3" "Snum 8"
+	,Test ".(^if (~eq 0.length) (,fst.list) (,fst.join (._f.find (~not.less hd) tl).join (.list hd)._f.find (~less hd) tl |hd:.head _ |tl:.tail _)) .list 1 2 5 3 2" "Sl [Snum 1,Snum 2,Snum 2,Snum 3,Snum 5]"
 	]
 
 {-
