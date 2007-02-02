@@ -15,13 +15,17 @@ make (Sbool b o) =
 make (Sfun b f p w o) =
 	Efun b (make f) (map make p) (map make w)
 
-make (Slambda m f p w o) =
-	Elambda (make_mod m) (make f) (map make p) (map make w)
-	where
-		make_mod StN = N
-		make_mod StL = L
-		make_mod StSN = SN
-		make_mod StSL = SL
+make (Slambda StN f p w o) =
+	Elambda N (make f) (map make p) (map make w)
+
+make (Slambda StL f p w o) =
+	Elambda L (make f) (map make p) (map make w)
+
+make (Slambda StSN f p w o) =
+	Elambda SN (make f) (map make p) (map make w)
+
+make (Slambda StSL f p w o) =
+	Elambda SL (make f) (map make p) (map make w)
 
 make (Sset n e o) =
 	Eset n (make e)
