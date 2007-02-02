@@ -2,29 +2,29 @@ module Structure where
 
 import Data.Map as M
 
-data Lmod = N | L | SN | SL
+data ELmod = N | L | SN | SL
 	deriving Show
 
-{- syntax type -}
-data Syntax = Sn [Char] | Snum Int | Sbool Bool
-	| Srun [Char] Int Fun
-	| Sfun Bool Syntax [Syntax] [Syntax]
-	| Slambda Lmod Syntax [Syntax] [Syntax]
-	| Sdep Syntax
-	| Sif Syntax
-	| Sl [Syntax]
-	| Sset [Char] Syntax
-	| Serr [Char]
+{- eval type -}
+data Eval = En [Char] | Enum Int | Ebool Bool
+	| Erun [Char] Int Fun
+	| Efun Bool Eval [Eval] [Eval]
+	| Elambda ELmod Eval [Eval] [Eval]
+	| Edep Eval
+	| Eif Eval
+	| El [Eval]
+	| Eset [Char] Eval
+	| Eerr [Char]
 	deriving Show
 
-data Fun = Fun ([Syntax] -> Context -> Syntax)
+data Fun = Fun ([Eval] -> Context -> Eval)
 instance Show Fun where
 	show (Fun f) = "Fun"
 
-data Context = Context (Map [Char] Syntax)
+data Context = Context (Map [Char] Eval)
 	deriving Show
 
-tv (Sn s) = s
-tvb (Sbool b) = b
-tvl (Sl s) = s
+tv (En s) = s
+tvb (Ebool b) = b
+tvl (El s) = s
 
