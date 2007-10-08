@@ -2,5 +2,5 @@ module Main where
 
 import Parser
 
-main = putStrLn $ show $ m
+main = putStrLn res
 

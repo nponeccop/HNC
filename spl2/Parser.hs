@@ -6,7 +6,7 @@ import Debug.Trace
 data SynParams =
 	SynK [Syntax]
 	| SynS [[Char]]
-	deriving Show
+	deriving (Eq, Show)
 
 data Syntax =
 	Sc Char
@@ -15,10 +15,10 @@ data Syntax =
 	| Sl [Syntax]
 	| Sval [Char]
 	| Scall Syntax SynParams
-	deriving Show
+	deriving (Eq, Show)
 
 data P = P Int Syntax | N
-	deriving Show
+	deriving (Eq, Show)
 
 data Token =
 	Ts [Char]
@@ -59,7 +59,7 @@ p_or [] s i =
 call (Tc c) s i| i < length s && c == s!!i = P 1 (Sc c)
 call (Tc c) s i = N
 call Tc1 s i =
-	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "abcdefghijklmnopqrstuvwxyz") s i
+	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz") s i
 call Tsp s i =
 	p_or [
 		([Tc ' ', Tsp], \(Sc c:Ss s:[]) -> Ss (c:s))
@@ -105,7 +105,7 @@ call Tval s i =
 		([Tnum], \(n:[]) -> n)
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
-		,([Tsave], \(e:[]) -> e)
+--		,([Tsave], \(e:[]) -> e)
 		] s i
 call Texpr s i =
 	p_or [
@@ -114,12 +114,13 @@ call Texpr s i =
 		] s i
 call Tsave_args s i =
 	p_or [
-		([Tc '\\',Tcs,Tsave_args], \(_:c:Sl l:[]) -> Sl (c:l))
-		,([Tc '\\',Tcs], \(_:c:[]) -> Sl [c])
+		([Tc '*',Tcs,Tsave_args], \(_:c:Sl l:[]) -> Sl (c:l))
+		,([Tc '*',Tcs], \(_:c:[]) -> Sl [c])
 		] s i
 call Tsave s i =
 	p_or [
 		([Texpr,Tsave_args], \(e:Sl w:[]) -> Scall e (SynS (map (\(Ss s) -> s) w)))
+--		,([Texpr], \(e:w:[]) -> e)
 		] s i
 call Texpr_top s i =
 	p_or [
@@ -128,7 +129,30 @@ call Texpr_top s i =
 		] s i
 
 
-m = p_or [([Texpr_top, Eos], \vs -> vs!!0)] "sum 12 13 (14),sum 2 3,4\\a\\b 1 2" 0
+parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
+tests = [
+	("2", Sn 2)
+--	,("12", Sn 12)
+--	,("sum", Ss "sum")
+--	,("sum one", Scall (Ss "sum") (SynK [Ss "one"]))
+--	,("sum 11 22", Scall (Ss "sum") (SynK [Sn 11, Sn 22]))
+--	,("sum 11,min 22 33", Scall (Ss "sum") (SynK [Sn 11, Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+--	,("incr,min 22 33", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+--	,("((incr),(min (22) (33)))", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+--	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
+--	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
+--	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
+	,("(_f,list 1 2 3 4 5*_f) ((if (is_empty _) (list) ()*h*t) (head _) (tail _)*_)", Ss "sum")
+	]
+
+
+mk_test (s, e) =
+	(case parse s of
+		P _ s2|e == s2 -> "ok - "
+		P _ s2 -> "se"++"("++(show s2)++") -"
+		N -> "pe -") ++ s
+
+res = foldr1 (\a b -> a++"\n"++b) $ map mk_test tests
 
 
