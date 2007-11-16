@@ -133,17 +133,17 @@ parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
 tests = [
 	("2", Sn 2)
---	,("12", Sn 12)
---	,("sum", Ss "sum")
---	,("sum one", Scall (Ss "sum") (SynK [Ss "one"]))
---	,("sum 11 22", Scall (Ss "sum") (SynK [Sn 11, Sn 22]))
---	,("sum 11,min 22 33", Scall (Ss "sum") (SynK [Sn 11, Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
---	,("incr,min 22 33", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
---	,("((incr),(min (22) (33)))", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
---	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
---	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
---	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
-	,("(_f,list 1 2 3 4 5*_f) ((if (is_empty _) (list) ()*h*t) (head _) (tail _)*_)", Ss "sum")
+	,("12", Sn 12)
+	,("sum", Ss "sum")
+	,("sum one", Scall (Ss "sum") (SynK [Ss "one"]))
+	,("sum 11 22", Scall (Ss "sum") (SynK [Sn 11, Sn 22]))
+	,("sum 11,min 22 33", Scall (Ss "sum") (SynK [Sn 11, Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+	,("incr,min 22 33", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+	,("((incr),(min (22) (33)))", Scall (Ss "incr") (SynK [Scall (Ss "min") (SynK [Sn 22, Sn 33])]))
+	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
+	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
+	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
+	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_f,filter (le h) _) h,join_head h (_f,filter (more h) _)*h*t) (head _) (tail _)*_)", Ss "sum")
 	]
 
 

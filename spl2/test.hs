@@ -1,11 +1,12 @@
 module Main where
 
-import Code
+import Char
 
-runTest t =
-	(show (eval t base))++"\n"
+c1 (c:cs) = c
+a = ord (c1 "0")
+b = ord (c1 "9")
+abc = map chr [a..b]
 
-out = foldr1 (++) (map runTest ts)
+main = putStrLn abc
 
-main = putStr out
 
