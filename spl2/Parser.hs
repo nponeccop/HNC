@@ -109,6 +109,7 @@ call Tval s i =
 		] s i
 call Texpr s i =
 	p_or [
+--		([Tcall,Tsave_args], \(c:Sl w:[]) -> Scall c (SynS (map (\(Ss s) -> s) w)))
 		([Tcall], \(c:[]) -> c)
 		,([Tval], \(c:[]) -> c)
 		] s i
@@ -120,7 +121,6 @@ call Tsave_args s i =
 call Tsave s i =
 	p_or [
 		([Texpr,Tsave_args], \(e:Sl w:[]) -> Scall e (SynS (map (\(Ss s) -> s) w)))
---		,([Texpr], \(e:w:[]) -> e)
 		] s i
 call Texpr_top s i =
 	p_or [
@@ -133,6 +133,7 @@ parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
 tests = [
 	("2", Sn 2)
+	,("((((2))))", Sn 2)
 	,("12", Sn 12)
 	,("sum", Ss "sum")
 	,("sum one", Scall (Ss "sum") (SynK [Ss "one"]))
@@ -143,7 +144,7 @@ tests = [
 	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
 	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
 	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
-	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_f,filter (le h) _) h,join_head h (_f,filter (more h) _)*h*t) (head _) (tail _)*_)", Ss "sum")
+	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_r,filter (le h) _) h,join_head h (_r,filter (more h) _)*h*t) (head _) (tail _)*_!R)", Ss "sum")
 	]
 
 
