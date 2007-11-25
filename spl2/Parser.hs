@@ -8,6 +8,10 @@ data SynParams =
 	| SynS [[Char]]
 	deriving (Eq, Show)
 
+data SynMarks =
+	MarkR
+	deriving (Eq, Show)
+
 data Syntax =
 	Sc Char
 	| Ss [Char]
@@ -15,6 +19,7 @@ data Syntax =
 	| Sl [Syntax]
 	| Sval [Char]
 	| Scall Syntax SynParams
+	| Smark Syntax SynMarks
 	deriving (Eq, Show)
 
 data P = P Int Syntax | N
@@ -39,6 +44,7 @@ data Token =
 	| Tparams
 	| Tsave
 	| Tsave_args
+	| Tmarks
 	| Eos
 	deriving Show
 
@@ -105,7 +111,6 @@ call Tval s i =
 		([Tnum], \(n:[]) -> n)
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
---		,([Tsave], \(e:[]) -> e)
 		] s i
 call Texpr s i =
 	p_or [
@@ -116,16 +121,29 @@ call Texpr s i =
 call Tsave_args s i =
 	p_or [
 		([Tc '*',Tcs,Tsave_args], \(_:c:Sl l:[]) -> Sl (c:l))
-		,([Tc '*',Tcs], \(_:c:[]) -> Sl [c])
+		,([], \([]) -> Sl [])
+--		,([Tc '*',Tcs], \(_:c:[]) -> Sl [c])
+		] s i
+call Tmarks s i =
+	p_or [
+		([Tc '!',Tc 'r',Tmarks], \(_:c:Sl l:[]) -> Sl (Sc 'r':l))
+		,([], \([]) -> Sl [])
 		] s i
 call Tsave s i =
 	p_or [
-		([Texpr,Tsave_args], \(e:Sl w:[]) -> Scall e (SynS (map (\(Ss s) -> s) w)))
+		([Texpr,Tsave_args,Tmarks], \(e:Sl w:Sl m:[]) ->
+			let z = case w of
+				[] -> e
+				x:xs -> Scall e (SynS (map (\(Ss s) -> s) w))
+			in
+			case m of
+				Sc 'r':[] -> z
+				_ -> z)
 		] s i
 call Texpr_top s i =
 	p_or [
 		([Tsave], \(e:[]) -> e)
-		,([Texpr], \(e:[]) -> e)
+--		,([Texpr], \(e:[]) -> e)
 		] s i
 
 
@@ -144,15 +162,15 @@ tests = [
 	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
 	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
 	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
-	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_r,filter (le h) _) h,join_head h (_r,filter (more h) _)*h*t) (head _) (tail _)*_!R)", Ss "sum")
+	,("(if (less _ 5) (sum _ (_r (sum _ 1))) (_)*_!r)", Scall (Scall (Ss "if") (SynK [Scall (Ss "less") (SynK [Ss "_",Sn 5]),Scall (Ss "sum") (SynK [Ss "_",Scall (Ss "_r") (SynK [Scall (Ss "sum") (SynK [Ss "_",Sn 1])])]),Ss "_"])) (SynS ["_"]))
+	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_r,filter (le h) _) h,join_head h (_r,filter (more h) _)*h*t) (head _) (tail _)*_!r)", Ss "sum")
 	]
-
 
 mk_test (s, e) =
 	(case parse s of
 		P _ s2|e == s2 -> "ok - "
-		P _ s2 -> "se"++"("++(show s2)++") -"
-		N -> "pe -") ++ s
+		P _ s2 -> "se"++"("++(show s2)++") - "
+		N -> "pe - ") ++ s
 
 res = foldr1 (\a b -> a++"\n"++b) $ map mk_test tests
 
