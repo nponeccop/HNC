@@ -3,13 +3,14 @@ module Parser where
 import Code
 import Debug.Trace
 
+data SynMark =
+	MarkR
+	deriving (Eq, Show)
+
 data SynParams =
 	SynK [Syntax]
 	| SynS [[Char]]
-	deriving (Eq, Show)
-
-data SynMarks =
-	MarkR
+	| SynM [SynMark]
 	deriving (Eq, Show)
 
 data Syntax =
@@ -19,7 +20,6 @@ data Syntax =
 	| Sl [Syntax]
 	| Sval [Char]
 	| Scall Syntax SynParams
-	| Smark Syntax SynMarks
 	deriving (Eq, Show)
 
 data P = P Int Syntax | N
@@ -44,6 +44,7 @@ data Token =
 	| Tparams
 	| Tsave
 	| Tsave_args
+	| Tmark
 	| Tmarks
 	| Eos
 	deriving Show
@@ -131,18 +132,21 @@ call Tmarks s i =
 		] s i
 call Tsave s i =
 	p_or [
-		([Texpr,Tsave_args,Tmarks], \(e:Sl w:Sl m:[]) ->
-			let z = case w of
+		([Texpr,Tsave_args], \(e:Sl w:[]) ->
+			case w of
 				[] -> e
-				x:xs -> Scall e (SynS (map (\(Ss s) -> s) w))
-			in
+				x:xs -> Scall e (SynS (map (\(Ss s) -> s) w)))
+		] s i
+call Tmark s i =
+	p_or [
+		([Tsave,Tmarks], \(e:Sl m:[]) ->
 			case m of
-				Sc 'r':[] -> z
-				_ -> z)
+				(Sc 'r':[]) -> Scall e (SynM [MarkR])
+				[] -> e)
 		] s i
 call Texpr_top s i =
 	p_or [
-		([Tsave], \(e:[]) -> e)
+		([Tmark], \(e:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		] s i
 
@@ -162,8 +166,8 @@ tests = [
 	,("sum 1*a*b", Scall (Scall (Ss "sum") (SynK [Sn 1])) (SynS ["a", "b"]))
 	,("(sum 1,min 22 z*a*b),min z*x*y", Scall (Scall (Scall (Scall (Ss "sum") (SynK [Sn 1,Scall (Ss "min") (SynK [Sn 22,Ss "z"])])) (SynS ["a","b"])) (SynK [Scall (Ss "min") (SynK [Ss "z"])])) (SynS ["x","y"]))
 	,("(sum a b*a*b) 12 22", Scall (Scall (Scall (Ss "sum") (SynK [Ss "a", Ss "b"])) (SynS ["a", "b"])) (SynK [Sn 12, Sn 22]))
-	,("(if (less _ 5) (sum _ (_r (sum _ 1))) (_)*_!r)", Scall (Scall (Ss "if") (SynK [Scall (Ss "less") (SynK [Ss "_",Sn 5]),Scall (Ss "sum") (SynK [Ss "_",Scall (Ss "_r") (SynK [Scall (Ss "sum") (SynK [Ss "_",Sn 1])])]),Ss "_"])) (SynS ["_"]))
-	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_r,filter (le h) _) h,join_head h (_r,filter (more h) _)*h*t) (head _) (tail _)*_!r)", Ss "sum")
+	,("(if (less _ 5) (sum _ (_r (sum _ 1))) (_)*_!r)", (Scall (Scall (Scall (Ss "if") (SynK [Scall (Ss "less") (SynK [Ss "_",Sn 5]),Scall (Ss "sum") (SynK [Ss "_",Scall (Ss "_r") (SynK [Scall (Ss "sum") (SynK [Ss "_",Sn 1])])]),Ss "_"])) (SynS ["_"]))) (SynM [MarkR]))
+	,("(_,list 1 2 3 4 5*_) (if (is_empty _) (list) (join (_r,filter (le h) _) h,join_head h (_r,filter (more h) _)*h*t) (head _) (tail _)*_!r)", (Scall (Scall (Scall (Ss "_") (SynK [Scall (Ss "list") (SynK [Sn 1,Sn 2,Sn 3,Sn 4,Sn 5])])) (SynS ["_"])) (SynK [Scall (Scall (Scall (Ss "if") (SynK [Scall (Ss "is_empty") (SynK [Ss "_"]),Ss "list",Scall (Scall (Ss "join") (SynK [Scall (Ss "_r") (SynK [Scall (Ss "filter") (SynK [Scall (Ss "le") (SynK [Ss "h"]),Ss "_"])]),Ss "h",Scall (Ss "join_head") (SynK [Ss "h",Scall (Ss "_r") (SynK [Scall (Ss "filter") (SynK [Scall (Ss "more") (SynK [Ss "h"]),Ss "_"])])])])) (SynS ["h","t"]),Scall (Ss "head") (SynK [Ss "_"]),Scall (Ss "tail") (SynK [Ss "_"])])) (SynS ["_"])) (SynM [MarkR])])))
 	]
 
 mk_test (s, e) =
