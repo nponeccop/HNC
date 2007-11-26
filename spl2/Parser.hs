@@ -1,8 +1,5 @@
 module Parser where
 
-import Code
-import Debug.Trace
-
 data SynMark =
 	MarkR
 	deriving (Eq, Show)
