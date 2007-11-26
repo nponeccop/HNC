@@ -7,6 +7,13 @@ a = ord (c1 "0")
 b = ord (c1 "9")
 abc = map chr [a..b]
 
-main = putStrLn abc
+abc2 =
+	case 1 of
+		a -> z
+		2 -> z
+	where
+		z = "ok"
+
+main = putStrLn abc2
 
 
