@@ -100,12 +100,9 @@ call Eos s i = N
 call Tparams s i =
 	p_or [
 		([Tsp,Tval,Tparams], \(_:v:Sl l:[]) -> Sl (v:l))
-		,([Tsp,Tval], \(_:v:[]) -> Sl (v:[]))
+--		,([Tsp,Tval], \(_:v:[]) -> Sl (v:[]))
 		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]))
-		] s i
-call Tcall s i =
-	p_or [
-		([Tval,Tparams], \(v:Sl a:[]) -> Scall v (SynK a))
+		,([], \([]) -> Sl [])
 		] s i
 call Tval s i =
 	p_or [
@@ -116,8 +113,10 @@ call Tval s i =
 call Texpr s i =
 	p_or [
 --		([Tcall,Tsave_args], \(c:Sl w:[]) -> Scall c (SynS (map (\(Ss s) -> s) w)))
-		([Tcall], \(c:[]) -> c)
-		,([Tval], \(c:[]) -> c)
+		([Tval,Tparams], \(v:Sl a:[]) ->
+			case a of
+				[] -> v
+				_ -> Scall v (SynK a))
 		] s i
 call Tsave_args s i =
 	p_or [
