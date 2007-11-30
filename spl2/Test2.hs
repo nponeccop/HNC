@@ -1,6 +1,7 @@
 module Main where
 
-import Parser
+--import Parser
+import Compiler
 
 main = putStrLn res
 

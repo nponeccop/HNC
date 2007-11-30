@@ -1,27 +1,29 @@
-module Code where
+module Code (C (..), eval, base, res) where
 
 import Data.Map as M
 
 data InFun =
-  InFun ([C] -> Map [Char] C -> C)
+	InFun ([C] -> Map [Char] C -> C)
 instance Show InFun where
   show (InFun f) = "InFun"
+instance Eq InFun where
+  (==) a b = True
 
 data St =
 	K [C]
 	| S [[Char]]
 	| L
-  deriving Show
+	deriving (Eq, Show)
 
 data C =
-  CBool Bool
-  | CNum Int
-  | CVal [Char]
-  | CL C St
-  | CInFun Int InFun
-  | CInfFun InFun
+	CBool Bool
+	| CNum Int
+	| CVal [Char]
+	| CL C St
+	| CInFun Int InFun
+	| CInfFun InFun
 	| CList [C]
-  deriving Show
+	deriving (Eq, Show)
 
 valBool (CBool b) = b
 
@@ -147,5 +149,7 @@ ts = [
 {-
  - if (.less 0.length) (.sum 2) (,sum 2 _) | _:1
  - -}
+
+res = ""
 
 

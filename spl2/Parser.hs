@@ -1,4 +1,4 @@
-module Parser where
+module Parser (Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
 data SynMark =
 	MarkR
