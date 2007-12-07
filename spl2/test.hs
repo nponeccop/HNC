@@ -8,11 +8,14 @@ b = ord (c1 "9")
 abc = map chr [a..b]
 
 abc2 =
-	case 1 of
-		a -> z
-		2 -> z
+	show (r 1)
 	where
-		z = "ok"
+		r a =
+			if a < 5
+			then a + (r (a + 1))
+			else a 
+
+-- (if (less _ 5) (sum _ (_r (sum _ 1))) (_)*_!r) 1
 
 main = putStrLn abc2
 
