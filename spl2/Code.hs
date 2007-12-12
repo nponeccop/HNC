@@ -1,4 +1,4 @@
-module Code (C (..), St (..), eval, base, res) where
+module Code (C (..), St (..), eval, base) where
 
 import Data.Map as M
 
