@@ -13,6 +13,7 @@ data St =
 	K [C]
 	| S [[Char]]
 	| L
+	| M
 	deriving (Eq, Show)
 
 data C =

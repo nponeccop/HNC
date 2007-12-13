@@ -7,9 +7,9 @@ import Code
 
 step str =
 	case parse str of
-	Just (i, p) ->
+	Parser.P i p ->
 		case compile p of
-		Just c -> show (eval c base)
-		Nothing -> "compile error"
-	Nothing -> "parser error"
+		Compiler.P c -> show (eval c base)
+		Compiler.N -> "compile error"
+	Parser.N -> "parser error"
 

@@ -1,7 +1,9 @@
-module Compiler (compile, res) where
+module Compiler (P (..), compile, res) where
 
-import Parser hiding (res)
+import Parser hiding (P (..), res)
 import Code hiding ()
+
+data P = P C | N
 
 comp (Sn x) =
 	CNum x
@@ -15,11 +17,11 @@ comp (Scall f (SynK a)) =
 comp (Scall f (SynS a)) =
 	CL (comp f) (S a)
 
---comp (Scall f (SynM a)) =
---	CL (comp f) (S a)
+comp (Scall f (SynM a)) =
+	CL (comp f) M
 
 compile s =
-	Just (comp s)
+	P (comp s)
 
 tests = [
 	(Sn 2, CNum 2)
@@ -39,9 +41,9 @@ tests = [
 
 mk_test (s, e) =
 	(case compile s of
-		Just s2|e == s2 -> "ok - "
-		Just s2 -> "ce:\n"++"  cur: "++(show s2)++"\n  exp: "++(show e)
-		Nothing -> "ce - ") ++ "\n test:" ++ show s
+		P s2|e == s2 -> "ok - "
+		P s2 -> "ce:\n"++"  cur: "++(show s2)++"\n  exp: "++(show e)
+		N -> "ce - ") ++ "\n test:" ++ show s
 
 res = foldr1 (\a b -> a++"\n"++b) $ map mk_test tests
 

@@ -1,4 +1,4 @@
-module Parser (Syntax (..), SynParams (..), SynMark(..), parse, res) where
+module Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
 data SynMark =
 	MarkR
@@ -12,6 +12,7 @@ data SynParams =
 
 data Syntax =
 	Sc Char
+	| Sb Bool
 	| Ss [Char]
 	| Sn Int
 	| Sl [Syntax]
