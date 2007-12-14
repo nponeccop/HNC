@@ -106,6 +106,7 @@ eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e)
 
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
+--eval a@(CL c M) e = eval c (putp ["_f"] [c] e)
 
 eval o e = error ("eval: "++show o)
 

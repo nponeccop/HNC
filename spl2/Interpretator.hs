@@ -13,3 +13,11 @@ step str =
 		Compiler.N -> "compile error"
 	Parser.N -> "parser error"
 
+comp2 str = 
+	case parse str of
+	Parser.P i p ->
+		case compile p of
+		Compiler.P c -> show c
+		Compiler.N -> "compile error"
+	Parser.N -> "parser error"
+

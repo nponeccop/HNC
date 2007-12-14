@@ -8,6 +8,9 @@ data P = P C | N
 comp (Sn x) =
 	CNum x
 
+comp (Sb x) =
+	CBool x
+
 comp (Ss s) =
 	CVal s
 
@@ -19,6 +22,9 @@ comp (Scall f (SynS a)) =
 
 comp (Scall f (SynM a)) =
 	CL (comp f) M
+
+comp (Scall f SynL) =
+	CL (comp f) L
 
 compile s =
 	P (comp s)

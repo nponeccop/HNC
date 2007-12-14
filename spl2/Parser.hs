@@ -7,6 +7,7 @@ data SynMark =
 data SynParams =
 	SynK [Syntax]
 	| SynS [[Char]]
+	| SynL
 	| SynM [SynMark]
 	deriving (Eq, Show)
 
@@ -26,6 +27,7 @@ data P = P Int Syntax | N
 data Token =
 	Ts [Char]
 	| Tc Char
+	| Tb
 	| Tc1
 	| Tsp
 	| Tn
@@ -65,6 +67,11 @@ call (Tc c) s i| i < length s && c == s!!i = P 1 (Sc c)
 call (Tc c) s i = N
 call Tc1 s i =
 	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz") s i
+call Tb s i =
+	p_or [
+		([Tc '1', Tc 'b'], \(c1:c2:[]) -> Sb True)
+		,([Tc '0', Tc 'b'], \(c1:c2:[]) -> Sb False)
+		] s i
 call Tsp s i =
 	p_or [
 		([Tc ' ', Tsp], \(Sc c:Ss s:[]) -> Ss (c:s))
@@ -104,7 +111,8 @@ call Tparams s i =
 		] s i
 call Tval s i =
 	p_or [
-		([Tnum], \(n:[]) -> n)
+		([Tb], \(b:[]) -> b)
+		,([Tnum], \(n:[]) -> n)
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		] s i
@@ -125,6 +133,7 @@ call Tsave_args s i =
 call Tmarks s i =
 	p_or [
 		([Tc '!',Tc 'r',Tmarks], \(_:c:Sl l:[]) -> Sl (Sc 'r':l))
+		,([Tc '!',Tc 'l',Tmarks], \(_:c:Sl l:[]) -> Sl (Sc 'l':l))
 		,([], \([]) -> Sl [])
 		] s i
 call Tsave s i =
@@ -139,8 +148,10 @@ call Tmark s i =
 		([Tsave,Tmarks], \(e:Sl m:[]) ->
 			case m of
 				(Sc 'r':[]) -> Scall e (SynM [MarkR])
+				(Sc 'l':[]) -> Scall e SynL
 				[] -> e)
 		] s i
+
 call Texpr_top s i =
 	p_or [
 		([Tmark], \(e:[]) -> e)
