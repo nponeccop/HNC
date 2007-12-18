@@ -83,7 +83,7 @@ call Tcs s i =
 		,([Tc1], \(Sc c:[]) -> Ss (c:""))
 		] s i
 call Tn s i =
-	p_or (map (\x -> ([Tc x], \(Sc c:[]) -> Sn (read (c:"")))) "012345679") s i
+	p_or (map (\x -> ([Tc x], \(Sc c:[]) -> Sn (read (c:"")))) "0123456789") s i
 call Tnpos s i =
 	p_or [
 		([Tn, Tnpos], \(Sn n:Sn n2:[]) -> Sn (n2 + 10 * n))

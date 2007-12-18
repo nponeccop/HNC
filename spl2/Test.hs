@@ -20,6 +20,7 @@ tests = [
 	,("(sum 1)", "CL (CInFun 2 InFun) (K [CNum 1])")
 	,("sum 1 2", "CNum 3")
 	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
+	,("list 8 9 4 4 5 3", "CNum 15")
 	]
 
 
