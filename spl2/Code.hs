@@ -130,7 +130,7 @@ ts = [
 			])) (S ["_"])
 		])
 	,CL (CL (CL (CVal "_z") (K [CList [CNum 8, CNum 9, CNum 4, CNum 4, CNum 5, CNum 3]])) (S ["_z"])) (K [
-		CL (CL (CVal "if") (K [CL (CVal "is_empty") (K [CVal "_"])
+		CL (CL (CL (CVal "if") (K [CL (CVal "is_empty") (K [CVal "_"])
 			,CL (CList []) L
 			,CL (CL (CL (
 				CL (CVal "join") (K [
@@ -145,7 +145,7 @@ ts = [
 						CL (CVal "head") (K [CVal "_"])
 						,CL (CVal "tail") (K [CVal "_"])
 						])) L
-			])) (S ["_"])
+			])) (S ["_"])) M
 		])
 	]
 
