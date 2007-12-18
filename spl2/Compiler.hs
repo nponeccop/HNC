@@ -1,7 +1,7 @@
 module Compiler (P (..), compile, res) where
 
 import Parser hiding (P (..), res)
-import Code hiding ()
+import Code hiding (res)
 
 data P = P C | N
 

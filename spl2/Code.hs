@@ -1,4 +1,4 @@
-module Code (C (..), St (..), eval, base) where
+module Code (C (..), St (..), eval, base, res) where
 
 import Data.Map as M
 
@@ -103,10 +103,11 @@ eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
 eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
 eval a@(CL (CL c (S s)) (K p)) e|length s < length p = error "SK"
 eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e) e)
+eval (CL (CL a@(CL c (S s)) M) (K p)) e|length s == length p = eval c (putp ["_f"] [a] (putp s (evall p e) e))-- I think it is not correct
 
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
---eval a@(CL c M) e = eval c (putp ["_f"] [c] e)
+eval a@(CL c M) e = a
 
 eval o e = error ("eval: "++show o)
 
@@ -128,7 +129,7 @@ ts = [
 			,CL (CNum 2) L
 			])) (S ["_"])
 		])
-	,CL (CL (CL (CVal "_f") (K [CList [CNum 8, CNum 9, CNum 4, CNum 4, CNum 5, CNum 3]])) (S ["_f"])) (K [
+	,CL (CL (CL (CVal "_z") (K [CList [CNum 8, CNum 9, CNum 4, CNum 4, CNum 5, CNum 3]])) (S ["_z"])) (K [
 		CL (CL (CVal "if") (K [CL (CVal "is_empty") (K [CVal "_"])
 			,CL (CList []) L
 			,CL (CL (CL (
@@ -152,6 +153,6 @@ ts = [
  - if (.less 0.length) (.sum 2) (,sum 2 _) | _:1
  - -}
 
-res = ""
+res = show $ eval (ts!!6) base
 
 
