@@ -32,6 +32,7 @@ valBool (CBool b) = b
 do_incr (CNum a:[]) e = CNum (a+1)
 do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
+do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
 do_length (CList l:[]) e =
 	CNum (length l)
@@ -56,6 +57,7 @@ do_tail (CList a:[]) e =
 	CList (tail a)
 do_join (CList a:CList b:[]) e =
 	CList (a ++ b)
+do_join o e = error ("do_join"++show o)
 do_filter (CL a p:CList b:[]) e =
 	CList (Prelude.filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
@@ -64,6 +66,7 @@ do_not (CBool a:[]) e =
 base = M.fromList [
 	("incr", CL (CInFun 1 (InFun do_incr)) (K []))
 	,("sum", CL (CInFun 2 (InFun do_sum)) (K []))
+	,("mul", CL (CInFun 2 (InFun do_mul)) (K []))
 	,("list", CL (CInfFun (InFun do_list)) (K []))
 	,("length", CL (CInFun 1 (InFun do_length)) (K []))
 	,("force", CL (CInFun 1 (InFun do_force)) (K []))
