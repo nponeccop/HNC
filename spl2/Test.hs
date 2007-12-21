@@ -21,7 +21,7 @@ tests = [
 	,("sum 1 2", "CNum 3")
 	,("sum 1,mul 4 2", "CNum 9")
 	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
-	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h) (_f,filter (less h _*_) t)*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
+	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
 
 {-
@@ -31,8 +31,21 @@ tests = [
  -   list without paramaters
  -}
 
+{-
+
 (_,list 8 9 4 4 5 3*_)
-  (if (is_empty _)
+if (is_empty _)
     (_!l)
-    ((join (_f,filter (not,less h _*_) t),join (list h) (_f,filter (less h _*_) t)*h*t) (head _) (tail _)!l)*_!r
-  )
+    ((join (_f,filter (not,less h!p) t),join (list h) (_f,filter (less h) t)*h*t) (head _) (tail _)!l)*_
+!r
+
+
+
+qsort l =
+	if is_empty l
+	then []
+	else (++) (_f$filter (not$less h) t)$join (list t)$_f$filter (>h) t
+	     join (_f,filter (not,less h!p) t),join (list t),_f,filter (less h) t
+
+-}
+
