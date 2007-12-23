@@ -15,6 +15,7 @@ data Syntax =
 	Sc Char
 	| Sb Bool
 	| Ss [Char]
+	| Sstr [Char]
 	| Sn Int
 	| Sl [Syntax]
 	| Sval [Char]
@@ -34,6 +35,7 @@ data Token =
 	| Tnpos
 	| Tnneg
 	| Tnum
+	| Tstring
 	| Tcs
 	| Tcon
 	| Tval
@@ -98,6 +100,10 @@ call Tnum s i =
 		([Tnpos], \(sn:[]) -> sn)
 		,([Tnneg], \(sn:[]) -> sn)
 		] s i
+call Tstring s i =
+    p_or [
+        ([Tc '\'', Tcs, Tc '\''], \(Sc c1:Ss sn:Sc c2:[]) -> Sstr sn)
+		] s i
 call Eos s i| i == length s = P 0 (Ss "")
 call Eos s i = N
 
@@ -113,6 +119,7 @@ call Tval s i =
 	p_or [
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
+		,([Tstring], \(n:[]) -> n)
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		] s i

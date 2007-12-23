@@ -11,6 +11,9 @@ comp (Sn x) =
 comp (Sb x) =
 	CBool x
 
+comp (Sstr s) =
+	CStr s
+
 comp (Ss s) =
 	CVal s
 

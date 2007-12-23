@@ -19,6 +19,7 @@ data St =
 data C =
 	CBool Bool
 	| CNum Int
+	| CStr [Char]
 	| CVal [Char]
 	| CL C St
 	| CInFun Int InFun
@@ -83,6 +84,7 @@ base = M.fromList [
 -- eval
 
 eval a@(CNum n) e = a
+eval a@(CStr s) e = a
 eval a@(CBool n) e = a
 eval a@(CList l) e = a
 eval a@(CVal v) e = 
