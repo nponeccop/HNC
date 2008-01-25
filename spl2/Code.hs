@@ -64,22 +64,22 @@ do_filter (CL a p:CList b:[]) e =
 do_not (CBool a:[]) e =
 	CBool (not a)
 
-base = M.fromList [
-	("incr", CL (CInFun 1 (InFun do_incr)) (K []))
-	,("sum", CL (CInFun 2 (InFun do_sum)) (K []))
-	,("mul", CL (CInFun 2 (InFun do_mul)) (K []))
-	,("list", CL (CInfFun (InFun do_list)) (K []))
-	,("length", CL (CInFun 1 (InFun do_length)) (K []))
-	,("force", CL (CInFun 1 (InFun do_force)) (K []))
-	,("if", CL (CInFun 3 (InFun do_if)) (K []))
-	,("less", CL (CInFun 2 (InFun do_less)) (K []))
-	,("is_empty", CL (CInFun 1 (InFun do_is_empty)) (K []))
-	,("head", CL (CInFun 1 (InFun do_head)) (K []))
-	,("tail", CL (CInFun 1 (InFun do_tail)) (K []))
-	,("join", CL (CInFun 2 (InFun do_join)) (K []))
-	,("filter", CL (CInFun 2 (InFun do_filter)) (K []))
-	,("not", CL (CInFun 1 (InFun do_not)) (K []))
-	]
+base = M.fromList $
+	("incr", CL (CInFun 1 (InFun do_incr)) (K [])):
+	("sum", CL (CInFun 2 (InFun do_sum)) (K [])):
+	("mul", CL (CInFun 2 (InFun do_mul)) (K [])):
+	("list", CL (CInfFun (InFun do_list)) (K [])):
+	("length", CL (CInFun 1 (InFun do_length)) (K [])):
+	("force", CL (CInFun 1 (InFun do_force)) (K [])):
+	("if", CL (CInFun 3 (InFun do_if)) (K [])):
+	("less", CL (CInFun 2 (InFun do_less)) (K [])):
+	("is_empty", CL (CInFun 1 (InFun do_is_empty)) (K [])):
+	("head", CL (CInFun 1 (InFun do_head)) (K [])):
+	("tail", CL (CInFun 1 (InFun do_tail)) (K [])):
+	("join", CL (CInFun 2 (InFun do_join)) (K [])):
+	("filter", CL (CInFun 2 (InFun do_filter)) (K [])):
+	("not", CL (CInFun 1 (InFun do_not)) (K [])):
+	[]
 
 -- eval
 

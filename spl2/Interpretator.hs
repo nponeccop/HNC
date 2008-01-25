@@ -11,9 +11,9 @@ step str =
 	Parser.P i p ->
 		case compile p of
 		Compiler.P c ->
-			case check c of
-			Check.P c2 -> show (eval c base)
-			Check.N -> "check error"
+			case check_all c of
+			True -> show (eval c base)
+			False -> "check error"
 		Compiler.N -> "compile error"
 	Parser.N -> "parser error"
 
