@@ -32,7 +32,17 @@ check (CL (CInFun n i f) (K p)) e et|i == length p =
 		Just (T v) -> T "super3"
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
-	T "goto"
+	case M.lookup n et of
+		Just (TT (h:t)) -> "super 6"
+		Just (T v) -> T "super 7"
+		Nothing -> T "super 8"
+check (CL (CInFun n i f) (K p)) e et|i < length p =
+	error "type too many values"
+check (CL a@(CVal v) (K p)) e et =
+	case M.lookup v e of
+		Just v -> check (CL v (K p)) e et
+		Nothing -> error $ "cannot find "++show v
+check (CL (CL c (K p1)) (K p2)) e et = check (CL c (K (p1++p2))) e et
 check o e et = error $ "type error: "++show o
 
 check_all o =
