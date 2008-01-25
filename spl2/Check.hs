@@ -33,7 +33,7 @@ check (CL (CInFun n i f) (K p)) e et|i == length p =
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
 	case M.lookup n et of
-		Just (TT (h:t)) -> "super 6"
+		Just (TT l) -> "super 6"
 		Just (T v) -> T "super 7"
 		Nothing -> T "super 8"
 check (CL (CInFun n i f) (K p)) e et|i < length p =
