@@ -12,8 +12,9 @@ step str =
 		case compile p of
 		Compiler.P c ->
 			case check_all c of
-			True -> show (eval c base)
-			False -> "check error"
+--			T [a] -> show (eval c base)
+			T a -> "check " ++ show a
+			TT [a] -> "check " ++ show a
 		Compiler.N -> "compile error"
 	Parser.N -> "parser error"
 

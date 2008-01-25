@@ -16,7 +16,7 @@ tests = [
 	("1", "CNum 1")
 	,("12", "CNum 12")
 	,("1b", "CBool True")
-	,("sum", "CL (CInFun 2 InFun) (K [])")
+	,("sum", "CL (CInFun \"sum\" 2 InFun) (K [])")
 	,("'abc'", "CStr \"abc\"")
 	,("sum 'abc' 2", "CStr \"abc\"")
 --	,("(sum 1)", "CL (CInFun 2 InFun) (K [CNum 1])")
