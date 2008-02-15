@@ -25,10 +25,14 @@ check (CVal v) e et =
 		Nothing -> error $ "cannot find "++show v
 check (CL (CInFun n i f) (K p)) e et|i == length p =
 	case M.lookup n et of
-		Just (TT (h:t)) -> 
-			case foldr (&&) True $ zipWith (\a b -> b == check a e et) p t of
-				True -> T "super"
-				False -> T "super2"
+		Just (TT l) -> T (show $ ch l p)
+			where
+				ch (x:[]) [] =
+					x
+				ch (x:xs) (x2:xs2) =
+					case x == (check x2 e et) of
+					True -> ch xs xs2
+					False -> error $ "super2"
 		Just (T v) -> T "super3"
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
