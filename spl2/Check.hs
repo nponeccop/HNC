@@ -14,6 +14,8 @@ data T =
 
 base = M.fromList $
 	("sum", TT [T "num", T "num", T "num"]):
+	("list", TT [T "num", T "list"]):
+	("length", TT [T "list", T "num"]):
 	[]
 
 check (CNum n) e et = T "num"
@@ -25,29 +27,42 @@ check (CVal v) e et =
 		Nothing -> error $ "cannot find "++show v
 check (CL (CInFun n i f) (K p)) e et|i == length p =
 	case M.lookup n et of
-		Just (TT l) -> T (show $ ch l p)
+		Just (TT l) -> ch l p
 			where
-				ch (x:[]) [] =
-					x
+				ch (x:[]) [] = x
 				ch (x:xs) (x2:xs2) =
 					case x == (check x2 e et) of
-					True -> ch xs xs2
-					False -> T "super2"
-		Just (T v) -> T "super3"
+						True -> ch xs xs2
+						False -> T ("super2b:" ++ (show $ check x2 e et)++"|"++show x)
+				ch e e2 = error "err2"
+		Just (T v) -> T "super2"
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
 	case M.lookup n et of
-		Just (TT l) -> T (show $ ch l p)
+		Just (TT l) -> ch l p
 			where
-				ch l [] = l
-				ch (x:xs) (x2:xs2) =
-					case x == (check x2 e et) of
-					True -> ch xs xs2
-					False -> [T "super6"]
+--				ch l [] = TT l
+--				ch (x:xs) (x2:xs2) =
+--					case x == (check x2 e et) of
+--						True -> ch xs xs2
+--						False -> T "super7b"
+				ch e e2 = error $ show e++":"++show e2
 		Just (T v) -> T "super 7"
 		Nothing -> T "super 8"
 check (CL (CInFun n i f) (K p)) e et|i < length p =
 	error "type too many values"
+check (CL (CInfFun n f) (K p)) e et =
+	case M.lookup n et of
+		Just (TT (h:r:[])) -> ch p
+			where
+				ch [] = r
+				ch (p:ps) =
+					case h == (check p e et) of
+						True -> ch ps
+						False -> T "super 9b"
+				ch e = error "err9"
+		Just o -> error "err9b"
+		Nothing -> T "super 9"
 check (CL a@(CVal v) (K p)) e et =
 	case M.lookup v e of
 		Just v -> check (CL v (K p)) e et
