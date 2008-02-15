@@ -32,7 +32,7 @@ check (CL (CInFun n i f) (K p)) e et|i == length p =
 				ch (x:xs) (x2:xs2) =
 					case x == (check x2 e et) of
 					True -> ch xs xs2
-					False -> error $ "super2"
+					False -> T "super2"
 		Just (T v) -> T "super3"
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
@@ -43,7 +43,7 @@ check (CL (CInFun n i f) (K p)) e et|i > length p =
 				ch (x:xs) (x2:xs2) =
 					case x == (check x2 e et) of
 					True -> ch xs xs2
-					False -> error $ "super6"
+					False -> [T "super6"]
 		Just (T v) -> T "super 7"
 		Nothing -> T "super 8"
 check (CL (CInFun n i f) (K p)) e et|i < length p =
