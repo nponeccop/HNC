@@ -33,11 +33,13 @@ check (CL (CInFun n i f) (K p)) e et|i == length p =
 		Nothing -> error $ "cannot find "++show n
 check (CL (CInFun n i f) (K p)) e et|i > length p =
 	case M.lookup n et of
-		Just (TT l) -> T (show (foldl (++) True (zipWith check2 (take m p) (take m l))))
-						where
-							m = min (length p) (length l)
-							check2 a b =
-								check a e et
+		Just (TT l) -> T (show $ ch l p)
+			where
+				ch l [] = l
+				ch (x:xs) (x2:xs2) =
+					case x == (check x2 e et) of
+					True -> ch xs xs2
+					False -> error $ "super6"
 		Just (T v) -> T "super 7"
 		Nothing -> T "super 8"
 check (CL (CInFun n i f) (K p)) e et|i < length p =

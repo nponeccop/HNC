@@ -19,6 +19,7 @@ tests = [
 	,("sum", "CL (CInFun \"sum\" 2 InFun) (K [])")
 	,("'abc'", "CStr \"abc\"")
 	,("sum 'abc' 2", "CStr \"abc\"")
+	,("sum 2", "CStr \"abc\"")
 --	,("(sum 1)", "CL (CInFun 2 InFun) (K [CNum 1])")
 --	,("sum 1 2", "CNum 3")
 --	,("sum 1,mul 4 2", "CNum 9")
