@@ -20,7 +20,7 @@ tests = [
 	,("'abc'", "CStr \"abc\"")
 	,("sum 'abc' 2", "CStr \"abc\"")
 	,("sum 2", "CStr \"abc\"")
---	,("(sum 1)", "CL (CInFun 2 InFun) (K [CNum 1])")
+	,("(sum 1)", "CL (CInFun 2 InFun) (K [CNum 1])")
 	,("to_string,sum 2,length,list 9 8 4 4", "CNum 6")
 --	,("sum 1,mul 4 2", "CNum 9")
 --	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")

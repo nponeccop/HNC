@@ -42,7 +42,7 @@ check (CL (CInFun n i f) (K p)) e et|i > length p =
 	case M.lookup n et of
 		Just (TT l) -> ch l p
 			where
-				ch l z = TT l
+				ch l [] = TT l
 				ch (x:xs) (x2:xs2) =
 					case x == (check x2 e et) of
 						True -> ch xs xs2
