@@ -14,7 +14,7 @@ step str =
 			case check_all c of
 --			T [a] -> show (eval c base)
 			T a -> "check " ++ show a
-			TT [a] -> "check " ++ show a
+			TT a -> "check " ++ show a
 		Compiler.N -> "compile error"
 	Parser.N -> "parser error"
 

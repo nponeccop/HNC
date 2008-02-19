@@ -63,6 +63,8 @@ do_filter (CL a p:CList b:[]) e =
 	CList (Prelude.filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
 	CBool (not a)
+do_to_string (CNum a:[]) e =
+	CStr (show a)
 
 base = M.fromList $
 	("incr", CL (CInFun "incr" 1 (InFun do_incr)) (K [])):
@@ -79,6 +81,7 @@ base = M.fromList $
 	("join", CL (CInFun "join" 2 (InFun do_join)) (K [])):
 	("filter", CL (CInFun "filter" 2 (InFun do_filter)) (K [])):
 	("not", CL (CInFun "not" 1 (InFun do_not)) (K [])):
+	("to_string", CL (CInFun "to_string" 1 (InFun do_not)) (K [])):
 	[]
 
 -- eval
