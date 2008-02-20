@@ -23,15 +23,21 @@ check (CNum n) e et = T "num"
 check (CBool n) e et = T "bool"
 check (CStr n) e et = T "str"
 check (CVal v) e et =
-	case M.lookup v e of
-		Just v -> check v e et
-		Nothing -> error $ "cannot find "++show v
+	case M.lookup v et of
+		Just v -> v
+		Nothing -> error $ "cannot find_et "++show v
+--check (CVal v) e et =
+--	case M.lookup v e of
+--		Just v -> check v e et
+--		Nothing -> error $ "cannot find "++show v
 check (CL (CInFun n i f) (K p)) e et|i == length p =
 	case M.lookup n et of
 		Just (TT l) -> ch l p
 			where
 				ch (x:[]) [] = x
 				ch (x:xs) (x2:xs2) =
+					if (check x2 e et) == T "_" then ch xs xs2
+					else
 					case x == (check x2 e et) of
 						True -> ch xs xs2
 						False -> T ("super2b:" ++ (show $ check x2 e et)++"|"++show x)
@@ -68,7 +74,11 @@ check (CL a@(CVal v) (K p)) e et =
 		Just v -> check (CL v (K p)) e et
 		Nothing -> error $ "cannot find "++show v
 check (CL (CL c (K p1)) (K p2)) e et = check (CL c (K (p1++p2))) e et
+check (CL c (S s)) e et = TT[T "_", check c e (putt s [T "_"] et)]
 check o e et = error $ "type error: "++show o
+
+putt (v:vs) (c:cs) e = putt vs cs (M.insert v c e)
+putt [] [] e = e
 
 check_all o =
 	check o Code.base Check.base
