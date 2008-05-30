@@ -1,6 +1,6 @@
 module Code (C (..), St (..), eval, base, res) where
 
-import Data.Map as M
+import Data.Map as M hiding (map, filter)
 
 data InFun =
 	InFun [Char] ([C] -> Map [Char] C -> C)
@@ -63,7 +63,7 @@ do_join o e = error ("do_join"++show o)
 do_joina (a:CList b:[]) e =
 	CList (a:b)
 do_filter (CL a p:CList b:[]) e =
-	CList (Prelude.filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
+	CList (filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
 	CBool (not a)
 do_to_string (CNum a:[]) e =
@@ -125,7 +125,7 @@ eval a@(CL c M) e = a
 eval o e = error ("eval: "++show o)
 
 evall l e =
-	Prelude.map (\x -> eval x e) l
+	map (\x -> eval x e) l
 
 putp (v:vs) (c:cs) e = putp vs cs (M.insert v c e)
 putp [] [] e = e

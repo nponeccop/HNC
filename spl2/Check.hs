@@ -1,7 +1,7 @@
 
 module Check (T (..), P (..), check_all, res) where
 
-import Data.Map as M hiding (map)
+import Data.Map as M hiding (map, filter)
 
 import Code hiding (res)
 
@@ -38,16 +38,18 @@ check (CL a (K p)) e et =
 				ch p1 p2 e et =
 					case (p1, p2) of
 						((p1:p1s), (p2:p2s))| (==) p1 $ snd $ check p2 e et ->
-							ch p1s p2s e et
+							(,) ((fst $ check p2 e et)++(fst $ ch p1s p2s e et)) $ snd $ ch p1s p2s e et
 						((p1:p1s), (p2@(CVal n):p2s))| (==) TU $ snd $ check p2 e et ->
-							(,) [(n, p1)] $ snd $ ch p1s p2s e et -- ?
+							(,) ((n, p1):(fst $ ch p1s p2s e et)) $ snd $ ch p1s p2s e et
 						((p1:p1s), (p2:p2s)) -> (,) [] $ T $ "err2: "++(show p1)++" "++(show $ snd $ check p2 e et)
 						(r:[], []) -> ([], r)
 						(r, []) ->  ([], TT r)
 		_ -> error "err1"
 
 check (CL a (S p)) e et =
-	check a e (putp p (take (length p) $ repeat TU) et)
+	([], TT $ (map (\(n, t) -> t) us)++[ts])
+	where
+		(us, ts) = check a e (putp p (take (length p) $ repeat TU) et)
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
