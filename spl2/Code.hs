@@ -3,11 +3,11 @@ module Code (C (..), St (..), eval, base, res) where
 import Data.Map as M
 
 data InFun =
-	InFun ([C] -> Map [Char] C -> C)
+	InFun [Char] ([C] -> Map [Char] C -> C)
 instance Show InFun where
-  show (InFun f) = "InFun"
+	show (InFun s f) = "InFun \""++s++"\""
 instance Eq InFun where
-  (==) a b = True
+	(==) (InFun a f1) (InFun b f2) = (==) a b
 
 data St =
 	K [C]
@@ -22,8 +22,8 @@ data C =
 	| CStr [Char]
 	| CVal [Char]
 	| CL C St
-	| CInFun [Char] Int InFun
-	| CInfFun [Char] InFun
+	| CInFun Int InFun
+	| CInfFun InFun
 	| CList [C]
 	deriving (Eq, Show)
 
@@ -35,6 +35,7 @@ do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
+do_elist l e = CList []
 do_length (CList l:[]) e =
 	CNum (length l)
 --do_if (a@(CBool True):b@(CL c2 p2):c@(CL c3 p3):[]) e =
@@ -59,6 +60,8 @@ do_tail (CList a:[]) e =
 do_join (CList a:CList b:[]) e =
 	CList (a ++ b)
 do_join o e = error ("do_join"++show o)
+do_joina (a:CList b:[]) e =
+	CList (a:b)
 do_filter (CL a p:CList b:[]) e =
 	CList (Prelude.filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
@@ -67,21 +70,23 @@ do_to_string (CNum a:[]) e =
 	CStr (show a)
 
 base = M.fromList $
-	("incr", CL (CInFun "incr" 1 (InFun do_incr)) (K [])):
-	("sum", CL (CInFun "sum" 2 (InFun do_sum)) (K [])):
-	("mul", CL (CInFun "mul" 2 (InFun do_mul)) (K [])):
-	("list", CL (CInfFun "list" (InFun do_list)) (K [])):
-	("length", CL (CInFun "length" 1 (InFun do_length)) (K [])):
-	("force", CL (CInFun "force" 1 (InFun do_force)) (K [])):
-	("if", CL (CInFun "if" 3 (InFun do_if)) (K [])):
-	("less", CL (CInFun "less" 2 (InFun do_less)) (K [])):
-	("is_empty", CL (CInFun "is_empty" 1 (InFun do_is_empty)) (K [])):
-	("head", CL (CInFun "head" 1 (InFun do_head)) (K [])):
-	("tail", CL (CInFun "tail" 1 (InFun do_tail)) (K [])):
-	("join", CL (CInFun "join" 2 (InFun do_join)) (K [])):
-	("filter", CL (CInFun "filter" 2 (InFun do_filter)) (K [])):
-	("not", CL (CInFun "not" 1 (InFun do_not)) (K [])):
-	("to_string", CL (CInFun "to_string" 1 (InFun do_not)) (K [])):
+	("incr", CL (CInFun 1 (InFun "incr" do_incr)) (K [])):
+	("sum", CL (CInFun 2 (InFun "sum" do_sum)) (K [])):
+	("mul", CL (CInFun 2 (InFun "mul" do_mul)) (K [])):
+	("list", CL (CInfFun (InFun "list" do_list)) (K [])):
+	("elist", CL (CInFun 0 (InFun "elist" do_elist)) (K [])):
+	("length", CL (CInFun 1 (InFun "length" do_length)) (K [])):
+	("force", CL (CInFun 1 (InFun "force" do_force)) (K [])):
+	("if", CL (CInFun 3 (InFun "if" do_if)) (K [])):
+	("less", CL (CInFun 2 (InFun "less" do_less)) (K [])):
+	("is_empty", CL (CInFun 1 (InFun "is_empty" do_is_empty)) (K [])):
+	("head", CL (CInFun 1 (InFun "head" do_head)) (K [])):
+	("tail", CL (CInFun 1 (InFun "tail" do_tail)) (K [])):
+	("join", CL (CInFun 2 (InFun "join" do_join)) (K [])):
+	("joina", CL (CInFun 2 (InFun "joina" do_joina)) (K [])):
+	("filter", CL (CInFun 2 (InFun "filter" do_filter)) (K [])):
+	("not", CL (CInFun 1 (InFun "not" do_not)) (K [])):
+	("to_string", CL (CInFun 1 (InFun "to_string" do_to_string)) (K [])):
 	[]
 
 -- eval
@@ -99,11 +104,11 @@ eval a@(CVal v) e =
 eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 
 -- apply
-eval a@(CL (CInFun n i (InFun f)) (K p)) e|i == length p = f (evall p e) e
-eval a@(CL (CInFun n i f) (K p)) e|i > length p = a
-eval a@(CL (CInFun n i f) (K p)) e|i < length p =
+eval a@(CL (CInFun i (InFun n f)) (K p)) e|i == length p = f (evall p e) e
+eval a@(CL (CInFun i f) (K p)) e|i > length p = a
+eval a@(CL (CInFun i f) (K p)) e|i < length p =
 	error ("too many params"++show p)
-eval a@(CL (CInfFun n (InFun f)) (K p)) e = f (evall p e) e
+eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
 

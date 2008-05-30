@@ -10,78 +10,52 @@ data P = P Bool | N
 data T =
 	T [Char]
 	| TT [T]
+	| TU
 	deriving (Eq, Show)
 
 base = M.fromList $
 	("sum", TT [T "num", T "num", T "num"]):
 	("list", TT [T "num", T "list"]):
+	("joina", TT [T "num", T "list", T "list"]):
+	("elist", T "list"):
 	("length", TT [T "list", T "num"]):
 	("to_string", TT [T "num", T "string"]):
 	[]
 
-check (CNum n) e et = T "num"
-check (CBool n) e et = T "bool"
-check (CStr n) e et = T "str"
-check (CVal v) e et =
-	case M.lookup v et of
-		Just v -> v
-		Nothing -> error $ "cannot find_et "++show v
---check (CVal v) e et =
---	case M.lookup v e of
---		Just v -> check v e et
---		Nothing -> error $ "cannot find "++show v
-check (CL (CInFun n i f) (K p)) e et|i == length p =
+check (CNum n) e et = ([], T "num")
+check (CBool n) e et = ([], T "bool")
+check (CStr n) e et = ([], T "str")
+check (CVal n) e et =
 	case M.lookup n et of
-		Just (TT l) -> ch l p
-			where
-				ch (x:[]) [] = x
-				ch (x:xs) (x2:xs2) =
-					if (check x2 e et) == T "_" then ch xs xs2
-					else
-					case x == (check x2 e et) of
-						True -> ch xs xs2
-						False -> T ("super2b:" ++ (show $ check x2 e et)++"|"++show x)
-				ch e e2 = error "err2"
-		Just (T v) -> T "super2"
-		Nothing -> error $ "cannot find "++show n
-check (CL (CInFun n i f) (K p)) e et|i > length p =
-	case M.lookup n et of
-		Just (TT l) -> ch l p
-			where
-				ch l [] = TT l
-				ch (x:xs) (x2:xs2) =
-					case x == (check x2 e et) of
-						True -> ch xs xs2
-						False -> T "super7b"
-		Just (T v) -> T "super 7"
-		Nothing -> T "super 8"
-check (CL (CInFun n i f) (K p)) e et|i < length p =
-	error "type too many values"
-check (CL (CInfFun n f) (K p)) e et =
-	case M.lookup n et of
-		Just (TT (h:r:[])) -> ch p
-			where
-				ch [] = r
-				ch (p:ps) =
-					case h == (check p e et) of
-						True -> ch ps
-						False -> T "super 9b"
-				ch e = error "err9"
-		Just o -> error "err9b"
-		Nothing -> T "super 9"
-check (CL a@(CVal v) (K p)) e et =
-	case M.lookup v e of
-		Just v -> check (CL v (K p)) e et
-		Nothing -> error $ "cannot find "++show v
-check (CL (CL c (K p1)) (K p2)) e et = check (CL c (K (p1++p2))) e et
-check (CL c (S s)) e et = TT[T "_", check c e (putt s [T "_"] et)]
-check o e et = error $ "type error: "++show o
+		Just a -> ([], a)
+		Nothing -> error $ (++) "check cannot find " $ show n
 
-putt (v:vs) (c:cs) e = putt vs cs (M.insert v c e)
-putt [] [] e = e
+check (CL a (K p)) e et =
+	case snd $ check a e et of
+		TT p1 ->
+			ch p1 p e et
+			where
+				ch p1 p2 e et =
+					case (p1, p2) of
+						((p1:p1s), (p2:p2s))| (==) p1 $ snd $ check p2 e et ->
+							ch p1s p2s e et
+						((p1:p1s), (p2@(CVal n):p2s))| (==) TU $ snd $ check p2 e et ->
+							(,) [(n, p1)] $ snd $ ch p1s p2s e et -- ?
+						((p1:p1s), (p2:p2s)) -> (,) [] $ T $ "err2: "++(show p1)++" "++(show $ snd $ check p2 e et)
+						(r:[], []) -> ([], r)
+						(r, []) ->  ([], TT r)
+		_ -> error "err1"
+
+check (CL a (S p)) e et =
+	check a e (putp p (take (length p) $ repeat TU) et)
+
+putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
+putp [] [] et = et
 
 check_all o =
 	check o Code.base Check.base
 
 res = "1"
+
+
 
