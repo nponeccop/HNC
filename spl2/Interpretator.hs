@@ -14,7 +14,7 @@ step str =
 			case compile p of
 				Compiler.P c ->
 					case check_all c of
-						Check.P a -> Interpretator.P (show a, show $ eval0 c)
+						Check.P ([], a) -> Interpretator.P (show a, show $ eval0 c)
 						Check.N e -> Interpretator.N $ "type error " ++ e
 				Compiler.N ->
 					Interpretator.N "compile error"

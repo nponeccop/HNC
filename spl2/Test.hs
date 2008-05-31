@@ -9,11 +9,11 @@ main = putStrLn res
 test (s, r) =
 	case step s of
 		Interpretator.P (t, r2)| r == r2 ->
-			"ok - " ++ r
+			"ok: str: " ++ s ++ "\n  type: " ++ t ++ "\n  res: " ++ r2
 		Interpretator.P (t, r2) ->
-			"no - " ++ r
+			"no: str: " ++ s ++ "\n  exp: " ++ r ++ "\n  res: " ++ r2
 		Interpretator.N r3 ->
-			("no:\n  str: "++s++"\n  res: "++r3++"\n  exp: "++r)
+			("no: str: "++s++"\n  res: "++r3++"\n  exp: "++r)
 
 tests = [
 	("1", "CNum 1")
