@@ -1,4 +1,4 @@
-module Code (C (..), St (..), eval, base, res) where
+module Code (C (..), St (..), eval0, base, res) where
 
 import Data.Map as M hiding (map, filter)
 
@@ -35,7 +35,6 @@ do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
-do_elist l e = CList []
 do_length (CList l:[]) e =
 	CNum (length l)
 --do_if (a@(CBool True):b@(CL c2 p2):c@(CL c3 p3):[]) e =
@@ -62,6 +61,8 @@ do_join (CList a:CList b:[]) e =
 do_join o e = error ("do_join"++show o)
 do_joina (a:CList b:[]) e =
 	CList (a:b)
+do_joina o e =
+	error $ show o
 do_filter (CL a p:CList b:[]) e =
 	CList (filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
@@ -74,7 +75,7 @@ base = M.fromList $
 	("sum", CL (CInFun 2 (InFun "sum" do_sum)) (K [])):
 	("mul", CL (CInFun 2 (InFun "mul" do_mul)) (K [])):
 	("list", CL (CInfFun (InFun "list" do_list)) (K [])):
-	("elist", CL (CInFun 0 (InFun "elist" do_elist)) (K [])):
+	("elist", CList []):
 	("length", CL (CInFun 1 (InFun "length" do_length)) (K [])):
 	("force", CL (CInFun 1 (InFun "force" do_force)) (K [])):
 	("if", CL (CInFun 3 (InFun "if" do_if)) (K [])):
@@ -129,6 +130,9 @@ evall l e =
 
 putp (v:vs) (c:cs) e = putp vs cs (M.insert v c e)
 putp [] [] e = e
+
+eval0 c =
+	eval c base
 
 ts = [
 	CL (CVal "sum") (K [CNum 2])
