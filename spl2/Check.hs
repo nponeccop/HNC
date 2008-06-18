@@ -5,7 +5,7 @@ import Data.Map as M hiding (map, filter)
 
 import Code hiding (res)
 
-data P = P ([([Char], T)], T) | N [Char]
+data P = P ([T], T) | N [Char]
 
 data T =
 	T [Char]
@@ -45,28 +45,27 @@ check (CL a (K p)) et =
 					case (p1, p2) of
 						((p1:p1s), (p2:p2s)) ->
 							case check p2 et of
-								P (u1, r)| eq (setu p1 u) (setu r u) -> -- equ
-									case ch p1s p2s et u of
-										P (u2, r2) -> P (u1++u2, r2)
-										o -> o
-								P (u1, r)| TU == r && is_val p2 ->
-									case ch p1s p2s et u of
---										P (u2, r2) -> P ([(val_name p2, p1)], r2) 
-										P (u2, r2) -> P (u1++u2, r2)
-										o -> o
-								P (u1, r)| TU == p1 ->
-									ch p1s p2s et (r:u)
 								P (u1, r) ->
-									N $ "expected "++(show $ setu p1 u)++" actual "++(show r)
+									case merge (setu p1 u) (setu r u) of
+										(u2, True) ->
+											ch p1s p2s et ((u1++u2++u))
+										(_, False) ->
+											N $ "expected "++(show $ setu p1 u)++" actual "++(show $ setu r u)
 								o -> o
-						(r:[], []) -> P ([], setu r u)
-						(r, []) ->  P ([], setu (TT r) u)
+						(r:[], []) -> P (u, setu r u)
+--						(r:[], []) -> error $ show u
+						(r, []) ->  P (u, setu (TT r) u)
+				merge (T a) (T b)|a == b = ([], True)
+				merge (TD a l1) (TD b l2)|a == b = foldr (\(u1,r1) (u2,r2) -> (u1++u2, r1 && r2)) ([], True) $ zipWith merge l1 l2
+				merge TU b = ([b], True)
+				merge a TU = ([a], True)
+				merge t1 t2 = ([], False)
 		P (_, _) -> N "err1"
 		o -> o
 
 check (CL a (S p)) et =
 	case check a (putp p (take (length p) $ repeat TU) et) of
-		P (us, ts) -> P ([], TT $ (map (\(n, t) -> t) us)++[ts])
+		P (us, ts) -> P ([], TT $ (map (\t -> t) us)++[ts])
 		o -> o
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
