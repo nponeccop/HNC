@@ -34,6 +34,6 @@ data C =
 	| CInFun Int InFun
 	| CInfFun InFun
 	| CList [C]
-	| CPair2 C C
+	| CPair [C]
 	deriving (Eq, Show)
 

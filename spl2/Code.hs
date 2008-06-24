@@ -8,7 +8,6 @@ valBool (CBool b) = b
 
 -- base
 do_incr (CNum a:[]) e = CNum (a+1)
-do_pair (a:b:[]) e = CPair2 a b
 do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
 --do_if (a@(CBool True):b@(CL c2 p2):c@(CL c3 p3):[]) e =
@@ -26,8 +25,6 @@ do_less (CNum a:CNum b:[]) e =
 	CBool (a<b)
 do_is_empty (CList a:[]) e =
 	CBool (0 == length a)
-do_head (CList a:[]) e =
-	head a
 do_tail (CList a:[]) e =
 	CList (tail a)
 do_join (CList a:CList b:[]) e =
