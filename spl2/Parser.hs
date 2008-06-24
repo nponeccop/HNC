@@ -120,8 +120,8 @@ call Tval s i =
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(n:[]) -> n)
+		,([Tcs,Tnpos], \(Ss s:Sn n:[]) -> Ss $ s++show n) -- create new token?
 		,([Tcs], \(s:[]) -> s)
-		,([Tcs,Tnpos], \(Ss s:Sn n:[]) -> Ss $ s ++ show n)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		] s i
 call Texpr s i =
