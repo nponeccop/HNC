@@ -1,20 +1,15 @@
 
-module Check (T (..), P (..), check_all, res) where
+module Check (P (..), check_all, res) where
 
 import Data.Map as M hiding (filter)
 
+import Types
 import Code hiding (res)
+import BaseFunctions
 
 data P = P (Map [Char] T, T) | N [Char]
 
-data T =
-	T [Char]
-	| TT [T]
-	| TU [Char]
-	| TD [Char] [T]
-	deriving (Eq, Show)
-
-base = M.fromList $
+{-base = M.fromList $
 	("sum", TT [T "num", T "num", T "num"]):
 	("list", TT [T "num", T "list"]):
 	("pair", TT [TU "a", TU "b", TD "pair" [TU "a", TU "b"]]):
@@ -24,7 +19,7 @@ base = M.fromList $
 	("length", TT [TD "list" [TU "a"], T "num"]):
 	("to_string", TT [TU "a", T "string"]):
 	("debug", TT [TU "a", TU "a"]):
-	[]
+	[]-}
 
 is_val (CVal n) = True
 is_val o = False
@@ -32,8 +27,8 @@ val_name (CVal n) = n
 
 check::C -> Map [Char] T -> P
 check (CNum n) et = P (M.empty, T "num")
-check (CBool n) et = P (M.empty, T "bool")
-check (CStr n) et = P (M.empty, T "str")
+check (CBool n) et = P (M.empty, T "boolean")
+check (CStr n) et = P (M.empty, T "string")
 check (CVal n) et =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
@@ -63,7 +58,7 @@ check (CL a (K p)) et =
 												merge t1 t2 = error ("merge error: "++show t1++", "++show t2)
 -}
 										(_, _, False) ->
-											N $ "expected "++(show $ setm p1 ul)++" actual "++(show $ setm r ul)
+											N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm r ul)
 								o -> o
 						(r:[], []) -> P (ur, setm r ul)
 						(r, []) ->  P (ur, setm (TT r) ul)
@@ -98,7 +93,7 @@ setm (TU n) u =
 setm o u = o
 
 check_all o =
-	check o Check.base
+	check o BaseFunctions.get_types
 
 res = "1"
 

@@ -1,44 +1,16 @@
-module Code (C (..), St (..), eval0, base, res) where
+module Code (C (..), St (..), eval0, res) where
 
 import Data.Map as M hiding (map, filter)
-
-data InFun =
-	InFun [Char] ([C] -> Map [Char] C -> C)
-instance Show InFun where
-	show (InFun s f) = "InFun \""++s++"\""
-instance Eq InFun where
-	(==) (InFun a f1) (InFun b f2) = (==) a b
-
-data St =
-	K [C]
-	| S [[Char]]
-	| L
-	| M
-	deriving (Eq, Show)
-
-data C =
-	CBool Bool
-	| CNum Int
-	| CStr [Char]
-	| CVal [Char]
-	| CL C St
-	| CInFun Int InFun
-	| CInfFun InFun
-	| CList [C]
-	| CPair2 C C
-	deriving (Eq, Show)
+import Types
+import BaseFunctions
 
 valBool (CBool b) = b
 
 -- base
 do_incr (CNum a:[]) e = CNum (a+1)
-do_sum (CNum a:CNum b:[]) e = CNum (a+b)
-do_sum o e = error ("do_sum"++show o)
 do_pair (a:b:[]) e = CPair2 a b
 do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
-do_length (CList l:[]) e =
-	CNum (length l)
 --do_if (a@(CBool True):b@(CL c2 p2):c@(CL c3 p3):[]) e =
 --	case eval a e of
 --		CBool True -> eval (CL (CVal "force") (K [b])) e
@@ -61,16 +33,10 @@ do_tail (CList a:[]) e =
 do_join (CList a:CList b:[]) e =
 	CList (a ++ b)
 do_join o e = error ("do_join"++show o)
-do_joina (a:CList b:[]) e =
-	CList (a:b)
-do_joina o e =
-	error $ show o
 do_filter (CL a p:CList b:[]) e =
 	CList (filter (\x -> valBool (eval (CL (CL a p) (K [x])) e)) b)
 do_not (CBool a:[]) e =
 	CBool (not a)
-do_to_string (CNum a:[]) e =
-	CStr (show a)
 
 base = M.fromList $
 	("incr", CL (CInFun 1 (InFun "incr" do_incr)) (K [])):
@@ -135,7 +101,7 @@ putp (v:vs) (c:cs) e = putp vs cs (M.insert v c e)
 putp [] [] e = e
 
 eval0 c =
-	eval c base
+	eval c BaseFunctions.get_codes
 
 ts = [
 	CL (CVal "sum") (K [CNum 2])
@@ -173,6 +139,6 @@ ts = [
  - if (.less 0.length) (.sum 2) (,sum 2 _) | _:1
  - -}
 
-res = show $ eval (ts!!6) base
+res = show $ eval (ts!!6) BaseFunctions.get_codes
 
 
