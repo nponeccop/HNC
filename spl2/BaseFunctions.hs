@@ -28,6 +28,9 @@ base = M.fromList $
 	:("pair", Fun
 		(CL (CInFun 2 (InFun "" do_pair)) (K []))
 		(TT [TU "a", TU "b", TD "pair" [TU "a",TU "b"]]))
+	:("case", Fun
+		(CL (CInFun 2 (InFun "" do_case)) (K []))
+		(TT [TU "a", TD "list" [TD "pair" [TU "a", TU "b"]], TU "b"]))
 	:("debug", Fun
 		(CNum 1)
 		(TT [TU "a", TU "a"]))
@@ -56,4 +59,8 @@ do_length (CList l:[]) e = CNum (length l)
 do_to_string (a:[]) e = CStr (show a)
 
 do_pair (a:b:[]) e = CPair (a:b:[])
+
+do_case (a:CList l:[]) e =
+	map (\CPair (a:b:[]) -> (a,b)) l
+
 
