@@ -14,11 +14,11 @@ do_list l e = CList l
 --	case eval a e of
 --		CBool True -> eval (CL (CVal "force") (K [b])) e
 --		CBool False -> do_force [c] e
-do_if (a@(CBool a1):b@(CL b1 L):c@(CL c1 L):[]) e =
-	case a1 of
-		True -> eval b1 e
-		False -> eval c1 e
-do_if o e = error ("do_if"++show o)
+--do_if (a@(CBool a1):b@(CL b1 L):c@(CL c1 L):[]) e =
+--	case a1 of
+--		True -> eval b1 e
+--		False -> eval c1 e
+--do_if o e = error ("do_if"++show o)
 do_force (CL c L:[]) e =
 	eval c e
 do_less (CNum a:CNum b:[]) e =
