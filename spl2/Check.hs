@@ -47,7 +47,7 @@ check (CL a (K p)) et =
 						((p1:p1s), (p2:p2s)) ->
 							case check p2 et of
 								P (u1l, u1r, r) ->
-									case merge (setu p1 ul) (setu r ul) of
+									case compare (setu p1 ul) (setu r ul) of
 										(u2l, u2r, True) ->
 											ch p1s p2s et ((u1l++u2l++ul)) urr
 											where
@@ -66,11 +66,11 @@ check (CL a (K p)) et =
 						(r:[], []) -> P (ul, ur, setu r ul)
 --						(r:[], []) -> error $ show u
 						(r, []) ->  P (ul, ur, setu (TT r) ul)
-				merge (T a) (T b)|a == b = ([], [], True)
-				merge (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (u1l++u2l, u1r++u2r, r1 && r2)) ([], [], True) $ zipWith merge l1 l2
-				merge TU b = ([b], [], True)
-				merge a TU = ([], [a], True)
-				merge t1 t2 = ([], [], False)
+				compare (T a) (T b)|a == b = ([], [], True)
+				compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (u1l++u2l, u1r++u2r, r1 && r2)) ([], [], True) $ zipWith compare l1 l2
+				compare TU b = ([b], [], True)
+				compare a TU = ([], [a], True)
+				compare t1 t2 = ([], [], False)
 		P (_, _, _) -> N "err1"
 		o -> o
 
