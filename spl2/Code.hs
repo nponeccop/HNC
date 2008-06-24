@@ -25,6 +25,7 @@ data C =
 	| CInFun Int InFun
 	| CInfFun InFun
 	| CList [C]
+	| CPair2 C C
 	deriving (Eq, Show)
 
 valBool (CBool b) = b
@@ -33,6 +34,7 @@ valBool (CBool b) = b
 do_incr (CNum a:[]) e = CNum (a+1)
 do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
+do_pair (a:b:[]) e = CPair2 a b
 do_mul (CNum a:CNum b:[]) e = CNum (a*b)
 do_list l e = CList l
 do_length (CList l:[]) e =
@@ -73,6 +75,7 @@ do_to_string (CNum a:[]) e =
 base = M.fromList $
 	("incr", CL (CInFun 1 (InFun "incr" do_incr)) (K [])):
 	("sum", CL (CInFun 2 (InFun "sum" do_sum)) (K [])):
+	("pair", CL (CInFun 2 (InFun "pair" do_pair)) (K [])):
 	("mul", CL (CInFun 2 (InFun "mul" do_mul)) (K [])):
 	("list", CL (CInfFun (InFun "list" do_list)) (K [])):
 	("elist", CList []):

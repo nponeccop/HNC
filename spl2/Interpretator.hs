@@ -6,6 +6,8 @@ import Compiler
 import Check
 import Code
 
+import Data.Map as M hiding (map, filter)
+
 data P = P ([Char], [Char]) | N ([Char], [Char])
 
 step str =
@@ -14,7 +16,7 @@ step str =
 			case compile p of
 				Compiler.P c ->
 					case check_all c of
-						Check.P ([], [], a) -> Interpretator.P (show a, show $ eval0 c)
+						Check.P ([], ur, a)|M.null ur -> Interpretator.P (show a, show $ eval0 c)
 						Check.P (u, u2, a) -> Interpretator.P (show a++" |"++show u, show $ eval0 c)
 						Check.N e -> Interpretator.N $ ("type error " ++ e, show c)
 				Compiler.N ->

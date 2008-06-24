@@ -1,46 +1,48 @@
 
 module Check (T (..), P (..), check_all, res) where
 
-import Data.Map as M hiding (map, filter)
+import Data.Map as M hiding (filter)
 
 import Code hiding (res)
 
-data P = P ([T], [T], T) | N [Char]
+data P = P ([T], Map [Char] T, T) | N [Char]
 
 data T =
 	T [Char]
 	| TT [T]
-	| TU
+	| TU [Char]
 	| TD [Char] [T]
 	deriving (Eq, Show)
 
 base = M.fromList $
 	("sum", TT [T "num", T "num", T "num"]):
 	("list", TT [T "num", T "list"]):
-	("joina", TT [TU, TD "list" [TU], TD "list" [TU]]):
-	("elist", TD "list" [TU]):
-	("head", TT [TD "list" [TU], TU]):
-	("length", TT [TD "list" [TU], T "num"]):
-	("to_string", TT [TU, T "string"]):
-	("debug", TT [TU, TU]):
+	("pair", TT [TU "a", TU "b", TD "pair" [TU "a", TU "b"]]):
+	("joina", TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]):
+	("elist", TD "list" [TU "a"]):
+	("head", TT [TD "list" [TU "a"], TU "a"]):
+	("length", TT [TD "list" [TU "a"], T "num"]):
+	("to_string", TT [TU "a", T "string"]):
+	("debug", TT [TU "a", TU "a"]):
 	[]
 
 is_val (CVal n) = True
 is_val o = False
 val_name (CVal n) = n
 
-check (CNum n) et = P ([], [], T "num")
-check (CBool n) et = P ([], [], T "bool")
-check (CStr n) et = P ([], [], T "str")
+check::C -> Map [Char] T -> P
+check (CNum n) et = P ([], M.empty, T "num")
+check (CBool n) et = P ([], M.empty, T "bool")
+check (CStr n) et = P ([], M.empty, T "str")
 check (CVal n) et =
 	case M.lookup n et of
-		Just a -> P ([], [], a)
+		Just a -> P ([], M.empty, a)
 		Nothing -> N $ (++) "check cannot find " $ show n
 
 check (CL a (K p)) et =
 	case check a et of
-		P ([], [], TT p1) ->
-			ch p1 p et [] []
+		P ([], rm, TT p1)|M.null rm ->
+			ch p1 p et [] M.empty
 			where
 				ch p1 p2 et ul ur =
 					case (p1, p2) of
@@ -51,40 +53,53 @@ check (CL a (K p)) et =
 										(u2l, u2r, True) ->
 											ch p1s p2s et ((u1l++u2l++ul)) urr
 											where
-												urr =
+												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
+												uurr = M.unions [ur, u1r]
+{-												merge (T a) (T b)|a == b = T a
+												merge (TD a l1) (TD b l2)|a == b = TD a (zipWith merge l1 l2)
+												merge (TU n) b = b
+												merge a (TU n) = a
+												merge t1 t2 = error ("merge error: "++show t1++", "++show t2)-}
+												setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
+												setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
+												setm (TU n) u =
+													case M.lookup n u of
+														Just a -> a
+														Nothing -> TU n
+												setm o u = o
+{-												urr =
 													case uurr of
 														[] -> u2r
 														l -> map (\a -> setu a u2r) l
 													where
 														uurr =
-															case ur of -- change to merge
-																[] -> u1r
-																l -> l
+															case M.null ur of -- change to merge
+																True -> M.elems u1r
+																False -> M.elems ur-}
 										(_, _, False) ->
 											N $ "expected "++(show $ setu p1 ul)++" actual "++(show $ setu r ul)
 								o -> o
 						(r:[], []) -> P (ul, ur, setu r ul)
---						(r:[], []) -> error $ show u
 						(r, []) ->  P (ul, ur, setu (TT r) ul)
-				compare (T a) (T b)|a == b = ([], [], True)
-				compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (u1l++u2l, u1r++u2r, r1 && r2)) ([], [], True) $ zipWith compare l1 l2
-				compare TU b = ([b], [], True)
-				compare a TU = ([], [a], True)
-				compare t1 t2 = ([], [], False)
+				compare (T a) (T b)|a == b = ([], M.empty, True)
+				compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (u1l++u2l, M.union u1r u2r, r1 && r2)) ([], M.empty, True) $ zipWith compare l1 l2
+				compare (TU n) b = ([b], M.empty, True)
+				compare a (TU n) = ([], M.singleton n a, True)
+				compare t1 t2 = ([], M.empty, False)
 		P (_, _, _) -> N "err1"
 		o -> o
 
 check (CL a (S p)) et =
-	case check a (putp p (take (length p) $ repeat TU) et) of
-		P (ul, ur, ts) -> P ([], [], TT $ (map (\t -> t) ur)++[ts])
+	case check a (putp p (take (length p) $ repeat (TU "a")) et) of
+		P (ul, ur, ts) -> P ([], M.empty, TT $ (Prelude.map (\t -> t) $ M.elems ur)++[ts])
 		o -> o
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
 
-setu (TD n tt) u = TD n (map (\t -> setu t u) tt)
-setu (TT tt) u = TT (map (\t -> setu t u) tt)
-setu TU (t2:t2s) = t2
+setu (TD n tt) u = TD n (Prelude.map (\t -> setu t u) tt)
+setu (TT tt) u = TT (Prelude.map (\t -> setu t u) tt)
+setu (TU n) (t2:t2s) = t2
 setu o (t2:t2s) = o
 setu o [] = o
 
