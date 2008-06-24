@@ -16,8 +16,8 @@ step str =
 			case compile p of
 				Compiler.P c ->
 					case check_all c of
-						Check.P (ul, ur, a)|M.null ul && M.null ur -> Interpretator.P (show a, show $ eval0 c)
-						Check.P (u, u2, a) -> Interpretator.P (show a++" |"++show u, show $ eval0 c)
+						Check.P (ur, a)|M.null ur -> Interpretator.P (show a, show $ eval0 c)
+						Check.P (u2, a) -> Interpretator.P (show a, show $ eval0 c)
 						Check.N e -> Interpretator.N $ ("type error " ++ e, show c)
 				Compiler.N ->
 					Interpretator.N ("compile error", "")
