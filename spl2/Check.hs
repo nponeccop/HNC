@@ -51,8 +51,9 @@ check (CL a (K p)) et =
 								P (u1l, u1r, r) ->
 									case compare (setm p1 ul) (setm r ul) of
 										(u2l, u2r, True) ->
-											ch p1s p2s et (M.unions [u1l, u2l, ul]) urr
+											ch p1s p2s et ull urr
 											where
+												ull = M.unions [ul, u1l, u2l]
 												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
 												uurr = M.unions [ur, u1r]
 {-												merge (T a) (T b)|a == b = T a
@@ -64,8 +65,8 @@ check (CL a (K p)) et =
 										(_, _, False) ->
 											N $ "expected "++(show $ setm p1 ul)++" actual "++(show $ setm r ul)
 								o -> o
-						(r:[], []) -> P (ul, ur, setm r ul)
-						(r, []) ->  P (ul, ur, setm (TT r) ul)
+						(r:[], []) -> P (M.empty, ur, setm r ul)
+						(r, []) ->  P (M.empty, ur, setm (TT r) ul)
 				compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 				compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith compare l1 l2
 				compare (TU n) b = (M.singleton n b, M.empty, True)

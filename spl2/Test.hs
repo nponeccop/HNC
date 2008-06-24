@@ -42,6 +42,7 @@ tests = [
 		,("pair", "")
 		,("pair 1", "")
 		,("pair 1b 'abc'", "")
+		,("joina (pair 1b 'abc')", "")
 		,("joina (pair 1b 'abc'),elist", "")
 --	,("elist", "")
 --	,("joina 1,elist", "")
