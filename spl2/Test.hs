@@ -36,6 +36,8 @@ tests = [
 	,("(sum 1,sum ((sum 3,length z*z) _) 2*_)", "")
 	,("(to_string,head _*_)", "")
 	,("(sum 1,head _*_)", "")
+	,("(sum (length _) (head _)*_)", "")
+	,("(sum (head _) (length _)*_)", "")
 	,("(sum (head _),sum ((sum 3,length z*z) _) 2*_)", "")
 --	,("elist", "")
 --	,("joina 1,elist", "")

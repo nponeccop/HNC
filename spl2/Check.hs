@@ -47,7 +47,7 @@ check (CL a (K p)) et =
 						((p1:p1s), (p2:p2s)) ->
 							case check p2 et of
 								P (u1l, u1r, r) ->
-									case merge (setu p1 ul) (setu r ur) of
+									case merge (setu p1 ul) (setu r ul) of
 										(u2l, u2r, True) ->
 											ch p1s p2s et ((u1l++u2l++ul)) urr
 											where
