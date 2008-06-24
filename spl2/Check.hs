@@ -44,7 +44,7 @@ check (CL a (K p)) et =
 						((p1:p1s), (p2:p2s)) ->
 							case check p2 et of
 								P (u1r, r) ->
-									case compare (setm p1 ul) (setm r ul) of
+									case Check.compare (setm p1 ul) (setm r ul) of
 										(u2l, u2r, True) ->
 											ch p1s p2s et ull urr
 											where
@@ -62,11 +62,6 @@ check (CL a (K p)) et =
 								o -> o
 						(r:[], []) -> P (ur, setm r ul)
 						(r, []) ->  P (ur, setm (TT r) ul)
-				compare (T a) (T b)|a == b = (M.empty, M.empty, True)
-				compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith compare l1 l2
-				compare (TU n) b = (M.singleton n b, M.empty, True)
-				compare a (TU n) = (M.empty, M.singleton n a, True)
-				compare t1 t2 = (M.empty, M.empty, False)
 		P (_, _) -> N "err1"
 		o -> o
 
@@ -77,6 +72,13 @@ check (CL a (S p)) et =
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
+
+compare (T a) (T b)|a == b = (M.empty, M.empty, True)
+compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check.compare l1 l2
+compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check.compare l1 l2
+compare (TU n) b = (M.singleton n b, M.empty, True)
+compare a (TU n) = (M.empty, M.singleton n a, True)
+compare t1 t2 = (M.empty, M.empty, False)
 
 setu (TD n tt) u = TD n (Prelude.map (\t -> setu t u) tt)
 setu (TT tt) u = TT (Prelude.map (\t -> setu t u) tt)
@@ -95,7 +97,7 @@ setm o u = o
 check_all o =
 	check o BaseFunctions.get_types
 
-res = "1"
+res = Check.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
 
 
 
