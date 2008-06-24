@@ -41,7 +41,7 @@ tests = [
 --	,("(sum (head _),sum ((sum 3,length z*z) _) 2*_)", "")
 		,("pair", "")
 		,("pair 1", "")
---		,("pair 1b 1", "")
+		,("pair 1b 'abc'", "")
 --	,("elist", "")
 --	,("joina 1,elist", "")
 --	,("joina 1", "")
