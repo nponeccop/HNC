@@ -121,6 +121,7 @@ call Tval s i =
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(n:[]) -> n)
 		,([Tcs], \(s:[]) -> s)
+		,([Tcs,Tnpos], \(Ss s:Sn n:[]) -> Ss $ s ++ show n)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		] s i
 call Texpr s i =
