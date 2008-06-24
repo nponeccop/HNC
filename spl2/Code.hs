@@ -19,8 +19,8 @@ do_list l e = CList l
 --		True -> eval b1 e
 --		False -> eval c1 e
 --do_if o e = error ("do_if"++show o)
-do_force (CL c L:[]) e =
-	eval c e
+--do_force (CL c L:[]) e =
+--	eval c e
 do_less (CNum a:CNum b:[]) e =
 	CBool (a<b)
 do_is_empty (CList a:[]) e =

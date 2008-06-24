@@ -31,9 +31,12 @@ base = M.fromList $
 	:("if", Fun
 		(CL (CInFun 3 (InFun "" do_if)) (K []))
 		(TT [T "boolean", TU "a", TU "a", TU "a"]))
---	:("lazy", Fun
---		(CL (CInFun 1 (InFun "" do_lazy)) (K []))
---		(TT [
+	:("lazy", Fun
+		(CL (CInFun 1 (InFun "" do_lazy)) (K []))
+		(TT [TU "a", TD "lazy" [TU "a"]]))
+	:("force", Fun
+		(CL (CInFun 1 (InFun "" do_force)) (K []))
+		(TT [TD "lazy" [TU "a"], TU "a"]))
 	:("debug", Fun
 		(CNum 1)
 		(TT [TU "a", TU "a"]))
@@ -64,5 +67,9 @@ do_to_string (a:[]) e = CStr (show a)
 do_pair (a:b:[]) e = CPair (a:b:[])
 
 do_if (CBool a:b:c:[]) e = if a then b else c
+
+do_lazy (a:[]) e = CL a L
+
+do_force (a:[]) e = a
 
 
