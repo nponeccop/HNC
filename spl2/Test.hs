@@ -57,6 +57,7 @@ tests = [
 		,("join1 (pair 1b 'abc'),elist", "CList [CPair [CBool True,CStr \"abc\"]]", "TD \"list\" [TD \"pair\" [T \"boolean\",T \"string\"]]")
 	,("join1 (sum 2),join1 (sum 1 _*_),elist", "CList [CL (CInFun 2 InFun \"sum\") (K [CNum 2]),CL (CL (CVal \"sum\") (K [CNum 1,CVal \"_\"])) (S [\"_\"])]", "TD \"list\" [TT [T \"num\",T \"num\"]]")
 	,("join1 (to_string,sum 2 _*_),join1 (sum 1 _*_),elist", "type error: expected TD \"list\" [TT [T \"num\",T \"string\"]], actual TD \"list\" [TT [T \"num\",T \"num\"]]", "")
+	,("join1 (length _*_),join1 (sum 1,length _*_),elist", "CList [CL (CL (CVal \"length\") (K [CVal \"_\"])) (S [\"_\"]),CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"length\") (K [CVal \"_\"])])) (S [\"_\"])]", "TD \"list\" [TT [TD \"list\" [TU \"a\"],T \"num\"]]")
 	,("if 0b 1 2", "CNum 2", "T \"num\"")
 	,("lazy (sum 1 2)", "CNum 3", "T \"num\"")
 	,("force,lazy (sum 1 2)", "CNum 3", "T \"num\"")
