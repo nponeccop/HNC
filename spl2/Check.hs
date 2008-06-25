@@ -35,46 +35,34 @@ check (CVal n) et =
 		Nothing -> N $ (++) "check cannot find " $ show n
 
 check (CL a (K p)) et =
-	case check a et of
-		P (rm, p1)|M.null rm ->
-			ch p1 p et M.empty M.empty
+	case (f, ps_err) of
+		(P (rm, TT r), [])|M.null rm ->
+			ch (setml r ps_rm) (setml ps_ok rm) et ps_rm ps_rm -- 2nd union ?
 			where
-				ch p1 p2 et ul ur =
-					case (p1, p2) of
-						(TT (p1:p1s), (p2:p2s)) ->
-							case check p2 et of
-								P (u1r, r) ->
-									case Check.compare (setm p1 ul) (setm r ul) of
-										(u2l, u2r, True) ->
-											ch (TT p1s) p2s et ull urr
-											where
-												ull = M.unions [ul, u2l]
-												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
-												uurr = M.unions [ur, u1r]
-{-												merge (T a) (T b)|a == b = T a
-												merge (TD a l1) (TD b l2)|a == b = TD a (zipWith merge l1 l2)
-												merge (TU n) b = b
-												merge a (TU n) = a
-												merge t1 t2 = error ("merge error: "++show t1++", "++show t2)
--}
-										(_, _, False) ->
-											N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm r ul)
-								o -> o
-						(TT (r:[]), []) -> P (ur, setm r ul)
-						(TT r, []) ->  P (ur, setm (TT r) ul)
-						(p1, (p2:p2s)) ->
-							case check p2 et of
-								P (u1r, r) ->
-									case Check.compare (setm p1 ul) (setm r ul) of
-										(u2l, u2r, True) ->
-											ch p1 p2s et ull urr
-											where
-												ull = M.unions [ul, u2l]
-												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
-												uurr = M.unions [ur, u1r]
-						(r, []) -> P (ur, r)
-		P (rm, p) -> N ("err1: "++show rm++", "++show p)
-		o -> o
+				ch (p1:p1s) (p2:p2s) et ul ur =
+					case Check.compare (setm p1 ul) (setm p2 ul) of
+						(u2l, u2r, True) ->
+							ch p1s p2s et ull urr
+							where
+								ull = M.unions [ul, u2l]
+								urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
+								uurr = M.unions [ur]
+						(_, _, False) ->
+							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
+				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
+				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
+		(P (rm, TU n), [])|M.null rm ->
+			error "100"
+		(P _, (o:os)) ->
+			o
+		(o, o2) -> o
+	where
+		f = check a et
+		ps = Prelude.map (\a -> check a et) p
+		ps_err = filter (\a -> case a of N _ -> True; P _ -> False) ps
+		ps_ok2 = filter (\a -> case a of P _ -> True; N _ -> False) ps
+		ps_rm = M.unions $ Prelude.map (\a -> case a of P (a, b) -> a; N _ -> error "err100") ps_ok2
+		ps_ok = Prelude.map (\a -> case a of P (a, b) -> b; N _ -> error "err100") ps_ok2
 
 check (CL a (S p)) et =
 	case check a et2 of
@@ -102,6 +90,7 @@ setu (TU n) (t2:t2s) = t2
 setu o (t2:t2s) = o
 setu o [] = o
 
+setml l u = Prelude.map (\a -> setm a u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
 setm (TU n) u =
