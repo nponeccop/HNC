@@ -63,6 +63,11 @@ check (CL a (K p)) et =
 		ps_rm = M.unions $ Prelude.map (\a -> case a of P (a, b) -> a; N _ -> error "err100") ps_ok2
 		ps_ok = Prelude.map (\a -> case a of P (a, b) -> b; N _ -> error "err100") ps_ok2
 
+check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
+	case check p2 et of 
+		P (_, b) -> check a (putp [p1] [b] et)
+		o -> o
+
 check (CL a (S p)) et =
 	case check a et2 of
 		P (ur, ts) ->
