@@ -66,9 +66,14 @@ check (CL a (K p)) et =
 		o -> o
 
 check (CL a (S p)) et =
-	case check a (putp p (take (length p) $ repeat (TU "a")) et) of
-		P (ur, ts) -> P (M.empty, TT $ (Prelude.map (\t -> t) $ M.elems ur)++[ts])
+	case check a et2 of
+		P (ur, ts) ->
+			P (M.empty, TT $ (
+				Prelude.map (\n -> case M.lookup n ur of Just t -> t; Nothing -> TU n) p
+			)++[ts])
 		o -> o
+	where
+		et2 = putp p (take (length p) $ Prelude.map (TU) p) et
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
