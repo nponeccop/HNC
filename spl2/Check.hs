@@ -36,17 +36,17 @@ check (CVal n) et =
 
 check (CL a (K p)) et =
 	case check a et of
-		P (rm, TT p1)|M.null rm ->
+		P (rm, p1)|M.null rm ->
 			ch p1 p et M.empty M.empty
 			where
 				ch p1 p2 et ul ur =
 					case (p1, p2) of
-						((p1:p1s), (p2:p2s)) ->
+						(TT (p1:p1s), (p2:p2s)) ->
 							case check p2 et of
 								P (u1r, r) ->
 									case Check.compare (setm p1 ul) (setm r ul) of
 										(u2l, u2r, True) ->
-											ch p1s p2s et ull urr
+											ch (TT p1s) p2s et ull urr
 											where
 												ull = M.unions [ul, u2l]
 												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
@@ -60,15 +60,26 @@ check (CL a (K p)) et =
 										(_, _, False) ->
 											N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm r ul)
 								o -> o
-						(r:[], []) -> P (ur, setm r ul)
-						(r, []) ->  P (ur, setm (TT r) ul)
+						(TT (r:[]), []) -> P (ur, setm r ul)
+						(TT r, []) ->  P (ur, setm (TT r) ul)
+						(p1, (p2:p2s)) ->
+							case check p2 et of
+								P (u1r, r) ->
+									case Check.compare (setm p1 ul) (setm r ul) of
+										(u2l, u2r, True) ->
+											ch p1 p2s et ull urr
+											where
+												ull = M.unions [ul, u2l]
+												urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
+												uurr = M.unions [ur, u1r]
+						(r, []) -> P (ur, r)
 		P (rm, p) -> N ("err1: "++show rm++", "++show p)
 		o -> o
 
 check (CL a (S p)) et =
 	case check a et2 of
 		P (ur, ts) ->
-			P (M.empty, TT $ (
+			P (M.empty, TT $ ( -- is it ok to use p as name of unknown type ?
 				Prelude.map (\n -> case M.lookup n ur of Just t -> t; Nothing -> TU n) p
 			)++[ts])
 		o -> o

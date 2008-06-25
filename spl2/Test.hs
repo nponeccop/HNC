@@ -59,17 +59,14 @@ tests = [
 	,("join1 (to_string,sum 2 _*_),join1 (sum 1 _*_),elist", "type error: expected TD \"list\" [TT [T \"num\",T \"string\"]], actual TD \"list\" [TT [T \"num\",T \"num\"]]", "")
 	,("join1 (length _*_),join1 (sum 1,length _*_),elist", "CList [CL (CL (CVal \"length\") (K [CVal \"_\"])) (S [\"_\"]),CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"length\") (K [CVal \"_\"])])) (S [\"_\"])]", "TD \"list\" [TT [TD \"list\" [TU \"a\"],T \"num\"]]")
 	,("if 0b 1 2", "CNum 2", "T \"num\"")
+	,("(sum 1 2*_)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\"])", "TT [TU \"_\",T \"num\"]")
+	,("(sum 1 2*_) 1", "CNum 3", "T \"num\"")
 -}
 
 
 
-
-
-
-
-
-	,("(sum 1 2*_)", "CNum 3", "T \"num\"")
-	,("(l 1*l) (sum 1 2*_)", "CNum 3", "T \"num\"")
+	,("(l 1*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
+	,("(l*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
 --	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
