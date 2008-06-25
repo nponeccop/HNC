@@ -45,8 +45,7 @@ check (CL a (K p)) et =
 							ch p1s p2s et ull urr
 							where
 								ull = M.unions [ul, u2l]
-								urr = case M.null uurr of True -> u2r; False -> M.map (\a -> setm a u2r) uurr
-								uurr = M.unions [ur]
+								urr = case M.null ur of True -> u2r; False -> M.map (\a -> setm a u2r) ur
 						(_, _, False) ->
 							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
 				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
