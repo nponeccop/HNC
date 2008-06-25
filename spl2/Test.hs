@@ -64,9 +64,11 @@ tests = [
 -}
 
 
+	,("(l 2*l) (sum 1)", "CNum 3", "T \"num\"")
+--	,("(l 1*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
+--	,("(l*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
 
-	,("(l 1*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
-	,("(l*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
+
 --	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
