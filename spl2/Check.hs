@@ -62,7 +62,7 @@ check (CL a (K p)) et =
 								o -> o
 						(r:[], []) -> P (ur, setm r ul)
 						(r, []) ->  P (ur, setm (TT r) ul)
-		P (_, _) -> N "err1"
+		P (rm, p) -> N ("err1: "++show rm++", "++show p)
 		o -> o
 
 check (CL a (S p)) et =
