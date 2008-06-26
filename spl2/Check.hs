@@ -56,7 +56,10 @@ check (CL a (K p)) et =
 			o
 		(o, o2) -> o
 	where
-		f = check a et
+		f =
+			case a of
+				CL _ (S p) -> check_s a ps_ok et
+				a -> check a et
 		ps = Prelude.map (\a -> check a et) p
 		ps_err = filter (\a -> case a of N _ -> True; P _ -> False) ps
 		ps_ok2 = filter (\a -> case a of P _ -> True; N _ -> False) ps
@@ -77,6 +80,16 @@ check (CL a (S p)) et =
 		o -> o
 	where
 		et2 = putp p (take (length p) $ Prelude.map (TU) p) et
+
+check_s (CL a (S p)) pp et =
+	case check a et2 of
+		P (ur, ts) ->
+			P (M.empty, TT $ ( -- is it ok to use p as name of unknown type ?
+				Prelude.map (\n -> case M.lookup n ur of Just t -> t; Nothing -> TU n) p
+			)++[ts])
+		o -> o
+	where
+		et2 = putp p (take (length p) $ pp) et
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et

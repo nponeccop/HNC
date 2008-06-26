@@ -27,7 +27,7 @@ test (s, r, t) =
 
 tests = [
 	("1" ,"CNum 1" ,"T \"num\"")
-{-	,("", "parser error", "")
+	,("", "parser error", "")
 	,("12" ,"CNum 12" ,"T \"num\"")
 	,("1b" ,"CBool True", "T \"boolean\"")
 	,("'abc'", "CStr \"abc\"", "T \"string\"")
@@ -61,12 +61,11 @@ tests = [
 	,("if 0b 1 2", "CNum 2", "T \"num\"")
 	,("(sum 1 2*_)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\"])", "TT [TU \"_\",T \"num\"]")
 	,("(sum 1 2*_) 1", "CNum 3", "T \"num\"")
--}
+
 
 
 	,("(l 2*l) (sum 1)", "CNum 3", "T \"num\"")
---	,("(l 1*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
---	,("(l*l) (sum 1 2*_*z)", "CNum 3", "T \"num\"")
+	,("(l 1*l) (sum 1 2*_*z)", "CL (CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\",\"z\"])) (K [CNum 1])", "TT [TU \"z\",T \"num\"]")
 
 
 --	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
