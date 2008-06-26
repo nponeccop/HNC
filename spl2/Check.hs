@@ -37,7 +37,7 @@ check (CVal n) et =
 check (CL a (K p)) et =
 	case (f, ps_err) of
 		(P (rm, TT r), [])|M.null rm ->
-			ch (setml r ps_rm) (setml ps_ok rm) et ps_rm ps_rm -- 2nd union ?
+			ch r (setml ps_ok rm) et ps_rm ps_rm -- 2nd union ?
 			where
 				ch (p1:p1s) (p2:p2s) et ul ur =
 					case Check.compare (setm p1 ul) (setm p2 ul) of
