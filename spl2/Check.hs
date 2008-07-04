@@ -71,15 +71,10 @@ check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
 		P (_, b) -> check a (putp [p1] [b] et)
 		o -> o
 
-check (CL a (S p)) et =
-	case check a et2 of
-		P (ur, ts) ->
-			P (M.empty, TT $ ( -- is it ok to use p as name of unknown type ?
-				Prelude.map (\n -> case M.lookup n ur of Just t -> t; Nothing -> TU n) p
-			)++[ts])
-		o -> o
+check a@(CL f (S p)) et =
+	check_s a tus et
 	where
-		et2 = putp p (take (length p) $ Prelude.map (TU) p) et
+		tus = Prelude.map (TU) p
 
 check_s (CL a (S p)) pp et =
 	case check a et2 of
@@ -90,7 +85,6 @@ check_s (CL a (S p)) pp et =
 		o -> o
 	where
 		et2 = putp p (take (length p) $ zipWith (\a b -> case b of TU _ -> TU a; o -> o) p pp) et
---		et2 = putp p (take (length p) $ Prelude.map (TU) p) et
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
