@@ -9,18 +9,6 @@ import BaseFunctions
 
 data P = P (Map [Char] T, T) | N [Char]
 
-{-base = M.fromList $
-	("sum", TT [T "num", T "num", T "num"]):
-	("list", TT [T "num", T "list"]):
-	("pair", TT [TU "a", TU "b", TD "pair" [TU "a", TU "b"]]):
-	("joina", TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]):
-	("elist", TD "list" [TU "a"]):
-	("head", TT [TD "list" [TU "a"], TU "a"]):
-	("length", TT [TD "list" [TU "a"], T "num"]):
-	("to_string", TT [TU "a", T "string"]):
-	("debug", TT [TU "a", TU "a"]):
-	[]-}
-
 is_val (CVal n) = True
 is_val o = False
 val_name (CVal n) = n
@@ -71,6 +59,12 @@ check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
 		P (_, b) -> check a (putp [p1] [b] et)
 		o -> o
 
+check (CL a L) et =
+	case check a et of
+		P (ur, r)|M.null ur ->
+			P (M.empty, TT [TL, r])
+		o -> o
+
 check a@(CL f (S p)) et =
 	check_s a tus et
 	where
@@ -94,6 +88,7 @@ compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.uni
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check.compare l1 l2
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.empty, M.singleton n a, True)
+compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
 setu (TD n tt) u = TD n (Prelude.map (\t -> setu t u) tt)

@@ -37,6 +37,12 @@ base = M.fromList $
 	:("debug", Fun
 		(CNum 1)
 		(TT [TU "a", TU "a"]))
+	:("go", Fun
+		(CNum 0)
+		TL)
+	:("iff", Fun
+		(CL (CInFun 1 (InFun "" do_iff)) (K []))
+		(TT [T "boolean", TD "lazy" [TU "a"]]))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -52,7 +58,7 @@ get_types = M.map get_type base
 do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 
-do_joina (a:CList b:[]) e =	CList (a:b)
+do_joina (a:CList b:[]) e = CList (a:b)
 do_joina o e = error $ show o
 
 do_head (CList a:[]) e = head a
@@ -66,5 +72,8 @@ do_pair (a:b:[]) e = CPair (a:b:[])
 do_if (CBool a:b:c:[]) e = if a then b else c
 
 do_force (a:[]) e = a
+
+do_iff (CList l:[]) e = CNum 1
+
 
 

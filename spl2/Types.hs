@@ -8,6 +8,7 @@ data T =
 	| TT [T]
 	| TU [Char]
 	| TD [Char] [T]
+	| TL
 	deriving (Eq, Show)
 
 -- code
