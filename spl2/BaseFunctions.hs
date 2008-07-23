@@ -10,6 +10,9 @@ base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
 		(TT [T "num", T "num", T "num"]))
+	:("incr", Fun
+		(CL (CInFun 1 (InFun "" do_incr)) (K []))
+		(TT [T "num", T "num"]))
 	:("elist", Fun
 		(CList [])
 		(TD "list" [TU "a"]))
@@ -28,21 +31,18 @@ base = M.fromList $
 	:("pair", Fun
 		(CL (CInFun 2 (InFun "" do_pair)) (K []))
 		(TT [TU "a", TU "b", TD "pair" [TU "a",TU "b"]]))
-	:("if", Fun
-		(CL (CInFun 3 (InFun "" do_if)) (K []))
-		(TT [T "boolean", TU "a", TU "a", TU "a"]))
-	:("force", Fun
-		(CL (CInFun 1 (InFun "" do_force)) (K []))
-		(TT [TD "lazy" [TU "a"], TU "a"]))
 	:("debug", Fun
-		(CNum 1)
+		(CL (CInFun 1 (InFun "" do_debug)) (K []))
 		(TT [TU "a", TU "a"]))
 	:("go", Fun
 		(CNum 0)
 		TL)
 	:("iff", Fun
 		(CL (CInFun 1 (InFun "" do_iff)) (K []))
-		(TT [T "boolean", TD "lazy" [TU "a"]]))
+		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TU "a"]))
+	:("iff2", Fun
+		(CL (CInFun 1 (InFun "" do_iff2)) (K []))
+		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]]))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -58,6 +58,9 @@ get_types = M.map get_type base
 do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 
+do_incr (CNum a:[]) e = CL (CVal "sum") (K [CNum a, CNum 1])
+do_incr o e = error ("do_incr"++show o)
+
 do_joina (a:CList b:[]) e = CList (a:b)
 do_joina o e = error $ show o
 
@@ -65,15 +68,18 @@ do_head (CList a:[]) e = head a
 
 do_length (CList l:[]) e = CNum (length l)
 
+do_debug (a:[]) e = a
+
 do_to_string (a:[]) e = CStr (show a)
 
 do_pair (a:b:[]) e = CPair (a:b:[])
 
-do_if (CBool a:b:c:[]) e = if a then b else c
+do_iff (CList []:[]) e = CNum 0
+do_iff (CList ((CPair (CBool i:exp:[])):is):[]) e| i = CL exp (K [CVal "go"])
+do_iff (CList (CBool i:is):[]) e = do_iff (CList is:[]) e
 
-do_force (a:[]) e = a
-
-do_iff (CList l:[]) e = CNum 1
-
+do_iff2 (CList []:[]) e = CNum 0
+do_iff2 (CList ((CPair (CBool i:exp:[])):is):[]) e| i = exp
+do_iff2 (CList (CBool i:is):[]) e = do_iff (CList is:[]) e
 
 

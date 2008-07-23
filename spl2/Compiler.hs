@@ -4,6 +4,7 @@ import Parser hiding (P (..), res)
 import Code hiding (res)
 
 data P = P C | N
+	deriving Show
 
 comp (Sn x) =
 	CNum x

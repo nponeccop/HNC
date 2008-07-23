@@ -68,8 +68,13 @@ tests = [
 --	,("(l 1*l) (sum 1 2*z)", "CNum 3", "T \"num\"")
 
 --	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15")
-	,("(sum 1 2!l)", "", "")
-	,("(sum 1 2!l) go", "", "")
+	,("incr 3", "CNum 4", "T \"num\"")
+	,("(sum 1 2!l)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
+	,("(sum 1 2!l) go", "CNum 3", "T \"num\"")
+	,("iff,elist", "", "")
+	,("iff,join1 (pair 1b (11!l)),join1 (pair 0b (22!l)),elist", "", "")
+	,("(debug (11!l)) go", "", "")
+--	,("(iff2,join1 (pair 1b (11!l)),join1 (pair 0b (22!l)),elist) go", "", "")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
 

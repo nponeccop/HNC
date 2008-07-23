@@ -35,7 +35,7 @@ do_filter (CL a p:CList b:[]) e =
 do_not (CBool a:[]) e =
 	CBool (not a)
 
-base = M.fromList $
+{-base = M.fromList $
 	("incr", CL (CInFun 1 (InFun "incr" do_incr)) (K [])):
 	("sum", CL (CInFun 2 (InFun "sum" do_sum)) (K [])):
 	("pair", CL (CInFun 2 (InFun "pair" do_pair)) (K [])):
@@ -54,7 +54,7 @@ base = M.fromList $
 	("filter", CL (CInFun 2 (InFun "filter" do_filter)) (K [])):
 	("not", CL (CInFun 1 (InFun "not" do_not)) (K [])):
 	("to_string", CL (CInFun 1 (InFun "to_string" do_to_string)) (K [])):
-	[]
+	[]-}
 
 -- eval
 
@@ -62,6 +62,7 @@ eval a@(CNum n) e = a
 eval a@(CStr s) e = a
 eval a@(CBool n) e = a
 eval a@(CList l) e = a
+eval a@(CPair l) e = a
 eval a@(CVal v) e = 
 	case M.lookup v e of
 		Just v -> v
@@ -71,10 +72,10 @@ eval a@(CVal v) e =
 eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 
 -- apply
-eval a@(CL (CInFun i (InFun n f)) (K p)) e|i == length p = f (evall p e) e
-eval a@(CL (CInFun i f) (K p)) e|i > length p = a
-eval a@(CL (CInFun i f) (K p)) e|i < length p =
-	error ("too many params"++show p)
+eval a@(CL (CInFun i (InFun n f)) (K p)) e|i == length p = eval (f (evall p e) e) e
+eval a@(CL (CInFun i (InFun b f)) (K p)) e|i > length p = a
+eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
+	error ("too many params for "++n++": "++show p)
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
@@ -85,7 +86,7 @@ eval a@(CL (CL c (S s)) (K p)) e|length s < length p = error "SK"
 eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e) e)
 eval (CL (CL a@(CL c (S s)) M) (K p)) e|length s == length p = eval c (putp ["_f"] [a] (putp s (evall p e) e))-- I think it is not correct
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
-eval (CL (CL a L) (K o)) e = eval  e
+eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
