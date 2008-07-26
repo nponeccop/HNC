@@ -9,9 +9,6 @@ import BaseFunctions
 
 data P = P (Map [Char] T, T) | N [Char]
 
-is_val (CVal n) = True
-is_val o = False
-val_name (CVal n) = n
 
 check::C -> Map [Char] T -> P
 check (CNum n) et = P (M.empty, T "num")
@@ -37,6 +34,7 @@ check (CL a (K p)) et =
 						(_, _, False) ->
 							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
 				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
+				ch ([]) [] et ul ur = N ("too many parameters for "++(show a))
 				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
 		(P (rm, TU n), [])|M.null rm ->
 			error "100"

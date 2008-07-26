@@ -23,7 +23,7 @@ eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 eval a@(CL (CInFun i (InFun n f)) (K p)) e|i == length p = eval (f (evall p e) e) e
 eval a@(CL (CInFun i (InFun b f)) (K p)) e|i > length p = a
 eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
-	error ("too many params for "++n++": "++show p)
+	eval (CL (eval (f (evall (take i p) e) e) e) (K (drop i p))) e
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
