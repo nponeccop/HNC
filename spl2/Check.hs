@@ -37,7 +37,8 @@ check (CL a (K p)) et =
 				ch ([]) [] et ul ur = N ("too many parameters for "++(show a))
 				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
 		(P (rm, TU n), [])|M.null rm ->
-			error "100"
+			P (rm, TU n)
+--			error "100"
 		(P _, (o:os)) ->
 			o
 		(o, o2) -> o

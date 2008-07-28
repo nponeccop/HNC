@@ -21,7 +21,8 @@ eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 
 -- apply
 eval a@(CL (CInFun i (InFun n f)) (K p)) e|i == length p = eval (f (evall p e) e) e
-eval a@(CL (CInFun i (InFun b f)) (K p)) e|i > length p = a
+eval a@(CL (CInFun i (InFun b f)) (K p)) e|i > length p =
+	(CL (CInFun i (InFun b f)) (K (evall p e)))
 eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
 	eval (CL (eval (f (evall (take i p) e) e) e) (K (drop i p))) e
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
@@ -31,6 +32,7 @@ eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
 -- put
 eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
 eval a@(CL (CL c (S s)) (K p)) e|length s < length p = error "SK"
+--	eval c (putp s (evall (take (length s) p) e) e)
 eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e) e)
 eval (CL (CL a@(CL c (S s)) M) (K p)) e|length s == length p = eval c (putp ["_f"] [a] (putp s (evall p e) e))-- I think it is not correct
 eval (CL (CL a L) (K [CNum 0])) e = eval a e

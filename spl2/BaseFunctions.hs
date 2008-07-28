@@ -38,11 +38,8 @@ base = M.fromList $
 		(CNum 0)
 		TL)
 	:("iff", Fun
-		(CL (CInFun 1 (InFun "" do_iff)) (K []))
-		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TU "a"]))
-	:("iff2", Fun
-		(CL (CInFun 1 (InFun "" do_iff2)) (K []))
-		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]]))
+		(CL (CInFun 2 (InFun "" do_iff)) (K []))
+		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"], TU "a"]))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -74,12 +71,8 @@ do_to_string (a:[]) e = CStr (show a)
 
 do_pair (a:b:[]) e = CPair (a:b:[])
 
-do_iff (CList []:[]) e = CNum 0
-do_iff (CList ((CPair (CBool i:exp:[])):is):[]) e| i = CL exp (K [CVal "go"])
-do_iff (CList (CBool i:is):[]) e = do_iff (CList is:[]) e
-
-do_iff2 (CList []:[]) e = CNum 0
-do_iff2 (CList ((CPair (CBool i:exp:[])):is):[]) e| i = exp
-do_iff2 (CList (CBool i:is):[]) e = do_iff (CList is:[]) e
+do_iff (CList []:CL c L:[]) e = CL (CL c L) (K [CVal "go"])
+do_iff (CList ((CPair (CBool i:exp:[])):is):CL c L:[]) e| i = CL exp (K [CVal "go"])
+do_iff (CList (CBool i:is):CL c L:[]) e = do_iff (CList is:CL c L:[]) e
 
 
