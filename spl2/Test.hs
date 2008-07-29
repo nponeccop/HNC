@@ -2,27 +2,38 @@ module Main where
 
 import Interpretator
 
-res = foldr1 (++) $ map (++"\n") $ map test $ tests
+
+data T = Ok [Char] | No [Char]
+
+get_str (Ok s) = s
+get_str (No s) = s
+is_passed (Ok s) = True
+is_passed (No _) = False
+
+test_res = map test $ tests
+res1 = foldr1 (++) $ map (\r -> (get_str r)++"\n") test_res
+
+res = res1 ++ ("failed: " ++ show (length $ filter (not . is_passed) test_res))
 
 main = putStrLn res
 
 test (s, r, t) =
 	case step s of
 		Interpretator.P (t2, r2)| r == r2 && t == t2 ->
-			"ok: "++s
+			Ok $ "ok: "++s
 		Interpretator.P (t2, r2)| r == r2 ->
-			"no: "++s++"\n type exp: "++t++"\n type act: "++t2
+			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 		Interpretator.P (t2, r2)| t == t2 ->
-			"no: "++s++"\n res exp: "++r++"\n res act: "++r2
+			No $ "no: "++s++"\n res exp: "++r++"\n res act: "++r2
 		Interpretator.P (t2, r2) ->
-			"no: "++s++"\n type exp: "++t++"\n type act: "++t2
+			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 			++"\n res exp: "++r++"\n res act: "++r2
 --			"no: str: " ++ s ++ "\n  type: " ++ t ++ ""
 --			"no: str: " ++ s ++ "\n  type: " ++ t ++ "\n  exp: " ++ r ++ "\n  res: " ++ r2
 		Interpretator.N (r3, c)| r3 == r ->
-			("ok: "++s++" |err")
+			Ok $ ("ok: "++s++" |err")
 		Interpretator.N (r3, c) ->
-			("no: "++s++"\n err exp: "++r++"\n err act: "++r3++"")
+			No $ ("no: "++s++"\n err exp: "++r++"\n err act: "++r3++"")
 --			("no: str: "++s++"\n  res: "++r3++"\n  exp: "++r++"\n  code: "++c)
 
 tests = [
