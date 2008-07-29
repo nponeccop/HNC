@@ -38,7 +38,6 @@ check (CL a (K p)) et =
 				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
 		(P (rm, TU n), [])|M.null rm ->
 			P (M.singleton n (TT (ps_ok++[TU n])), TU n)
---			error "100"
 		(P _, (o:os)) ->
 			o
 		(o, o2) -> o
