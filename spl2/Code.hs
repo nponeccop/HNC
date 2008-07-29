@@ -31,8 +31,8 @@ eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
 
 -- put
 eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
-eval a@(CL (CL c (S s)) (K p)) e|length s < length p = error "SK"
---	eval c (putp s (evall (take (length s) p) e) e)
+eval a@(CL (CL c (S s)) (K p)) e|length s < length p =
+	eval (CL (eval c (putp s (evall (take (length s) p) e) e)) (K (drop (length s) p))) e
 eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e) e)
 eval (CL (CL a@(CL c (S s)) M) (K p)) e|length s == length p = eval c (putp ["_f"] [a] (putp s (evall p e) e))-- I think it is not correct
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
