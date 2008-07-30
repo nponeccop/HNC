@@ -25,7 +25,7 @@ comp (Scall f (SynS a)) =
 	CL (comp f) (S a)
 
 comp (Scall f (SynM a)) =
-	CL (comp f) M
+	CL (comp f) R
 
 comp (Scall f SynL) =
 	CL (comp f) L

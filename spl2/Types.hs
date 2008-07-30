@@ -23,7 +23,7 @@ data St =
 	K [C]
 	| S [[Char]]
 	| L
-	| M
+	| R
 	deriving (Eq, Show)
 
 data C =
