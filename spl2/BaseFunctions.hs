@@ -23,7 +23,7 @@ base = M.fromList $
 		(CL (CInFun 1 (InFun "" do_head)) (K []))
 		(TT [TD "list" [TU "a"], TU "a"]))
 	:("join1", Fun
-		(CL (CInFun 2 (InFun "" do_joina)) (K []))
+		(CL (CInFun 2 (InFun "" do_join1)) (K []))
 		(TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("length", Fun
 		(CL (CInFun 1 (InFun "" do_length)) (K []))
@@ -63,8 +63,8 @@ do_less (CNum a:CNum b:[]) e = CBool (a < b)
 do_incr (CNum a:[]) e = CL (CVal "sum") (K [CNum a, CNum 1])
 do_incr o e = error ("do_incr"++show o)
 
-do_joina (a:CList b:[]) e = CList (a:b)
-do_joina o e = error $ show o
+do_join1 (a:CList b:[]) e = CList (a:b)
+do_join1 o e = error $ show o
 
 do_head (CList a:[]) e = head a
 
@@ -77,7 +77,8 @@ do_to_string (a:[]) e = CStr (show a)
 do_pair (a:b:[]) e = CPair (a:b:[])
 
 do_iff (CList []:CL c L:[]) e = CL (CL c L) (K [CVal "go"])
-do_iff (CList ((CPair (CBool i:exp:[])):is):CL c L:[]) e| i = CL exp (K [CVal "go"])
-do_iff (CList (CBool i:is):CL c L:[]) e = do_iff (CList is:CL c L:[]) e
+do_iff (CList ((CPair (CBool True:exp:[])):is):CL c L:[]) e = CL exp (K [CVal "go"])
+do_iff (CList ((CPair (CBool False:exp:[])):is):CL c L:[]) e = do_iff (CList is:CL c L:[]) e
+do_iff o e = error ("do_iff: "++show o)
 
 

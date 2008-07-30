@@ -35,7 +35,6 @@ check (CL a (K p)) et =
 								urr = case M.null ur of True -> u2r; False -> M.map (\a -> setm a u2r) ur
 						(_, _, False) ->
 							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
---								error (show (setm p1 ul)++"|"++show (setm p2 ul))
 				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
 				ch ([]) [] et ul ur = N ("too many parameters for "++(show a))
 				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
@@ -63,9 +62,9 @@ check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
 
 check (CL a L) et =
 	case check a et of
-		P (ur, r)|M.null ur ->
-			P (M.empty, TT [TL, r])
-		o -> o
+		P (ur, r) ->
+			P (ur, TT [TL, r])
+		o -> error $ show o
 
 check (CL a R) et =
 	check a (putp ["_f"] [TU "_f"] et)

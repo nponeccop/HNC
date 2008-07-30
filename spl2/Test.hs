@@ -28,13 +28,10 @@ test (s, r, t) =
 		Interpretator.P (t2, r2) ->
 			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 			++"\n res exp: "++r++"\n res act: "++r2
---			"no: str: " ++ s ++ "\n  type: " ++ t ++ ""
---			"no: str: " ++ s ++ "\n  type: " ++ t ++ "\n  exp: " ++ r ++ "\n  res: " ++ r2
 		Interpretator.N (r3, c)| r3 == r ->
 			Ok $ ("ok: "++s++" |err")
 		Interpretator.N (r3, c) ->
 			No $ ("no: "++s++"\n err exp: "++r++"\n err act: "++r3++"")
---			("no: str: "++s++"\n  res: "++r3++"\n  exp: "++r++"\n  code: "++c)
 
 tests = [
 	("1" ,"CNum 1" ,"T \"num\"")
@@ -89,8 +86,8 @@ tests = [
 --	,("(debug (sum (f 2))*f)", "CL (CL (CVal \"debug\") (K [CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],TT [T \"num\",T \"num\"]]")
 --	,("((debug (sum (f 2))*f) (sum 1)) 3", "CNum 6", "T \"num\"")
 --	,("(debug (11!l)) go", "CNum 11", "T \"num\"")
-	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "type error: check cannot find \"if\"", "")
-	,("(z 1*z) (iff (join1 (pair 1b (11!l)),elist) (0!l)!r)", "CNum 15", "")
+--	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "type error: check cannot find \"if\"", "")
+	,("(iff (join1 (pair (less _ 5) (sum _,_f,sum _ 1!l)),elist) (_!l)*_!r) 1", "CNum 15", "")
 --	,("(fib 10*fib)", "", "")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
