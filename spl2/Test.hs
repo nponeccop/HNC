@@ -89,8 +89,9 @@ tests = [
 --	,("(debug (sum (f 2))*f)", "CL (CL (CVal \"debug\") (K [CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],TT [T \"num\",T \"num\"]]")
 --	,("((debug (sum (f 2))*f) (sum 1)) 3", "CNum 6", "T \"num\"")
 --	,("(debug (11!l)) go", "CNum 11", "T \"num\"")
-	,("(_z 1*_z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15", "")
-	,("(f 10*f)", "", "")
+	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "type error: check cannot find \"less\"", "")
+	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "CNum 15", "")
+--	,("(fib 10*fib)", "", "")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
 

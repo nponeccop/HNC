@@ -8,6 +8,7 @@ import Code hiding (res)
 import BaseFunctions
 
 data P = P (Map [Char] T, T) | N [Char]
+	deriving Show
 
 
 check::C -> Map [Char] T -> P
@@ -45,9 +46,10 @@ check (CL a (K p)) et =
 		(o, o2) -> o
 	where
 		f =
-			case a of
-				CL _ (S p) -> check_s a ps_ok et
-				a -> check a et
+			case (a, ps_err) of
+				(CL _ (S p), []) -> check_s a ps_ok et
+				(a, []) -> check a et
+				(_, (o:os)) -> o
 		ps = Prelude.map (\a -> check a et) p
 		ps_err = filter (\a -> case a of N _ -> True; P _ -> False) ps
 		ps_ok2 = filter (\a -> case a of P _ -> True; N _ -> False) ps
@@ -64,6 +66,9 @@ check (CL a L) et =
 		P (ur, r)|M.null ur ->
 			P (M.empty, TT [TL, r])
 		o -> o
+
+check (CL a R) et =
+	check a et
 
 check a@(CL f (S p)) et =
 	check_s a tus et
@@ -82,6 +87,7 @@ check_s (CL a (S p)) pp et =
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
+putp o1 o2 et = error ("Check.putp: "++show o1++", "++show o2)
 
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check.compare l1 l2
