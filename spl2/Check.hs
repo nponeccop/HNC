@@ -68,7 +68,7 @@ check (CL a L) et =
 		o -> o
 
 check (CL a R) et =
-	check a et
+	check a (putp ["_f"] [TU "_f"] et)
 
 check a@(CL f (S p)) et =
 	check_s a tus et

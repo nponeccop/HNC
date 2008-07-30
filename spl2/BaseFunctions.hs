@@ -10,6 +10,9 @@ base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
 		(TT [T "num", T "num", T "num"]))
+	:("less", Fun
+		(CL (CInFun 2 (InFun "" do_less)) (K []))
+		(TT [T "num", T "num", T "boolean"]))
 	:("incr", Fun
 		(CL (CInFun 1 (InFun "" do_incr)) (K []))
 		(TT [T "num", T "num"]))
@@ -54,6 +57,8 @@ get_types = M.map get_type base
 -- native functions
 do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
+
+do_less (CNum a:CNum b:[]) e = CBool (a < b)
 
 do_incr (CNum a:[]) e = CL (CVal "sum") (K [CNum a, CNum 1])
 do_incr o e = error ("do_incr"++show o)
