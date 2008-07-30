@@ -90,7 +90,7 @@ tests = [
 --	,("((debug (sum (f 2))*f) (sum 1)) 3", "CNum 6", "T \"num\"")
 --	,("(debug (11!l)) go", "CNum 11", "T \"num\"")
 	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "type error: check cannot find \"if\"", "")
-	,("(z 1*z) (iff (,join1,elist)!r)", "CNum 15", "")
+	,("(z 1*z) (iff (join1 (pair 1b (11!l)),elist) (0!l)!r)", "CNum 15", "")
 --	,("(fib 10*fib)", "", "")
 --	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
 	]
