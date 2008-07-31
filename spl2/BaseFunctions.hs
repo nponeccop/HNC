@@ -1,4 +1,4 @@
-module BaseFunctions where
+module Top where
 
 import Data.Map as M
 
@@ -6,6 +6,9 @@ import Types
 import Code
 
 data Fun = Fun C T
+
+eval0 c =
+	eval c get_codes
 
 base = M.fromList $
 	("sum", Fun

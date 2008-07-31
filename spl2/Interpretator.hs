@@ -4,7 +4,7 @@ module Interpretator (P (..), step) where
 import Parser
 import Compiler
 import Check
-import TopEval
+import Top
 
 import Data.Map as M hiding (map, filter)
 
@@ -15,7 +15,7 @@ step str =
 		Parser.P i p ->
 			case compile p of
 				Compiler.P c ->
-					case check_all c of
+					case check0 c of
 						Check.P (ur, a)|M.null ur -> Interpretator.P (show a, show $ eval0 c)
 						Check.P (u2, a) -> Interpretator.P (show a, show $ eval0 c)
 						Check.N e -> Interpretator.N $ ("type error: " ++ e, show c)

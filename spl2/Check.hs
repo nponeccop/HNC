@@ -1,11 +1,11 @@
 
-module Check (P (..), check_all, res) where
+module Check (P (..), check0, res) where
 
 import Data.Map as M hiding (filter)
 
 import Types
 import Code hiding (res)
-import BaseFunctions
+import Top
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show
@@ -113,8 +113,8 @@ setm (TU n) u =
 		Nothing -> TU n
 setm o u = o
 
-check_all o =
-	check o BaseFunctions.get_types
+check0 o =
+	check o Top.get_types
 
 res = Check.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
 
