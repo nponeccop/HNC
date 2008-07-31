@@ -22,6 +22,12 @@ base = M.fromList $
 	:("head", Fun
 		(CL (CInFun 1 (InFun "" do_head)) (K []))
 		(TT [TD "list" [TU "a"], TU "a"]))
+	:("tail", Fun
+		(CL (CInFun 1 (InFun "" do_tail)) (K []))
+		(TT [TD "list" [TU "a"], TD "list" [TU "a"]]))
+	:("filter", Fun
+		(CL (CInFun 2 (InFun "" do_filter)) (K []))
+		(TT [TT [TU "a", T "boolean"], TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("join1", Fun
 		(CL (CInFun 2 (InFun "" do_join1)) (K []))
 		(TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]))
@@ -67,6 +73,9 @@ do_join1 (a:CList b:[]) e = CList (a:b)
 do_join1 o e = error $ show o
 
 do_head (CList a:[]) e = head a
+do_tail (CList a:[]) e = CList (tail a)
+cbool_val (CBool b) = b
+do_filter (a:CList l:[]) e = CList []
 
 do_length (CList l:[]) e = CNum (length l)
 

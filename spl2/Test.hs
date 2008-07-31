@@ -4,6 +4,7 @@ import Interpretator
 
 
 data T = Ok [Char] | No [Char]
+	deriving Show
 
 get_str (Ok s) = s
 get_str (No s) = s
@@ -74,7 +75,6 @@ tests = [
 --	,("(l 1*l) (sum 1 2*_*z)", "CL (CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\",\"z\"])) (K [CNum 1])", "TT [TU \"z\",T \"num\"]")
 --	,("(l*l) (sum 1 2*z)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"z\"])", "TT [TU \"z\",T \"num\"]")
 --	,("(l 1*l) (sum 1 2*z)", "CNum 3", "T \"num\"")
---
 --	,("incr 3", "CNum 4", "T \"num\"")
 --	,("(sum 1 2!l)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
 --	,("(sum 1 2!l) go", "CNum 3", "T \"num\"")
@@ -87,9 +87,9 @@ tests = [
 --	,("((debug (sum (f 2))*f) (sum 1)) 3", "CNum 6", "T \"num\"")
 --	,("(debug (11!l)) go", "CNum 11", "T \"num\"")
 --	,("(z 1*z) (if (less _ 5) (sum _,_f,sum _ 1!l) (_!l)*_!r)", "type error: check cannot find \"if\"", "")
-	,("(iff (join1 (pair (less _ 5) (sum _,_f,sum _ 1!l)),elist) (_!l)*_!r) 1", "CNum 15", "")
---	,("(fib 10*fib)", "", "")
---	,("(_,list 8 9 4 4 5 3*_) (if (is_empty _) (_!l) ((join (_f,filter (not,less h _*_) t),join (list h),_f,filter (less h _*_) t*h*t) (head _) (tail _)!l)*_!r)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]")
+	,("(iff (join1 (pair (less _ 5) (sum _,_f,sum _ 1!l)),elist) (_!l)*_!r) 1", "CNum 15", "T \"num\"")
+	,("(iff (join1 (pair (less _ 2) (_!l)),elist) (sum (_f,sum _ -1),_f,sum _ -2!l)*_!r) 10", "CNum 55", "T \"num\"")
+	,("(_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist*_) (iff (join1 (pair (less (length _) 1) (_!l)),elist) ((filter (less _ h*_) t*h*t) (head _) (tail _)!l)*_)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	]
 
 {-

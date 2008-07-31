@@ -67,7 +67,9 @@ check (CL a L) et =
 		o -> error $ show o
 
 check (CL a R) et =
-	check a (putp ["_f"] [TU "_f"] et)
+	case check a (putp ["_f"] [TU "_f"] et) of
+		P (ur, r) -> check a (putp ["_f"] [r] et)
+		o -> error $ show o
 
 check a@(CL f (S p)) et =
 	check_s a tus et

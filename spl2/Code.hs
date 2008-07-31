@@ -34,7 +34,7 @@ eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
 eval a@(CL (CL c (S s)) (K p)) e|length s < length p =
 	eval (CL (eval c (putp s (evall (take (length s) p) e) e)) (K (drop (length s) p))) e
 eval (CL (CL c (S s)) (K p)) e|length s == length p = eval c (putp s (evall p e) e)
-eval (CL (CL a R) (K p)) e = eval (CL (CL a (K p)) R) e
+eval (CL (CL a R) (K p)) e = eval (CL a (K p)) (putp ["_f"] [a] e)
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
 eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
