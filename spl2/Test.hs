@@ -22,6 +22,7 @@ test (s, r, t) =
 	case step s of
 		Interpretator.P (t2, r2)| r == r2 && t == t2 ->
 			Ok $ "ok: "++s
+--			Ok $ "ok: "++s++"\n    "++r++"\n    "++t
 		Interpretator.P (t2, r2)| r == r2 ->
 			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 		Interpretator.P (t2, r2)| t == t2 ->
@@ -30,9 +31,10 @@ test (s, r, t) =
 			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 			++"\n res exp: "++r++"\n res act: "++r2
 		Interpretator.N (r3, c)| r3 == r ->
-			Ok $ ("ok: "++s++" |err")
+			Ok $ "ok: "++s++" |err"
+--			Ok $ ("ok: "++s++" |err\n    "++r)
 		Interpretator.N (r3, c) ->
-			No $ ("no: "++s++"\n err exp: "++r++"\n err act: "++r3++"")
+			No $ "no: "++s++"\n err exp: "++r++"\n err act: "++r3++""
 
 tests = [
 	("1" ,"CNum 1" ,"T \"num\"")
