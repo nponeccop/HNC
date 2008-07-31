@@ -134,26 +134,26 @@ call Texpr s i =
 		] s i
 call Tsave_args s i =
 	p_or [
-		([Tc '*',Tcs,Tsave_args], \(_:c:Sl l:[]) -> Sl (c:l))
+		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l:[]) -> Sl (c:l))
 		,([], \([]) -> Sl [])
 --		,([Tc '*',Tcs], \(_:c:[]) -> Sl [c])
 		] s i
 call Tmarks s i =
 	p_or [
-		([Tc '!',Tc 'r',Tmarks], \(_:c:Sl l:[]) -> Sl (Sc 'r':l))
-		,([Tc '!',Tc 'l',Tmarks], \(_:c:Sl l:[]) -> Sl (Sc 'l':l))
+		([Tc 'r',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'r':l))
+		,([Tc 'l',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'l':l))
 		,([], \([]) -> Sl [])
 		] s i
 call Tsave s i =
 	p_or [
-		([Texpr,Tsave_args], \(e:Sl w:[]) ->
+		([Tsave_args,Texpr], \(Sl w:e:[]) ->
 			case w of
 				[] -> e
 				x:xs -> Scall e (SynS (map (\(Ss s) -> s) w)))
 		] s i
 call Tmark s i =
 	p_or [
-		([Tsave,Tmarks], \(e:Sl m:[]) ->
+		([Tmarks,Tsave], \(Sl m:e:[]) ->
 			case m of
 				(Sc 'r':[]) -> Scall e (SynM [MarkR])
 				(Sc 'l':[]) -> Scall e SynL
