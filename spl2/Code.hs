@@ -1,8 +1,8 @@
-module Code (C (..), St (..), eval0, res) where
+--module Code (C (..), St (..), eval0, res) where
+module Code (C (..), St (..), eval, res) where
 
 import Data.Map as M hiding (map, filter)
 import Types
-import BaseFunctions
 
 -- eval
 
@@ -49,9 +49,6 @@ evall l e =
 
 putp (v:vs) (c:cs) e = putp vs cs (M.insert v c e)
 putp [] [] e = e
-
-eval0 c =
-	eval c BaseFunctions.get_codes
 
 res = "test"
 

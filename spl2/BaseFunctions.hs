@@ -3,6 +3,7 @@ module BaseFunctions where
 import Data.Map as M
 
 import Types
+import Code
 
 data Fun = Fun C T
 

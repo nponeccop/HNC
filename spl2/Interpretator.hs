@@ -4,7 +4,7 @@ module Interpretator (P (..), step) where
 import Parser
 import Compiler
 import Check
-import Code
+import TopEval
 
 import Data.Map as M hiding (map, filter)
 
