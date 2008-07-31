@@ -40,7 +40,8 @@ eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
-eval a@(CL c R) e = eval c (putp ["_f"] [c] e)
+eval a@(CL c R) e = a
+--eval a@(CL c R) e = eval c (putp ["_f"] [a] e)
 
 eval o e = error ("eval: "++show o)
 

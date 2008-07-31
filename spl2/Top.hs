@@ -17,6 +17,9 @@ base = M.fromList $
 	:("less", Fun
 		(CL (CInFun 2 (InFun "" do_less)) (K []))
 		(TT [T "num", T "num", T "boolean"]))
+	:("not", Fun
+		(CL (CInFun 1 (InFun "" do_not)) (K []))
+		(T "boolean"))
 	:("incr", Fun
 		(CL (CInFun 1 (InFun "" do_incr)) (K []))
 		(TT [T "num", T "num"]))
@@ -35,6 +38,9 @@ base = M.fromList $
 	:("join1", Fun
 		(CL (CInFun 2 (InFun "" do_join1)) (K []))
 		(TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]))
+	:("concat", Fun
+		(CL (CInFun 2 (InFun "" do_concat)) (K []))
+		(TT [TD "list" [TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("length", Fun
 		(CL (CInFun 1 (InFun "" do_length)) (K []))
 		(TT [TD "list" [TU "a"], T "num"]))
@@ -69,17 +75,19 @@ do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 
 do_less (CNum a:CNum b:[]) e = CBool (a < b)
+do_not (CBool b:[]) e = CBool (not b)
 
 do_incr (CNum a:[]) e = CL (CVal "sum") (K [CNum a, CNum 1])
 do_incr o e = error ("do_incr"++show o)
 
 do_join1 (a:CList b:[]) e = CList (a:b)
 do_join1 o e = error $ show o
+do_concat (CList a:CList b:[]) e = CList (a++b)
 
 do_head (CList a:[]) e = head a
 do_tail (CList a:[]) e = CList (tail a)
 cbool_val (CBool b) = b
-do_filter (a:CList l:[]) e = CList []
+do_filter (a:CList l:[]) e = CList $ Prelude.filter (\x -> cbool_val $ eval (CL a (K [x])) e) l
 
 do_length (CList l:[]) e = CNum (length l)
 

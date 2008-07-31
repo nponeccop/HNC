@@ -64,12 +64,12 @@ check (CL a L) et =
 	case check a et of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
-		o -> error $ show o
+		o -> o
 
 check (CL a R) et =
 	case check a (putp ["_f"] [TU "_f"] et) of
 		P (ur, r) -> check a (putp ["_f"] [r] et)
-		o -> error $ show o
+		o -> o
 
 check a@(CL f (S p)) et =
 	check_s a tus et
