@@ -49,7 +49,7 @@ base = M.fromList $
 		(TT [TU "a", T "string"]))
 	:("pair", Fun
 		(CL (CInFun 2 (InFun "" do_pair)) (K []))
-		(TT [TU "a", TU "b", TD "pair" [TU "a",TU "b"]]))
+		(TT [TU "a", TU "b", TD "pair" [TU "a",TU "w"]]))
 	:("debug", Fun
 		(CL (CInFun 1 (InFun "" do_debug)) (K []))
 		(TT [TU "a", TU "a"]))

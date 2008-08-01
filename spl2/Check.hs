@@ -27,12 +27,13 @@ check (CL a (K p)) et =
 			where
 				ch (p1:p1s) (p2:p2s) et ul ur =
 					case Check.compare (setm p1 ul) (setm p2 ul) of
---					case Check.compare p1 p2 of
 						(u2l, u2r, True) ->
 							ch p1s p2s et ull urr
 							where
 								ull = M.unions [ul, u2l]
-								urr = case M.null ur of True -> u2r; False -> M.map (\a -> setm a u2r) ur
+								urr = case M.null ur of
+									True -> u2r;
+									False -> M.map (\a -> setm a u2r) ur
 						(_, _, False) ->
 							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
 				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
