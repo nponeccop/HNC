@@ -30,9 +30,8 @@ check (CL a (K p)) et =
 						(u2l, u2r, True) ->
 							ch p1s p2s et ull urr
 							where
-								ull = merge ul u2l --M.union ul u2l
-								merge a b =
-									M.union ul u2l
+								ull = M.union (merge ul u2l) u2l --M.union ul u2l
+								merge a b = M.intersection a b
 								urr = case M.null ur of
 									True -> u2r;
 									False -> M.map (\a -> setm a u2r) ur
