@@ -30,7 +30,9 @@ check (CL a (K p)) et =
 						(u2l, u2r, True) ->
 							ch p1s p2s et ull urr
 							where
-								ull = M.unions [ul, u2l]
+								ull = merge ul u2l --M.union ul u2l
+								merge a b =
+									M.union ul u2l
 								urr = case M.null ur of
 									True -> u2r;
 									False -> M.map (\a -> setm a u2r) ur
@@ -81,11 +83,18 @@ check_s (CL a (S p)) pp et =
 	case check a et2 of
 		P (ur, ts) ->
 			P (M.empty , TT $ ( -- is it ok to use p as name of unknown type ?
-				Prelude.map (\n -> case M.lookup n ur of Just t -> t; Nothing -> TU n) p
+				Prelude.map (\n ->
+					case M.lookup n ur of
+						Just t -> t
+						Nothing -> TU n) p
 			)++[ts])
 		o -> o
 	where
-		et2 = putp p (take (length p) $ zipWith (\a b -> case b of TU _ -> TU a; o -> o) p pp) et
+		et2 = putp p (take (length p) $ zipWith (\a b ->
+			case b of
+				TU _ -> TU a
+				o -> o
+			) p pp) et
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
