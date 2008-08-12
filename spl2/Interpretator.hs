@@ -17,7 +17,8 @@ step str =
 				Compiler.P c ->
 					case check0 c of
 						Check.P (ur, a)|M.null ur -> Interpretator.P (show a, show $ eval0 c)
-						Check.P (ur, a) -> Interpretator.N $ ("get types error: " ++ show ur, show c)
+						Check.P (ur, a) -> Interpretator.P (show a, show $ eval0 c)
+--						Check.P (ur, a) -> Interpretator.N $ ("get types error: " ++ show ur, show c)
 						Check.N e -> Interpretator.N $ ("type error: " ++ e, show c)
 				Compiler.N ->
 					Interpretator.N ("compile error", "")

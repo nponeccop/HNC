@@ -11,43 +11,49 @@ data P = P (Map [Char] T, T) | N [Char]
 	deriving Show
 
 
-check::C -> Map [Char] T -> P
-check (CNum n) et = P (M.empty, T "num")
-check (CBool n) et = P (M.empty, T "boolean")
-check (CStr n) et = P (M.empty, T "string")
-check (CVal n) et =
-	case M.lookup n et of
-		Just a -> P (M.empty, a)
-		Nothing -> N $ (++) "check cannot find " $ show n
+merge a b =
+	M.union a b
 
-check (CL a (K p)) et =
+{-	M.union (M.fromList $
+		Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList a
+	) b
+	where
+		check_key a b =
+			case M.member a b of
+				True -> error ""
+				False -> a-}
+
+check2 (CL a (K p)) et ret =
 	case (f, ps_err) of
 		(P (rm, TT r), [])|M.null rm ->
-			ch r (setml ps_ok rm) et ps_rm ps_rm -- 2nd union ?
+			case ch r (setml ps_ok rm) et ps_rm ps_rm of -- 2nd union ?
+				P (rm, r)|ret -> P (rm, r)
+				P (rm, r)|not ret -> P (M.empty, r)
+				o -> o
 			where
 				ch (p1:p1s) (p2:p2s) et ul ur =
 					case Check.compare (setm p1 ul) (setm p2 ul) of
 						(u2l, u2r, True) ->
 							ch p1s p2s et ull urr
 							where
-								ull = M.union (merge ul u2l) u2l --M.union ul u2l
-								merge a b =
-									M.fromList $
-										Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList a
-								check_key a b =
-									case M.member a b of
-										True -> check_key (a++"_") b
-										False -> a
+								ull = merge ul u2l --M.union ul u2l
+--								ull = case M.null ul of
+--									True -> u2l;
+--									False -> M.map (\a -> setm a u2l) ul
+--								urr = merge ur u2r --M.union ul u2l
 								urr = case M.null ur of
 									True -> u2r;
 									False -> M.map (\a -> setm a u2r) ur
 						(_, _, False) ->
-							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
+							error $ "expected "++(show p1)++"\n\n"++show r++"\n\n"++show ps_rm
+--							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
 				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
 				ch ([]) [] et ul ur = N ("too many parameters for "++(show a))
 				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
 		(P (rm, TU n), [])|M.null rm ->
 			P (M.singleton n (TT (ps_ok++[TU ('_':n)])), TU ('_':n))
+		(P (rm, _), [])|not $ M.null rm ->
+			error "not null"
 		(P _, (o:os)) ->
 			o
 		(o, o2) -> o
@@ -60,8 +66,20 @@ check (CL a (K p)) et =
 		ps = Prelude.map (\a -> check a et) p
 		ps_err = filter (\a -> case a of N _ -> True; P _ -> False) ps
 		ps_ok2 = filter (\a -> case a of P _ -> True; N _ -> False) ps
-		ps_rm = M.unions $ Prelude.map (\a -> case a of P (a, b) -> a; N _ -> error "err100") ps_ok2
+		ps_rm = foldr merge M.empty $ Prelude.map (\a -> case a of P (a, b) -> a; N _ -> error "err100") ps_ok2
 		ps_ok = Prelude.map (\a -> case a of P (a, b) -> b; N _ -> error "err100") ps_ok2
+
+check::C -> Map [Char] T -> P
+check (CNum n) et = P (M.empty, T "num")
+check (CBool n) et = P (M.empty, T "boolean")
+check (CStr n) et = P (M.empty, T "string")
+check (CVal n) et =
+	case M.lookup n et of
+		Just a -> P (M.empty, a)
+		Nothing -> N $ (++) "check cannot find " $ show n
+
+check (CL a (K p)) et =
+	check2 (CL a (K p)) et True
 
 check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
 	case check p2 et of 
@@ -102,6 +120,7 @@ check_s (CL a (S p)) pp et =
 			) p pp) et
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
+putp (v:vs) [] et = putp vs [] (M.insert v (TU v) et)
 putp [] [] et = et
 putp o1 o2 et = error ("Check.putp: "++show o1++", "++show o2)
 
