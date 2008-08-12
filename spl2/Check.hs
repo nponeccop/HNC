@@ -33,7 +33,7 @@ check (CL a (K p)) et =
 								ull = M.union (merge ul u2l) u2l --M.union ul u2l
 								merge a b =
 									M.fromList $
-										Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList b
+										Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList a
 								check_key a b =
 									case M.member a b of
 										True -> check_key (a++"_") b
