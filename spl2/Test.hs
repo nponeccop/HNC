@@ -63,6 +63,7 @@ tests = [
 	,("(_*sum (length _) (head _))", "CL (CL (CVal \"sum\") (K [CL (CVal \"length\") (K [CVal \"_\"]),CL (CVal \"head\") (K [CVal \"_\"])])) (S [\"_\"])", "TT [TD \"list\" [T \"num\"],T \"num\"]")
 	,("(_*sum (head _) (length _))", "CL (CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"_\"]),CL (CVal \"length\") (K [CVal \"_\"])])) (S [\"_\"])", "TT [TD \"list\" [T \"num\"],T \"num\"]")
 	,("(_*sum (head _),sum ((z*sum 3,length z) _) 2)", "CL (CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"_\"]),CL (CVal \"sum\") (K [CL (CL (CL (CVal \"sum\") (K [CNum 3,CL (CVal \"length\") (K [CVal \"z\"])])) (S [\"z\"])) (K [CVal \"_\"]),CNum 2])])) (S [\"_\"])", "TT [TD \"list\" [T \"num\"],T \"num\"]")
+--
 	,("(join1 (a*sum a)) elist", "CList [CL (CL (CVal \"sum\") (K [CVal \"a\"])) (S [\"a\"])]", "TD \"list\" [TT [T \"num\",TT [T \"num\",T \"num\"]]]")
 	,("pair", "CL (CInFun 2 InFun \"pair\") (K [])", "TT [TU \"a\",TU \"b\",TD \"pair\" [TU \"a\",TU \"b\"]]")
 	,("pair 'abc'", "CL (CInFun 2 InFun \"pair\") (K [CStr \"abc\"])", "TT [TU \"a\",TD \"pair\" [T \"string\",TU \"a\"]]")
@@ -80,8 +81,8 @@ tests = [
 	,("incr 3", "CNum 4", "T \"num\"")
 	,("(l!sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
 	,("(l!sum 1 2) go", "CNum 3", "T \"num\"")
-	,("iff (elist) (l!2)", "CNum 2", "T \"num\"")
-	,("iff (join1 (pair 1b (l!11)),join1 (pair 0b (l!22)),elist) (l!33)", "CNum 11", "T \"num\"")
+--	,("iff (elist) (l!2)", "CNum 2", "T \"num\"")
+--	,("iff (join1 (pair 1b (l!11)),join1 (pair 0b (l!22)),elist) (l!33)", "CNum 11", "T \"num\"")
 	,("sum 1 2 3", "type error: too many parameters for CVal \"sum\"", "")
 	,("(debug (sum 1)) 2", "CNum 3", "T \"num\"")
 	,("(f*sum (f 2))", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],TT [T \"num\",T \"num\"]]") -- check return
@@ -96,7 +97,7 @@ tests = [
 	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (c*e*l*join1 (pair c e) l)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	]
 
-test_last = True
+test_last = False
 
 {-
  - problems:

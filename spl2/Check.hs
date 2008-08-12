@@ -31,7 +31,13 @@ check (CL a (K p)) et =
 							ch p1s p2s et ull urr
 							where
 								ull = M.union (merge ul u2l) u2l --M.union ul u2l
-								merge a b = M.intersection a b
+								merge a b =
+									M.fromList $
+										Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList b
+								check_key a b =
+									case M.member a b of
+										True -> check_key (a++"_") b
+										False -> a
 								urr = case M.null ur of
 									True -> u2r;
 									False -> M.map (\a -> setm a u2r) ur
