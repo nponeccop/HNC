@@ -6,68 +6,28 @@ import Data.Map as M hiding (filter)
 import Types
 import Code hiding (res)
 import Top
+import Debug.Trace
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show
 
 
-merge a b =
-	M.union a b
+get_r (P (ur, r)) = r
 
-{-	M.union (M.fromList $
-		Prelude.map (\(k,v) -> (check_key k b,v)) $ M.toList a
-	) b
-	where
-		check_key a b =
-			case M.member a b of
-				True -> error ""
-				False -> a-}
-
-check2 (CL a (K p)) et ret =
-	case (f, ps_err) of
-		(P (rm, TT r), [])|M.null rm ->
-			case ch r (setml ps_ok rm) et ps_rm ps_rm of -- 2nd union ?
-				P (rm, r)|ret -> P (rm, r)
-				P (rm, r)|not ret -> P (M.empty, r)
-				o -> o
-			where
-				ch (p1:p1s) (p2:p2s) et ul ur =
-					case Check.compare (setm p1 ul) (setm p2 ul) of
-						(u2l, u2r, True) ->
-							ch p1s p2s et ull urr
-							where
-								ull = merge ul u2l --M.union ul u2l
---								ull = case M.null ul of
---									True -> u2l;
---									False -> M.map (\a -> setm a u2l) ul
---								urr = merge ur u2r --M.union ul u2l
-								urr = case M.null ur of
-									True -> u2r;
-									False -> M.map (\a -> setm a u2r) ur
-						(_, _, False) ->
-							error $ "expected "++(show p1)++"\n\n"++show r++"\n\n"++show ps_rm
---							N $ "expected "++(show $ setm p1 ul)++", actual "++(show $ setm p2 ul)
-				ch (p1:[]) [] et ul ur = P (ur, setm p1 ul)
-				ch ([]) [] et ul ur = N ("too many parameters for "++(show a))
-				ch (p1) [] et ul ur = P (ur, setm (TT p1) ul)
-		(P (rm, TU n), [])|M.null rm ->
-			P (M.singleton n (TT (ps_ok++[TU ('_':n)])), TU ('_':n))
-		(P (rm, _), [])|not $ M.null rm ->
-			error "not null"
-		(P _, (o:os)) ->
-			o
-		(o, o2) -> o
-	where
-		f =
-			case (a, ps_err) of
-				(CL _ (S p), []) -> check_s a ps_ok et
-				(a, []) -> check a et
-				(_, (o:os)) -> o
-		ps = Prelude.map (\a -> check a et) p
-		ps_err = filter (\a -> case a of N _ -> True; P _ -> False) ps
-		ps_ok2 = filter (\a -> case a of P _ -> True; N _ -> False) ps
-		ps_rm = foldr merge M.empty $ Prelude.map (\a -> case a of P (a, b) -> a; N _ -> error "err100") ps_ok2
-		ps_ok = Prelude.map (\a -> case a of P (a, b) -> b; N _ -> error "err100") ps_ok2
+ch (r:[]) [] et ur =
+--	trace ("ch: ret "++show r++" |"++show ur) $
+	P (M.empty, r)
+ch r [] et ur =
+--	trace ("ch: rett "++show r++" |"++show ur) $
+	P (M.empty, setm (TT r) ur)
+ch (r:rs) (p1:ps) et ur =
+--	trace ("ch: cmp "++show r++","++(show $ get_r p1)++" |"++show ur) $
+	case p1 of
+		P (rm, r_p1) ->
+			case Check.compare r r_p1 of
+				(l2, r2, True) -> ch (setml rs l2) (setml2 ps l2) et l2
+				(l2, r2, False) -> N ("expected "++show r++", actual "++show r_p1)
+		N e -> N e
 
 check::C -> Map [Char] T -> P
 check (CNum n) et = P (M.empty, T "num")
@@ -79,48 +39,28 @@ check (CVal n) et =
 		Nothing -> N $ (++) "check cannot find " $ show n
 
 check (CL a (K p)) et =
-	check2 (CL a (K p)) et True
-
-check (CL a@(CL a2 (S (p1:p1s))) (K (p2:p2s))) et =
-	case check p2 et of 
-		P (_, b) -> check a (putp [p1] [b] et)
-		o -> o
-
-check (CL a L) et =
 	case check a et of
-		P (ur, r) ->
-			P (ur, TT [TL, r])
-		o -> o
-
-check (CL a R) et =
-	case check a (putp ["_f"] [TU "_f"] et) of
-		P (ur, r) -> check a (putp ["_f"] [r] et)
-		o -> o
-
-check a@(CL f (S p)) et =
-	check_s a tus et
+		P (rm, TT r) ->
+			ch r ps et M.empty
+		N e -> N e
 	where
-		tus = Prelude.map (TU) p
+		ps = Prelude.map (\x -> check x et) p
 
-check_s (CL a (S p)) pp et =
-	case check a et2 of
-		P (ur, ts) ->
-			P (M.empty , TT $ ( -- is it ok to use p as name of unknown type ?
-				Prelude.map (\n ->
-					case M.lookup n ur of
-						Just t -> t
-						Nothing -> TU n) p
-			)++[ts])
+check (CL a (S [])) et =
+	trace ("checkS: "++(show $ check a et)) $
+	check a et
+
+check (CL a (S (p:ps))) et =
+	trace ("checkS: "++show p) $
+	case check (CL a (S ps)) (putp [p] [TU p] et) of
+		P (ur, r) -> trace ("S: "++show ur) $
+			case M.lookup p ur of
+				Just v -> P (ur, TT [v, setm r ur]) -- rm ?
+				Nothing -> P (ur, TT [TU p, setm r ur]) -- rm ?
 		o -> o
-	where
-		et2 = putp p (take (length p) $ zipWith (\a b ->
-			case b of
-				TU _ -> TU a
-				o -> o
-			) p pp) et
+	
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
-putp (v:vs) [] et = putp vs [] (M.insert v (TU v) et)
 putp [] [] et = et
 putp o1 o2 et = error ("Check.putp: "++show o1++", "++show o2)
 
@@ -138,7 +78,8 @@ setu (TU n) (t2:t2s) = t2
 setu o (t2:t2s) = o
 setu o [] = o
 
-setml l u = Prelude.map (\a -> setm a u) l
+setml2 l u = Prelude.map (\(P (rm, r)) -> P (rm, setm r u)) l
+setml l u = Prelude.map (\x -> setm x u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
 setm (TU n) u =
@@ -148,6 +89,7 @@ setm (TU n) u =
 setm o u = o
 
 check0 o =
+	trace ("check0: "++show o) $
 	check o Top.get_types
 
 res = Check.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])

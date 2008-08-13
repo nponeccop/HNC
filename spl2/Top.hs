@@ -25,7 +25,7 @@ base = M.fromList $
 		(TT [T "num", T "num"]))
 	:("elist", Fun
 		(CList [])
-		(TD "list" [TU "e"]))
+		(TD "list" [TU "a"]))
 	:("head", Fun
 		(CL (CInFun 1 (InFun "" do_head)) (K []))
 		(TT [TD "list" [TU "a"], TU "a"]))
