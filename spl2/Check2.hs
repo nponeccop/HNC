@@ -23,14 +23,18 @@ union a b =
 	) a b
 
 ch (r:[]) [] et ur =
-	P (ur, r)
+--	trace ("cmp: "++show r++" |"++show ur) $
+	P (ur, setm r ur)
 ch r [] et ur =
 	P (ur, setm (TT r) ur)
 ch (r:rs) (p1:ps) et ur =
 	case p1 of
 		P (rm, r_p1) ->
 			case Check2.compare r r_p1 of
-				(l2, r2, True) -> ch (setml rs l2) (setml2 ps l2) et (Check2.union rm $ Check2.union l2 ur) -- Union ?
+				(l2, r2, True) ->
+					trace ("cmp: "++show rm++"|"++show l2++"|"++show ur) $
+					ch (setml rs l2) (setml2 ps l2) et
+						(Check2.union (M.map (\x -> setm x (Check2.union l2 ur)) rm) $ Check2.union l2 ur) -- Union ?
 				(l2, r2, False) -> N ("expected "++show r++", actual "++show r_p1)
 		N e -> N e
 
