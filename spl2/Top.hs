@@ -37,7 +37,7 @@ base = M.fromList $
 		(TT [TT [TU "a", T "boolean"], TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("join1", Fun
 		(CL (CInFun 2 (InFun "" do_join1)) (K []))
-		(TT [TU "d", TD "list" [TU "d"], TD "list" [TU "d"]]))
+		(TT [TU "a", TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("concat", Fun
 		(CL (CInFun 2 (InFun "" do_concat)) (K []))
 		(TT [TD "list" [TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))

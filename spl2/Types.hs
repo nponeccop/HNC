@@ -7,6 +7,7 @@ data T =
 	T [Char]
 	| TT [T]
 	| TU [Char]
+	| TV [Char]
 	| TD [Char] [T]
 	| TL
 	deriving (Eq, Show)

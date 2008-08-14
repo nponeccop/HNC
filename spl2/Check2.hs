@@ -22,20 +22,19 @@ union a b =
 			(_, _, False) -> error "union"
 	) a b
 
-ch (r:[]) [] et ur =
---	trace ("cmp: "++show r++" |"++show ur) $
+ch (r:[]) [] et ur uv =
+--	trace ("cmpRet: "++show r++" |"++show ur) $
 	P (ur, setm r ur)
-ch r [] et ur =
+ch r [] et ur uv =
 	P (ur, setm (TT r) ur)
-ch (r:rs) (p1:ps) et ur =
+ch (r:rs) (p1:ps) et ur uv =
 	case p1 of
 		P (rm, r_p1) ->
 			case Check2.compare r r_p1 of
 				(l2, r2, True) ->
-					trace ("cmp: "++show rm++"|"++show l2++"|"++show ur) $
-					ch (setml rs l2) (setml2 ps l2) et
-						(Check2.union (M.map (\x -> setm x (Check2.union l2 ur)) rm) $ Check2.union l2 ur) -- Union ?
-				(l2, r2, False) -> N ("expected "++show r++", actual "++show r_p1)
+--					trace ("cmp: "++show rm++"|"++show l2++"|"++show ur) $
+					ch rs ps et $ Check2.union ur l2
+				(l2, r2, False) -> N ("expected "++show (setm r ur)++", actual "++show r_p1)
 		N e -> N e
 
 check::C -> Map [Char] T -> P
@@ -64,11 +63,11 @@ check (CL a (S [])) et =
 	check a et
 
 check (CL a (S (p:ps))) et =
-	case check (CL a (S ps)) (putp [p] [TU p] et) of
+	case check (CL a (S ps)) (putp [p] [TV p] et) of
 		P (ur, r) ->
 			case M.lookup p ur of
 				Just v -> P (ur, TT [v, setm r ur]) -- rm ?
-				Nothing -> P (ur, TT [TU p, setm r ur]) -- rm ?
+				Nothing -> P (ur, TT [TV p, setm r ur]) -- rm ?
 		o -> o
 	
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
@@ -78,6 +77,8 @@ putp o1 o2 et = error ("Check2.putp: "++show o1++", "++show o2)
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
+compare (TV n) b = (M.empty, M.empty, True)
+compare a (TV n) = (M.empty, M.empty, True)
 compare (TU n) b = (M.singleton n b, M.singleton n b, True)
 compare a (TU n) = (M.singleton n a, M.singleton n a, True)
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
