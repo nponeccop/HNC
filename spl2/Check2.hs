@@ -22,19 +22,20 @@ union a b =
 			(_, _, False) -> error "union"
 	) a b
 
-ch (r:[]) [] et ur uv =
+ch (r:[]) [] et ul uv =
 --	trace ("cmpRet: "++show r++" |"++show ur) $
-	P (ur, setm r ur)
-ch r [] et ur uv =
-	P (ur, setm (TT r) ur)
-ch (r:rs) (p1:ps) et ur uv =
+	P (uv, setm r ul)
+ch r [] et ul uv =
+	P (uv, setm (TT r) ul)
+ch (r:rs) (p1:ps) et ul uv =
 	case p1 of
 		P (rm, r_p1) ->
-			case Check2.compare r r_p1 of
+			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
 --					trace ("cmp: "++show rm++"|"++show l2++"|"++show ur) $
-					ch rs ps et $ Check2.union ur l2
-				(l2, r2, False) -> N ("expected "++show (setm r ur)++", actual "++show r_p1)
+					ch rs ps et (Check2.union ul l2) (Check2.union r2 $ Check2.union rm uv) -- last unions is not correct
+				(l2, r2, False) ->
+					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 
 check::C -> Map [Char] T -> P
@@ -51,10 +52,12 @@ check (CL a (K [])) et =
 
 check (CL a (K p)) et =
 	case check a et of
-		P (rm, TT r) ->
-			ch r p_ok et M.empty
-		P (rm, TU n) ->
-			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
+		P (_, TT r) ->
+			ch r p_ok et M.empty M.empty
+--		P (rm, TU n) ->
+--			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
+		P (ur, TV n) ->
+			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
@@ -66,8 +69,8 @@ check (CL a (S (p:ps))) et =
 	case check (CL a (S ps)) (putp [p] [TV p] et) of
 		P (ur, r) ->
 			case M.lookup p ur of
-				Just v -> P (ur, TT [v, setm r ur]) -- rm ?
-				Nothing -> P (ur, TT [TV p, setm r ur]) -- rm ?
+				Just v -> P (ur, TT [v, r]) -- rm ?
+				Nothing -> error "zzz"
 		o -> o
 	
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
@@ -77,10 +80,10 @@ putp o1 o2 et = error ("Check2.putp: "++show o1++", "++show o2)
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
-compare (TV n) b = (M.empty, M.empty, True)
-compare a (TV n) = (M.empty, M.empty, True)
-compare (TU n) b = (M.singleton n b, M.singleton n b, True)
-compare a (TU n) = (M.singleton n a, M.singleton n a, True)
+compare a (TV n) = (M.empty, M.singleton n a, True)
+compare (TU n) b = (M.singleton n b, M.empty, True)
+compare a (TU n) = (M.empty, M.empty, True)
+compare a (TU n) = error "TU right"
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
