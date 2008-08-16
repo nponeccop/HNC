@@ -23,17 +23,19 @@ union a b =
 	) a b
 
 ch (r:[]) [] et ul uv =
---	trace ("cmpRet: "++show r++" |"++show ur) $
+--	trace ("cmpRet: "++show r++" |"++show ul++" |"++show uv) $
 	P (uv, setm r ul)
 ch r [] et ul uv =
+--	trace ("cmpERROR") $
 	P (uv, setm (TT r) ul)
 ch (r:rs) (p1:ps) et ul uv =
 	case p1 of
 		P (rm, r_p1) ->
 			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
---					trace ("cmp: "++show rm++"|"++show l2++"|"++show ur) $
-					ch rs ps et (Check2.union ul l2) (Check2.union r2 $ Check2.union rm uv) -- last unions is not correct
+--					trace ("cmp: "++show (setm r ul)++","++show r_p1++
+--					"\n"++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
+					ch rs ps et (Check2.union ul l2) $ M.map (\x -> setm x (Check2.union ul l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
@@ -52,6 +54,8 @@ check (CL a (K [])) et =
 
 check (CL a (K p)) et =
 	case check a et of
+--		P (_, TT r)|a == CVal "sum" ->
+--			error $ (show p++"\n\n"++show p_ok)
 		P (_, TT r) ->
 			ch r p_ok et M.empty M.empty
 --		P (rm, TU n) ->
@@ -70,7 +74,13 @@ check (CL a (S (p:ps))) et =
 		P (ur, r) ->
 			case M.lookup p ur of
 				Just v -> P (ur, TT [v, r]) -- rm ?
-				Nothing -> error "zzz"
+				Nothing -> P (ur, TT [TV p, r])
+		o -> o
+
+check (CL a L) et =
+	case check a et of
+		P (ur, r) ->
+			P (ur, TT [TL, r])
 		o -> o
 	
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
@@ -82,8 +92,7 @@ compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.uni
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
-compare a (TU n) = (M.empty, M.empty, True)
-compare a (TU n) = error "TU right"
+compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
