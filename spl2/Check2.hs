@@ -23,7 +23,7 @@ union a b =
 	) a b
 
 ch (r:[]) [] et ul uv =
-	trace ("cmpRet: "++show r++" |"++show ul++" |"++show uv) $
+--	trace ("cmpRet: "++show r++" |"++show ul++" |"++show uv) $
 	P (uv, setm r ul)
 ch r [] et ul uv =
 --	trace ("cmpERROR") $
@@ -33,8 +33,8 @@ ch (r:rs) (p1:ps) et ul uv =
 		P (rm, r_p1) ->
 			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
-					trace ("cmp: "++show (setm r ul)++","++show r_p1++
-					"\n"++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
+--					trace ("cmp: "++show (setm r ul)++","++show r_p1++
+--					"\n"++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
 					ch rs ps et (Check2.union ul l2) $ M.map (\x -> setm x (Check2.union ul l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
@@ -54,10 +54,11 @@ check (CL a (K [])) et =
 
 check (CL a (K p)) et =
 	case check a et of
---		P (_, TT r)|a == CVal "sum" ->
---			error $ (show p++"\n\n"++show p_ok)
-		P (_, TT r) ->
-			ch r p_ok et M.empty M.empty
+		P (rm0, TT r) ->
+			case ch r p_ok et M.empty M.empty of
+				P (rm, r) ->
+					P (Check2.union rm0 rm, r)
+				N e -> N e
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
 		P (ur, TV n) ->
@@ -74,7 +75,7 @@ check (CL a (S (p:ps))) et =
 		P (ur, r) ->
 			case M.lookup p ur of
 				Just v -> P (ur, TT [v, r]) -- rm ?
-				Nothing -> error ("cannot find "++show (TV p))
+				Nothing -> P (ur, TT [TU p, r])
 		o -> o
 
 check (CL a L) et =
