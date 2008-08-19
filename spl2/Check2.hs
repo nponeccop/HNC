@@ -75,7 +75,7 @@ check (CL a (S (p:ps))) et =
 		P (ur, r) ->
 			case M.lookup p ur of
 				Just v -> P (ur, TT [v, r]) -- rm ?
-				Nothing -> P (ur, TT [TU p, r])
+				Nothing -> error ("cannot find "++(show $ TV p))
 		o -> o
 
 check (CL a L) et =

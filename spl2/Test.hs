@@ -77,6 +77,7 @@ tests = [
 	,("(l*l 2) (sum 1)", "CNum 3", "T \"num\"")
 	,("(l*l 1) (_*z*sum 1 2)", "CL (CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\",\"z\"])) (K [CNum 1])", "TT [TU \"z\",T \"num\"]")
 	,("(l*l) (z*sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"z\"])", "TT [TU \"z\",T \"num\"]")
+	,("(l*l)", "CL (CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\",\"z\"])) (K [CNum 1])", "TT [TU \"z\",T \"num\"]")
 {-	,("(l*l 1) (z*sum 1 2)", "CNum 3", "T \"num\"")
 	,("incr 3", "CNum 4", "T \"num\"")
 	,("(l!sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
