@@ -61,7 +61,7 @@ check (CL a (K p)) et =
 				N e -> N e
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
-		P (ur, TV n) ->
+		P (ur, TU n) ->
 			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		N e -> N e
 	where
@@ -71,12 +71,13 @@ check (CL a (S [])) et =
 	check a et
 
 check (CL a (S (p:ps))) et =
-	case check (CL a (S ps)) (putp [p] [TV p] et) of
+	case check (CL a (S ps)) (putp [p] [TU p_n] et) of
 		P (ur, r) ->
-			case M.lookup p ur of
+			case M.lookup (p_n) ur of
 				Just v -> P (ur, TT [v, r]) -- rm ?
-				Nothing -> error ("cannot find "++(show $ TV p))
+				Nothing -> P (ur, TT [TU p_n, r]) -- rm ?
 		o -> o
+	where p_n = "v_"++p
 
 check (CL a L) et =
 	case check a et of
@@ -93,7 +94,7 @@ compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.uni
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
-compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
+compare a (TU n) = (M.singleton n a, M.singleton n a, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
