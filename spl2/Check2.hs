@@ -33,10 +33,13 @@ ch (r:rs) (p1:ps) et ul uv =
 		P (rm, r_p1) ->
 			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
---					trace ("cmp: "++show (setm r ul)++","++show r_p1++
---					"\n"++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
-					ch rs ps et (Check2.union ul l2) $ M.map (\x -> setm x (Check2.union ul l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
+					trace ("cmp: "++show (setm r ul)++","++show r_p1++
+					"\n  "++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
+					ch rs ps et
+						(Check2.union ul l2)
+						$ M.map (\x -> setm x (Check2.union ul l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
 				(l2, r2, False) ->
+					trace (show r++show (get_r p1)++"|"++show ul)$
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 

@@ -82,7 +82,7 @@ tests = [
 	,("incr 3", "CNum 4", "T \"num\"")
 	,("(l!sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
 	,("(l!sum 1 2) go", "CNum 3", "T \"num\"")
-	,("iff (elist) (l!2)", "CNum 2", "T \"num\"")
+	,("iff elist (l!2)", "CNum 2", "T \"num\"")
 {-	,("iff (join1 (pair 1b (l!11)),join1 (pair 0b (l!22)),elist) (l!33)", "CNum 11", "T \"num\"")
 	,("sum 1 2 3", "type error: too many parameters for CVal \"sum\"", "")
 	,("(debug (sum 1)) 2", "CNum 3", "T \"num\"")
