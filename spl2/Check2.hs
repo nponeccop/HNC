@@ -22,6 +22,8 @@ union a b =
 			(_, _, False) -> error "union"
 	) a b
 
+ch [] [] et ul uv =
+	N "too many parameters for"
 ch (r:[]) [] et ul uv =
 --	trace ("cmpRet: "++show r++" |"++show ul++" |"++show uv) $
 	P (uv, setm r ul)
@@ -33,13 +35,14 @@ ch (r:rs) (p1:ps) et ul uv =
 		P (rm, r_p1) ->
 			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
-					trace ("cmp: "++show (setm r ul)++","++show r_p1++
-					"\n  "++show l2++"|"++show (M.map (\x -> setm x l2) rm)) $
+--					trace ("cmp: "++show (setm r ul)++","++show r_p1++
+--					"\n  "++show l2++"|"++show r2) $
 					ch rs ps et
 						(Check2.union ul l2)
-						$ M.map (\x -> setm x (Check2.union ul l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
+--						$ M.map (\x -> setm x uv) $ (Check2.union r2 $ Check2.union rm uv)
+						$ M.map (\x -> setm x (Check2.union r2 $ Check2.union uv l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
 				(l2, r2, False) ->
-					trace (show r++show (get_r p1)++"|"++show ul)$
+--					trace (show r++show (get_r p1)++"|"++show ul)$
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 
@@ -64,6 +67,8 @@ check (CL a (K p)) et =
 				N e -> N e
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
+		P (_, TT []) ->
+			N ("too many parameters for "++show a)
 		P (ur, TU n) ->
 			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		N e -> N e
@@ -80,7 +85,7 @@ check (CL a (S (p:ps))) et =
 				Just v -> P (ur, TT [v, r]) -- rm ?
 				Nothing -> P (ur, TT [TU p_n, r]) -- rm ?
 		o -> o
-	where p_n = "v_"++p
+	where p_n = ""++p
 
 check (CL a L) et =
 	case check a et of
@@ -88,6 +93,11 @@ check (CL a L) et =
 			P (ur, TT [TL, r])
 		o -> o
 	
+check (CL a R) et =
+	case check a (putp ["_f"] [TU "_f"] et) of
+		P (ur, r) -> check a (putp ["_f"] [r] et)
+		o -> o
+
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
 putp o1 o2 et = error ("Check2.putp: "++show o1++", "++show o2)
@@ -97,7 +107,7 @@ compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.uni
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
-compare a (TU n) = (M.singleton n a, M.singleton n a, True) -- correct ?
+compare a (TU n) = (M.empty, M.singleton n a, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
