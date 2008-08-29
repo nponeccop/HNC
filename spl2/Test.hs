@@ -94,13 +94,13 @@ tests = [
 	,("(r!_*iff (join1 (pair (less _ 5) (l!sum _,_f,sum _ 1)),elist) (l!_)) 1", "CNum 15", "T \"num\"")
 	,("(r!_*iff (join1 (pair (less _ 2) (l!_)),elist) (l!sum (_f,sum _ -1),_f,sum _ -2)) 10", "CNum 55", "T \"num\"")
 	,("(_*_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist) (r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
-	,("(f*x*f x) (sum 1)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])) (K [CL (CVal \"sum\") (K [CNum 1])])", "TT [T \"num\",T \"num\"]")
-	,("(r!case*_*iff (case (less (length _) 1) (l!_),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _))) (c*e*l*join1 (pair c e) l),join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
-	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
+--	,("(f*x*f x) (sum 1)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])) (K [CL (CVal \"sum\") (K [CNum 1])])", "TT [T \"num\",T \"num\"]")
+--	,("(r!case*_*iff (case (less (length _) 1) (l!_),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _))) (c*e*l*join1 (pair c e) l),join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
+--	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 --	,("(x*(y*iff (join1 (pair (less x 5) (l!sum y y)),elist) (l!5)) ((x*sum 1,sum 2 x) 2))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"x\",CNum 5]),CL (CL (CVal \"sum\") (K [CVal \"y\",CVal \"y\"])) L]),CVal \"elist\"]),CL (CNum 5) L])) (S [\"y\"])) (K [CL (CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"sum\") (K [CNum 2,CVal \"x\"])])) (S [\"x\"])) (K [CNum 2])])) (S [\"x\"])", "TT [T \"num\",T \"num\"]")
 	]
 
-test_last = False
+test_last = True
 
 {-
  - problems:

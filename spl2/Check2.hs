@@ -26,6 +26,7 @@ ch [] [] et ul uv =
 	N "too many parameters for"
 ch (r:[]) [] et ul uv =
 --	trace ("cmpRet: "++show r++" |"++show ul++" |"++show uv) $
+--	P (uv, setm (setm r ul) uv)
 	P (uv, setm r ul)
 ch r [] et ul uv =
 --	trace ("cmpERROR") $
@@ -38,9 +39,8 @@ ch (r:rs) (p1:ps) et ul uv =
 --					trace ("cmp: "++show (setm r ul)++","++show r_p1++
 --					"\n  "++show l2++"|"++show r2) $
 					ch rs ps et
-						(Check2.union ul l2)
---						$ M.map (\x -> setm x uv) $ (Check2.union r2 $ Check2.union rm uv)
-						$ M.map (\x -> setm x (Check2.union r2 $ Check2.union uv l2)) (Check2.union r2 $ Check2.union (M.map (\x -> setm x l2) rm) uv) -- last unions is not correct
+						({-M.map (\x -> setm x $ Check2.union r2 uv) $-} Check2.union l2 ul)
+						(M.map (\x -> setm (setm x r2) uv) $ Check2.union rm $ Check2.union r2 uv)
 				(l2, r2, False) ->
 --					trace (show r++show (get_r p1)++"|"++show ul)$
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
