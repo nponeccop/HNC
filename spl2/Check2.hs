@@ -36,14 +36,15 @@ ch (r:rs) (p1:ps) et ul uv =
 		P (rm, r_p1) ->
 			case Check2.compare (setm r ul) r_p1 of
 				(l2, r2, True) ->
---					trace ("cmp: "++show (setm r ul)++","++show r_p1++
---					"\n  "++show l2++"|"++show r2) $
+					trace ("cmp: "++show (setm r ul)++","++show r_p1++
+					"\n  "++show l2++"|"++show r2) $
 					ch rs ps et
 						({-M.map (\x -> setm x $ Check2.union r2 uv) $-} Check2.union l2 ul)
 						(M.map (\x -> setm (setm x r2) uv) $ Check2.union rm $ Check2.union r2 uv)
 				(l2, r2, False) ->
 --					trace (show r++show (get_r p1)++"|"++show ul)$
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
+--					N ("expected "++show r++", actual "++show r_p1)
 		N e -> N e
 
 check::C -> Map [Char] T -> P
@@ -61,6 +62,7 @@ check (CL a (K [])) et =
 check (CL a (K p)) et =
 	case check a et of
 		P (rm0, TT r) ->
+			trace ("K: "++show a) $
 			case ch r p_ok et M.empty M.empty of
 				P (rm, r) ->
 					P (Check2.union rm0 rm, r)
@@ -106,6 +108,7 @@ compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
 compare a (TV n) = (M.empty, M.singleton n a, True)
+compare (TU a) (TU b) = (M.singleton a (TU b), M.singleton b (TU a), True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.empty, M.singleton n a, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
