@@ -5,6 +5,7 @@ import Parser
 import Compiler
 import Check2
 import Top
+import Debug.Trace
 
 import Data.Map as M hiding (map, filter)
 
