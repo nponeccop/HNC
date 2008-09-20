@@ -19,7 +19,7 @@ base = M.fromList $
 		(TT [T "num", T "num", T "boolean"]))
 	:("not", Fun
 		(CL (CInFun 1 (InFun "" do_not)) (K []))
-		(T "boolean"))
+		(TT [T "boolean", T "boolean"]))
 	:("incr", Fun
 		(CL (CInFun 1 (InFun "" do_incr)) (K []))
 		(TT [T "num", T "num"]))

@@ -84,8 +84,18 @@ check (CL a (S (p:ps))) et =
 	case check (CL a (S ps)) (putp [p] [TU p_n] et) of
 		P (ur, r) ->
 			case M.lookup (p_n) ur of
-				Just v -> P (ur, TT [v, r]) -- rm ?
-				Nothing -> P (ur, TT [TU p_n, r]) -- rm ?
+				Just v ->
+					let w = case (v, r) of
+						(a, TT b) -> TT (a:b)
+						(a, b) -> TT [a, b]
+					in
+					P (ur, w)
+				Nothing ->
+					let w = case r of
+						TT b -> TT ((TU p_n):b)
+						b -> TT [TU p_n, b]
+					in
+					P (ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -99,6 +109,9 @@ check (CL a R) et =
 	case check a (putp ["_f"] [TU "_f"] et) of
 		P (ur, r) -> check a (putp ["_f"] [r] et)
 		o -> o
+
+check o et =
+	error ("check o: "++show o)
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et
