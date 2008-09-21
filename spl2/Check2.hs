@@ -119,12 +119,23 @@ putp o1 o2 et = error ("Check2.putp: "++show o1++", "++show o2)
 
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
 compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
-compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
+--compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check2.compare l1 l2
+-- error: TT [T "num",TU "_l"]/TT [TU "_",TU "z",T "num"]
+compare (TT []) (TT []) =
+	(M.empty, M.empty, True)
+compare (TT [TU a]) b@(TT l)|1 < length l =
+	(M.singleton a b, M.empty, True)
+compare (TT (l1:l1s)) (TT (l2:l2s)) =
+	(M.union l ll, M.union r rr, b && bb)
+	where
+		(l, r, b) = Check2.compare l1 l2
+		(ll, rr, bb) = Check2.compare (TT l1s) (TT l2s)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TU a) (TU b) = (M.empty, M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.empty, M.singleton n a, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
+--compare t1 t2 = error $ (show t1)++"/"++(show t2)
 compare t1 t2 = (M.empty, M.empty, False)
 
 setu (TD n tt) u = TD n (Prelude.map (\t -> setu t u) tt)
