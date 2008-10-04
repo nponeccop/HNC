@@ -11,7 +11,12 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_res = map test $ case test_last of True -> [last tests]; False -> tests
+test_res = map test $
+	case test_last of
+		True -> [last tests]
+		False -> [tests!!23]
+--		False -> take 25 tests
+
 res1 = foldr1 (++) $ map (\r -> (get_str r)++"\n") test_res
 
 res = res1 ++ ("failed: " ++ show (length $ filter (not . is_passed) test_res))
@@ -46,11 +51,11 @@ tests = [
 	,("(sum 1)", "CL (CInFun 2 InFun \"sum\") (K [CNum 1])", "TT [T \"num\",T \"num\"]")
 	,("sum 2", "CL (CInFun 2 InFun \"sum\") (K [CNum 2])", "TT [T \"num\",T \"num\"]")
 	,("sum 1 2", "CNum 3", "T \"num\"")
-	,("sum 'abc' 2", "type error: expected T \"num\", actual T \"string\"" ,"")
+	,("sum 'abc' 2", "type error: expected T \"num\", actual T \"string\" for CVal \"sum\"" ,"")
 	,("elist", "CList []", "TD \"list\" [TU \"a\"]")
 	,("join1 1", "CL (CInFun 2 InFun \"join1\") (K [CNum 1])", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
 	,("join1 1,elist", "CList [CNum 1]", "TD \"list\" [T \"num\"]")
-	,("join1 1,2", "type error: expected TD \"list\" [T \"num\"], actual T \"num\"", "")
+	,("join1 1,2", "type error: expected TD \"list\" [T \"num\"], actual T \"num\" for CVal \"join1\"", "")
 	,("to_string,sum 2,length,join1 9,join1 8,elist", "CStr \"CNum 4\"", "T \"string\"")
 	,("(_*sum _ 2)", "CL (CL (CVal \"sum\") (K [CVal \"_\",CNum 2])) (S [\"_\"])", "TT [T \"num\",T \"num\"]")
 	,("(_*sum _,sum 1 2)", "CL (CL (CVal \"sum\") (K [CVal \"_\",CL (CVal \"sum\") (K [CNum 1,CNum 2])])) (S [\"_\"])", "TT [T \"num\",T \"num\"]")
@@ -94,7 +99,7 @@ tests = [
 	,("(r!_*iff (join1 (pair (less _ 5) (l!sum _,_f,sum _ 1)),elist) (l!_)) 1", "CNum 15", "T \"num\"")
 	,("(r!_*iff (join1 (pair (less _ 2) (l!_)),elist) (l!sum (_f,sum _ -1),_f,sum _ -2)) 10", "CNum 55", "T \"num\"")
 	,("(h*t*t)", "CL (CVal \"t\") (S [\"h\",\"t\"])", "TT [TU \"h\",TU \"t\",TU \"t\"]")
---	,("(_*_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist) (r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
+	,("(_*_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist) (r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 --	,("(f*x*f x) (sum 1)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])) (K [CL (CVal \"sum\") (K [CNum 1])])", "TT [T \"num\",T \"num\"]")
 --	,("(r!case*_*iff (case (less (length _) 1) (l!_),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _))) (c*e*l*join1 (pair c e) l),join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 --	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
