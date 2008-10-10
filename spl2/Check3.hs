@@ -32,13 +32,20 @@ ch r [] et ul uv i =
 ch (r:rs) (p1:ps) et ul uv i =
 	case check p1 et of
 		P (rm, r_p1) ->
-			let r_p2 = change_tu r_p1 i in
-			let rm2 = M.map (\x -> change_tu x i) rm in
+			let r_p2 = observe "r_p2" $ change_tu (observe "r_p1" r_p1) i in
+			let rm2 = observe "rm2" $ M.map (\x -> change_tu x i) (observe ("ru_"++show i) rm) in
 			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p2) of
 				(l2, r2, True) ->
-					let lu = M.union l2 ul
-					in let ru_ = M.union (M.union (observe "uv" r2) uv) rm2
-					in let ru = M.map (\x -> setm x ru_) ru_
+					let ru1u = M.union uv rm2;
+							ru2u = M.union r2 rm2;
+							ru3u = M.union r2 uv;
+							ru1 = M.map (\x -> setm x ru1u) r2;
+							ru2 = M.map (\x -> setm x ru2u) uv;
+							ru3 = M.map (\x -> setm x ru3u) rm2;
+							ru4 = M.union (M.union (observe "uv" ru1) ru2) ru3;
+							lu1 = M.union l2 ul;
+							lu = M.map (\x -> setm x ru) lu1;
+							ru = M.map (\x -> setm x lu) ru4
 					in ch rs ps et lu ru (i+1)
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
@@ -157,6 +164,12 @@ change_tu (TT tt) i = TT $ change_tul tt i
 change_tu (TD n tt) i = TD n $ change_tul tt i
 change_tu (TU n) i = TU (n++show i)
 change_tu o i = o
+
+change_tvl tt i = Prelude.map (\t -> change_tv t i) tt
+change_tv (TT tt) i = TT $ change_tvl tt i
+change_tv (TD n tt) i = TD n $ change_tvl tt i
+change_tv (TV n) i = TV (n++show i)
+change_tv o i = o
 
 check0 o =
 	observe "ret" $ check o Top.get_types
