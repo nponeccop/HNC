@@ -12,8 +12,8 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 1
-(from_i::Int) = 55
-(to_i::Int) = 58
+(from_i::Int) =0
+(to_i::Int) = 24
 
 test_res = map test $
 	case test_last of
@@ -112,6 +112,10 @@ tests = [
 	]
 
 {-
+ -
+ -
+ - let id x = x in  (id 'b', id 1)
+ -
  - problems:
  -   multiple if
  -   parameter to the f3 of (,f1,f2,f3)

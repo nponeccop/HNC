@@ -6,8 +6,8 @@ import Data.Map as M hiding (filter)
 import Types
 import Code hiding (res)
 import Top
---import Hugs.Observe
-observe a b = b
+import Hugs.Observe
+--observe a b = b
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show
@@ -23,21 +23,23 @@ union a b =
 			(_, _, False) -> error "union"
 	) a b
 
-ch [] [] et ul uv =
+ch [] [] et ul uv i =
 	N "too many parameters"
-ch (r:[]) [] et ul uv =
+ch (r:[]) [] et ul uv i =
 	P (uv, setm r ul)
-ch r [] et ul uv =
+ch r [] et ul uv i =
 	P (uv, setm (TT r) ul)
-ch (r:rs) (p1:ps) et ul uv =
+ch (r:rs) (p1:ps) et ul uv i =
 	case check p1 et of
 		P (rm, r_p1) ->
-			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p1) of
+			let r_p2 = change_tu r_p1 i in
+			let rm2 = M.map (\x -> change_tu x i) rm in
+			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p2) of
 				(l2, r2, True) ->
 					let lu = M.union l2 ul
-					in let ru_ = M.union (M.union r2 uv) rm
+					in let ru_ = M.union (M.union (observe "uv" r2) uv) rm2
 					in let ru = M.map (\x -> setm x ru_) ru_
-					in ch rs ps et lu ru
+					in ch rs ps et lu ru (i+1)
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
@@ -57,7 +59,7 @@ check (CL a (K [])) et =
 check (CL a (K p)) et =
 	case check a et of
 		P (rm0, TT r) ->
-			case ch r p et M.empty M.empty of
+			case ch r p et M.empty M.empty 0 of
 				P (rm, r) ->
 					P (Check3.union rm0 rm, r)
 				N e -> N (e++" for "++show a)
@@ -67,6 +69,8 @@ check (CL a (K p)) et =
 			N ("too many parameters for "++show a)
 		P (ur, TU n) ->
 			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
+		P (ur, TV n) ->
+			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
@@ -75,7 +79,7 @@ check (CL a (S [])) et =
 	check a et
 
 check (CL a (S (p:ps))) et =
-	case check (CL a (S ps)) (putp [p] [TU p_n] et) of
+	case check (CL a (S ps)) (putp [p] [TV p_n] et) of
 		P (ur, r) ->
 			case M.lookup (p_n) (observe "a" ur) of
 				Just v ->
@@ -147,6 +151,12 @@ setm (TU n) u =
 		Just a -> a
 		Nothing -> TU n
 setm o u = o
+
+change_tul tt i = Prelude.map (\t -> change_tu t i) tt
+change_tu (TT tt) i = TT $ change_tul tt i
+change_tu (TD n tt) i = TD n $ change_tul tt i
+change_tu (TU n) i = TU (n++show i)
+change_tu o i = o
 
 check0 o =
 	observe "ret" $ check o Top.get_types
