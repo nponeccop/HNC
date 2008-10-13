@@ -1,13 +1,14 @@
 
 module Check3 (P (..), check0, res) where
 
-import Data.Map as M hiding (filter)
+import Data.Map as M hiding (filter, union)
 
 import Types
 import Code hiding (res)
 import Top
-import Hugs.Observe
---observe a b = b
+--import Hugs.Observe
+observe a b = b
+observeN a b = b
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show
@@ -16,12 +17,15 @@ data P = P (Map [Char] T, T) | N [Char]
 get_r (P (ur, r)) = r
 get_rl l = Prelude.map get_r l
 
-union a b =
-	M.unionWith (\a b ->
-		case Check3.compare a b of
-			(_, _, True) -> a -- b ?
-			(_, _, False) -> error "union"
-	) a b
+union a b =	M.unionWith merge a b
+merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
+merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
+merge (TU a) (TU b) = TU a
+merge (TU a) b = b
+merge a (TU b) = a
+merge TL TL = TL
+merge (T n) (T n2)|n==n2 = T n
+merge a b = error ("merge: "++show a++", "++show b)
 
 ch [] [] et ul uv i =
 	N "too many parameters"
@@ -32,20 +36,19 @@ ch r [] et ul uv i =
 ch (r:rs) (p1:ps) et ul uv i =
 	case check p1 et of
 		P (rm, r_p1) ->
-			let r_p2 = observe "r_p2" $ change_tu (observe "r_p1" r_p1) i in
-			let rm2 = observe "rm2" $ M.map (\x -> change_tu x i) (observe ("ru_"++show i) rm) in
-			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p2) of
+			let r_p2 = change_tu r_p1 i in
+			let rm2 = M.map (\x -> change_tu x i) rm in
+			case Check3.compare (observeN "cmp1" (setm r ul)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
-					let ru1u = M.union uv rm2;
-							ru2u = M.union r2 rm2;
-							ru3u = M.union r2 uv;
-							ru1 = M.map (\x -> setm x ru1u) r2;
-							ru2 = M.map (\x -> setm x ru2u) uv;
-							ru3 = M.map (\x -> setm x ru3u) rm2;
-							ru4 = M.union (M.union (observe "uv" ru1) ru2) ru3;
-							lu1 = M.union l2 ul;
+					let ru1u = union uv rm2;
+							ru2u = union r2 rm2;
+							ru3u = union r2 uv;
+							ru1 = observe "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
+							ru2 = observe "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
+							ru3 = observe "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
+							ru = observe "ru" $ union (union ru1 ru2) ru3;
+							lu1 = union l2 ul;
 							lu = M.map (\x -> setm x ru) lu1;
-							ru = M.map (\x -> setm x lu) ru4
 					in ch rs ps et lu ru (i+1)
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
@@ -88,7 +91,7 @@ check (CL a (S [])) et =
 check (CL a (S (p:ps))) et =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) of
 		P (ur, r) ->
-			case M.lookup (p_n) (observe "a" ur) of
+			case M.lookup (p_n) ur of
 				Just v ->
 					let w = case (v, r) of
 						(a, TT b) -> TT (a:b)
@@ -123,7 +126,7 @@ putp [] [] et = et
 putp o1 o2 et = error ("Check3.putp: "++show o1++", "++show o2)
 
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
-compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
+compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
 --compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
 -- error: TT [T "num",TU "_l"]/TT [TU "_",TU "z",T "num"]
 compare (TT []) (TT []) =
@@ -131,7 +134,7 @@ compare (TT []) (TT []) =
 compare (TT [TU a]) b@(TT l)|1 < length l =
 	(M.singleton a b, M.empty, True)
 compare (TT (l1:l1s)) (TT (l2:l2s)) =
-	(M.union l ll, M.union r rr, b && bb)
+	(union l ll, union r rr, b && bb)
 	where
 		(l, r, b) = Check3.compare l1 l2
 		(ll, rr, bb) = Check3.compare (TT l1s) (TT l2s)

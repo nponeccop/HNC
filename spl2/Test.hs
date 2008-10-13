@@ -12,8 +12,8 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 1
-(from_i::Int) = 20
-(to_i::Int) = 24
+(from_i::Int) = 35
+(to_i::Int) = 41
 
 test_res = map test $
 	case test_last of
