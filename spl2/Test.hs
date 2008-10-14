@@ -12,8 +12,8 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 1
-(from_i::Int) = 35
-(to_i::Int) = 41
+(from_i::Int) = 31
+(to_i::Int) = 40
 
 test_res = map test $
 	case test_last of
@@ -85,8 +85,8 @@ tests = [
 	,("(_*sum 1 2) 1", "CNum 3", "T \"num\"")
 	,("(l*l 2) (sum 1)", "CNum 3", "T \"num\"")
 	,("(l*l 1) (_*z*sum 1 2)", "CL (CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\",\"z\"])) (K [CNum 1])", "TT [TU \"z\",T \"num\"]")
-	,("(l*l) (z*sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"z\"])", "TT [TU \"z\",T \"num\"]")
 	,("(l*l)", "CL (CVal \"l\") (S [\"l\"])", "TT [TU \"l\",TU \"l\"]")
+	,("(l*l) (z*sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"z\"])", "TT [TU \"z\",T \"num\"]")
 	,("(l*l 1) (z*sum 1 2)", "CNum 3", "T \"num\"")
 	,("incr 3", "CNum 4", "T \"num\"")
 	,("(l!sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L", "TT [TL,T \"num\"]")
