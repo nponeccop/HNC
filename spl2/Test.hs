@@ -11,9 +11,9 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 1
-(from_i::Int) = 31
-(to_i::Int) = 40
+test_last = 0
+(from_i::Int) = 58
+(to_i::Int) = 58
 
 test_res = map test $
 	case test_last of

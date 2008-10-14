@@ -6,8 +6,8 @@ import Data.Map as M hiding (filter, union)
 import Types
 import Code hiding (res)
 import Top
---import Hugs.Observe
-observe a b = b
+import Hugs.Observe
+--observe a b = b
 observeN a b = b
 
 data P = P (Map [Char] T, T) | N [Char]
@@ -95,15 +95,17 @@ check (CL a (S (p:ps))) et =
 				Just v ->
 					let w = case (v, r) of
 						(a, TT b) -> TT (a:b)
+						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					P (ur, w)
+					observe "ok" $ P (ur, w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
+						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					P (ur, w) -- rm ?
+					observe "no" $ P (ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -114,7 +116,7 @@ check (CL a L) et =
 		o -> o
 	
 check (CL a R) et =
-	case check a (putp ["_f"] [TU "_f"] et) of
+	case check a (putp ["_f"] [TV "_f"] et) of
 		P (ur, r) -> check a (putp ["_f"] [r] et)
 		o -> o
 
