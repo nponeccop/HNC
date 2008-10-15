@@ -43,10 +43,10 @@ ch (r:rs) (p1:ps) et ul uv i =
 					let ru1u = union uv rm2;
 							ru2u = union r2 rm2;
 							ru3u = union r2 uv;
-							ru1 = observe "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
-							ru2 = observe "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
-							ru3 = observe "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
-							ru = observe "ru" $ union (union ru1 ru2) ru3;
+							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
+							ru2 = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
+							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
+							ru = observeN "ru" $ union (union ru1 ru2) ru3;
 							lu1 = union l2 ul;
 							lu = M.map (\x -> setm x ru) lu1;
 					in ch rs ps et lu ru (i+1)
@@ -98,14 +98,14 @@ check (CL a (S (p:ps))) et =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observe "ok" $ P (ur, w)
+					observeN "ok" $ P (M.empty, w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observe "no" $ P (ur, w) -- rm ?
+					observeN "no" $ P (M.empty, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -177,7 +177,7 @@ change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
 
 check0 o =
-	observe "ret" $ check o Top.get_types
+	observeN "ret" $ check o Top.get_types
 
 res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
 

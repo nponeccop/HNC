@@ -14,6 +14,9 @@ base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
 		(TT [T "num", T "num", T "num"]))
+	:("eq", Fun
+		(CL (CInFun 2 (InFun "" do_eq)) (K []))
+		(TT [T "num", T "num", T "boolean"]))
 	:("less", Fun
 		(CL (CInFun 2 (InFun "" do_less)) (K []))
 		(TT [T "num", T "num", T "boolean"]))
@@ -75,6 +78,7 @@ do_sum (CNum a:CNum b:[]) e = CNum (a+b)
 do_sum o e = error ("do_sum"++show o)
 
 do_less (CNum a:CNum b:[]) e = CBool (a < b)
+do_eq (CNum a:CNum b:[]) e = CBool (a == b)
 do_not (CBool b:[]) e = CBool (not b)
 
 do_incr (CNum a:[]) e = CL (CVal "sum") (K [CNum a, CNum 1])
