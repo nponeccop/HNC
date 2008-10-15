@@ -71,7 +71,7 @@ check (CL a (K p)) et =
 		P (rm0, TT r) ->
 			case ch r p et M.empty M.empty 0 of
 				P (rm, r) ->
-					P (Check3.union rm0 rm, r)
+					P (union rm rm0, r)
 				N e -> N (e++" for "++show a)
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
@@ -86,7 +86,7 @@ check (CL a (K p)) et =
 		p_ok = Prelude.map (\x -> check x et) p
 
 check (CL a (S [])) et =
-	check a et
+	observe "S" $ check a et
 
 check (CL a (S (p:ps))) et =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) of
