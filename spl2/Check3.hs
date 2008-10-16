@@ -34,7 +34,7 @@ ch (r:[]) [] et ul uv i =
 ch r [] et ul uv i =
 	P (uv, setm (TT r) ul)
 ch (r:rs) (p1:ps) et ul uv i =
-	case check p1 et of
+	case observe ("ch_p "++show p1) $ check p1 et of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu r_p1 i in
 			let rm2 = M.map (\x -> change_tu x i) rm in
@@ -47,8 +47,9 @@ ch (r:rs) (p1:ps) et ul uv i =
 							ru2 = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
 							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
 							ru = observeN "ru" $ union (union ru1 ru2) ru3;
-							lu1 = union l2 ul;
-							lu = M.map (\x -> setm x ru) lu1;
+							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
+							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
+							lu = union l2 ul
 					in ch rs ps et lu ru (i+1)
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
@@ -67,6 +68,7 @@ check (CL a (K [])) et =
 	check a et
 
 check (CL a (K p)) et =
+	observeN ("K:"++show a++" |"++show p) $
 	case check a et of
 		P (rm0, TT r) ->
 			case ch r p et M.empty M.empty 0 of
@@ -86,7 +88,7 @@ check (CL a (K p)) et =
 		p_ok = Prelude.map (\x -> check x et) p
 
 check (CL a (S [])) et =
-	observe "S" $ check a et
+	observeN "S" $ check a et
 
 check (CL a (S (p:ps))) et =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) of
@@ -110,6 +112,7 @@ check (CL a (S (p:ps))) et =
 	where p_n = ""++p
 
 check (CL a L) et =
+	observeN ("L:"++show a) $
 	case check a et of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
