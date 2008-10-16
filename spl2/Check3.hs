@@ -27,14 +27,19 @@ merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
 merge a b = error ("merge: "++show a++", "++show b)
 
+get_ul n u =
+	case M.lookup n u of
+		Just n -> show n
+		Nothing -> "<nil>"
+
 ch [] [] et ul uv i =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i =
-	P (uv, setm r ul)
+	P (uv, setm (observeN "r" r) (observeN ("ul"++get_ul "a100" ul) ul))
 ch r [] et ul uv i =
 	P (uv, setm (TT r) ul)
 ch (r:rs) (p1:ps) et ul uv i =
-	case observe ("ch_p "++show p1) $ check p1 et of
+	case observeN ("ch_p "++show p1) $ check p1 et of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu r_p1 i in
 			let rm2 = M.map (\x -> change_tu x i) rm in
@@ -49,7 +54,7 @@ ch (r:rs) (p1:ps) et ul uv i =
 							ru = observeN "ru" $ union (union ru1 ru2) ru3;
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
-							lu = union l2 ul
+							lu = union lu1 lu2
 					in ch rs ps et lu ru (i+1)
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
