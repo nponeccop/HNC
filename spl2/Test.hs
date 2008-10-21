@@ -12,8 +12,8 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
-(from_i::Int) = 60
-(to_i::Int) = 60
+(from_i::Int) = 56
+(to_i::Int) = 56
 
 test_res = map test $
 	case test_last of
@@ -107,7 +107,7 @@ tests = [
 	,("(h*t*t)", "CL (CVal \"t\") (S [\"h\",\"t\"])", "TT [TU \"h\",TU \"t\",TU \"t\"]")
 	,("iff (join1 (pair 0b (l!elist)),elist) (l!join1 1,elist)", "CList [CNum 1]", "TD \"list\" [T \"num\"]")
 	,("iff (join1 (pair 0b (l!join1 1,elist)),elist) (l!elist)", "CList []", "TD \"list\" [T \"num\"]")
-	,("(_*join1 (head _))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
+	,("(_*join1 (head _))", "CL (CL (CVal \"join1\") (K [CL (CVal \"head\") (K [CVal \"_\"])])) (S [\"_\"])", "TT [TD \"list\" [TU \"a0\"],TD \"list\" [TU \"a\"],TD \"list\" [TU \"a\"]]")
 	,("(_*join1 (head _),elist)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(r!_*iff (join1 (pair 0b (l!_)),elist) (l!join1 (head _),elist))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(r!_*iff (join1 (pair 0b (l!_)),elist) (l!(h*t*join1 h,_f,filter (z*less z h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
