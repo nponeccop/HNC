@@ -21,8 +21,8 @@ union a b =	M.unionWith merge a b
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
 merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
 merge (TU a) (TU b) = TU a
-merge (TU a) b = observe ("merge1"++show a) b
-merge a (TU b) = observe ("merge2"++show b) a
+merge (TU a) b = observeN ("merge1"++show a) b
+merge a (TU b) = observeN ("merge2"++show b) a
 merge (TV a) b = b
 merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
@@ -36,14 +36,14 @@ get_ul n u =
 ch [] [] et ul uv i =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i =
-	P (uv, setm (observe "r" r) (observe ("ul"++get_ul "a11111" ul) ul))
+	P (uv, setm (observeN "r" r) (observeN "ul" ul))
 ch r [] et ul uv i =
 	P (uv, setm (TT r) ul)
 ch (r:rs) (p1:ps) et ul uv i =
 	case observeN ("ch_p "++show p1) $ check p1 et of
 		P (rm, r_p1) ->
-			let r_p2 = change_tu r_p1 i in
-			let rm2 = M.map (\x -> change_tu x i) rm in
+			let r_p2 = change_tu (observe "r_p1" r_p1) i in
+			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
 			case Check3.compare (observeN "cmp1" (setm r ul)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
 					let ru1u = union uv rm2;
@@ -152,7 +152,8 @@ compare (TT (l1:l1s)) (TT (l2:l2s)) =
 --compare (TU a) (TV n) = (M.singleton a (TV n), M.singleton n (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
-compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
+--compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
+compare (TU a) (TU b) = (union (M.singleton b (TU a)) (M.singleton a (TU b)), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
