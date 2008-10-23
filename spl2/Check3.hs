@@ -21,8 +21,9 @@ union a b =	M.unionWith merge a b
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
 merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
 merge (TU a) (TU b) = TU a
-merge (TU a) b = b
-merge a (TU b) = a
+merge (TU a) b = observe ("merge1"++show a) b
+merge a (TU b) = observe ("merge2"++show b) a
+merge (TV a) b = b
 merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
 merge a b = error ("merge: "++show a++", "++show b)
@@ -35,7 +36,7 @@ get_ul n u =
 ch [] [] et ul uv i =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i =
-	P (uv, setm (observeN "r" r) (observeN ("ul"++get_ul "a100" ul) ul))
+	P (uv, setm (observe "r" r) (observe ("ul"++get_ul "a11111" ul) ul))
 ch r [] et ul uv i =
 	P (uv, setm (TT r) ul)
 ch (r:rs) (p1:ps) et ul uv i =
@@ -148,11 +149,12 @@ compare (TT (l1:l1s)) (TT (l2:l2s)) =
 	where
 		(l, r, b) = Check3.compare l1 l2
 		(ll, rr, bb) = Check3.compare (TT l1s) (TT l2s)
-compare (TU a) (TV n) = (M.singleton a (TV n), M.singleton n (TU a), True)
+--compare (TU a) (TV n) = (M.singleton a (TV n), M.singleton n (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
+compare (TV n) b = (M.empty, M.singleton n b, True)
 compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
-compare a (TU n) = (M.empty, M.singleton n a, True) -- correct ?
+compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
 compare t1 t2 = (M.empty, M.empty, False)
