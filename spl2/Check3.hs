@@ -42,7 +42,7 @@ ch r [] et ul uv i =
 ch (r:rs) (p1:ps) et ul uv i =
 	case observeN ("ch_p "++show p1) $ check p1 et of
 		P (rm, r_p1) ->
-			let r_p2 = change_tu (observe "r_p1" r_p1) i in
+			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
 			case Check3.compare (observeN "cmp1" (setm r ul)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
@@ -85,10 +85,11 @@ check (CL a (K p)) et =
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
 		P (_, TT []) ->
 			N ("too many parameters for "++show a)
-		P (ur, TU n) ->
-			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
+--		P (ur, TU n) ->
+--			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
-			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
+			let z = P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
+			in observe ("z:"++show z) z
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
