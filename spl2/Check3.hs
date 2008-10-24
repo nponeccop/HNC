@@ -16,6 +16,8 @@ data P = P (Map [Char] T, T) | N [Char]
 
 get_r (P (ur, r)) = r
 get_rl l = Prelude.map get_r l
+get_ur (P (ur, r)) = ur
+get_url l = Prelude.map get_ur l
 
 union a b =	M.unionWith merge a b
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
@@ -88,8 +90,9 @@ check (CL a (K p)) et =
 --		P (ur, TU n) ->
 --			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
-			let z = P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
-			in observe ("z:"++show z) z
+			let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union a b) M.empty $ get_url p_ok;
+					r = observe "r" $ TU ('_':n)
+			in P (union (observe ("rm"++show rm) rm) ur, setm r rm)
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
