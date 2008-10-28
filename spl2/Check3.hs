@@ -6,8 +6,10 @@ import Data.Map as M hiding (filter, union)
 import Types
 import Code hiding (res)
 import Top
+import Debug.Trace
 import Hugs.Observe
 --observe a b = b
+trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
 
 data P = P (Map [Char] T, T) | N [Char]
@@ -46,7 +48,7 @@ ch (r:rs) (p1:ps) et ul uv i =
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
-			case Check3.compare (observeN "cmp1" (setm r ul)) (observeN "cmp2" r_p2) of
+			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p2) of
 				(l2, r2, True) ->
 					let ru1u = union uv rm2;
 							ru2u = union r2 rm2;
@@ -91,8 +93,8 @@ check (CL a (K p)) et =
 --			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
 			let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union a b) M.empty $ get_url p_ok;
-					r = observe "r" $ TU ('_':n)
-			in P (union (observe ("rm"++show rm) rm) ur, setm r rm)
+					r = observeN "r" $ TU ('_':n)
+			in P (union (observeN ("rm"++show rm) rm) ur, setm r rm)
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
