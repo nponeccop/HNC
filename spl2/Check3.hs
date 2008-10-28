@@ -110,14 +110,18 @@ check (CL a (S (p:ps))) et =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observeN "ok" $ P (M.empty, w)
+					let rrr = case M.lookup p et of
+						Just a -> M.insert p (case a of TV a -> TU a; o -> o) $ M.delete p_n ur
+						Nothing -> ur
+					in
+					observeN "ok" $ P (rrr, w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN "no" $ P (M.empty, w) -- rm ?
+					observeN "no" $ P (ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
