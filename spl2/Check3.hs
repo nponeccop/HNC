@@ -159,7 +159,7 @@ compare (TT (l1:l1s)) (TT (l2:l2s)) =
 	where
 		(l, r, b) = Check3.compare l1 l2
 		(ll, rr, bb) = Check3.compare (TT l1s) (TT l2s)
-compare (TU a) (TV n) = (M.singleton a (TV n), M.singleton n (TU a), True)
+compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
 --compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
