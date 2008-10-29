@@ -40,15 +40,15 @@ get_ul n u =
 ch [] [] et ul uv i =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i =
-	P (uv, setm (observeN "r" r) (observeN "ul" ul))
+	P (uv, setmv (setm (observeN "r" r) (observeN "ul" ul)) uv)
 ch r [] et ul uv i =
-	P (uv, setm (TT r) ul)
+	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i =
 	case observeN ("ch_p "++show p1) $ check p1 et of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
-			case Check3.compare (observe "cmp1" (setm r ul)) (observe "cmp2" r_p2) of
+			case Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
 					let ru1u = union uv rm2;
 							ru2u = union r2 rm2;
@@ -176,7 +176,6 @@ setu (TU n) (t2:t2s) = t2
 setu o (t2:t2s) = o
 setu o [] = o
 
-setml2 l u = Prelude.map (\(P (rm, r)) -> P (rm, setm r u)) l
 setml l u = Prelude.map (\x -> setm x u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
@@ -185,6 +184,15 @@ setm (TU n) u =
 		Just a -> a
 		Nothing -> TU n
 setm o u = o
+
+setmvl l u = Prelude.map (\x -> setmv x u) l
+setmv (TD n tt) u = TD n (Prelude.map (\t -> setmv t u) tt)
+setmv (TT tt) u = TT (Prelude.map (\t -> setmv t u) tt)
+setmv (TV n) u =
+	case M.lookup n u of
+		Just a -> a
+		Nothing -> TV n
+setmv o u = o
 
 change_tul tt i = Prelude.map (\t -> change_tu t i) tt
 change_tu (TT tt) i = TT $ change_tul tt i

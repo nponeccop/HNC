@@ -12,7 +12,7 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
-(from_i::Int) = 65
+(from_i::Int) = 61
 (to_i::Int) = 65
 
 test_res = map test $
@@ -112,7 +112,7 @@ tests = [
 	,("(r!_*iff (join1 (pair 0b (l!_)),elist) (l!join1 (head _),elist))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(r!_*iff (join1 (pair 0b (l!_)),elist) (l!(h*t*join1 h,_f,filter (z*less z h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(z*(z*sum (head z) 1) (join1 1,elist))", "CL (CL (CL (CL (CVal \"sum\") (K [CVal \"z\",CVal \"x\"])) (S [\"x\"])) (K [CNum 1])) (S [\"z\"])", "")
-	,("(h*f*join1 h,f,filter (z*less z h),elist)", "", "")
+	,("(h*f*join1 h,f,filter (z*less z h),elist)", "CL (CL (CVal \"join1\") (K [CVal \"h\",CL (CVal \"f\") (K [CL (CVal \"filter\") (K [CL (CL (CVal \"less\") (K [CVal \"z\",CVal \"h\"])) (S [\"z\"]),CVal \"elist\"])])])) (S [\"h\",\"f\"])", "TT [T \"num\",TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]],TD \"list\" [T \"num\"]]")
 	,("(r!_*iff (join1 (pair (0b) (l!elist)),elist) (l!(h*t*join1 h,_f,filter (z*less z h) t) (head _) (tail _)))", "", "")
 	,("(r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(_*_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist) (r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
