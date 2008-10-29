@@ -116,7 +116,7 @@ check (CL a (S (p:ps))) et =
 						Just a -> M.insert p (case a of TV a -> TU a; o -> o) $ M.delete p_n ur
 						Nothing -> ur
 					in
-					observeN ("ok "++p) $ P (rrr, w)
+					observeN ("ok "++p) $ P (rrr, untv p w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
