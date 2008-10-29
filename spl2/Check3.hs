@@ -116,14 +116,14 @@ check (CL a (S (p:ps))) et =
 						Just a -> M.insert p (case a of TV a -> TU a; o -> o) $ M.delete p_n ur
 						Nothing -> ur
 					in
-					observeN "ok" $ P (rrr, w)
+					observeN ("ok "++p) $ P (rrr, w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN "no" $ P (ur, w) -- rm ?
+					observeN ("no "++p) $ P (M.map (untv p) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -193,6 +193,12 @@ setmv (TV n) u =
 		Just a -> a
 		Nothing -> TV n
 setmv o u = o
+
+untv p (TD n tt) = TD n (Prelude.map (\t -> untv p t) tt)
+untv p (TT tt) = TT (Prelude.map (\t -> untv p t) tt)
+untv p (TV n)|p == n = TU n
+untv p (TV n) = TV n
+untv p o = o
 
 change_tul tt i = Prelude.map (\t -> change_tu t i) tt
 change_tu (TT tt) i = TT $ change_tul tt i

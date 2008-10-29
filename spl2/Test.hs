@@ -12,8 +12,8 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
-(from_i::Int) = 66
-(to_i::Int) = 66
+(from_i::Int) = 69
+(to_i::Int) = 69
 
 test_res = map test $
 	case test_last of
@@ -113,8 +113,9 @@ tests = [
 	,("(z*(z*sum (head z) 1) (join1 1,elist))", "CL (CL (CL (CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"z\"]),CNum 1])) (S [\"z\"])) (K [CL (CVal \"join1\") (K [CNum 1,CVal \"elist\"])])) (S [\"z\"])", "TT [TU \"z\",T \"num\"]")
 	,("(r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CL (CVal \"length\") (K [CVal \"_\"]),CNum 1]),CL (CVal \"_\") L]),CVal \"elist\"]),CL (CL (CL (CL (CVal \"concat\") (K [CL (CVal \"_f\") (K [CL (CVal \"filter\") (K [CL (CL (CVal \"less\") (K [CVal \"_\",CVal \"h\"])) (S [\"_\"]),CVal \"t\"])]),CL (CVal \"join1\") (K [CVal \"h\",CL (CVal \"_f\") (K [CL (CVal \"filter\") (K [CL (CL (CVal \"not\") (K [CL (CVal \"less\") (K [CVal \"_\",CVal \"h\"])])) (S [\"_\"]),CVal \"t\"])])])])) (S [\"h\",\"t\"])) (K [CL (CVal \"head\") (K [CVal \"_\"]),CL (CVal \"tail\") (K [CVal \"_\"])])) L])) (S [\"_\"])) R", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
 	,("(_*_,join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist) (r!_*iff (join1 (pair (less (length _) 1) (l!_)),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _)))", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
-	,("(f*x*f x)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])) (K [CL (CVal \"sum\") (K [CNum 1])])", "TT [T \"num\",T \"num\"]")
-	,("(r!case*_*iff (case (less (length _) 1) (l!_),elist) (l!(h*t*concat (_f,filter (_*less _ h) t),join1 h,_f,filter (_*not,less _ h) t) (head _) (tail _))) (c*e*l*join1 (pair c e) l),join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
+	,("(f*x*f x)", "CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])", "TT [TT [TU \"x\",TU \"_f\"],TU \"x\",TU \"_f\"]")
+	,("(f*x*f x) (sum 1)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (S [\"f\",\"x\"])) (K [CL (CVal \"sum\") (K [CNum 1])])", "TT [T \"num\",T \"num\"]")
+	,("(r!case*_*iff (case (less (length _) 1) (l!_),elist) (l!(h*t*concat (_f case,filter (_*less _ h) t),join1 h,_f case,filter (_*not,less _ h) t) (head _) (tail _))) (c*e*l*join1 (pair c e) l),join1 8,join1 9,join1 4,join1 4,join1 5,join1 3,elist", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CList [CNum 3,CNum 4,CNum 4,CNum 5,CNum 8,CNum 9]", "TD \"list\" [T \"num\"]")
 	,("(x*(y*iff (join1 (pair (less x 5) (l!sum y y)),elist) (l!5)) ((x*sum 1,sum 2 x) 2))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"x\",CNum 5]),CL (CL (CVal \"sum\") (K [CVal \"y\",CVal \"y\"])) L]),CVal \"elist\"]),CL (CNum 5) L])) (S [\"y\"])) (K [CL (CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"sum\") (K [CNum 2,CVal \"x\"])])) (S [\"x\"])) (K [CNum 2])])) (S [\"x\"])", "TT [T \"num\",T \"num\"]")
 	]
