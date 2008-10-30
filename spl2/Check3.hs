@@ -21,7 +21,11 @@ get_rl l = Prelude.map get_r l
 get_ur (P (ur, r)) = ur
 get_url l = Prelude.map get_ur l
 
-union a b =	M.unionWith merge a b
+union a b =
+	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
+	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+		M.unionsWith merge [a, b, r]
+
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
 merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
 merge (TU a) (TU b) = TU a
