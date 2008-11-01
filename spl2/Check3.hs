@@ -167,7 +167,7 @@ compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
 --compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
-compare (TU a) (TU b) = (union (M.singleton b (TU a)) (M.singleton a (TU b)), M.empty, True)
+compare (TU a) (TU b) = (M.unionWith merge (M.singleton b (TU a)) (M.singleton a (TU b)), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
@@ -219,7 +219,8 @@ change_tv o i = o
 check0 o =
 	observeN "ret" $ check o Top.get_types
 
-res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
+--res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
+res = Check3.compare (TU "a") (TU "a")
 
 
 
