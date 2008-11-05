@@ -22,7 +22,7 @@ data Syntax =
 	| Scall Syntax SynParams
 	deriving (Eq, Show)
 
-data P = P Int Syntax | N
+data P = P Int Syntax | N Int
 	deriving (Eq, Show)
 
 data Token =
@@ -55,19 +55,19 @@ data Token =
 p_and ((t:ts),f) vi vs s i =
 	case call t s i of
 		P i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1)
-		N -> N
+		N i2 -> N i2
 p_and ([],f) vi vs s i =
 	P vi (f (reverse vs))
 	
 p_or (o:os) s i =
 	case p_and o 0 [] s i of
 		P i s -> P i s
-		N -> p_or os s i
+		N _ -> p_or os s i
 p_or [] s i =
-	N
+	N i
 
 call (Tc c) s i| i < length s && c == s!!i = P 1 (Sc c)
-call (Tc c) s i = N
+call (Tc c) s i = N i
 call Tc1 s i =
 	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz") s i
 call Tb s i =
@@ -112,7 +112,7 @@ call Tstring s i =
         ([Tc '\'', Tcs, Tc '\''], \(Sc c1:Ss sn:Sc c2:[]) -> Sstr sn)
 		] s i
 call Eos s i| i == length s = P 0 (Ss "")
-call Eos s i = N
+call Eos s i = N i
 
 
 call Tparams s i =

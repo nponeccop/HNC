@@ -22,14 +22,14 @@ step str =
 						Check3.N e -> Interpretator.N $ ("type error: " ++ e, show c)
 				Compiler.N ->
 					Interpretator.N ("compile error", "")
-		Parser.N ->
-			Interpretator.N ("parser error", "")
+		Parser.N i ->
+			Interpretator.N ("parser error at "++show i, "")
 
-comp2 str = 
+{-comp2 str = 
 	case parse str of
 	Parser.P i p ->
 		case compile p of
 		Compiler.P c -> show c
 		Compiler.N -> "compile error"
-	Parser.N -> "parser error"
+	Parser.N i -> "parser error"-}
 
