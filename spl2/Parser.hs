@@ -31,6 +31,7 @@ data Token =
 	| Tb
 	| Tc1
 	| Tsp
+	| Tspn
 	| Tn
 	| Tnpos
 	| Tnneg
@@ -78,6 +79,12 @@ call Tsp s i =
 	p_or [
 		([Tc ' ', Tsp], \(Sc c:Ss s:[]) -> Ss (c:s))
 		,([Tc ' '], \(Sc c:[]) -> Ss (c:""))
+		,([Tc '\n'], \(Sc c:[]) -> Ss (c:""))
+		] s i
+call Tspn s i =
+	p_or [
+		([Tsp], \(Ss s:[]) -> Ss s)
+		,([], \([]) -> Ss "")
 		] s i
 call Tcs s i =
 	p_or [
@@ -162,7 +169,7 @@ call Tmark s i =
 
 call Texpr_top s i =
 	p_or [
-		([Tmark], \(e:[]) -> e)
+		([Tspn, Tmark, Tspn], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		] s i
 

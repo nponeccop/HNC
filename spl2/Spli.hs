@@ -3,6 +3,7 @@ module Main where
 import Interpretator
 import Top
 import Data.Map as M hiding (map)
+import System
 
 data Cmd =
 	Quit | Help | Type | Expr
@@ -14,26 +15,37 @@ get_cmd line =
 	else Expr
 
 help = 
-	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n"++(foldr (\a b -> "   "++a++"\n"++b) "" $ M.keys Top.base)
+	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n   "++(foldr1 (\a b -> a++", "++b) $ M.keys Top.base)
 
-mainLoop = do
+title =
+	"SPL r200\n"++(take 0 $ repeat ' ')++"\\h - help"
+
+exec_file f = do
+	s <- readFile f
+	case step s of
+		Interpretator.P (t, r) -> putStrLn r
+		Interpretator.N (t, r) -> putStrLn t
+
+main_loop = do
 	putStr "  "
 	line <- getLine
 	case get_cmd line of
 		Quit -> return ()
-		Help -> do putStrLn help; mainLoop
+		Help -> do putStrLn help; main_loop
 		Type ->
 			case step $ drop 3 line of
-				Interpretator.P (t, r) -> do putStrLn t; mainLoop
-				Interpretator.N (t, r) -> do putStrLn t; mainLoop
+				Interpretator.P (t, r) -> do putStrLn t; main_loop
+				Interpretator.N (t, r) -> do putStrLn t; main_loop
 		Expr ->
 			case step line of
-				Interpretator.P (t, r) -> do putStrLn r; mainLoop
-				Interpretator.N (t, r) -> do putStrLn t; mainLoop
+				Interpretator.P (t, r) -> do putStrLn r; main_loop
+				Interpretator.N (t, r) -> do putStrLn t; main_loop
 
 spli = do
-	putStrLn ("SPL r200\n"++(take 0 $ repeat ' ')++"\\h - help")
-	mainLoop
+	args <- getArgs
+	case args of
+		h:t -> do exec_file h
+		[] -> do putStrLn title; main_loop
 
 main = spli
 
