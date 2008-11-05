@@ -14,6 +14,8 @@ get_cmd line =
 	else if "\\t " == take 3 line then Type
 	else Expr
 
+revision = "$Revision$"
+
 help = 
 	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n   "++(foldr1 (\a b -> a++", "++b) $ M.keys Top.base)
 
@@ -21,7 +23,7 @@ help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
 
 title =
-	"SPL r200\n"++(take 0 $ repeat ' ')++"\\h - help"
+	"SPL r"++revision++"\n"++(take 0 $ repeat ' ')++"\\h - help"
 
 exec_file f = do
 	s <- readFile f
