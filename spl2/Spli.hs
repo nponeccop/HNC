@@ -17,6 +17,9 @@ get_cmd line =
 help = 
 	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n   "++(foldr1 (\a b -> a++", "++b) $ M.keys Top.base)
 
+help2 =
+	"use spli <spl module> to run file\nspli for interactive mode"
+
 title =
 	"SPL r200\n"++(take 0 $ repeat ' ')++"\\h - help"
 
@@ -44,7 +47,8 @@ main_loop = do
 spli = do
 	args <- getArgs
 	case args of
-		h:t -> do exec_file h
+		"--help":t -> putStrLn help2
+		h:t -> exec_file h
 		[] -> do putStrLn title; main_loop
 
 main = spli
