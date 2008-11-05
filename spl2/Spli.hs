@@ -32,7 +32,7 @@ mainLoop = do
 				Interpretator.N (t, r) -> do putStrLn t; mainLoop
 
 spli = do
-	putStrLn ("SPL r200\n"++(take 20 $ repeat ' ')++"\\h - help")
+	putStrLn ("SPL r200\n"++(take 0 $ repeat ' ')++"\\h - help")
 	mainLoop
 
 main = spli
