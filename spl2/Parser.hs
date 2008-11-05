@@ -1,5 +1,7 @@
 module Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
+import Hugs.Observe
+
 data SynMark =
 	MarkR
 	deriving (Eq, Show)
@@ -62,7 +64,7 @@ p_and ([],f) vi vs s i =
 p_or (o:os) s i =
 	case p_and o 0 [] s i of
 		P i s -> P i s
-		N _ -> p_or os s i
+		N i2 -> p_or os s i
 p_or [] s i =
 	N i
 
