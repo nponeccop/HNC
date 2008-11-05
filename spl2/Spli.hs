@@ -14,7 +14,7 @@ get_cmd line =
 	else if "\\t " == take 3 line then Type
 	else Expr
 
-revision = "$Revision$"
+revision = "210"
 
 help = 
 	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n   "++(foldr1 (\a b -> a++", "++b) $ M.keys Top.base)
