@@ -17,7 +17,7 @@ get_cmd line =
 revision = "210"
 
 help = 
-	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n\n  base functions\n   "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)
+	"help\n  \\ - interpretator internal commands\n   h - help\n   t exp - type\n   q - quit\n  apply\n   f p - apply p to f\n   f,expr - f (expr)\n  base functions\n   "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)
 
 help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
