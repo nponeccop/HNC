@@ -22,6 +22,7 @@ data Syntax =
 	| Sl [Syntax]
 	| Sval [Char]
 	| Scall Syntax SynParams
+	| Spair Syntax Syntax
 	deriving (Eq, Show)
 
 data P = P Int Syntax | N Int
@@ -49,6 +50,7 @@ data Token =
 	| Tparams
 	| Tsave
 	| Tsave_args
+	| Tsave_args2
 	| Tmark
 	| Tmarks
 	| Eos
@@ -145,7 +147,11 @@ call Tsave_args s i =
 	p_or [
 		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l:[]) -> Sl (c:l))
 		,([], \([]) -> Sl [])
---		,([Tc '*',Tcs], \(_:c:[]) -> Sl [c])
+		] s i
+call Tsave_args2 s i =
+	p_or [
+		([Tc '*',Tcs,Tc ':',Texpr,Tsave_args2], \(_:c:_:e:Sl l:[]) -> Sl ((Spair c e):l))
+		,([], \([]) -> Sl [])
 		] s i
 call Tmarks s i =
 	p_or [
@@ -155,10 +161,15 @@ call Tmarks s i =
 		] s i
 call Tsave s i =
 	p_or [
-		([Tsave_args,Texpr], \(Sl w:e:[]) ->
+		([Tsave_args,Texpr,Tsave_args2], \(Sl w:e:Sl l:[]) ->
+			let ee =
+				case l of
+					[] -> e
+					xs -> Scall (Scall e (SynS (map (\(Spair (Ss s) _) -> s) l))) (SynK (map (\(Spair _ e) -> e) l))
+			in
 			case w of
-				[] -> e
-				x:xs -> Scall e (SynS (map (\(Ss s) -> s) w)))
+				[] -> ee
+				xs -> Scall ee (SynS (map (\(Ss s) -> s) w)))
 		] s i
 call Tmark s i =
 	p_or [
