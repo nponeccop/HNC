@@ -187,11 +187,7 @@ call Texpr_top s i =
 		] s i
 
 
-parse s =
-	case p_or [([Texpr_top], \vs -> vs!!0)] s 0 of
-		P i r|i == length s -> P i r
-		P i r -> N i
-		N i -> N i
+parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
 res = p_or [([Tnpos], \vs -> vs!!0)] "1a" 0
 
