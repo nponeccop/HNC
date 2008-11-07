@@ -23,12 +23,12 @@ help =
   "   t exp - type\n"++
   "   q - quit\n"++
   "  apply\n"++
-  "   f p - apply p to f\n"++
-  "   f,expr - f (expr)\n"++
-  "   (v1*v2*...expr) - define function with vX parameters\n"++
-  "   (expr*a1:v1*a2:v2...) - (a1*a2*...expr) v1 v2 ...\n"++
+  "    f p - apply p to f\n"++
+  "    f,expr - f (expr)\n"++
+  "    (v1*v2*...expr) - define function with vX parameters\n"++
+  "    (expr*a1:v1*a2:v2...) - (a1*a2*...expr) v1 v2 ...\n"++
   "  base functions\n"++
-  "   "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)
+  "    "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)
 
 help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
