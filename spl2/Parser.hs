@@ -57,6 +57,7 @@ data Token =
 	deriving Show
 
 p_and ((t:ts),f) vi vs s i =
+	observe "p_and" $
 	case call t s i of
 		P i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1)
 		N i2 -> N i2
@@ -64,6 +65,7 @@ p_and ([],f) vi vs s i =
 	P vi (f (reverse vs))
 	
 p_or (o:os) s i =
+	observe "p_or" $
 	case p_and o 0 [] s i of
 		P i s -> P i s
 		N i2 -> p_or os s i
@@ -189,6 +191,6 @@ call Texpr_top s i =
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
-res = "parser_test"
+res = p_or [([Tnpos, Eos], \vs -> vs!!0)] "1a" 0
 
 
