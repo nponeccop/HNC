@@ -18,10 +18,11 @@ revision = "210"
 
 help = 
 	"help\n"++
-  "  \\ - interpretator internal commands\n"++
-  "   h - help\n"++
-  "   t exp - type\n"++
-  "   q - quit\n"++
+	"  interactive commands\n"++
+  "    \\ - interpretator internal commands\n"++
+  "     h - help\n"++
+  "     t exp - type\n"++
+  "     q - quit\n"++
   "  apply\n"++
   "    f p - apply p to f\n"++
   "    f,expr - f (expr)\n"++
