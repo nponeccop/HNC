@@ -71,11 +71,12 @@ defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 	
 convertExpr (Constant (ConstInt i)) = CNum 123
 convertExpr (Atom a) = CVal a
-convertExpr (Application a b) = 
+convertExpr (Application a b) = CL (convertExpr a) $ K $ map convertExpr b
 	
 testCheck3 = mapM (print . check0 . convertExpr) [
 		Constant (ConstInt 123),
-		Atom "a"
+		Atom "a",
+		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2]
 	]  
 
 main = do
