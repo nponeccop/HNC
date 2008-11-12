@@ -1,6 +1,6 @@
 module Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
-import Hugs.Observe
+-- import Hugs.Observe
 
 data SynMark =
 	MarkR

@@ -1,5 +1,5 @@
 
-module Interpretator (P (..), step) where
+module Interpretator (Interpretator.P (..), step) where
 
 import Parser
 import Compiler
