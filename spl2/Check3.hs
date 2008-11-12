@@ -7,7 +7,7 @@ import Types
 import Code hiding (res)
 import Top
 import Debug.Trace
-import Hugs.Observe
+--import Hugs.Observe
 --observe a b = b
 trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
