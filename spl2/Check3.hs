@@ -64,7 +64,7 @@ ch (r:rs) (p1:ps) et ul uv i =
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
 							lu = union lu1 lu2
-					in ch rs ps et lu ru (i+1)
+					in ch rs ps et lu ru (i+(1::Int))
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
