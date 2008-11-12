@@ -91,8 +91,8 @@ check (CL a (K p)) et =
 				N e -> N (e++" for "++show a)
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
-		P (_, TT []) ->
-			N ("too many parameters for "++show a)
+--		P (_, TT []) ->
+--			N ("too many parameters for "++show a)
 --		P (ur, TU n) ->
 --			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
