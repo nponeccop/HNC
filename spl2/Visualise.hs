@@ -65,7 +65,9 @@ instance Show CppVarDecl where
     show (CppVarDecl a b) = a ++ " " ++ b
     
 instance Show CppExpression where
-    show (CppLiteral l) = case l of (ConstString s) -> show s
+    show (CppLiteral l) = case l of 
+    		(ConstString s) -> show s
+    		(ConstInt s) -> show s
     show (CppAtom l) = l
     show (CppApplication (CppAtom a) b)
         = a ++ "(" ++ (showFunctionArgs b) ++ ")"

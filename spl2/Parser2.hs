@@ -52,8 +52,8 @@ lambda = do
 expression = 
 	do
 		a <- many1 digit
-		return $ Constant (ConstString a)
-	<|>
+		return $ Constant (ConstInt (read a))
+	<|> 
 	do
 		a <- literal
 		return $ Constant (ConstString a)
@@ -67,7 +67,7 @@ expression =
 argument = 	
 	do
 		a <- many1 digit
-		return $ Constant (ConstString a)
+		return $ Constant (ConstInt $ read a)
 	<|>
 	do
 		a <- literal

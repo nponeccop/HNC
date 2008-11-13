@@ -87,11 +87,11 @@ runTests = do
 	-- тесты ¬ага
 	rtp "f = \"a\"" [Definition "f" [] (Constant (ConstString "a")) []]
 	
-	rtp "f = \\ z -> 1" [Definition "f" [] (Lambda ["z"] (Constant (ConstString "1"))) []]
-	rtp "f z = 1" [Definition "f" ["z"] (Constant (ConstString "1")) []]
+	rtp "f = \\ z -> 1" [Definition "f" [] (Lambda ["z"] (Constant (ConstInt 1))) []]
+	rtp "f z = 1" [Definition "f" ["z"] (Constant (ConstInt 1)) []]
 	
-	runTest application "u 6" $ Application (Atom "u") [Constant (ConstString "6")]
-	rtp "f = u 6" [Definition "f" [] (Application (Atom "u") [Constant (ConstString "6")]) []]
+	runTest application "u 6" $ Application (Atom "u") [Constant (ConstInt 6)]
+	rtp "f = u 6" [Definition "f" [] (Application (Atom "u") [Constant (ConstInt 6)]) []]
 	-- тесты из Tests.hs
 	rtp "plusx = \\ i -> plus x i" [Definition "plusx" [] (Lambda ["i"] (Application (Atom "plus") [Atom "x",Atom "i"])) []]
 	rtp "plusx i = plus x i" [Definition "plusx" ["i"] (Application (Atom "plus") [Atom "x",Atom "i"]) []]
