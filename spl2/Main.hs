@@ -13,6 +13,7 @@ import Intermediate
 
 import Check3
 import Code
+import Types
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
@@ -29,26 +30,26 @@ rt f = mapM (print . f . simpleParse) testSet
 
 testSet = 
 	[
-		-- вызовы ffi-функции
-		"main = f x"
+		-- нумералы, вызовы ffi-функции
+		"main = incr 2"
 		-- определение функции, 1 параметр
-	,	"main x = f x"
+	,	"main x = incr x"
 		-- несколько параметров
-	,	"main x z = f x y"
+	,	"main x z = sum x 2"
 		-- статическая функция
 		-- BROKEN не должно быть typedef local
-	,	"main x = { o a b = g a a b\no x x }"
+	,	"main x = { o a b = sum a b\no x x }"
 		-- перекрытие fqn-функции аргументом
-	,	"main g = f g"
+	,	"main sum = incr sum"
 		-- перекрытие fqn-функции статической локальной
 		-- BROKEN не должно быть typedef local
-	,	"main x = { g z = z z\ng y y }"
+	,	"main x = { elist a b = sum a b\nelist x x }" 
 		-- перекрытие fqn-функции локальной переменной
-	,	"main x z = { y = b z\nf x y a }"
+	,	"main x z = { head = incr z\nsum x head }"
 		-- константные строки
 	,	"main x = \"aaa\""
-			-- перекрытие fqn-функции статической 
-	,	"main x = { g z a = z a x\ng y y }"
+		-- перекрытие fqn-функции статической 
+	,	"main x = { head z a = z a x\nhead sum 5 }"
 		-- локальное замыкание c аргументом
 	,	"main a b = { c i = g i b\nf (c a (g a)) }"
  
@@ -58,7 +59,7 @@ testSet =
 		-- & перед указателями на функции (рекомендуется новым стандартом C++)
 		-- биндеры при передаче локальных функций аргументами
 		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
-	,	"main x z = { a = b z\ny z = g x z\nf x y a }"
+	,	"main x z = { a = incr z\ny z = sum x z\nf x y a }"
 		-- BROKEN & перед указателями на статические функции 
 	,	"main l = { f x = g 1 x\nmap f l }" 		
 	
@@ -77,24 +78,27 @@ convertExpr (Application a b) = CL (convertExpr a) $ K $ map convertExpr b
 convertExpr expr = error $ show expr 
 
 convertDef (Definition _ [] value []) = convertExpr value
+-- convertDef def @ (Definition _ [] value _) = error $ show def
 
 convertDef (Definition _ arguments value whereDefinitions) 
-	= CL (xvalue) $ S arguments where
-		xvalue = CL (CL (convertExpr value) $ K whereValues) $ S whereVars
+	= CL xvalue $ S arguments where
+		xvalue = case whereDefinitions of
+			[] -> convertExpr value
+			_  -> CL (CL (convertExpr value) $ S whereVars) $ K whereValues
 		whereVars = whereMap (\(Definition name _ _ _) -> name)
 		whereValues = whereMap convertDef
 		whereMap f = map f whereDefinitions
 		
-convertDef def = error $ show def
-		
-	
+testCheck4 = rt $ \x -> check0 (convertDef x)
+
 testCheck3 = mapM (print . check0 . convertExpr) [
 		Constant (ConstInt 123),
 		Atom "a",
-		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2]
+		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2],
+		Application (Atom "incr") $ [Atom "x"]
 	]
 	
-testCheck2 = rt convertDef  
+testCheck2 = rt convertDef
 
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
@@ -108,6 +112,7 @@ main = do
 	test1
 	testCheck3
 	testCheck2
+	testCheck4
 --	test2
 	getLine
 	return ()
