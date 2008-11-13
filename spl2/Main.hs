@@ -69,15 +69,32 @@ defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 	,	("plus1", "Int -> Int" )
 	]
 	
-convertExpr (Constant (ConstInt i)) = CNum 123
+convertExpr (Constant (ConstInt i)) = CNum i
+convertExpr (Constant (ConstString i)) = CStr i
+
 convertExpr (Atom a) = CVal a
 convertExpr (Application a b) = CL (convertExpr a) $ K $ map convertExpr b
+convertExpr expr = error $ show expr 
+
+convertDef (Definition _ [] value []) = convertExpr value
+
+convertDef (Definition _ arguments value whereDefinitions) 
+	= CL (xvalue) $ S arguments where
+		xvalue = CL (CL (convertExpr value) $ K whereValues) $ S whereVars
+		whereVars = whereMap (\(Definition name _ _ _) -> name)
+		whereValues = whereMap convertDef
+		whereMap f = map f whereDefinitions
+		
+convertDef def = error $ show def
+		
 	
 testCheck3 = mapM (print . check0 . convertExpr) [
 		Constant (ConstInt 123),
 		Atom "a",
 		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2]
-	]  
+	]
+	
+testCheck2 = rt convertDef  
 
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
@@ -90,6 +107,7 @@ main = do
 	runTests
 	test1
 	testCheck3
+	testCheck2
 --	test2
 	getLine
 	return ()
