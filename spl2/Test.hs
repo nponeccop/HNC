@@ -13,7 +13,8 @@ is_passed (No _) = False
 
 test_last = 0
 from_i = 0::Int
-to_i = 100::Int
+--to_i = 100::Int
+to_i = (-) (length tests) 1
 
 test_res = map test $
 	case test_last of
@@ -119,6 +120,8 @@ tests = [
 	,("(case*iff (case (less 1 5) (l!sum 1 2),elist))", "CL (CL (CVal \"iff\") (K [CL (CVal \"case\") (K [CL (CVal \"less\") (K [CNum 1,CNum 5]),CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L,CVal \"elist\"])])) (S [\"case\"])", "TT [TT [T \"boolean\",TT [TL,T \"num\"],TD \"list\" [TU \"a0\"],TD \"list\" [TD \"pair\" [T \"boolean\",TT [TL,TU \"a\"]]]],TT [TL,TU \"a\"],TU \"a\"]")
 	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CL (CInFun 2 InFun \"iff\") (K [CList [CPair [CBool True,CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L]]])", "TT [TT [TL,T \"num\"],T \"num\"]")
 	,("(x*(y*iff (join1 (pair (less x 5) (l!sum y y)),elist) (l!5)) ((x*sum 1,sum 2 x) 2))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"x\",CNum 5]),CL (CL (CVal \"sum\") (K [CVal \"y\",CVal \"y\"])) L]),CVal \"elist\"]),CL (CNum 5) L])) (S [\"y\"])) (K [CL (CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"sum\") (K [CNum 2,CVal \"x\"])])) (S [\"x\"])) (K [CNum 2])])) (S [\"x\"])", "TT [T \"num\",T \"num\"]")
+	,("(l*(f*filter f l) (x*less 1 x))", "CL (CL (CL (CL (CVal \"filter\") (K [CVal \"f\",CVal \"l\"])) (S [\"f\"])) (K [CL (CL (CVal \"less\") (K [CNum 1,CVal \"x\"])) (S [\"x\"])])) (S [\"l\"])", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
+	,("(z*z z)", "", "")
 	]
 
 {-

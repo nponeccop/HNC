@@ -7,7 +7,7 @@ import Types
 import Code hiding (res)
 import Top
 import Debug.Trace
---import Hugs.Observe
+import Hugs.Observe
 --observe a b = b
 trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
@@ -44,7 +44,7 @@ get_ul n u =
 ch [] [] et ul uv i =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i =
-	P (uv, setmv (setm (observeN "r" r) (observeN "ul" ul)) uv)
+	P (observeN "uv" uv, setmv (setm (observeN "r" r) (observeN "l" ul)) uv)
 ch r [] et ul uv i =
 	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i =
@@ -63,7 +63,7 @@ ch (r:rs) (p1:ps) et ul uv i =
 							ru = observeN "ru" $ union (union ru1 ru2) ru3;
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
-							lu = union lu1 lu2
+							lu = observeN "lu" $ union lu1 lu2
 					in ch rs ps et lu ru (i+(1::Int))
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
@@ -85,7 +85,8 @@ check (CL a (K p)) et =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et of
 		P (rm0, TT r) ->
-			case ch r p et M.empty M.empty 0 of
+--			case ch r p et M.empty M.empty 0 of
+			case ch r p et M.empty rm0 0 of
 				P (rm, r) ->
 					P (union rm rm0, r)
 				N e -> N (e++" for "++show a)
