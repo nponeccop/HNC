@@ -221,7 +221,7 @@ check0 o =
 	observeN "ret" $ check o Top.get_types
 
 --res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
-res = Check3.compare (TU "a") (TU "a")
+res = check0 (CL (CL (CVal "incr") (K [CVal "sum"])) (S ["sum"]))
 
 
 
