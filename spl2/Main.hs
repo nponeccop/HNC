@@ -15,13 +15,17 @@ import Check3
 import Types
 import HN.SplExport
 import CPP.TypeProducer
+import Top
 
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
+baseToTdi = M.map (const $ CppFqMethod "ff") base
+
 tdi = DefinitionInherited {
 	diLevel = 3,
-	diSymTab = M.fromList [ ("f", CppFqMethod "ffi"),  ("g", CppFqMethod "ffi"), ("h", CppFqMethod "ffi")]
+	diSymTab = baseToTdi
+	-- M.fromList [ ("f", CppFqMethod "ffi"),  ("g", CppFqMethod "ffi"), ("h", CppFqMethod "ffi")]
 }
     
 test1 = rt (dsCppDef . (sem_Definition tdi))
@@ -37,7 +41,7 @@ testSet =
 		-- определение функции, 1 параметр
 	,	"main x = incr x"
 		-- несколько параметров
-	,	"main x z = sum x 2"
+	,	"main x z = sum x z"
 		-- статическая функция
 		-- BROKEN не должно быть typedef local
 	,	"main x = { o a b = sum a b\no x x }"
@@ -81,10 +85,6 @@ testCheck3 = mapM (print . check0 . convertExpr) [
 		Application (Atom "incr") $ [Atom "x"]
 	]
 	
-testCheck2 = rt convertDef
-
-testCheck4 = rt $ \x -> check0 (convertDef x)
-
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
 --	print defaultEnv 
@@ -96,8 +96,8 @@ main = do
 	runTests
 	test1
 	testCheck3
-	testCheck2
-	testCheck4
+	rt convertDef
+	rt $ \x -> check0 (convertDef x)
 --	test2
 	print $ showType $ cppType $ T "num" 
 	getLine
