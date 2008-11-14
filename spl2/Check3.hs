@@ -1,5 +1,5 @@
 
-module Check3 (P (..), check0, res) where
+module Check3 (P (..), check0, check, res) where
 
 import Data.Map as M hiding (filter, union)
 
