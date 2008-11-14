@@ -85,10 +85,9 @@ check (CL a (K p)) et =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et of
 		P (rm0, TT r) ->
---			case ch r p et M.empty M.empty 0 of
 			case ch r p et M.empty rm0 0 of
 				P (rm, r) ->
-					P (union rm rm0, r)
+					P (rm, r)
 				N e -> N (e++" for "++show a)
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
@@ -217,7 +216,7 @@ check0 o =
 	observeN "ret" $ check o Top.get_types
 
 --res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
-res = check0 (CL (CL (CVal "incr") (K [CVal "sum"])) (S ["sum"]))
+res = check0 (CL (CL (CL (CL (CVal "filter") (K [CVal "f",CVal "l"])) (S ["f"])) (K [CL (CL (CVal "less") (K [CNum 1,CVal "x"])) (S ["x"])])) (S ["l"]))
 
 
 
