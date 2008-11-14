@@ -15,17 +15,17 @@ import Check3
 import Types
 import HN.SplExport
 import CPP.TypeProducer
-import Top
+import qualified Top
 
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
-baseToTdi = M.map (const $ CppFqMethod "ff") base
+baseToTdi = M.map (const $ CppFqMethod "ff") Top.get_types
 
 tdi = DefinitionInherited {
-	diLevel = 3,
-	diSymTab = baseToTdi
-	-- M.fromList [ ("f", CppFqMethod "ffi"),  ("g", CppFqMethod "ffi"), ("h", CppFqMethod "ffi")]
+	diLevel        = 3,
+	diSymTab       = baseToTdi,
+	diFreeVarTypes = Top.get_types
 }
     
 test1 = rt (dsCppDef . (sem_Definition tdi))

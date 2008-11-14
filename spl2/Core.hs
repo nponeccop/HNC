@@ -15,8 +15,9 @@ import Types
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
-	diLevel :: Int,
-	diSymTab :: M.Map String CppAtomType
+	diLevel           :: Int
+,	diSymTab          :: M.Map String CppAtomType
+,	diFreeVarTypes    :: M.Map String T
 }
 
 -- synthesized attributes for Definition
@@ -82,7 +83,7 @@ getContext inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях 
 	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ getWhereVars (symTabTranslator (diSymTab inh)) wh) ++ contextArgs   
-	methods = getWhereMethods ((diLevel inh) + 1) (diSymTab inh) def
+	methods = getWhereMethods (inh { diLevel = diLevel inh + 1 }) def
 	lvn = getLocalVars wh
 	contextArgs = map (\x -> CppVar (CppTypePrimitive "unknownCA") x $ CppAtom x) $ filter isArgContext args
 
@@ -94,7 +95,7 @@ isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
 getWhereVars fqn def = getFromWhere def (transformVarDefinition fqn) isVar
-getWhereMethods level fqn def @ (Definition _ _ _ wh) = getFromWhere wh ((.) dsCppDef $ sem_Definition $ DefinitionInherited level fqn) (not . isVar)
+getWhereMethods inh def @ (Definition _ _ _ wh) = getFromWhere wh ((.) dsCppDef $ sem_Definition inh) (not . isVar)
 getWhereX wh f = S.fromList $ getFromWhere wh (\(Definition name _ _ _) -> name) f
 
 getWhereVarNames wh = getWhereX wh isVar 
