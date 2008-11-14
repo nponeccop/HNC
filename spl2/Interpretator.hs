@@ -23,7 +23,8 @@ step str =
 				Compiler.N ->
 					Interpretator.N ("compile error", "")
 		Parser.N i ->
-			Interpretator.N ("parser error at "++show i, "")
+--			Interpretator.N ("parser error at "++show i, "")
+			Interpretator.N ("  "++(take i $ repeat ' ')++"^ parser error", "")
 
 {-comp2 str = 
 	case parse str of

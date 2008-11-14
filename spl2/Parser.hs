@@ -63,12 +63,15 @@ p_and ((t:ts),f) vi vs s i =
 p_and ([],f) vi vs s i =
 	P vi (f (reverse vs))
 	
-p_or (o:os) s i =
+p_or os s i = p_or_err os s i i
+
+p_or_err (o:os) s i m =
 	case p_and o 0 [] s i of
 		P i s -> P i s
-		N i2 -> p_or os s i
-p_or [] s i =
-	N i
+		N i2 -> p_or_err os s i (max i2 m)
+
+p_or_err [] s i m =
+	N m
 
 call (Tc c) s i| i < length s && c == s!!i = P 1 (Sc c)
 call (Tc c) s i = N i
