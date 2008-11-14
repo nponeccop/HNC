@@ -7,8 +7,8 @@ import Types
 import Code hiding (res)
 import Top
 import Debug.Trace
---import Hugs.Observe
-observe a b = b
+import Hugs.Observe
+--observe a b = b
 trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
 
@@ -21,9 +21,16 @@ get_rl l = Prelude.map get_r l
 get_ur (P (ur, r)) = ur
 get_url l = Prelude.map get_ur l
 
+union_r a b =
+	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
+--	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
+		M.unionsWith merge [a, b, r]
+
 union a b =
 	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
-	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+--	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z (union l M.empty), merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
@@ -31,10 +38,12 @@ merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
 merge (TU a) (TU b) = TU a
 merge (TU a) b = observeN ("merge1"++show a) b
 merge a (TU b) = observeN ("merge2"++show b) a
+merge (TV a) (TV b) = TV a
 merge (TV a) b = b
+merge a (TV b) = a
 merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
-merge a b = error ("merge: "++show a++", "++show b)
+merge a b = error ("merge: {"++show a++", "++show b++"}")
 
 get_ul n u =
 	case M.lookup n u of
@@ -54,13 +63,13 @@ ch (r:rs) (p1:ps) et ul uv i =
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
 			case Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
-					let ru1u = union uv rm2;
-							ru2u = union r2 rm2;
-							ru3u = union r2 uv;
+					let ru1u = union_r uv rm2;
+							ru2u = union_r r2 rm2;
+							ru3u = union_r r2 uv;
 							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
 							ru2 = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
 							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
-							ru = observeN "ru" $ union (union ru1 ru2) ru3;
+							ru = observeN "ru" $ union_r (union_r ru1 ru2) ru3;
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
 							lu = observeN "lu" $ union lu1 lu2
@@ -96,9 +105,9 @@ check (CL a (K p)) et =
 --		P (ur, TU n) ->
 --			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
-			let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union a b) M.empty $ get_url p_ok;
+			let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty $ get_url p_ok;
 					r = observeN "r" $ TU ('_':n)
-			in P (union (observeN ("rm"++show rm) rm) ur, setm r rm)
+			in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
@@ -147,7 +156,7 @@ putp [] [] et = et
 putp o1 o2 et = error ("Check3.putp: "++show o1++", "++show o2)
 
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
-compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
+compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union_r u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
 --compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
 -- error: TT [T "num",TU "_l"]/TT [TU "_",TU "z",T "num"]
 compare (TT []) (TT []) =
@@ -155,7 +164,7 @@ compare (TT []) (TT []) =
 compare (TT [TU a]) b@(TT l)|1 < length l =
 	(M.singleton a b, M.empty, True)
 compare (TT (l1:l1s)) (TT (l2:l2s)) =
-	(union l ll, union r rr, b && bb)
+	(union l ll, union_r r rr, b && bb)
 	where
 		(l, r, b) = Check3.compare l1 l2
 		(ll, rr, bb) = Check3.compare (TT l1s) (TT l2s)
@@ -215,8 +224,8 @@ change_tv o i = o
 check0 o =
 	observeN "ret" $ check o Top.get_types
 
---res = Check3.compare (TD "list" [TT [T "num",T "num"]]) (TD "list" [TT [T "num",T "num"]])
-res = check0 (CL (CL (CL (CL (CVal "filter") (K [CVal "f",CVal "l"])) (S ["f"])) (K [CL (CL (CVal "less") (K [CNum 1,CVal "x"])) (S ["x"])])) (S ["l"]))
+-- (_*sum (length _) (head _))
+res = check0 (CL (CL (CVal "sum") (K [CL (CVal "length") (K [CVal "_"]),CL (CVal "head") (K [CVal "_"])])) (S ["_"]))
 
 
 

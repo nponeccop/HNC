@@ -13,7 +13,7 @@ is_passed (No _) = False
 
 test_last = 0
 from_i = 0::Int
---to_i = 100::Int
+--to_i = 68::Int
 to_i = (-) (length tests) 1
 
 test_res = map test $

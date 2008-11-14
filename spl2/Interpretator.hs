@@ -18,7 +18,7 @@ step str =
 				Compiler.P c ->
 					case check0 c of
 						Check3.P (ur, a)|M.null ur -> Interpretator.P (show a, show $ eval0 c)
-						Check3.P (u2, a) -> Interpretator.P (show a, show $ eval0 c)
+						Check3.P (u2, a) -> error ("check0 returned saved vars: "++show u2++"\n"++show str)
 						Check3.N e -> Interpretator.N $ ("type error: " ++ e, show c)
 				Compiler.N ->
 					Interpretator.N ("compile error", "")
