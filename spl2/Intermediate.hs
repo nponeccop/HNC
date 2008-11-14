@@ -29,7 +29,7 @@ data CppDefinition
         	functionLevel			:: Int
         ,	functionIsStatic		:: Bool
 		,  	functionContext			:: Maybe CppContext
-        ,	functionReturnTypeName	:: String 
+        ,	functionReturnType		:: CppType 
         ,	functionName        	:: String
         ,   functionArgs    		:: [CppVarDecl]
         ,   functionLocalVars       :: [CppLocalVarDef]
@@ -51,7 +51,7 @@ data CppAtomType
 	| CppFqMethod String		-- a(&aaa::bbb::x), aaa::bbb::x(a)
 
 data CppLocalVarDef
-    =   CppVar String String CppExpression
+    =   CppVar CppType String CppExpression
     |   CppStatement CppExpression
     
 data CppContext 
@@ -64,5 +64,8 @@ data CppContext
 		}
 
 data CppVarDecl
-    =   CppVarDecl String String
+    =   CppVarDecl CppType String
 
+data CppType 
+	= CppTypePrimitive String
+	| CppTypeFunction CppType [CppType]

@@ -1,7 +1,7 @@
 
 module Main where
 
-import Visualise
+-- import Visualise
 import Core
 import ParserTest
 import Parser2
@@ -12,8 +12,10 @@ import TypeParser
 import Intermediate
 
 import Check3
-import Code
 import Types
+import HN.SplExport
+import CPP.TypeProducer
+
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
@@ -61,7 +63,9 @@ testSet =
 		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
 	,	"main x z = { a = incr z\ny z = sum x z\nf x y a }"
 		-- BROKEN & перед указателями на статические функции 
-	,	"main l = { f x = less 1 x\nfilter f l }" 		
+	,	"main l = { f x = less 1 x\nfilter f l }"
+	
+	-- l*((f*(filter f l)) (x*less 1 x)) 		
 	
 	]
 	
@@ -69,27 +73,6 @@ defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 		("head",  "(List 1) -> 1" )
 	,	("plus1", "Int -> Int" )
 	]
-	
-convertExpr (Constant (ConstInt i)) = CNum i
-convertExpr (Constant (ConstString i)) = CStr i
-
-convertExpr (Atom a) = CVal a
-convertExpr (Application a b) = CL (convertExpr a) $ K $ map convertExpr b
-convertExpr expr = error $ show expr 
-
-convertDef (Definition _ [] value []) = convertExpr value
--- convertDef def @ (Definition _ [] value _) = error $ show def
-
-convertDef (Definition _ arguments value whereDefinitions) 
-	= CL xvalue $ S arguments where
-		xvalue = case whereDefinitions of
-			[] -> convertExpr value
-			_  -> CL (CL (convertExpr value) $ S whereVars) $ K whereValues
-		whereVars = whereMap (\(Definition name _ _ _) -> name)
-		whereValues = whereMap convertDef
-		whereMap f = map f whereDefinitions
-		
-testCheck4 = rt $ \x -> check0 (convertDef x)
 
 testCheck3 = mapM (print . check0 . convertExpr) [
 		Constant (ConstInt 123),
@@ -99,6 +82,8 @@ testCheck3 = mapM (print . check0 . convertExpr) [
 	]
 	
 testCheck2 = rt convertDef
+
+testCheck4 = rt $ \x -> check0 (convertDef x)
 
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
@@ -114,5 +99,6 @@ main = do
 	testCheck2
 	testCheck4
 --	test2
+	print $ showType $ cppType $ T "num" 
 	getLine
 	return ()

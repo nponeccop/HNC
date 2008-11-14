@@ -26,4 +26,9 @@ packL = Data.ByteString.pack . map (fromIntegral . ord)
 subtractSet x y = S.difference x (S.intersection x y)
 
 subtractMap x y = M.difference x (M.intersection x y)
-subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList    
+subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList
+
+joinStr _ [] = ""
+joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
+
+showJoinedList separator = joinStr separator . map show    

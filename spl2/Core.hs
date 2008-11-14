@@ -8,6 +8,10 @@ import Data.List
 import Debug.Trace
 import Visualise
 import Utils
+import Check3
+import CPP.TypeProducer
+import HN.SplExport
+import Types
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
@@ -25,14 +29,16 @@ sem_Definition inh self @ (Definition name args val wh)
     	dsCppDef = CppFunctionDef {
 		    	functionLevel 			= diLevel inh
 		    ,	functionIsStatic		= isFunctionStatic self
-			,	functionReturnTypeName 	= "int"
+			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
 			,	functionContext			= getContext inh symTabWithStatics self
 			,	functionName 			= name
-			,	functionArgs 			= map (CppVarDecl "int") args
+			,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 			,	functionLocalVars 		= wsLocalVars semWhere
 			,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
 		    }
     } where
+    	P (_, defType) = check0 $ convertDef self
+    	cppDefType = cppType defType
     	-- localsList : semWhere 
     	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
     	-- symTabWithStatics : semWhere
@@ -78,7 +84,7 @@ getContext inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (
 	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ getWhereVars (symTabTranslator (diSymTab inh)) wh) ++ contextArgs   
 	methods = getWhereMethods ((diLevel inh) + 1) (diSymTab inh) def
 	lvn = getLocalVars wh
-	contextArgs = map (\x -> CppVar "int" x $ CppAtom x) $ filter isArgContext args
+	contextArgs = map (\x -> CppVar (CppTypePrimitive "unknownCA") x $ CppAtom x) $ filter isArgContext args
 
 	wfv = getWhereFuncFreeVars def
 	
@@ -113,7 +119,8 @@ getWhereFuncFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars (filter isFunc
 getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
 
 transformVarDefinition fqn def @ (Definition name [] val _) =
-	CppVar "int" name $ sem_Expression fqn val
+	CppVar inferredType name $ sem_Expression fqn val where
+		inferredType = cppType $ case check0 $ convertExpr val of P (_, t) -> t ; N mesg -> T mesg  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x

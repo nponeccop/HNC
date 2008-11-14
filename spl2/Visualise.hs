@@ -1,19 +1,16 @@
 module Visualise where
 
-import Intermediate
 import Maybe
 
-joinStr _ [] = ""
-joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
+import Intermediate
+import Utils
+import CPP.TypeProducer
 
 mapAndJoinStr _ [] = [] 
 mapAndJoinStr x l = foldl1 (++) $ map x l
 
-showJoinedList separator = joinStr separator . map show
-
 showJoinedList2 separator = mapAndJoinStr (\x -> (show x) ++ separator)
 
-showFunctionArgs l = showJoinedList ", " l
 showProgram l = showJoinedList "\n\n" l
 
 showWithIndent indentationLevel y
@@ -22,23 +19,27 @@ showWithIndent indentationLevel y
 
 showFree y = mapAndJoinStr (\x -> "\t" ++ (show x) ++ ";") y
 
+showFunctionPrototype def = showType (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")" 
 
 instance Show CppContext where
 	show (CppContext level name vars methods) = 
 		sil ["struct " ++ name, "{"]
-		++ sil (map (\(CppVar tn n _) -> "\t" ++ (show $ CppVarDecl tn n) ++ ";") vars) 
+		++ sil (map (\(CppVar t n _) -> "\t" ++ (show $ CppVarDecl t n) ++ ";") vars) 
 		++ (if null vars then "" else "\n") 
 		++ (mapAndJoinStr show methods)  
 		++ sil ["};"] 
 		++ "\n"  where
 			sil = showWithIndent level
 			sil1 = showWithIndent (level + 1)
+			
+			
+
 
 instance Show CppDefinition where
-	show (CppFunctionDef level isStatic context typeName name args localVars retVal) 
+	show def @ (CppFunctionDef level isStatic context typeName name args localVars retVal) 
 		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $
 		[ 
-			(if isStatic then "static " else "") ++ typeName ++ " " ++ name ++ "(" ++ showFunctionArgs args ++ ")"
+			(if isStatic then "static " else "") ++ (showFunctionPrototype def)
 		,	"{"
 		] 
 		++ map (\x -> "\t" ++ show x) localVars 
@@ -59,10 +60,10 @@ instance Show CppDefinition where
 			 
    
 instance Show CppLocalVarDef where
-    show (CppVar a b c) = a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
+    show (CppVar a b c) = showType a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
     
 instance Show CppVarDecl where
-    show (CppVarDecl a b) = a ++ " " ++ b
+    show (CppVarDecl a b) = showType a ++ " " ++ b
     
 instance Show CppExpression where
     show (CppLiteral l) = case l of 
