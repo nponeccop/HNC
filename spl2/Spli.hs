@@ -14,7 +14,7 @@ get_cmd line =
 	else if "\\t " == take 3 line then Type
 	else Expr
 
-revision = "210"
+revision = "$Revision$"
 
 help = 
 	"help\n"++
