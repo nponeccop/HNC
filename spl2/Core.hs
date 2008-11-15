@@ -38,7 +38,10 @@ sem_Definition inh self @ (Definition name args val wh)
 			,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
 		    }
     } where
-    	P (_, defType) = check (convertDef self) (diFreeVarTypes inh)
+    	P (exprOutputTypes, defType) = check (convertDef self) exprFvt
+    	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
+    		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList  	
+    	
     	cppDefType = cppType defType
     	-- localsList : semWhere 
     	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
@@ -48,7 +51,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
     	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
     	  	
-    	semWhere = sem_Where symTabT classPrefix isFunctionStatic (diSymTab inh) (diFreeVarTypes inh) wh where
+    	semWhere = sem_Where symTabT classPrefix isFunctionStatic exprFvt wh where
 	    	classPrefix = CppFqMethod $ name ++ "_impl"
 	    	-- symTabT : symTabWithStatics 
     		symTabT = symTabTranslator symTabWithStatics
@@ -61,7 +64,7 @@ data WhereSynthesized = WhereSynthesized {
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
 }
     	
-sem_Where symTabT classPrefix isFunctionStatic symTab fvt self 
+sem_Where symTabT classPrefix isFunctionStatic fvt self 
 	= WhereSynthesized {
 		wsLocalVars = getWhereVars symTabT fvt self
 	,	wsLocalFunctionMap = getFunctionMap
