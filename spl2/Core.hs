@@ -12,6 +12,7 @@ import Check3
 import CPP.TypeProducer
 import HN.SplExport
 import Types
+import Maybe
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
@@ -31,17 +32,20 @@ sem_Definition inh self @ (Definition name args val wh)
 		    	functionLevel 			= diLevel inh
 		    ,	functionIsStatic		= isFunctionStatic self
 			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-			,	functionContext			= getContext inh symTabWithStatics self
+			,	functionContext			= getContext finalFvt inh symTabWithStatics self
 			,	functionName 			= name
 			,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 			,	functionLocalVars 		= wsLocalVars semWhere
 			,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
 		    }
     } where
+    	finalFvt = exprFvt
     	P (exprOutputTypes, defType) = check (convertDef self) exprFvt
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList  	
-    	
+
+		   	
+ 	
     	cppDefType = cppType defType
     	-- localsList : semWhere 
     	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
@@ -80,7 +84,7 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 
-getContext inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
+getContext fvt inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
@@ -88,7 +92,9 @@ getContext inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (
 	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh)) ++ contextArgs   
 	methods = getWhereMethods (inh { diLevel = diLevel inh + 1 }) def
 	lvn = getLocalVars wh
-	contextArgs = map (\x -> CppVar (CppTypePrimitive "unknownCA") x $ CppAtom x) $ filter isArgContext args
+	contextArgs = map (\x -> CppVar (getCppType x) x $ CppAtom x) $ filter isArgContext args
+	
+	getCppType x = cppType $ fromJust $ M.lookup x fvt 
 
 	wfv = getWhereFuncFreeVars def
 	

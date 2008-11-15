@@ -53,7 +53,7 @@ testSet =
 		-- перекрытие fqn-функции локальной переменной
 	,	"main x z = { head = incr z\nsum x head }"
 		-- константные строки
-	,	"main x = \"aaa\""
+	,	"main = \"aaa\""
 		-- перекрытие fqn-функции статической 
 	,	"main x = { head z a = z a x\nhead sum 5 }"
 		-- локальное замыкание c аргументом
