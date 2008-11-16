@@ -43,8 +43,6 @@ sem_Definition inh self @ (Definition name args val wh)
     	P (exprOutputTypes, defType) = check (convertDef self) exprFvt
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList  	
-
-		   	
  	
     	cppDefType = cppType defType
     	-- localsList : semWhere 
@@ -78,13 +76,16 @@ data WhereInherited a b c d = WhereInherited {
     	
 sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = getWhereVars (wiSymTabT inh) (wiFvt inh) self
-	,	wsLocalFunctionMap = getFunctionMap
+		wsLocalVars = getWsLocalVars inh self
+	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
-	} where 	
-		getFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
-			objPrefix = CppContextMethod
-			mapPrefix prefix fn = map (\(Definition locName _ _ _) -> (locName, prefix)) $ filter (\x -> isFunction x && (fn x)) self
+	} 	
+		
+getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiFvt inh) self
+		
+getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
+		objPrefix = CppContextMethod
+		mapPrefix prefix fn = map (\(Definition locName _ _ _) -> (locName, prefix)) $ filter (\x -> isFunction x && (fn x)) self
 			
 getWsFvt inh self = wiFvt inh
     
