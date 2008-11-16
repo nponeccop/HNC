@@ -53,7 +53,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
     	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
     	  	
-    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt) wh where
+    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt inh) wh where
 	    	classPrefix = CppFqMethod $ name ++ "_impl"
 	    	-- symTabT : symTabWithStatics 
     		symTabT = symTabTranslator symTabWithStatics
@@ -67,11 +67,12 @@ data WhereSynthesized = WhereSynthesized {
 ,	wsFvt :: M.Map String T
 }
 
-data WhereInherited a b c d = WhereInherited {
+data WhereInherited a b c d e = WhereInherited {
 	wiSymTabT          :: a
 ,	wiClassPrefix      :: b
 ,	wiIsFunctionStatic :: c
 ,	wiFvt              :: d
+,	wiDi			   :: e
 }
     	
 sem_Where inh self 
@@ -79,7 +80,8 @@ sem_Where inh self
 		wsLocalVars = getWsLocalVars inh self
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
-	} 	
+	} 
+	where childDefSem = map (sem_Definition $ wiDi inh) self 	
 		
 getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiFvt inh) self
 		
