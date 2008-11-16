@@ -55,7 +55,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
     	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
     	  	
-    	semWhere = sem_Where symTabT classPrefix isFunctionStatic exprFvt wh where
+    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt) wh where
 	    	classPrefix = CppFqMethod $ name ++ "_impl"
 	    	-- symTabT : symTabWithStatics 
     		symTabT = symTabTranslator symTabWithStatics
@@ -66,16 +66,27 @@ sem_Definition inh self @ (Definition name args val wh)
 data WhereSynthesized = WhereSynthesized {
 	wsLocalVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
+,	wsFvt :: M.Map String T
+}
+
+data WhereInherited a b c d = WhereInherited {
+	wiSymTabT          :: a
+,	wiClassPrefix      :: b
+,	wiIsFunctionStatic :: c
+,	wiFvt              :: d
 }
     	
-sem_Where symTabT classPrefix isFunctionStatic fvt self 
+sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = getWhereVars symTabT fvt self
+		wsLocalVars = getWhereVars (wiSymTabT inh) (wiFvt inh) self
 	,	wsLocalFunctionMap = getFunctionMap
+	,	wsFvt = getWsFvt inh self
 	} where 	
-		getFunctionMap = M.fromList $ mapPrefix classPrefix isFunctionStatic ++ mapPrefix objPrefix (not . isFunctionStatic) where
+		getFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
 			objPrefix = CppContextMethod
 			mapPrefix prefix fn = map (\(Definition locName _ _ _) -> (locName, prefix)) $ filter (\x -> isFunction x && (fn x)) self
+			
+getWsFvt inh self = wiFvt inh
     
 isFunction (Definition _ args _ _) = not $ null args
 
@@ -103,7 +114,7 @@ getContext fvt inh fqnWithLocals def @ (Definition name args _ wh) = constructJu
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
-getWhereVars fqn fvt def = getFromWhere def (transformVarDefinition fqn fvt) isVar
+getWhereVars fqn fvt def = getFromWhere def (sem_VarDefinition fqn fvt) isVar
 getWhereMethods inh def @ (Definition _ _ _ wh) = getFromWhere wh ((.) dsCppDef $ sem_Definition inh) (not . isVar)
 getWhereX wh f = S.fromList $ getFromWhere wh (\(Definition name _ _ _) -> name) f
 
@@ -129,7 +140,7 @@ getWhereFuncFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars (filter isFunc
 getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
 
 
-transformVarDefinition fqn fvt def @ (Definition name [] val _) =
+sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
 	CppVar inferredType name $ sem_Expression fqn val where
 		inferredType = cppType $ case check (convertExpr val) fvt of P (_, t) -> t ; N mesg -> T mesg  
 	
