@@ -32,7 +32,9 @@ help =
   "    (l!expr) - lazy, eval: (l!expr) go\n"++
   "    (r!expr1,_f,expr2) - save current lambda to _f\n"++
   "  base functions\n"++
-  "    "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)
+	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)++"\n"++
+	"  web\n"++
+  "    wiki http://code.google.com/p/inv/w/"
 
 help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
