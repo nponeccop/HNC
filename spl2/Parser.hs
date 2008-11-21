@@ -192,6 +192,6 @@ call Texpr_top s i =
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0
 
-res = p_or [([Tnpos], \vs -> vs!!0)] "1a" 0
+res = parse "sum (,2)"
 
 
