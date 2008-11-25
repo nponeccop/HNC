@@ -18,18 +18,22 @@ data P = P (Map [Char] T, T) | N [Char]
 
 get_r (P (ur, r)) = r
 get_rl l = Prelude.map get_r l
-get_ur (P (ur, r)) = ur
-get_url l = Prelude.map get_ur l
+get_url [] =
+	Right []
+get_url ((P (ur, r)):rs) =
+	case get_url rs of
+		Right o -> Right (ur:o)
+		Left o -> Left o
+get_url ((N o):rs) =
+	Left (N o)
 
 union_r a b =
 	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
---	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
 	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
 union a b =
 	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
---	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
 	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z (union l M.empty), merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
@@ -105,9 +109,12 @@ check (CL a (K p)) et =
 --		P (ur, TU n) ->
 --			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
 		P (ur, TV n) ->
-			let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty $ get_url p_ok;
-					r = observeN "r" $ TU ('_':n)
-			in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
+				case get_url p_ok of
+					Right a -> 
+						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
+							r = observeN "r" $ TU ('_':n)
+						in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
+					Left o -> o
 		N e -> N e
 	where
 		p_ok = Prelude.map (\x -> check x et) p
