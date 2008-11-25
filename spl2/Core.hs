@@ -32,7 +32,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		    	functionLevel 			= diLevel inh
 		    ,	functionIsStatic		= isFunctionStatic self
 			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-			,	functionContext			= getContext finalFvt inh symTabWithStatics self
+			,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics self
 			,	functionName 			= name
 			,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 			,	functionLocalVars 		= wsLocalVars semWhere
@@ -42,7 +42,7 @@ sem_Definition inh self @ (Definition name args val wh)
     	finalFvt = exprFvt
     	P (exprOutputTypes, defType) = check (convertDef self) exprFvt
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
-    		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList  	
+    		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
  	
     	cppDefType = cppType defType
     	-- localsList : semWhere 
@@ -53,7 +53,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
     	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
     	  	
-    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt inh) wh where
+    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
 	    	classPrefix = CppFqMethod $ name ++ "_impl"
 	    	-- symTabT : symTabWithStatics 
     		symTabT = symTabTranslator symTabWithStatics
@@ -61,10 +61,11 @@ sem_Definition inh self @ (Definition name args val wh)
     	isFunctionStatic def  = S.null $ getDefinitionFreeVarsWithoutFqn def where
     	    getDefinitionFreeVarsWithoutFqn def = getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
   	
-data WhereSynthesized = WhereSynthesized {
+data WhereSynthesized d = WhereSynthesized {
 	wsLocalVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
 ,	wsFvt :: M.Map String T
+,	wsMethods :: d
 }
 
 data WhereInherited a b c d e = WhereInherited {
@@ -80,8 +81,9 @@ sem_Where inh self
 		wsLocalVars = getWsLocalVars inh self
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
+	,	wsMethods = getWhereMethods (wiDi inh) self
 	} 
-	where childDefSem = map (sem_Definition $ wiDi inh) self 	
+	
 		
 getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiFvt inh) self
 		
@@ -98,13 +100,13 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 
-getContext fvt inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
+getContext methods fvt inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях 
 	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh)) ++ contextArgs   
-	methods = getWhereMethods (inh { diLevel = diLevel inh + 1 }) def
+	
 	lvn = getLocalVars wh
 	contextArgs = map (\x -> CppVar (getCppType x) x $ CppAtom x) $ filter isArgContext args
 	
@@ -118,7 +120,7 @@ isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
 getWhereVars fqn fvt def = getFromWhere def (sem_VarDefinition fqn fvt) isVar
-getWhereMethods inh def @ (Definition _ _ _ wh) = getFromWhere wh ((.) dsCppDef $ sem_Definition inh) (not . isVar)
+getWhereMethods inh wh = getFromWhere wh ((.) dsCppDef $ sem_Definition inh) (not . isVar)
 getWhereX wh f = S.fromList $ getFromWhere wh (\(Definition name _ _ _) -> name) f
 
 getWhereVarNames wh = getWhereX wh isVar 
