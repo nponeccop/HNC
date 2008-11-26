@@ -8,6 +8,7 @@ import Intermediate
 cppType (T x) = CppTypePrimitive $ case x of
 	"num" -> "int"
 	"string" -> "std::string"
+	"boolean" -> "bool"
 	_ -> "<<<<Type inference error or unknown primitive type: " ++ x ++ ">>>>" 
 	
 cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
