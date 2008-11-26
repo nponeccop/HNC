@@ -68,4 +68,5 @@ data CppVarDecl
 
 data CppType 
 	= CppTypePrimitive String
+	| CppTypePoly String [CppType]
 	| CppTypeFunction CppType [CppType]

@@ -19,7 +19,7 @@ showWithIndent indentationLevel y
 
 showFree y = mapAndJoinStr (\x -> "\t" ++ (show x) ++ ";") y
 
-showFunctionPrototype def = showType (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")" 
+showFunctionPrototype def = show (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")" 
 
 instance Show CppContext where
 	show (CppContext level name vars methods) = 
@@ -60,10 +60,10 @@ instance Show CppDefinition where
 			 
    
 instance Show CppLocalVarDef where
-    show (CppVar a b c) = showType a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
+    show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
     
 instance Show CppVarDecl where
-    show (CppVarDecl a b) = showType a ++ " " ++ b
+    show (CppVarDecl a b) = show a ++ " " ++ b
     
 instance Show CppExpression where
     show (CppLiteral l) = case l of 
@@ -74,3 +74,16 @@ instance Show CppExpression where
         = a ++ "(" ++ (showFunctionArgs b) ++ ")"
     show (CppApplication a b)
         = "(" ++ (show a) ++ ")(" ++ (showFunctionArgs b) ++ ")"
+
+instance Show CppType where
+	show (CppTypePrimitive p) 
+		= p 
+	show (CppTypeFunction ret args) 
+		= show ret ++ (showFunctionArgs args)
+	show (CppTypePoly polyType typeArgs) 
+		= polyType ++ "<" ++ (showFunctionArgs typeArgs) ++ ">"
+ 
+showFunctionArgs l = showJoinedList ", " l
+
+showFunctionArgsWithTypes args = joinStr ", " $ map f args where  
+	f (CppVarDecl typ name) = (show typ) ++ " " ++ name

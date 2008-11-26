@@ -99,7 +99,7 @@ main = do
 	rt convertDef
 	rt $ \x -> check0 (convertDef x)
 --	test2
-	print $ showType $ cppType $ T "num"
+	print $ cppType $ T "num"
 	
 	testCodeGen
  	getLine
