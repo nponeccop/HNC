@@ -34,7 +34,7 @@ test2 = rt (getDefinitionFreeVars)
 
 rt f = mapM (print . f . simpleParse) testSet
 
-testSet = 
+testSet =
 	[
 		-- нумералы, вызовы ffi-функции
 		"main = incr 2"
@@ -57,11 +57,11 @@ testSet =
 		-- перекрытие fqn-функции статической 
 	,	"main x = { head z a = z a x\nhead sum 5 }"
 		-- локальное замыкание c аргументом
-	,	"main a b = { c i = g i b\nf (c a (g a)) }"
+	,	"main a b = { c i = sum i b\nincr (sum a (c a)) }"
  
-	,	"main a b = { c i = g i b\nd i = g i i\nf (c a (d a)) }"
+	,	"main a b = { c i x = sum b (sum x i)\nd i = sum i i\nincr (c a (d a)) }"
 		-- локальная переменная
-	,	"main x = { y = x x\ng y y }"
+	,	"main x = { y = sum x x\nsum y y }"
 		-- & перед указателями на функции (рекомендуется новым стандартом C++)
 		-- биндеры при передаче локальных функций аргументами
 		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
