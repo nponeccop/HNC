@@ -50,7 +50,7 @@ data Token =
 	| Tparams
 	| Tsave
 	| Tsave_args
-	| Tsave_args2
+	| Twhere_args
 	| Tmark
 	| Tmarks
 	| Eos
@@ -153,9 +153,9 @@ call Tsave_args =
 		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l:[]) -> Sl (c:l))
 		,([], \([]) -> Sl [])
 		]
-call Tsave_args2 =
+call Twhere_args =
 	p_or [
-		([Tc '*',Tcs,Tc ':',Texpr,Tsave_args2], \(_:c:_:e:Sl l:[]) -> Sl ((Spair c e):l))
+		([Tc '*',Tcs,Tc ':',Texpr,Twhere_args], \(_:c:_:e:Sl l:[]) -> Sl ((Spair c e):l))
 		,([], \([]) -> Sl [])
 		]
 call Tmarks =
@@ -166,7 +166,7 @@ call Tmarks =
 		]
 call Tsave =
 	p_or [
-		([Tsave_args,Texpr,Tsave_args2], \(Sl w:e:Sl l:[]) ->
+		([Tsave_args,Texpr,Twhere_args], \(Sl w:e:Sl l:[]) ->
 			let ee =
 				case l of
 					[] -> e
