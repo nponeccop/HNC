@@ -71,63 +71,67 @@ p_or (o:os) s i m =
 p_or [] s i m =
 	N (max i m)
 
-call (Tc c) s i m| i < length s && c == s!!i = P (max i m) 1 (Sc c)
-call (Tc c) s i m = N (max i m)
-call Eos s i m| i == length s = P (max i m) 0 (Ss "")
-call Eos s i m = N (max i m)
-call Tc1 s i m =
-	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz") s i m
-call Tb s i m =
+call (Tc c) = \s i m ->
+	case i < length s && c == s!!i of
+		True -> P (max i m) 1 (Sc c)
+		False -> N (max i m)
+call Eos = \s i m ->
+	case i == length s of
+		True -> P (max i m) 0 (Ss "")
+		False -> N (max i m)
+call Tc1 =
+	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
+call Tb =
 	p_or [
 		([Tc '1', Tc 'b'], \(c1:c2:[]) -> Sb True)
 		,([Tc '0', Tc 'b'], \(c1:c2:[]) -> Sb False)
-		] s i m
-call Tsp s i m =
+		]
+call Tsp =
 	p_or [
 		([Tc ' ', Tsp], \(Sc c:Ss s:[]) -> Ss (c:s))
 		,([Tc ' '], \(Sc c:[]) -> Ss (c:""))
 		,([Tc '\n'], \(Sc c:[]) -> Ss (c:""))
-		] s i m
-call Tspn s i m =
+		]
+call Tspn =
 	p_or [
 		([Tsp], \(Ss s:[]) -> Ss s)
 		,([], \([]) -> Ss "")
-		] s i m
-call Tcs s i m =
+		]
+call Tcs =
 	p_or [
 		([Tc1, Tcs], \(Sc c:Ss s:[]) -> Ss (c:s))
 		,([Tc1], \(Sc c:[]) -> Ss (c:""))
-		] s i m
-call Tn s i m =
-	p_or (map (\x -> ([Tc x], \(Sc c:[]) -> Sn (read (c:"")))) "0123456789") s i m
-call Tnpos s i m =
+		]
+call Tn =
+	p_or (map (\x -> ([Tc x], \(Sc c:[]) -> Sn (read (c:"")))) "0123456789")
+call Tnpos =
 	p_or [
 		([Tn, Tnpos], \(Sn n:Sn n2:[]) -> Sn (n2 + 10 * n))
 		,([Tn], \(sn:[]) -> sn)
-		] s i m
-call Tnneg s i m =
+		]
+call Tnneg =
 	p_or [
 		([Tc '-', Tnpos], \(_:Sn n:[]) -> Sn (-n))
-		] s i m
-call Tnum s i m =
+		]
+call Tnum =
 	p_or [
 		([Tnpos], \(sn:[]) -> sn)
 		,([Tnneg], \(sn:[]) -> sn)
-		] s i m
-call Tstring s i m =
+		]
+call Tstring =
     p_or [
         ([Tc '\'', Tcs, Tc '\''], \(Sc c1:Ss sn:Sc c2:[]) -> Sstr sn)
-		] s i m
+		]
 
 
-call Tparams s i m =
+call Tparams =
 	p_or [
 		([Tsp,Tval,Tparams], \(_:v:Sl l:[]) -> Sl (v:l))
 --		,([Tsp,Tval], \(_:v:[]) -> Sl (v:[]))
 		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]))
 		,([], \([]) -> Sl [])
-		] s i m
-call Tval s i m =
+		]
+call Tval =
 	p_or [
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
@@ -135,32 +139,32 @@ call Tval s i m =
 		,([Tcs,Tnpos], \(Ss s:Sn n:[]) -> Ss $ s++show n) -- create new token?
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
-		] s i m
-call Texpr s i m =
+		]
+call Texpr =
 	p_or [
 --		([Tcall,Tsave_args], \(c:Sl w:[]) -> Scall c (SynS (map (\(Ss s) -> s) w)))
 		([Tval,Tparams], \(v:Sl a:[]) ->
 			case a of
 				[] -> v
 				_ -> Scall v (SynK a))
-		] s i m
-call Tsave_args s i m =
+		]
+call Tsave_args =
 	p_or [
 		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l:[]) -> Sl (c:l))
 		,([], \([]) -> Sl [])
-		] s i m
-call Tsave_args2 s i m =
+		]
+call Tsave_args2 =
 	p_or [
 		([Tc '*',Tcs,Tc ':',Texpr,Tsave_args2], \(_:c:_:e:Sl l:[]) -> Sl ((Spair c e):l))
 		,([], \([]) -> Sl [])
-		] s i m
-call Tmarks s i m =
+		]
+call Tmarks =
 	p_or [
 		([Tc 'r',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'r':l))
 		,([Tc 'l',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'l':l))
 		,([], \([]) -> Sl [])
-		] s i m
-call Tsave s i m =
+		]
+call Tsave =
 	p_or [
 		([Tsave_args,Texpr,Tsave_args2], \(Sl w:e:Sl l:[]) ->
 			let ee =
@@ -171,21 +175,21 @@ call Tsave s i m =
 			case w of
 				[] -> ee
 				xs -> Scall ee (SynS (map (\(Ss s) -> s) w)))
-		] s i m
-call Tmark s i m =
+		]
+call Tmark =
 	p_or [
 		([Tmarks,Tsave], \(Sl m:e:[]) ->
 			case m of
 				(Sc 'r':[]) -> Scall e (SynM [MarkR])
 				(Sc 'l':[]) -> Scall e SynL
 				[] -> e)
-		] s i m
+		]
 
-call Texpr_top s i m =
+call Texpr_top =
 	p_or [
 		([Tspn, Tmark, Tspn], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
-		] s i m
+		]
 
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
