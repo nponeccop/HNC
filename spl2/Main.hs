@@ -28,7 +28,7 @@ tdi = DefinitionInherited {
 	diFreeVarTypes = Top.get_types
 }
     
-test1 = rt (dsCppDef . (sem_Definition tdi))
+testCodeGen = rt (dsCppDef . (sem_Definition tdi))
 
 test2 = rt (getDefinitionFreeVars) 
 
@@ -94,11 +94,13 @@ main = do
 --		,	Application (Atom "head") [Atom "l"]
 		]  
 	runTests
-	test1
+
 	testCheck3
 	rt convertDef
 	rt $ \x -> check0 (convertDef x)
 --	test2
-	print $ showType $ cppType $ T "num" 
-	getLine
+	print $ showType $ cppType $ T "num"
+	
+	testCodeGen
+ 	getLine
 	return ()
