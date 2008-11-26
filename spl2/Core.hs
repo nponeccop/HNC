@@ -32,7 +32,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		    	functionLevel 			= diLevel inh
 		    ,	functionIsStatic		= isFunctionStatic self
 			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-			,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics self
+			,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics defType self
 			,	functionName 			= name
 			,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 			,	functionLocalVars 		= wsLocalVars semWhere
@@ -100,15 +100,18 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 
-getContext methods fvt inh fqnWithLocals def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
+getContext methods fvt inh fqnWithLocals defType def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях 
-	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh)) ++ contextArgs   
+	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh))  ++ contextArgs   
 	
 	lvn = getLocalVars wh
-	contextArgs = map (\x -> CppVar (getCppType x) x $ CppAtom x) $ filter isArgContext args
+	
+	contextArgs = case defType of
+		TT funList -> map (\(typ, x) -> CppVar (cppType typ) x $ CppAtom x) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
+		_ -> []
 	
 	getCppType x = cppType $ fromJust $ M.lookup x fvt 
 
