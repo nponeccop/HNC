@@ -13,7 +13,7 @@ data P = P ([Char], [Char]) | N ([Char], [Char])
 
 step str =
 	case parse str of
-		Parser.P i p ->
+		Parser.P _ i p ->
 			case compile p of
 				Compiler.P c ->
 					case check0 c of
