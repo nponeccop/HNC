@@ -2,31 +2,33 @@
 module Main where
 
 -- import Visualise
-import CPP.Core
-import HN.Parser2
-import HN.ParserTest
 import Utils
 import qualified Data.Map as M
+
+import HN.Parser2
+import HN.ParserTest
 import HN.MyTypeCheck
 import HN.TypeParser
 import HN.Intermediate
-import CPP.Intermediate
-
-import Check3
-import Types
 import HN.SplExport
-import CPP.TypeProducer
-import qualified Top
 
+import CPP.Core
+import CPP.Intermediate
+import CPP.TypeProducer
+
+import SPL.Types
+import SPL.Check3
+import qualified SPL.Top
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
-baseToTdi = M.map (const $ CppFqMethod "ff") Top.get_types
+baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
 tdi = DefinitionInherited {
 	diLevel        = 3,
 	diSymTab       = baseToTdi,
-	diFreeVarTypes = Top.get_types
+	diFreeVarTypes = SPL.Top.get_types
+,	diType         = Nothing
 }
     
 testCodeGen = rt (dsCppDef . (sem_Definition tdi))
@@ -55,8 +57,6 @@ testSet =
 	,	"main x z = { head = incr z\nsum x head }"
 		-- константные строки
 	,	"main = \"aaa\""
-		-- перекрытие fqn-функции статической 
-	,	"main x = { head z a = z a x\nhead sum 5 }"
 		-- локальное замыкание c аргументом
 	,	"main a b = { c i = sum i b\nincr (sum a (c a)) }"
  
@@ -71,7 +71,8 @@ testSet =
 	,	"main l = {\n\tf x = less 1 x\n\tfilter f l\n}"
 	
 	-- l*((f*(filter f l)) (x*less 1 x)) 		
-	
+		-- перекрытие fqn-функции статической 
+	,	"main x = { head z a = z a x\nhead sum 5 }"
 	]
 	
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [

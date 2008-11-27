@@ -1,6 +1,6 @@
 module CPP.TypeProducer where
 
-import Types
+import SPL.Types
 import Utils
 import CPP.Intermediate
 

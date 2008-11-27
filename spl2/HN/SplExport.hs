@@ -1,6 +1,6 @@
 module HN.SplExport where
 import HN.Intermediate
-import Types
+import SPL.Types
 
 convertExpr (Constant (ConstInt i)) = CNum i
 convertExpr (Constant (ConstString i)) = CStr i

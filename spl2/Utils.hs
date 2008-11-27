@@ -3,6 +3,7 @@ module Utils where
 
 import qualified Data.ByteString
 import Data.Char
+import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Debug.Trace
@@ -31,4 +32,6 @@ subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList
 joinStr _ [] = ""
 joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
 
-showJoinedList separator = joinStr separator . map show    
+showJoinedList separator = joinStr separator . map show
+
+uncondLookup k m = fromJust $ M.lookup k m    
