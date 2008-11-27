@@ -145,8 +145,8 @@ check (CL a (S (p:ps))) et sv =
 						b -> TT [TU p_n, b]
 					in
 					let ur2 = case elem p_n sv of
-						True -> M.insert p_n (TU p_n) ur
-						False -> ur
+						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
+						False -> M.map (untv p_n) ur
 					in
 					observeN ("no "++p) $ P (ur2, w) -- rm ?
 		o -> o

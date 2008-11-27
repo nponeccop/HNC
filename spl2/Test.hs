@@ -121,6 +121,7 @@ tests = [
 	,("(case*iff (case (less 1 5) (l!sum 1 2),elist)) (w*y*l*join1 (pair w y) l)", "CL (CInFun 2 InFun \"iff\") (K [CList [CPair [CBool True,CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) L]]])", "TT [TT [TL,T \"num\"],T \"num\"]")
 	,("(x*(y*iff (join1 (pair (less x 5) (l!sum y y)),elist) (l!5)) ((x*sum 1,sum 2 x) 2))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"x\",CNum 5]),CL (CL (CVal \"sum\") (K [CVal \"y\",CVal \"y\"])) L]),CVal \"elist\"]),CL (CNum 5) L])) (S [\"y\"])) (K [CL (CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"sum\") (K [CNum 2,CVal \"x\"])])) (S [\"x\"])) (K [CNum 2])])) (S [\"x\"])", "TT [T \"num\",T \"num\"]")
 	,("(l*(f*filter f l) (x*less 1 x))", "CL (CL (CL (CL (CVal \"filter\") (K [CVal \"f\",CVal \"l\"])) (S [\"f\"])) (K [CL (CL (CVal \"less\") (K [CNum 1,CVal \"x\"])) (S [\"x\"])])) (S [\"l\"])", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
+	,("f*(flipped*flipped) (x*y*f y x)", "CL (CL (CL (CVal \"flipped\") (S [\"flipped\"])) (K [CL (CL (CVal \"f\") (K [CVal \"y\",CVal \"x\"])) (S [\"x\",\"y\"])])) (S [\"f\"])", "TT [TT [TU \"y0\",TU \"x0\",TU \"_f0\"],TU \"x0\",TU \"y0\",TU \"_f0\"]")
 	,("(z*z z)", "", "")
 	]
 
