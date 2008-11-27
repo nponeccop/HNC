@@ -1,5 +1,5 @@
 
-module SPL.Interpretator (SPL.Interpretator.P (..), step, get_code_of_expr) where
+module SPL.Interpretator (SPL.Interpretator.P (..), step, get_code_of_expr, get_type_debug_of_expr) where
 
 import SPL.Parser
 import SPL.Compiler
@@ -31,6 +31,19 @@ get_code_of_expr str =
 			case compile p of
 				SPL.Compiler.P c -> SPL.Interpretator.P (show c, "")
 				SPL.Compiler.N -> SPL.Interpretator.N ("compile error", "")
+		SPL.Parser.N i ->
+			SPL.Interpretator.N ("  "++(take i $ repeat ' ')++"^ parser error", "")
+
+get_type_debug_of_expr str =
+	case parse str of
+		SPL.Parser.P _ i p ->
+			case compile p of
+				SPL.Compiler.P c ->
+					case check0 c of
+						SPL.Check3.P (ur, a) -> SPL.Interpretator.P (show $ (ur, a), "")
+						SPL.Check3.N e -> SPL.Interpretator.N $ ("type error: " ++ e, show c)
+				SPL.Compiler.N ->
+					SPL.Interpretator.N ("compile error", "")
 		SPL.Parser.N i ->
 			SPL.Interpretator.N ("  "++(take i $ repeat ' ')++"^ parser error", "")
 

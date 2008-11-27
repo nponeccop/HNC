@@ -61,7 +61,7 @@ main_loop = do
 				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
 		TypeDef ->
-			case step $ drop 4 line of
+			case get_type_debug_of_expr $ drop 4 line of
 				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
 		Code ->
