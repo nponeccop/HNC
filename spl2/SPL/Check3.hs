@@ -144,7 +144,11 @@ check (CL a (S (p:ps))) et sv =
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN ("no "++p) $ P (M.map (untv p_n) ur, w) -- rm ?
+					let ur2 = case elem p_n sv of
+						True -> M.insert p_n (TU p_n) ur
+						False -> ur
+					in
+					observeN ("no "++p) $ P (ur2, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -237,7 +241,8 @@ check0 o =
 	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CL (CVal "o") (K [CVal "x",CVal "x"])) (S ["o"])) (K [CL (CL (CVal "sum") (K [CVal "a",CVal "b"])) (S ["a","b"])])) (S ["x"])) SPL.Top.get_types ["o"]
+res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
+	SPL.Top.get_types ["flipped"]
 
 
 
