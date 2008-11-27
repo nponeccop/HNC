@@ -1,6 +1,6 @@
-module ParserTest (runTests, runTest2) where
+module HN.ParserTest (runTests, runTest2) where
 
-import Parser2
+import HN.Parser2
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char

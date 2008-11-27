@@ -3,8 +3,8 @@ module Main where
 
 -- import Visualise
 import Core
-import ParserTest
-import Parser2
+import HN.Parser2
+import HN.ParserTest
 import Utils
 import qualified Data.Map as M
 import MyTypeCheck

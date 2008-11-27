@@ -9,7 +9,7 @@ import Text.Parsec.Char
 import qualified Data.Map as M
 import Intermediate
 import Utils
-import qualified Parser2 as P
+import qualified HN.Parser2 as P
 import MyTypeCheck
 
 pair a b = (a, b)
