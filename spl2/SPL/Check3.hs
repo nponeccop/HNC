@@ -57,7 +57,7 @@ get_ul n u =
 ch [] [] et ul uv i sv =
 	N "too many parameters"
 ch (r:[]) [] et ul uv i sv =
-	P (observeN "uv" uv, setmv (setm (observeN "r" r) (observeN "l" ul)) uv)
+	P (observeN "uv" uv, setmv (setm (observeN "r" $ untv "x" r) (observeN "l" ul)) uv)
 ch r [] et ul uv i sv =
 	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv =
@@ -100,7 +100,7 @@ check (CL a (K p)) et sv =
 		P (rm0, TT r) ->
 			case ch r p et M.empty rm0 0 sv of
 				P (rm, r) ->
-					P (rm, r)
+					observeN "X" $ P (M.map (\x -> setmv x rm) rm, r)
 				N e -> N (e++" for "++show a)
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
@@ -136,14 +136,14 @@ check (CL a (S (p:ps))) et sv =
 						True -> ur
 						False -> M.delete p_n ur
 					in
-					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p w)
+					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN ("no "++p) $ P (M.map (untv p) ur, w) -- rm ?
+					observeN ("no "++p) $ P (M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -236,7 +236,7 @@ check0 o =
 	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CL (CVal "hd") (K [CVal "sum",CNum 5])) (S ["hd"])) (K [CL (CL (CVal "z") (K [CVal "a",CVal "x"])) (S ["z","a"])])) (S ["x"])) SPL.Top.get_types ["hd"]
+res = check (CL (CL (CL (CL (CVal "o") (K [CVal "x",CVal "x"])) (S ["o"])) (K [CL (CL (CVal "sum") (K [CVal "a",CVal "b"])) (S ["a","b"])])) (S ["x"])) SPL.Top.get_types ["o"]
 
 
 
