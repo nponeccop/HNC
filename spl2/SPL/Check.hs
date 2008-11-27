@@ -1,11 +1,11 @@
 
-module Check (P (..), check0, res) where
+module SPL.Check (P (..), check0, res) where
 
 import Data.Map as M hiding (filter)
 
-import Types
-import Code hiding (res)
-import Top
+import SPL.Types
+import SPL.Code hiding (res)
+import SPL.Top
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show

@@ -1,4 +1,4 @@
-module Types (T (..), C (..), St (..), InFun (..)) where
+module SPL.Types (T (..), C (..), St (..), InFun (..)) where
 
 import Data.Map
 

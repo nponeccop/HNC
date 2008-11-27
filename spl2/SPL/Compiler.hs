@@ -1,7 +1,7 @@
-module Compiler (P (..), compile, res) where
+module SPL.Compiler (P (..), compile, res) where
 
-import Parser hiding (P (..), res)
-import Code hiding (res)
+import SPL.Parser hiding (P (..), res)
+import SPL.Code hiding (res)
 
 data P = P C | N
 	deriving Show

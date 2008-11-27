@@ -1,12 +1,12 @@
 
-module Check2 (P (..), check0, res) where
+module SPL.Check2 (P (..), check0, res) where
 
 import Data.Map as M hiding (filter)
 
-import Types
-import Code hiding (res)
-import Top
-import Debug.Trace
+import SPL.Types
+import SPL.Code hiding (res)
+import SPL.Top
+--import Debug.Trace
 
 data P = P (Map [Char] T, T) | N [Char]
 	deriving Show

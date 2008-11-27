@@ -1,8 +1,8 @@
 --module Code (C (..), St (..), eval0, res) where
-module Code (C (..), St (..), eval, res) where
+module SPL.Code (C (..), St (..), eval, res) where
 
 import Data.Map as M hiding (map, filter)
-import Types
+import SPL.Types
 
 -- eval
 

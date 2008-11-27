@@ -1,15 +1,15 @@
 
-module Check3 (P (..), check0, check, res) where
+module SPL.Check3 (P (..), check0, check, res) where
 
 import Data.Map as M hiding (filter, union)
 
-import Types
-import Code hiding (res)
-import Top
-import Debug.Trace
+import SPL.Types
+import SPL.Code hiding (res)
+import SPL.Top
+--import Debug.Trace
 --import Hugs.Observe
 --observe a b = b
-trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
+--trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
 
 data P = P (Map [Char] T, T) | N [Char]
@@ -28,12 +28,12 @@ get_url ((N o):rs) =
 	Left (N o)
 
 union_r a b =
-	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
+	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
 	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
 union a b =
-	let m = M.intersectionWith (\a b -> (a, b, Check3.compare a b)) a b in
+	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
 	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z (union l M.empty), merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
@@ -65,7 +65,7 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
-			case Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
+			case SPL.Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
 					let ru1u = union_r uv rm2;
 							ru2u = union_r r2 rm2;
@@ -167,7 +167,7 @@ putp [] [] et = et
 putp o1 o2 et = error ("Check3.putp: "++show o1++", "++show o2)
 
 compare (T a) (T b)|a == b = (M.empty, M.empty, True)
-compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union_r u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
+compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union_r u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith SPL.Check3.compare l1 l2
 --compare (TT l1) (TT l2) = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (M.union u1l u2l, M.union u1r u2r, r1 && r2)) (M.empty, M.empty, True) $ zipWith Check3.compare l1 l2
 -- error: TT [T "num",TU "_l"]/TT [TU "_",TU "z",T "num"]
 compare (TT []) (TT []) =
@@ -177,8 +177,8 @@ compare (TT [TU a]) b@(TT l)|1 < length l =
 compare (TT (l1:l1s)) (TT (l2:l2s)) =
 	(union l ll, union_r r rr, b && bb)
 	where
-		(l, r, b) = Check3.compare l1 l2
-		(ll, rr, bb) = Check3.compare (TT l1s) (TT l2s)
+		(l, r, b) = SPL.Check3.compare l1 l2
+		(ll, rr, bb) = SPL.Check3.compare (TT l1s) (TT l2s)
 compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
@@ -233,10 +233,10 @@ change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
 
 check0 o =
-	observeN "ret" $ check o Top.get_types []
+	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CL (CVal "hd") (K [CVal "sum",CNum 5])) (S ["hd"])) (K [CL (CL (CVal "z") (K [CVal "a",CVal "x"])) (S ["z","a"])])) (S ["x"])) Top.get_types ["hd"]
+res = check (CL (CL (CL (CL (CVal "hd") (K [CVal "sum",CNum 5])) (S ["hd"])) (K [CL (CL (CVal "z") (K [CVal "a",CVal "x"])) (S ["z","a"])])) (S ["x"])) SPL.Top.get_types ["hd"]
 
 
 

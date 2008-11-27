@@ -1,4 +1,4 @@
-module Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
+module SPL.Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
 -- import Hugs.Observe
 

@@ -1,9 +1,9 @@
-module Top where
+module SPL.Top where
 
 import Data.Map as M
 
-import Types
-import Code
+import SPL.Types
+import SPL.Code
 
 data Fun = Fun C T
 

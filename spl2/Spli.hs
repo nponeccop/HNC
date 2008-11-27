@@ -1,7 +1,7 @@
 module Main where
 
-import Interpretator
-import Top
+import SPL.Interpretator
+import SPL.Top
 import Data.Map as M hiding (map)
 import System
 
@@ -33,7 +33,7 @@ help =
   "    (l!expr) - lazy, eval: (l!expr) go\n"++
   "    (r!expr1,_f,expr2) - save current lambda to _f\n"++
   "  base functions\n"++
-	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys Top.base)++"\n"++
+	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys SPL.Top.base)++"\n"++
 	"  web\n"++
   "    wiki http://code.google.com/p/inv/w/"
 
@@ -46,8 +46,8 @@ title =
 exec_file f = do
 	s <- readFile f
 	case step s of
-		Interpretator.P (t, r) -> putStrLn r
-		Interpretator.N (t, r) -> putStrLn t
+		SPL.Interpretator.P (t, r) -> putStrLn r
+		SPL.Interpretator.N (t, r) -> putStrLn t
 
 main_loop = do
 	putStr "  "
@@ -57,16 +57,16 @@ main_loop = do
 		Help -> do putStrLn help; main_loop
 		Type ->
 			case step $ drop 3 line of
-				Interpretator.P (t, r) -> do putStrLn t; main_loop
-				Interpretator.N (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
 		Code ->
 			case get_code_of_expr $ drop 3 line of
-				Interpretator.P (c, r) -> do putStrLn c; main_loop
-				Interpretator.N (e, r) -> do putStrLn e; main_loop
+				SPL.Interpretator.P (c, r) -> do putStrLn c; main_loop
+				SPL.Interpretator.N (e, r) -> do putStrLn e; main_loop
 		Expr ->
 			case step line of
-				Interpretator.P (t, r) -> do putStrLn r; main_loop
-				Interpretator.N (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.P (t, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
 
 spli = do
 	args <- getArgs
