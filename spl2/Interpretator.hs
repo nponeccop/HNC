@@ -1,5 +1,5 @@
 
-module Interpretator (Interpretator.P (..), step) where
+module Interpretator (Interpretator.P (..), step, get_code_of_expr) where
 
 import Parser
 import Compiler
@@ -23,7 +23,15 @@ step str =
 				Compiler.N ->
 					Interpretator.N ("compile error", "")
 		Parser.N i ->
---			Interpretator.N ("parser error at "++show i, "")
+			Interpretator.N ("  "++(take i $ repeat ' ')++"^ parser error", "")
+
+get_code_of_expr str =
+	case parse str of
+		Parser.P _ i p ->
+			case compile p of
+				Compiler.P c -> Interpretator.P (show c, "")
+				Compiler.N -> Interpretator.N ("compile error", "")
+		Parser.N i ->
 			Interpretator.N ("  "++(take i $ repeat ' ')++"^ parser error", "")
 
 {-comp2 str = 
