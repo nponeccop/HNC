@@ -71,7 +71,8 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 							ru2u = union_r r2 rm2;
 							ru3u = union_r r2 uv;
 							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
-							ru2 = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
+							ru2a = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
+							ru2 = M.map (\x -> setmv x ru1) ru2a;
 							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
 							ru = observeN "ru" $ union_r (union_r ru1 ru2) ru3;
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
@@ -100,7 +101,7 @@ check (CL a (K p)) et sv =
 		P (rm0, TT r) ->
 			case ch r p et M.empty rm0 0 sv of
 				P (rm, r) ->
-					observeN "X" $ P (M.map (\x -> setmv x rm) rm, r)
+					observeN "X" $ P (rm, r)
 				N e -> N (e++" for "++show a)
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
