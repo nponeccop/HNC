@@ -6,12 +6,13 @@ import Data.Map as M hiding (map)
 import System
 
 data Cmd =
-	Quit | Help | Type | Code | Expr
+	Quit | Help | Type | TypeDef | Code | Expr
 
 get_cmd line =
 	if "\\q" == take 2 line then Quit
 	else if "\\h" == take 2 line then Help
 	else if "\\t " == take 3 line then Type
+	else if "\\td " == take 4 line then TypeDef
 	else if "\\c " == take 3 line then Code
 	else Expr
 
@@ -57,6 +58,10 @@ main_loop = do
 		Help -> do putStrLn help; main_loop
 		Type ->
 			case step $ drop 3 line of
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
+		TypeDef ->
+			case step $ drop 4 line of
 				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
 		Code ->
