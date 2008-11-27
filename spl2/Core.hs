@@ -6,7 +6,7 @@ import qualified Data.Map as M
 import Data.List
 
 import Debug.Trace
-import Visualise
+import CPP.Visualise
 import Utils
 import Check3
 import CPP.TypeProducer

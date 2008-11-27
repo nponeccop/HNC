@@ -1,4 +1,4 @@
-module Visualise where
+module CPP.Visualise where
 
 import Maybe
 
