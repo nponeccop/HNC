@@ -31,16 +31,12 @@ instance Show CppContext where
 		++ sil ["};"] 
 		++ "\n"  where
 			sil = showWithIndent level
-			sil1 = showWithIndent (level + 1)
-			
-			
-
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level isStatic context typeName name args localVars retVal) 
 		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $
 		[ 
-			(if isStatic then "static " else "") ++ (showFunctionPrototype def)
+			(if isStatic then "static " else "") ++ showFunctionPrototype def
 		,	"{"
 		] 
 		++ map (\x -> "\t" ++ show x) localVars 
@@ -64,7 +60,7 @@ instance Show CppLocalVarDef where
     show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
     
 instance Show CppVarDecl where
-    show (CppVarDecl a b) = show a ++ " " ++ b
+	show (CppVarDecl typ name) = show typ ++ " " ++ name
     
 instance Show CppExpression where
     show (CppLiteral l) = case l of 
@@ -72,19 +68,20 @@ instance Show CppExpression where
     		(ConstInt s) -> show s
     show (CppAtom l) = l
     show (CppApplication (CppAtom a) b)
-        = a ++ "(" ++ (showFunctionArgs b) ++ ")"
+        = a ++ "(" ++ showFunctionArgs b ++ ")"
     show (CppApplication a b)
-        = "(" ++ (show a) ++ ")(" ++ (showFunctionArgs b) ++ ")"
+        = "(" ++ (show a) ++ ")(" ++ showFunctionArgs b ++ ")"
 
 instance Show CppType where
 	show (CppTypePrimitive p) 
 		= p 
 	show (CppTypeFunction ret args) 
-		= show ret ++ (showFunctionArgs args)
+		= "boost::function<" ++ show ret ++ " (*)(" ++ showFunctionArgs args ++ ")>"
 	show (CppTypePoly polyType typeArgs) 
 		= polyType ++ "<" ++ (showFunctionArgs typeArgs) ++ ">"
  
 showFunctionArgs l = showJoinedList ", " l
 
-showFunctionArgsWithTypes args = joinStr ", " $ map f args where  
-	f (CppVarDecl typ name) = (show typ) ++ " " ++ name
+showFunctionArgsWithTypes args = joinStr ", " $ map show args
+	
+	

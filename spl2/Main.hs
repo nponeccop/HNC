@@ -45,9 +45,6 @@ testSet =
 	,	"main x = incr x"
 		-- несколько параметров
 	,	"main x z = sum x z"
-		-- статическая функция
-		-- BROKEN не должно быть typedef local
-	,	"main x = { o a b = sum a b\no x x }"
 		-- перекрытие fqn-функции аргументом
 	,	"main sum = incr sum"
 		-- перекрытие fqn-функции статической локальной
@@ -73,6 +70,10 @@ testSet =
 	-- l*((f*(filter f l)) (x*less 1 x)) 		
 		-- перекрытие fqn-функции статической 
 	,	"main x = { head z a = z a x\nhead sum 5 }"
+			-- статическая функция
+		-- BROKEN не должно быть typedef local
+	,	"main x = { o a b = sum a b\no x x }"
+	
 	]
 	
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
