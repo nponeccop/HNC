@@ -1,4 +1,4 @@
-module MyTypeCheck where
+module HN.MyTypeCheck where
 import qualified Data.Map as M
 import Intermediate
 import Control.Monad.State

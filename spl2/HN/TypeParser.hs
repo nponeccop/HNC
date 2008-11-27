@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
-module TypeParser where
+module HN.TypeParser where
 
 import Text.Parsec.Prim
 import Text.Parsec.ByteString
@@ -10,7 +10,7 @@ import qualified Data.Map as M
 import Intermediate
 import Utils
 import qualified HN.Parser2 as P
-import MyTypeCheck
+import HN.MyTypeCheck
 
 pair a b = (a, b)
 

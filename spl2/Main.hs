@@ -7,8 +7,8 @@ import HN.Parser2
 import HN.ParserTest
 import Utils
 import qualified Data.Map as M
-import MyTypeCheck
-import TypeParser
+import HN.MyTypeCheck
+import HN.TypeParser
 import Intermediate
 import CPP.Intermediate
 
