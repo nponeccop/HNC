@@ -54,14 +54,14 @@ get_ul n u =
 		Just n -> show n
 		Nothing -> "<nil>"
 
-ch [] [] et ul uv i =
+ch [] [] et ul uv i sv =
 	N "too many parameters"
-ch (r:[]) [] et ul uv i =
+ch (r:[]) [] et ul uv i sv =
 	P (observeN "uv" uv, setmv (setm (observeN "r" r) (observeN "l" ul)) uv)
-ch r [] et ul uv i =
+ch r [] et ul uv i sv =
 	P (uv, setmv (setm (TT r) ul) uv)
-ch (r:rs) (p1:ps) et ul uv i =
-	case observeN ("ch_p "++show p1) $ check p1 et of
+ch (r:rs) (p1:ps) et ul uv i sv =
+	case observeN ("ch_p "++show p1) $ check p1 et sv of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
@@ -77,28 +77,28 @@ ch (r:rs) (p1:ps) et ul uv i =
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
 							lu = observeN "lu" $ union lu1 lu2
-					in ch rs ps et lu ru (i+(1::Int))
+					in ch rs ps et lu ru (i+(1::Int)) sv
 				(l2, r2, False) ->
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 
-check::C -> Map [Char] T -> P
-check (CNum n) et = P (M.empty, T "num")
-check (CBool n) et = P (M.empty, T "boolean")
-check (CStr n) et = P (M.empty, T "string")
-check (CVal n) et =
+--check::C -> Map [Char] T -> [a] -> P
+check (CNum n) et _ = P (M.empty, T "num")
+check (CBool n) et _ = P (M.empty, T "boolean")
+check (CStr n) et _ = P (M.empty, T "string")
+check (CVal n) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
 		Nothing -> N $ (++) "check cannot find " $ show n
 
-check (CL a (K [])) et =
-	check a et
+check (CL a (K [])) et sv =
+	check a et sv
 
-check (CL a (K p)) et =
+check (CL a (K p)) et sv =
 	observeN ("K:"++show a++" |"++show p) $
-	case check a et of
+	case check a et sv of
 		P (rm0, TT r) ->
-			case ch r p et M.empty rm0 0 of
+			case ch r p et M.empty rm0 0 sv of
 				P (rm, r) ->
 					P (rm, r)
 				N e -> N (e++" for "++show a)
@@ -117,13 +117,13 @@ check (CL a (K p)) et =
 					Left o -> o
 		N e -> N e
 	where
-		p_ok = Prelude.map (\x -> check x et) p
+		p_ok = Prelude.map (\x -> check x et sv) p
 
-check (CL a (S [])) et =
-	observeN "S" $ check a et
+check (CL a (S [])) et sv =
+	observeN "S" $ check a et sv
 
-check (CL a (S (p:ps))) et =
-	case check (CL a (S ps)) (putp [p] [TV p_n] et) of
+check (CL a (S (p:ps))) et sv =
+	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
 		P (ur, r) ->
 			case M.lookup (p_n) ur of
 				Just v ->
@@ -132,7 +132,11 @@ check (CL a (S (p:ps))) et =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observeN ("ok "++p++"|"++show a) $ P (M.delete p_n ur, untv p w)
+					let ur2 = case elem p_n sv of
+						True -> ur
+						False -> M.delete p_n ur
+					in
+					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
@@ -143,19 +147,19 @@ check (CL a (S (p:ps))) et =
 		o -> o
 	where p_n = ""++p
 
-check (CL a L) et =
+check (CL a L) et sv =
 	observeN ("L:"++show a) $
-	case check a et of
+	case check a et sv of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
 		o -> o
 	
-check (CL a R) et =
-	case check a (putp ["_f"] [TV "_f"] et) of
-		P (ur, r) -> check a (putp ["_f"] [r] et)
+check (CL a R) et sv =
+	case check a (putp ["_f"] [TV "_f"] et) sv of
+		P (ur, r) -> check a (putp ["_f"] [r] et) sv
 		o -> o
 
-check o et =
+check o et sv =
 	error ("check o: "++show o)
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
@@ -229,10 +233,10 @@ change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
 
 check0 o =
-	observeN "ret" $ check o Top.get_types
+	observeN "ret" $ check o Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check0 (CL (CL (CVal "sum") (K [CL (CVal "length") (K [CVal "_"]),CL (CVal "head") (K [CVal "_"])])) (S ["_"]))
+res = check (CL (CL (CL (CL (CVal "hd") (K [CVal "sum",CNum 5])) (S ["hd"])) (K [CL (CL (CVal "z") (K [CVal "a",CVal "x"])) (S ["z","a"])])) (S ["x"])) Top.get_types ["hd"]
 
 
 
