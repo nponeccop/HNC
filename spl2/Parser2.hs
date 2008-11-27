@@ -77,7 +77,7 @@ argument =
 	<|>
 		do
 			string "where"
-			pzero 
+			parserZero 
 	<|>
 	atom
 	
@@ -122,15 +122,16 @@ function = atom	<|> parens
 
 newExpression def = do
 	char '{'
-	char ' '
-	x <- mySepBy simpleDefinition (string "\n")
-	char '\n'
+	string " " <|> nlIndent
+	x <- mySepBy simpleDefinition nlIndent
+	nlIndent
 	xx <- expression
-	char ' '
+	string " " <|> nlIndent
 	char '}'
 	return $ def xx x
 	
 simpleDefinition = 	do
+	many $ char '\t'
 	parms <- mySepBy identifier (char ' ')
 	string " = "
 	let def = Definition (head parms) (tail parms)
@@ -140,6 +141,13 @@ simpleDefinition = 	do
 		(do
 			b <- expression
 			return $ def b [])
+			
+nlIndent = do
+	many1 $ string "\n"
+	many $ string "\t"
+	return []
+
+	
 		
 whereClause = do
 	string " where\n"

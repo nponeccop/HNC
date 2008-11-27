@@ -67,7 +67,7 @@ testSet =
 		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
 	,	"main x z l = { a = incr z\ny z = less (sum x a) z\nfilter y l }"
 		-- BROKEN & перед указателями на статические функции 
-	,	"main l = { f x = less 1 x\nfilter f l }"
+	,	"main l = {\n\tf x = less 1 x\n\tfilter f l\n}"
 	
 	-- l*((f*(filter f l)) (x*less 1 x)) 		
 	
