@@ -73,7 +73,10 @@ testSet =
 			-- статическая функция
 		-- BROKEN не должно быть typedef local
 	,	"main x = { o a b = sum a b\no x x }"
-	
+		-- polymorphic function
+	,	"main l f = filter f l"
+	-- polymorphic function without free variables
+	,	"flip f = { flipped x y = f y x\nflipped }"
 	]
 	
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [

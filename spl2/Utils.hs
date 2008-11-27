@@ -34,4 +34,4 @@ joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
 
 showJoinedList separator = joinStr separator . map show
 
-uncondLookup k m = fromJust $ M.lookup k m    
+uncondLookup k m = maybe (error $ "Utils.uncondLookup: cannot find " ++ show k ++ " in " ++ show m) id $ M.lookup k m    

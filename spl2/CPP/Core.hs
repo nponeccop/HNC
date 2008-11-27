@@ -123,7 +123,7 @@ getContext methods fvt inh fqnWithLocals whereTypes defType def @ (Definition na
 		TT funList -> map (\(typ, x) -> CppVar (cppType typ) x $ CppAtom x) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
 	
-	getCppType x = cppType $ fromJust $ M.lookup x fvt 
+	getCppType x = cppType $ maybe (error "zorro") id $ M.lookup x fvt 
 
 	wfv = getWhereFuncFreeVars def
 	
