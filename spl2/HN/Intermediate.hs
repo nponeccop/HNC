@@ -1,4 +1,4 @@
-module Intermediate where
+module HN.Intermediate where
 import qualified Data.Map as M
 
 type Program = [Definition]

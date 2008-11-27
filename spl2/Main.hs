@@ -2,14 +2,14 @@
 module Main where
 
 -- import Visualise
-import Core
+import CPP.Core
 import HN.Parser2
 import HN.ParserTest
 import Utils
 import qualified Data.Map as M
 import HN.MyTypeCheck
 import HN.TypeParser
-import Intermediate
+import HN.Intermediate
 import CPP.Intermediate
 
 import Check3

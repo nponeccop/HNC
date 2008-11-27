@@ -7,7 +7,7 @@ import Text.Parsec.ByteString
 import Text.Parsec.Combinator
 import Text.Parsec.Char
 import qualified Data.Map as M
-import Intermediate
+import HN.Intermediate
 import Utils
 import qualified HN.Parser2 as P
 import HN.MyTypeCheck

@@ -1,19 +1,21 @@
-module Core where
+module CPP.Core where
 
-import Intermediate
-import CPP.Intermediate
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
-
+import Maybe
 import Debug.Trace
+
+import HN.Intermediate
+import HN.SplExport
+
+import CPP.Intermediate
 import CPP.Visualise
+import CPP.TypeProducer
 import Utils
 import Check3
-import CPP.TypeProducer
-import HN.SplExport
 import Types
-import Maybe
+
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {

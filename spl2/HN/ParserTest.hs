@@ -4,7 +4,7 @@ import HN.Parser2
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
-import Intermediate
+import HN.Intermediate
 
 xx = mySepBy simpleDefinition (string "\n")
 

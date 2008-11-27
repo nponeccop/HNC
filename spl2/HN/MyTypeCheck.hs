@@ -1,6 +1,6 @@
 module HN.MyTypeCheck where
 import qualified Data.Map as M
-import Intermediate
+import HN.Intermediate
 import Control.Monad.State
 
 data Type = Fun [Type] | Type String | TypeVar Int | ADT [Type] deriving (Eq, Show)

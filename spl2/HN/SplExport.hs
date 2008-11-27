@@ -1,5 +1,5 @@
 module HN.SplExport where
-import Intermediate
+import HN.Intermediate
 import Types
 
 convertExpr (Constant (ConstInt i)) = CNum i

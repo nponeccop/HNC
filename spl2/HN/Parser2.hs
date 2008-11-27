@@ -19,7 +19,7 @@ import Text.Parsec.ByteString
 import Text.Parsec.Combinator
 import Text.Parsec.Char
 
-import Intermediate
+import HN.Intermediate
 import Utils
 
 pzero = parserZero
