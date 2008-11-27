@@ -82,7 +82,7 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 
---check::C -> Map [Char] T -> [a] -> P
+check::C -> Map [Char] T -> [[Char]] -> P
 check (CNum n) et _ = P (M.empty, T "num")
 check (CBool n) et _ = P (M.empty, T "boolean")
 check (CStr n) et _ = P (M.empty, T "string")
