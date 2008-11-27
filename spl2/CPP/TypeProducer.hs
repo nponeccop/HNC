@@ -2,7 +2,7 @@ module CPP.TypeProducer where
 
 import Types
 import Utils
-import Intermediate
+import CPP.Intermediate
 
 cppPrimitiveType x = case x of
 	"num" -> "int"

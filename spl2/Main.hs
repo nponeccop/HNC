@@ -10,6 +10,7 @@ import qualified Data.Map as M
 import MyTypeCheck
 import TypeParser
 import Intermediate
+import CPP.Intermediate
 
 import Check3
 import Types

@@ -2,6 +2,7 @@ module CPP.Visualise where
 
 import Maybe
 
+import CPP.Intermediate
 import Intermediate
 import Utils
 import CPP.TypeProducer

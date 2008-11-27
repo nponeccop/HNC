@@ -1,6 +1,7 @@
 module Core where
 
 import Intermediate
+import CPP.Intermediate
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
