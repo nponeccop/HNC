@@ -14,16 +14,26 @@ data SynParams =
 	deriving (Eq, Show)
 
 data Syntax =
-	Sc Char
-	| Sb Bool
-	| Ss [Char]
-	| Sstr [Char]
-	| Sn Int
-	| Sl [Syntax]
-	| Sval [Char]
-	| Scall Syntax SynParams
-	| Spair Syntax Syntax
+	Sc Char Int
+	| Sb Bool Int
+	| Ss [Char] Int
+	| Sstr [Char] Int
+	| Sn Int Int
+	| Sl [Syntax] Int
+	| Sval [Char] Int
+	| Scall Syntax SynParams Int
+	| Spair Syntax Syntax Int
 	deriving (Eq, Show)
+
+get_i (Sc _ i) = i
+get_i (Sb _ i) = i
+get_i (Ss _ i) = i
+get_i (Sstr _ i) = i
+get_i (Sn _ i) = i
+get_i (Sl _ i) = i
+get_i (Sval _ i) = i
+get_i (Scall _ _ i) = i
+get_i (Spair _ _ i) = i
 
 data P = P Int Int Syntax | N Int
 	deriving (Eq, Show)
@@ -73,45 +83,45 @@ p_or [] s i m =
 
 call (Tc c) = \s i m ->
 	case i < length s && c == s!!i of
-		True -> P (max i m) 1 (Sc c)
+		True -> P (max i m) 1 (Sc c i)
 		False -> N (max i m)
 call Eos = \s i m ->
 	case i == length s of
-		True -> P (max i m) 0 (Ss "")
+		True -> P (max i m) 0 (Ss "" i)
 		False -> N (max i m)
 call Tc1 =
 	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
 call Tb =
 	p_or [
-		([Tc '1', Tc 'b'], \(c1:c2:[]) -> Sb True)
-		,([Tc '0', Tc 'b'], \(c1:c2:[]) -> Sb False)
+		([Tc '1', Tc 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
+		,([Tc '0', Tc 'b'], \(c1:c2:[]) -> Sb False (get_i c1))
 		]
 call Tsp =
 	p_or [
-		([Tc ' ', Tsp], \(Sc c:Ss s:[]) -> Ss (c:s))
-		,([Tc ' '], \(Sc c:[]) -> Ss (c:""))
-		,([Tc '\n'], \(Sc c:[]) -> Ss (c:""))
+		([Tc ' ', Tsp], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tc ' '], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tc '\n'], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tspn =
 	p_or [
-		([Tsp], \(Ss s:[]) -> Ss s)
-		,([], \([]) -> Ss "")
+		([Tsp], \(Ss s i:[]) -> Ss s i)
+		,([], \([]) -> Ss "" 0)
 		]
 call Tcs =
 	p_or [
-		([Tc1, Tcs], \(Sc c:Ss s:[]) -> Ss (c:s))
-		,([Tc1], \(Sc c:[]) -> Ss (c:""))
+		([Tc1, Tcs], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tc1], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tn =
-	p_or (map (\x -> ([Tc x], \(Sc c:[]) -> Sn (read (c:"")))) "0123456789")
+	p_or (map (\x -> ([Tc x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
 call Tnpos =
 	p_or [
-		([Tn, Tnpos], \(Sn n:Sn n2:[]) -> Sn (n2 + 10 * n))
+		([Tn, Tnpos], \(Sn n i:Sn n2 _:[]) -> Sn (n2 + 10 * n) i)
 		,([Tn], \(sn:[]) -> sn)
 		]
 call Tnneg =
 	p_or [
-		([Tc '-', Tnpos], \(_:Sn n:[]) -> Sn (-n))
+		([Tc '-', Tnpos], \(_:Sn n i:[]) -> Sn (-n) i)
 		]
 call Tnum =
 	p_or [
@@ -120,68 +130,68 @@ call Tnum =
 		]
 call Tstring =
     p_or [
-        ([Tc '\'', Tcs, Tc '\''], \(Sc c1:Ss sn:Sc c2:[]) -> Sstr sn)
+        ([Tc '\'', Tcs, Tc '\''], \(Sc c1 _:Ss sn i:Sc c2 _:[]) -> Sstr sn i)
 		]
 
 
 call Tparams =
 	p_or [
-		([Tsp,Tval,Tparams], \(_:v:Sl l:[]) -> Sl (v:l))
+		([Tsp,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
 --		,([Tsp,Tval], \(_:v:[]) -> Sl (v:[]))
-		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]))
-		,([], \([]) -> Sl [])
+		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
+		,([], \([]) -> Sl [] 0)
 		]
 call Tval =
 	p_or [
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(n:[]) -> n)
-		,([Tcs,Tnpos], \(Ss s:Sn n:[]) -> Ss $ s++show n) -- create new token?
+		,([Tcs,Tnpos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
 		,([Tcs], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		]
 call Texpr =
 	p_or [
 --		([Tcall,Tsave_args], \(c:Sl w:[]) -> Scall c (SynS (map (\(Ss s) -> s) w)))
-		([Tval,Tparams], \(v:Sl a:[]) ->
+		([Tval,Tparams], \(v:Sl a _:[]) ->
 			case a of
 				[] -> v
-				_ -> Scall v (SynK a))
+				_ -> Scall v (SynK a) (get_i v))
 		]
 call Tsave_args =
 	p_or [
-		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l:[]) -> Sl (c:l))
-		,([], \([]) -> Sl [])
+		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l _:[]) -> Sl (c:l) (get_i c))
+		,([], \([]) -> Sl [] 0)
 		]
 call Twhere_args =
 	p_or [
-		([Tc '*',Tcs,Tc ':',Texpr,Twhere_args], \(_:c:_:e:Sl l:[]) -> Sl ((Spair c e):l))
-		,([], \([]) -> Sl [])
+		([Tc '*',Tcs,Tc ':',Texpr,Twhere_args], \(_:c:_:e:Sl l _:[]) -> Sl ((Spair c e (get_i c)):l) (get_i c))
+		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
 	p_or [
-		([Tc 'r',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'r':l))
-		,([Tc 'l',Tc '!',Tmarks], \(c:_:Sl l:[]) -> Sl (Sc 'l':l))
-		,([], \([]) -> Sl [])
+		([Tc 'r',Tc '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'r' (get_i c):l) (get_i c))
+		,([Tc 'l',Tc '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'l' (get_i c):l) (get_i c))
+		,([], \([]) -> Sl [] 0)
 		]
 call Tsave =
 	p_or [
-		([Tsave_args,Texpr,Twhere_args], \(Sl w:e:Sl l:[]) ->
+		([Tsave_args,Texpr,Twhere_args], \(Sl w i:e:Sl l _:[]) ->
 			let ee =
 				case l of
 					[] -> e
-					xs -> Scall (Scall e (SynS (map (\(Spair (Ss s) _) -> s) l))) (SynK (map (\(Spair _ e) -> e) l))
+					xs -> Scall (Scall e (SynS (map (\(Spair (Ss s _) _ _) -> s) l)) (get_i e)) (SynK (map (\(Spair _ e _) -> e) l)) i
 			in
 			case w of
 				[] -> ee
-				xs -> Scall ee (SynS (map (\(Ss s) -> s) w)))
+				xs -> Scall ee (SynS (map (\(Ss s _) -> s) w)) i)
 		]
 call Tmark =
 	p_or [
-		([Tmarks,Tsave], \(Sl m:e:[]) ->
+		([Tmarks,Tsave], \(Sl m i:e:[]) ->
 			case m of
-				(Sc 'r':[]) -> Scall e (SynM [MarkR])
-				(Sc 'l':[]) -> Scall e SynL
+				(Sc 'r' _:[]) -> Scall e (SynM [MarkR]) i
+				(Sc 'l' _:[]) -> Scall e SynL i
 				[] -> e)
 		]
 
@@ -194,6 +204,6 @@ call Texpr_top =
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
 
-res = parse "sum (,2)"
+res = parse "sum 1 (sum 1,2)"
 
 

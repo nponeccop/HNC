@@ -1,4 +1,4 @@
-module SPL.Compiler (P (..), compile, res) where
+module SPL.Compiler (P (..), compile) where
 
 import SPL.Parser hiding (P (..), res)
 import SPL.Code hiding (res)
@@ -6,34 +6,34 @@ import SPL.Code hiding (res)
 data P = P C | N
 	deriving Show
 
-comp (Sn x) =
+comp (Sn x i) =
 	CNum x
 
-comp (Sb x) =
+comp (Sb x i) =
 	CBool x
 
-comp (Sstr s) =
+comp (Sstr s i) =
 	CStr s
 
-comp (Ss s) =
+comp (Ss s i) =
 	CVal s
 
-comp (Scall f (SynK a)) =
+comp (Scall f (SynK a) i) =
 	CL (comp f) (K (map comp a))
 
-comp (Scall f (SynS a)) =
+comp (Scall f (SynS a) i) =
 	CL (comp f) (S a)
 
-comp (Scall f (SynM a)) =
+comp (Scall f (SynM a) i) =
 	CL (comp f) R
 
-comp (Scall f SynL) =
+comp (Scall f SynL i) =
 	CL (comp f) L
 
 compile s =
 	P (comp s)
 
-tests = [
+{-tests = [
 	(Sn 2, CNum 2)
 	,(Sn 12, CNum 12)
 	,(Ss "sum", CVal "sum")
@@ -56,5 +56,5 @@ mk_test (s, e) =
 		N -> "ce - ") ++ "\n test:" ++ show s
 
 res = foldr1 (\a b -> a++"\n"++b) $ map mk_test tests
-
+-}
 
