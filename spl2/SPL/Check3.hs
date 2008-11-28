@@ -87,10 +87,10 @@ check::C -> Map [Char] T -> [[Char]] -> P
 check (CNum n _) et _ = P (M.empty, T "num")
 check (CBool n _) et _ = P (M.empty, T "boolean")
 check (CStr n _) et _ = P (M.empty, T "string")
-check (CVal n _) et _ =
+check (CVal n i) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
-		Nothing -> N $ (++) "check cannot find " $ show n
+		Nothing -> N ("check cannot find "++show n++" at char "++show i)
 
 check (CL a (K []) _) et sv =
 	check a et sv
