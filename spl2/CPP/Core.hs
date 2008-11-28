@@ -33,17 +33,17 @@ data DefinitionSynthesized = DefinitionSynthesized {
 
 sem_Definition inh self @ (Definition name args val wh)
     = DefinitionSynthesized {
-    	dsCppDef = CppFunctionDef {
-		    	functionLevel 			= diLevel inh
-		    ,	functionTemplateArgs	= S.toList $ typePolyVars inhType
-		    ,	functionIsStatic		= isFunctionStatic self
-			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-			,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType self
-			,	functionName 			= name
-			,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
-			,	functionLocalVars 		= wsLocalVars semWhere
-			,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
-		    }
+        dsCppDef = CppFunctionDef {
+                        functionLevel 			= diLevel inh
+                    ,	functionTemplateArgs	= S.toList $ typePolyVars inhType
+                    ,	functionIsStatic		= isFunctionStatic self
+                        ,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
+                        ,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType self
+                        ,	functionName 			= name
+                        ,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
+                        ,	functionLocalVars 		= wsLocalVars semWhere
+                        ,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
+                    }
     } where
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
     	finalFvt = exprFvt
