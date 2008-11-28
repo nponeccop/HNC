@@ -28,14 +28,14 @@ data St =
 	deriving (Eq, Show)
 
 data C =
-	CBool Bool
-	| CNum Int
-	| CStr [Char]
-	| CVal [Char]
-	| CL C St
-	| CInFun Int InFun
-	| CInfFun InFun
-	| CList [C]
-	| CPair [C]
+	CBool Bool Int
+	| CNum Int Int
+	| CStr [Char] Int
+	| CVal [Char] Int
+	| CL C St Int
+	| CInFun Int InFun Int
+	| CInfFun InFun Int
+	| CList [C] Int
+	| CPair [C] Int
 	deriving (Eq, Show)
 

@@ -84,18 +84,18 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 		N e -> N e
 
 check::C -> Map [Char] T -> [[Char]] -> P
-check (CNum n) et _ = P (M.empty, T "num")
-check (CBool n) et _ = P (M.empty, T "boolean")
-check (CStr n) et _ = P (M.empty, T "string")
-check (CVal n) et _ =
+check (CNum n _) et _ = P (M.empty, T "num")
+check (CBool n _) et _ = P (M.empty, T "boolean")
+check (CStr n _) et _ = P (M.empty, T "string")
+check (CVal n _) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
 		Nothing -> N $ (++) "check cannot find " $ show n
 
-check (CL a (K [])) et sv =
+check (CL a (K []) _) et sv =
 	check a et sv
 
-check (CL a (K p)) et sv =
+check (CL a (K p) _) et sv =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et sv of
 		P (rm0, TT r) ->
@@ -120,11 +120,11 @@ check (CL a (K p)) et sv =
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
 
-check (CL a (S [])) et sv =
+check (CL a (S []) _) et sv =
 	observeN "S" $ check a et sv
 
-check (CL a (S (p:ps))) et sv =
-	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
+check (CL a (S (p:ps)) ii) et sv =
+	case check (CL a (S ps) ii) (putp [p] [TV p_n] et) sv of
 		P (ur, r) ->
 			case M.lookup (p_n) ur of
 				Just v ->
@@ -152,14 +152,14 @@ check (CL a (S (p:ps))) et sv =
 		o -> o
 	where p_n = ""++p
 
-check (CL a L) et sv =
+check (CL a L _) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
 		o -> o
 	
-check (CL a R) et sv =
+check (CL a R _) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
 		P (ur, r) -> check a (putp ["_f"] [r] et) sv
 		o -> o
@@ -241,7 +241,7 @@ check0 o =
 	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
+res = check (CL (CL (CL (CVal "flipped" 0) (S ["flipped"]) 0) (K [CL (CL (CVal "f" 0) (K [CVal "y" 0,CVal "x" 0]) 0) (S ["x","y"]) 0]) 0) (S ["f"]) 0)
 	SPL.Top.get_types ["flipped"]
 
 
