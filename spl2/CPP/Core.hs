@@ -23,7 +23,7 @@ data DefinitionInherited = DefinitionInherited {
 	diLevel           :: Int
 ,	diSymTab          :: M.Map String CppAtomType
 ,	diFreeVarTypes    :: M.Map String T
-,	diType			  :: Maybe CppType
+,	diType			  :: Maybe T
 }
 
 -- synthesized attributes for Definition
@@ -35,6 +35,7 @@ sem_Definition inh self @ (Definition name args val wh)
     = DefinitionSynthesized {
     	dsCppDef = CppFunctionDef {
 		    	functionLevel 			= diLevel inh
+		    ,	functionTemplateArgs	= S.toList $ typePolyVars inhType
 		    ,	functionIsStatic		= isFunctionStatic self
 			,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
 			,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType self
@@ -44,16 +45,15 @@ sem_Definition inh self @ (Definition name args val wh)
 			,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
 		    }
     } where
-    
---	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
-    
+		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
     	finalFvt = exprFvt
     	whereNames = map (\(Definition name _ _ _) -> name) wh
     	P (exprOutputTypes, defType) = check (convertDef self) exprFvt whereNames
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
  	
-    	cppDefType = maybe (cppType defType) id $ diType inh
+    	cppDefType = cppType inhType
+    	inhType = maybe defType id $ diType inh
     	-- localsList : semWhere 
     	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
     	-- symTabWithStatics : semWhere
@@ -136,7 +136,7 @@ getWhereVars fqn fvt def = getFromWhere def (sem_VarDefinition fqn fvt) isVar
 
 getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar) 
 	where
-		f def = inh { diType = Just $ cppType $ uncondLookup (defName def) whereTypes }
+		f def = inh { diType = Just $ uncondLookup (defName def) whereTypes }
 		defName (Definition name _ _ _ ) = name
 
 

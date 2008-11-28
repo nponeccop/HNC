@@ -20,7 +20,9 @@ showWithIndent indentationLevel y
 
 showFree y = mapAndJoinStr (\x -> "\t" ++ (show x) ++ ";") y
 
-showFunctionPrototype def = show (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")" 
+showFunctionPrototype def = show (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")"
+
+getTemplateDecl templateArgs = "template <"  ++ (joinStr ", " $ map (\x -> "typename " ++ x) templateArgs) ++ ">"
 
 instance Show CppContext where
 	show (CppContext level name vars methods) = 
@@ -33,9 +35,12 @@ instance Show CppContext where
 			sil = showWithIndent level
 
 instance Show CppDefinition where
-	show def @ (CppFunctionDef level isStatic context typeName name args localVars retVal) 
+	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal) 
 		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $
-		[ 
+		
+		(if (null templateArgs) then [] else [getTemplateDecl templateArgs])
+		++
+		[
 			(if isStatic then "static " else "") ++ showFunctionPrototype def
 		,	"{"
 		] 
@@ -77,7 +82,7 @@ instance Show CppType where
 		= p 
 	show (CppTypeFunction ret args) 
 		= "boost::function<" ++ show ret ++ " (*)(" ++ showFunctionArgs args ++ ")>"
-	show (CppTypePoly polyType typeArgs) 
+	show (CppTypePolyInstance polyType typeArgs) 
 		= polyType ++ "<" ++ (showFunctionArgs typeArgs) ++ ">"
  
 showFunctionArgs l = showJoinedList ", " l
