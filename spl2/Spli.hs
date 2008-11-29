@@ -48,7 +48,10 @@ exec_file f = do
 	s <- readFile f
 	case step s of
 		SPL.Interpretator.P (t, r) -> putStrLn r
-		SPL.Interpretator.N (t, r) -> putStrLn t
+		SPL.Interpretator.N (t, r) -> putStrLn r
+
+tab i s =
+	(take i (repeat ' '))++"  ^"++s
 
 main_loop = do
 	putStr "  "
@@ -58,20 +61,20 @@ main_loop = do
 		Help -> do putStrLn help; main_loop
 		Type ->
 			case step $ drop 3 line of
-				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
-				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		TypeDef ->
 			case get_type_debug_of_expr $ drop 4 line of
-				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
-				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		Code ->
 			case get_code_of_expr $ drop 3 line of
-				SPL.Interpretator.P (c, r) -> do putStrLn c; main_loop
-				SPL.Interpretator.N (e, r) -> do putStrLn e; main_loop
+				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn (tab i r); main_loop
 		Expr ->
 			case step line of
-				SPL.Interpretator.P (t, r) -> do putStrLn r; main_loop
-				SPL.Interpretator.N (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn (tab i r); main_loop
 
 spli = do
 	args <- getArgs

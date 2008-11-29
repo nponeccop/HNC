@@ -12,7 +12,7 @@ import SPL.Top
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
 
-data P = P (Map [Char] T, T) | N [Char]
+data P = P (Map [Char] T, T) | N Int [Char]
 	deriving Show
 
 
@@ -24,8 +24,8 @@ get_url ((P (ur, r)):rs) =
 	case get_url rs of
 		Right o -> Right (ur:o)
 		Left o -> Left o
-get_url ((N o):rs) =
-	Left (N o)
+get_url ((N i o):rs) =
+	Left (N i o)
 
 union_r a b =
 	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
@@ -55,7 +55,7 @@ get_ul n u =
 		Nothing -> "<nil>"
 
 ch [] [] et ul uv i sv =
-	N "too many parameters"
+	N 0 "too many parameters"
 ch (r:[]) [] et ul uv i sv =
 	P (observeN "uv" uv, setmv (setm (observeN "r" $ untv "x" r) (observeN "l" ul)) uv)
 ch r [] et ul uv i sv =
@@ -80,8 +80,8 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 							lu = observeN "lu" $ union lu1 lu2
 					in ch rs ps et lu ru (i+(1::Int)) sv
 				(l2, r2, False) ->
-					N ("expected "++show (setm r ul)++", actual "++show r_p1)
-		N e -> N e
+					N 0 ("expected "++show (setm r ul)++", actual "++show r_p1)
+		N i e -> N i e
 
 check::CP -> Map [Char] T -> [[Char]] -> P
 check (CPNum n _) et _ = P (M.empty, T "num")
@@ -90,7 +90,7 @@ check (CPStr n _) et _ = P (M.empty, T "string")
 check (CPVal n i) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
-		Nothing -> N ("check cannot find "++show n++" at char "++show i)
+		Nothing -> N i ("check cannot find "++show n)
 
 check (CPL a (K []) _) et sv =
 	check a et sv
@@ -102,7 +102,7 @@ check (CPL a (K p) _) et sv =
 			case ch r p et M.empty rm0 0 sv of
 				P (rm, r) ->
 					observeN "X" $ P (rm, r)
-				N e -> N (e++" for "++show a)
+				N i e -> N i (e{-++" for "++show a-})
 --		P (rm, TU n) ->
 --			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
 --		P (_, TT []) ->
@@ -116,7 +116,7 @@ check (CPL a (K p) _) et sv =
 							r = observeN "r" $ TU ('_':n)
 						in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
-		N e -> N e
+		N i e -> N i e
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
 

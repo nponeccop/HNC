@@ -39,10 +39,10 @@ test (s, r, t) =
 		SPL.Interpretator.P (t2, r2) ->
 			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
 			++"\n res exp: "++r++"\n res act: "++r2
-		SPL.Interpretator.N (r3, c)| r3 == r ->
+		SPL.Interpretator.N (i, r3)| r3 == r ->
 			Ok $ "ok: "++s++" |err"
 --			Ok $ ("ok: "++s++" |err\n    "++r)
-		SPL.Interpretator.N (r3, c) ->
+		SPL.Interpretator.N (i, r3) ->
 			No $ "no: "++s++"\n err exp: "++r++"\n err act: "++r3++""
 
 
@@ -57,11 +57,11 @@ tests = [
 	,("(sum 1)", "CL (CInFun 2 InFun \"sum\") (K [CNum 1])", "TT [T \"num\",T \"num\"]")
 	,("sum 2", "CL (CInFun 2 InFun \"sum\") (K [CNum 2])", "TT [T \"num\",T \"num\"]")
 	,("sum 1 2", "CNum 3", "T \"num\"")
-	,("sum 'abc' 2", "type error: expected T \"num\", actual T \"string\" for CVal \"sum\"" ,"")
+	,("sum 'abc' 2", "type error: expected T \"num\", actual T \"string\"" ,"")
 	,("elist", "CList []", "TD \"list\" [TU \"a\"]")
 	,("join1 1", "CL (CInFun 2 InFun \"join1\") (K [CNum 1])", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
 	,("join1 1,elist", "CList [CNum 1]", "TD \"list\" [T \"num\"]")
-	,("join1 1,2", "type error: expected TD \"list\" [T \"num\"], actual T \"num\" for CVal \"join1\"", "")
+	,("join1 1,2", "type error: expected TD \"list\" [T \"num\"], actual T \"num\"", "")
 	,("to_string,sum 2,length,join1 9,join1 8,elist", "CStr \"CNum 4\"", "T \"string\"")
 	,("(_*sum _ 2)", "CL (CL (CVal \"sum\") (K [CVal \"_\",CNum 2])) (S [\"_\"])", "TT [T \"num\",T \"num\"]")
 	,("(_*sum _,sum 1 2)", "CL (CL (CVal \"sum\") (K [CVal \"_\",CL (CVal \"sum\") (K [CNum 1,CNum 2])])) (S [\"_\"])", "TT [T \"num\",T \"num\"]")
@@ -82,7 +82,7 @@ tests = [
 	,("join1 (pair 1b 'abc'),elist", "CList [CPair [CBool True,CStr \"abc\"]]", "TD \"list\" [TD \"pair\" [T \"boolean\",T \"string\"]]")
 	,("join1 (sum 2),join1 (_*sum 1 _),elist", "CList [CL (CInFun 2 InFun \"sum\") (K [CNum 2]),CL (CL (CVal \"sum\") (K [CNum 1,CVal \"_\"])) (S [\"_\"])]", "TD \"list\" [TT [T \"num\",T \"num\"]]")
 	,("(_*to_string,sum 2 _)", "CL (CL (CVal \"to_string\") (K [CL (CVal \"sum\") (K [CNum 2,CVal \"_\"])])) (S [\"_\"])", "TT [T \"num\",T \"string\"]")
-	,("join1 (_*to_string,sum 2 _),join1 (_*sum 1 _),elist", "type error: expected TD \"list\" [TT [T \"num\",T \"string\"]], actual TD \"list\" [TT [T \"num\",T \"num\"]] for CVal \"join1\"", "")
+	,("join1 (_*to_string,sum 2 _),join1 (_*sum 1 _),elist", "type error: expected TD \"list\" [TT [T \"num\",T \"string\"]], actual TD \"list\" [TT [T \"num\",T \"num\"]]", "")
 	,("join1 (_*length _),join1 (_*sum 1,length _),elist", "CList [CL (CL (CVal \"length\") (K [CVal \"_\"])) (S [\"_\"]),CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"length\") (K [CVal \"_\"])])) (S [\"_\"])]", "TD \"list\" [TT [TD \"list\" [TU \"a\"],T \"num\"]]")
 	,("(_*sum 1 2)", "CL (CL (CVal \"sum\") (K [CNum 1,CNum 2])) (S [\"_\"])", "TT [TU \"_\",T \"num\"]")
 	,("(_*sum 1 2) 1", "CNum 3", "T \"num\"")
@@ -96,13 +96,13 @@ tests = [
 	,("(l!sum 1 2) go", "CNum 3", "T \"num\"")
 	,("iff elist (l!2)", "CNum 2", "T \"num\"")
 	,("iff (join1 (pair 1b (l!11)),join1 (pair 0b (l!22)),elist) (l!33)", "CNum 11", "T \"num\"")
-	,("sum 1 2 3", "type error: too many parameters for CVal \"sum\"", "")
+	,("sum 1 2 3", "type error: too many parameters", "")
 	,("(debug (sum 1)) 2", "CNum 3", "T \"num\"")
 	,("(f*sum (f 2))", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],T \"num\",T \"num\"]") -- check return
 	,("(f*debug (sum (f 2)))", "CL (CL (CVal \"debug\") (K [CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],T \"num\",T \"num\"]")
 	,("((f*debug (sum (f 2))) (sum 1)) 3", "CNum 6", "T \"num\"")
 	,("(debug (l!11)) go", "CNum 11", "T \"num\"")
-	,("(z*z 1) (r!_*if (less _ 5) (l!sum _,_f,sum _ 1) (l!_))", "type error: check cannot find \"if\" for CL (CL (CVal \"z\") (K [CNum 1])) (S [\"z\"])", "")
+	,("(z*z 1) (r!_*if (less _ 5) (l!sum _,_f,sum _ 1) (l!_))", "type error: check cannot find \"if\"", "")
 	,("(r!_*iff (join1 (pair (less _ 5) (l!sum _,_f,sum _ 1)),elist) (l!_)) 1", "CNum 15", "T \"num\"")
 	,("(r!_*iff (join1 (pair (less _ 2) (l!_)),elist) (l!sum (_f,sum _ -1),_f,sum _ -2)) 10", "CNum 55", "T \"num\"")
 	,("(h*t*t)", "CL (CVal \"t\") (S [\"h\",\"t\"])", "TT [TU \"h\",TU \"t\",TU \"t\"]")
