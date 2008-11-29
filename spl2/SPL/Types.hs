@@ -1,4 +1,4 @@
-module SPL.Types (T (..), C (..), St (..), InFun (..)) where
+module SPL.Types (T (..), C (..), CP (..), St (..), InFun (..)) where
 
 import Data.Map
 
@@ -20,22 +20,36 @@ instance Show InFun where
 instance Eq InFun where
 	(==) (InFun a f1) (InFun b f2) = (==) a b
 
-data St =
-	K [C]
+data St a =
+	K [a]
 	| S [[Char]]
 	| L
 	| R
 	deriving (Eq, Show)
 
-data C =
-	CBool Bool Int
-	| CNum Int Int
-	| CStr [Char] Int
-	| CVal [Char] Int
-	| CL C St Int
-	| CInFun Int InFun Int
-	| CInfFun InFun Int
-	| CList [C] Int
-	| CPair [C] Int
+data CP = -- Code positioned
+	CPBool Bool Int
+	| CPNum Int Int
+	| CPStr [Char] Int
+	| CPVal [Char] Int
+	| CPL CP (St CP) Int
+	| CPInFun Int InFun Int
+	| CPInfFun InFun Int
+	| CPList [CP] Int
+	| CPPair [CP] Int
 	deriving (Eq, Show)
+
+data C =
+	CBool Bool
+	| CNum Int
+	| CStr [Char]
+	| CVal [Char]
+	| CL C (St C)
+	| CInFun Int InFun
+	| CInfFun InFun
+	| CList [C]
+	| CPair [C]
+	deriving (Eq, Show)
+
+
 

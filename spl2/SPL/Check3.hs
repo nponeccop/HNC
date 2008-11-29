@@ -83,19 +83,19 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 					N ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N e -> N e
 
-check::C -> Map [Char] T -> [[Char]] -> P
-check (CNum n _) et _ = P (M.empty, T "num")
-check (CBool n _) et _ = P (M.empty, T "boolean")
-check (CStr n _) et _ = P (M.empty, T "string")
-check (CVal n i) et _ =
+check::CP -> Map [Char] T -> [[Char]] -> P
+check (CPNum n _) et _ = P (M.empty, T "num")
+check (CPBool n _) et _ = P (M.empty, T "boolean")
+check (CPStr n _) et _ = P (M.empty, T "string")
+check (CPVal n i) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
 		Nothing -> N ("check cannot find "++show n++" at char "++show i)
 
-check (CL a (K []) _) et sv =
+check (CPL a (K []) _) et sv =
 	check a et sv
 
-check (CL a (K p) _) et sv =
+check (CPL a (K p) _) et sv =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et sv of
 		P (rm0, TT r) ->
@@ -120,11 +120,11 @@ check (CL a (K p) _) et sv =
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
 
-check (CL a (S []) _) et sv =
+check (CPL a (S []) _) et sv =
 	observeN "S" $ check a et sv
 
-check (CL a (S (p:ps)) ii) et sv =
-	case check (CL a (S ps) ii) (putp [p] [TV p_n] et) sv of
+check (CPL a (S (p:ps)) ii) et sv =
+	case check (CPL a (S ps) ii) (putp [p] [TV p_n] et) sv of
 		P (ur, r) ->
 			case M.lookup (p_n) ur of
 				Just v ->
@@ -152,14 +152,14 @@ check (CL a (S (p:ps)) ii) et sv =
 		o -> o
 	where p_n = ""++p
 
-check (CL a L _) et sv =
+check (CPL a L _) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
 		o -> o
 	
-check (CL a R _) et sv =
+check (CPL a R _) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
 		P (ur, r) -> check a (putp ["_f"] [r] et) sv
 		o -> o
@@ -241,7 +241,7 @@ check0 o =
 	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CVal "flipped" 0) (S ["flipped"]) 0) (K [CL (CL (CVal "f" 0) (K [CVal "y" 0,CVal "x" 0]) 0) (S ["x","y"]) 0]) 0) (S ["f"]) 0)
+res = check (CPL (CPL (CPL (CPVal "flipped" 0) (S ["flipped"]) 0) (K [CPL (CPL (CPVal "f" 0) (K [CPVal "y" 0,CPVal "x" 0]) 0) (S ["x","y"]) 0]) 0) (S ["f"]) 0)
 	SPL.Top.get_types ["flipped"]
 
 

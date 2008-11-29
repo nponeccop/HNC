@@ -1,37 +1,44 @@
-module SPL.Compiler (P (..), compile, res) where
+module SPL.Compiler (compile, c_of_cp, res) where
 
+import SPL.Types
 import SPL.Parser hiding (P (..), res)
 import SPL.Code hiding (res)
 
-data P = P C | N
-	deriving Show
-
 comp (Sn x i) =
-	CNum x i
-
+	CPNum x i
 comp (Sb x i) =
-	CBool x i
-
+	CPBool x i
 comp (Sstr s i) =
-	CStr s i
-
+	CPStr s i
 comp (Ss s i) =
-	CVal s i
-
+	CPVal s i
 comp (Scall f (SynK a) i) =
-	CL (comp f) (K (map comp a)) i
-
+	CPL (comp f) (K (map comp a)) i
 comp (Scall f (SynS a) i) =
-	CL (comp f) (S a) i
-
+	CPL (comp f) (S a) i
 comp (Scall f (SynM a) i) =
-	CL (comp f) R i
-
+	CPL (comp f) R i
 comp (Scall f SynL i) =
-	CL (comp f) L i
+	CPL (comp f) L i
 
-compile s =
-	P (comp s)
+compile = comp
+
+c_of_cp (CPNum x i) =
+	CNum x
+c_of_cp (CPBool x i) =
+	CBool x
+c_of_cp (CPStr s i) =
+	CStr s
+c_of_cp (CPVal s i) =
+	CVal s
+c_of_cp (CPL f (K a) i) =
+	CL (c_of_cp f) (K (map c_of_cp a))
+c_of_cp (CPL f (S a) i) =
+	CL (c_of_cp f) (S a)
+c_of_cp (CPL f R i) =
+	CL (c_of_cp f) R
+c_of_cp (CPL f L i) =
+	CL (c_of_cp f) L
 
 {-tests = [
 	(Sn 2, CNum 2)
