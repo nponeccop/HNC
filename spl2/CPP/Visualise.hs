@@ -22,12 +22,14 @@ showFree y = mapAndJoinStr (\x -> "\t" ++ (show x) ++ ";") y
 
 showFunctionPrototype def = show (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")"
 
-getTemplateDecl templateArgs = "template <"  ++ (joinStr ", " $ map (\x -> "typename " ++ x) templateArgs) ++ ">"
+getTemplateDecl templateArgs = if null templateArgs then [] else [templateDecl] where
+	templateDecl = "template <"  ++ (joinStr ", " $ map (\x -> "typename " ++ x) templateArgs) ++ ">"
 
 instance Show CppContext where
-	show (CppContext level name vars methods) = 
-		sil ["struct " ++ name, "{"]
-		++ sil (map (\(CppVar t n _) -> "\t" ++ (show $ CppVarDecl t n) ++ ";") vars) 
+	show (CppContext level templateArgs name vars methods) 
+		=
+				(sil $ getTemplateDecl templateArgs  ++	["struct " ++ name, "{"]
+		++ (map (\(CppVar t n _) -> "\t" ++ (show $ CppVarDecl t n) ++ ";") vars)) 
 		++ (if null vars then "" else "\n") 
 		++ (mapAndJoinStr show methods)  
 		++ sil ["};"] 
@@ -38,7 +40,7 @@ instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal) 
 		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $
 		
-		(if (null templateArgs) then [] else [getTemplateDecl templateArgs])
+		getTemplateDecl templateArgs
 		++
 		[
 			(if isStatic then "static " else "") ++ showFunctionPrototype def
@@ -56,8 +58,8 @@ instance Show CppDefinition where
 			showContextInit = 
 				case context of 
 					Nothing -> []
-					Just (CppContext _ _ [] _) -> [ contextTypeDef ]
-					Just (CppContext _ tn vars methods) -> [ contextTypeDef, getContextInit tn vars ]
+					Just (CppContext _ _ _ [] _) -> [ contextTypeDef ]
+					Just (CppContext _ _ tn vars methods) -> [ contextTypeDef, getContextInit tn vars ]
 			contextTypeDef = "\ttypedef main_impl local;"
 			 
    

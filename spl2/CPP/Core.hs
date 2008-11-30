@@ -110,7 +110,7 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods fvt inh fqnWithLocals whereTypes defType def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) (name ++ "_impl") vars methods where
+getContext methods fvt inh fqnWithLocals whereTypes defType def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) ["jo"] (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
@@ -166,7 +166,7 @@ getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
 
 sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
 	CppVar inferredType name $ sem_Expression fqn val where
-		inferredType = cppType $ case check (convertExpr val) fvt [] of P (_, t) -> t ; N mesg -> T mesg  
+		inferredType = cppType $ case check (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x
