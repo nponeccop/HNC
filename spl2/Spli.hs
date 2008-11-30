@@ -48,7 +48,7 @@ exec_file f = do
 	s <- readFile f
 	case step s of
 		SPL.Interpretator.P (t, r) -> putStrLn r
-		SPL.Interpretator.N (t, r) -> putStrLn r
+		SPL.Interpretator.N (i, r) -> putStrLn (r++"\nchar# "++show i)
 
 tab i s =
 	(take i (repeat ' '))++"  ^"++s
