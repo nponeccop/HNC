@@ -130,7 +130,7 @@ call Tnum =
 		]
 call Tstring =
     p_or [
-        ([Tc '\'', Tcs, Tc '\''], \(Sc c1 _:Ss sn i:Sc c2 _:[]) -> Sstr sn i)
+        ([Tc '\'', Tcs, Tc '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
 		]
 
 

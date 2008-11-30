@@ -80,7 +80,11 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 							lu = observeN "lu" $ union lu1 lu2
 					in ch rs ps et lu ru (i+(1::Int)) sv ii
 				(l2, r2, False) ->
-					N 0 ("expected "++show (setm r ul)++", actual "++show r_p1)
+					let iii = case p1 of
+						CDebug i _ -> i
+						o -> ii
+					in
+					N iii ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N i e -> N i e
 
 check::C -> Map [Char] T -> [[Char]] -> P
