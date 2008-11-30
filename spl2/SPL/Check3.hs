@@ -83,20 +83,16 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 					N 0 ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N i e -> N i e
 
-check_val n et mi =
-	case M.lookup n et of
-		Just a -> P (M.empty, a)
-		Nothing -> N (case mi of Just i -> i; Nothing -> -1) ("check cannot find "++show n)
-	
-
 check::C -> Map [Char] T -> [[Char]] -> P
 check (CNum n) et _ = P (M.empty, T "num")
 check (CBool n) et _ = P (M.empty, T "boolean")
 check (CStr n) et _ = P (M.empty, T "string")
 check (CDebug i (CVal n)) et _ =
-	check_val n et (Just i)
-check (CVal n) et _ =
-	check_val n et Nothing
+	case M.lookup n et of
+		Just a -> P (M.empty, a)
+		Nothing -> N i ("check cannot find "++show n)
+check (CVal n) et sv =
+	check (CDebug (-1) (CVal n)) et sv
 
 check (CL a (K [])) et sv =
 	check a et sv
@@ -122,6 +118,9 @@ check (CDebug ii (CL a (K p))) et sv =
 		N i e -> N i e
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
+
+check (CL a (K p)) et sv =
+	check (CDebug (-1) (CL a (K p))) et sv
 
 check (CL a (S [])) et sv =
 	observeN "S" $ check a et sv
