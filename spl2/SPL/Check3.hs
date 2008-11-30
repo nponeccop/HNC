@@ -54,13 +54,13 @@ get_ul n u =
 		Just n -> show n
 		Nothing -> "<nil>"
 
-ch [] [] et ul uv i sv =
-	N 0 "too many parameters"
-ch (r:[]) [] et ul uv i sv =
+ch [] [] et ul uv i sv ii =
+	N ii "too many parameters"
+ch (r:[]) [] et ul uv i sv ii =
 	P (observeN "uv" uv, setmv (setm (observeN "r" $ untv "x" r) (observeN "l" ul)) uv)
-ch r [] et ul uv i sv =
+ch r [] et ul uv i sv ii =
 	P (uv, setmv (setm (TT r) ul) uv)
-ch (r:rs) (p1:ps) et ul uv i sv =
+ch (r:rs) (p1:ps) et ul uv i sv ii =
 	case observeN ("ch_p "++show p1) $ check p1 et sv of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
@@ -78,37 +78,34 @@ ch (r:rs) (p1:ps) et ul uv i sv =
 							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
 							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
 							lu = observeN "lu" $ union lu1 lu2
-					in ch rs ps et lu ru (i+(1::Int)) sv
+					in ch rs ps et lu ru (i+(1::Int)) sv ii
 				(l2, r2, False) ->
 					N 0 ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N i e -> N i e
 
-check::CP -> Map [Char] T -> [[Char]] -> P
-check (CPNum n _) et _ = P (M.empty, T "num")
-check (CPBool n _) et _ = P (M.empty, T "boolean")
-check (CPStr n _) et _ = P (M.empty, T "string")
-check (CPVal n i) et _ =
+check::C -> Map [Char] T -> [[Char]] -> P
+check (CNum n) et _ = P (M.empty, T "num")
+check (CBool n) et _ = P (M.empty, T "boolean")
+check (CStr n) et _ = P (M.empty, T "string")
+check (CDebug i (CVal n)) et _ =
 	case M.lookup n et of
 		Just a -> P (M.empty, a)
 		Nothing -> N i ("check cannot find "++show n)
 
-check (CPL a (K []) _) et sv =
+check (CL a (K [])) et sv =
 	check a et sv
 
-check (CPL a (K p) _) et sv =
+check (CDebug ii (CL a (K p))) et sv =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et sv of
 		P (rm0, TT r) ->
-			case ch r p et M.empty rm0 0 sv of
-				P (rm, r) ->
-					observeN "X" $ P (rm, r)
-				N i e -> N i (e{-++" for "++show a-})
---		P (rm, TU n) ->
---			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
---		P (_, TT []) ->
---			N ("too many parameters for "++show a)
---		P (ur, TU n) ->
---			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ?
+			case ch r p et M.empty rm0 0 sv ii of
+				P (rm, r) -> P (rm, r)
+				N i e -> N i e
+{-		P (rm, TU n) ->
+			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
+		P (ur, TU n) ->
+			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ? -}
 		P (ur, TV n) ->
 				case get_url p_ok of
 					Right a -> 
@@ -120,11 +117,11 @@ check (CPL a (K p) _) et sv =
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
 
-check (CPL a (S []) _) et sv =
+check (CL a (S [])) et sv =
 	observeN "S" $ check a et sv
 
-check (CPL a (S (p:ps)) ii) et sv =
-	case check (CPL a (S ps) ii) (putp [p] [TV p_n] et) sv of
+check (CL a (S (p:ps))) et sv =
+	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
 		P (ur, r) ->
 			case M.lookup (p_n) ur of
 				Just v ->
@@ -152,17 +149,20 @@ check (CPL a (S (p:ps)) ii) et sv =
 		o -> o
 	where p_n = ""++p
 
-check (CPL a L _) et sv =
+check (CL a L) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
 		P (ur, r) ->
 			P (ur, TT [TL, r])
 		o -> o
 	
-check (CPL a R _) et sv =
+check (CL a R) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
 		P (ur, r) -> check a (putp ["_f"] [r] et) sv
 		o -> o
+
+check (CDebug _ c) et sv =
+	check c et sv
 
 check o et sv =
 	error ("check o: "++show o)
@@ -241,7 +241,7 @@ check0 o =
 	observeN "ret" $ check o SPL.Top.get_types []
 
 -- (_*sum (length _) (head _))
-res = check (CPL (CPL (CPL (CPVal "flipped" 0) (S ["flipped"]) 0) (K [CPL (CPL (CPVal "f" 0) (K [CPVal "y" 0,CPVal "x" 0]) 0) (S ["x","y"]) 0]) 0) (S ["f"]) 0)
+res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
 	SPL.Top.get_types ["flipped"]
 
 

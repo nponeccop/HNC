@@ -1,44 +1,41 @@
-module SPL.Compiler (compile, c_of_cp, res) where
+module SPL.Compiler (compile, remove_cdebug, res) where
 
 import SPL.Types
 import SPL.Parser hiding (P (..), res)
 import SPL.Code hiding (res)
 
 comp (Sn x i) =
-	CPNum x i
+	CDebug i $ CNum x
 comp (Sb x i) =
-	CPBool x i
+	CDebug i $ CBool x
 comp (Sstr s i) =
-	CPStr s i
+	CDebug i $ CStr s
 comp (Ss s i) =
-	CPVal s i
+	CDebug i $ CVal s
 comp (Scall f (SynK a) i) =
-	CPL (comp f) (K (map comp a)) i
+	CDebug i $ CL (comp f) (K (map comp a))
 comp (Scall f (SynS a) i) =
-	CPL (comp f) (S a) i
+	CDebug i $ CL (comp f) (S a)
 comp (Scall f (SynM a) i) =
-	CPL (comp f) R i
+	CDebug i $ CL (comp f) R
 comp (Scall f SynL i) =
-	CPL (comp f) L i
+	CDebug i $ CL (comp f) L
 
 compile = comp
 
-c_of_cp (CPNum x i) =
-	CNum x
-c_of_cp (CPBool x i) =
-	CBool x
-c_of_cp (CPStr s i) =
-	CStr s
-c_of_cp (CPVal s i) =
-	CVal s
-c_of_cp (CPL f (K a) i) =
-	CL (c_of_cp f) (K (map c_of_cp a))
-c_of_cp (CPL f (S a) i) =
-	CL (c_of_cp f) (S a)
-c_of_cp (CPL f R i) =
-	CL (c_of_cp f) R
-c_of_cp (CPL f L i) =
-	CL (c_of_cp f) L
+
+r_d (CDebug _ c) = r_d c
+r_d (CL c (K p)) =
+	CL (r_d c) (K (map r_d p))
+r_d (CL c (S a)) =
+	CL (r_d c) (S a)
+r_d (CL c R) =
+	CL (r_d c) R
+r_d (CL c L) =
+	CL (r_d c) L
+r_d o = o
+
+remove_cdebug = r_d
 
 {-tests = [
 	(Sn 2, CNum 2)

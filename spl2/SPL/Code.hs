@@ -28,6 +28,7 @@ eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
+eval (CL a@(CDebug _ c) (K p)) e = eval (CL (eval c e) (K p)) e
 
 -- put
 eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
@@ -42,6 +43,8 @@ eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
 eval a@(CL c R) e = a
 --eval a@(CL c R) e = eval c (putp ["_f"] [a] e)
+
+eval (CDebug _ c) e = eval c e
 
 eval o e = error ("eval: "++show o)
 
