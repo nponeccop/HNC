@@ -35,10 +35,10 @@ sem_Definition inh self @ (Definition name args val wh)
     = DefinitionSynthesized {
         dsCppDef = CppFunctionDef {
                         functionLevel 			= diLevel inh
-                    ,	functionTemplateArgs	= S.toList $ typePolyVars inhType
-                    ,	functionIsStatic		= isFunctionStatic self
+						,	functionTemplateArgs	= S.toList $ typePolyVars inhType
+						,	functionIsStatic		= isFunctionStatic self
                         ,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-                        ,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType self
+                        ,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
                         ,	functionName 			= name
                         ,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
                         ,	functionLocalVars 		= wsLocalVars semWhere
@@ -70,11 +70,12 @@ sem_Definition inh self @ (Definition name args val wh)
     	isFunctionStatic def  = S.null $ getDefinitionFreeVarsWithoutFqn def where
     	    getDefinitionFreeVarsWithoutFqn def = getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
   	
-data WhereSynthesized d = WhereSynthesized {
+data WhereSynthesized d e = WhereSynthesized {
 	wsLocalVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
 ,	wsFvt :: M.Map String T
 ,	wsMethods :: d
+,	wsTemplateArgs :: e
 }
 
 data WhereInherited a b c d e f = WhereInherited {
@@ -91,9 +92,14 @@ sem_Where inh self
 		wsLocalVars = getWsLocalVars inh self
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
-	,	wsMethods = getWhereMethods (wiDi inh) (wiTypes inh) self
-	} 
+	,	wsMethods = wsMethods
+	,	wsTemplateArgs = wsTemplateArgs
+	} where
+		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
+		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods' 
+		wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods'  
 	
+getDefinitionTemplateArgs def = "a"
 		
 getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiFvt inh) self
 		
@@ -110,7 +116,7 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods fvt inh fqnWithLocals whereTypes defType def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) ["jo"] (name ++ "_impl") vars methods where
+getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) templateVars (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
@@ -127,7 +133,8 @@ getContext methods fvt inh fqnWithLocals whereTypes defType def @ (Definition na
 
 	wfv = getWhereFuncFreeVars def
 	
-	isArgContext a = S.member a wfv 
+	isArgContext a = S.member a wfv
+
 	
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh

@@ -53,14 +53,17 @@ instance Show CppDefinition where
 			"\treturn " ++  show retVal ++ ";" 
 		,	"};" 
 		]) where
-			getContextInit tn vars = "\t" ++ tn ++ " impl = { " ++ initVars ++ " };" 
+			getContextInit templateVars tn vars = "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
 				where initVars = joinStr ", " $ map (\(CppVar _ _ v) -> show v) vars 
 			showContextInit = 
 				case context of 
 					Nothing -> []
 					Just (CppContext _ _ _ [] _) -> [ contextTypeDef ]
-					Just (CppContext _ _ tn vars methods) -> [ contextTypeDef, getContextInit tn vars ]
+					Just (CppContext _ templateVars tn vars _) -> [ contextTypeDef, getContextInit templateVars tn vars ]
 			contextTypeDef = "\ttypedef main_impl local;"
+			
+			showTemplateArgs [] = ""
+			showTemplateArgs typeArgs =  "<" ++ joinStr ", " typeArgs ++ ">"
 			 
    
 instance Show CppLocalVarDef where
