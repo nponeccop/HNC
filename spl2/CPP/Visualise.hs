@@ -29,7 +29,9 @@ joinComma = joinStr ", "
 showTemplateArgs [] = ""
 showTemplateArgs typeArgs = inAngular $ joinComma typeArgs
 
-getTemplateDecl templateArgs = if null templateArgs then [] else [templateDecl] where
+ifNotNull l res = if null l then [] else res
+
+getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
 	templateDecl = "template "  ++ (showTemplateArgs $ map (\x -> "typename " ++ x) templateArgs)
 
 instance Show CppContext where
@@ -37,7 +39,7 @@ instance Show CppContext where
 		=
 				(sil $ getTemplateDecl templateArgs  ++	["struct " ++ name, "{"]
 		++ (map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars)) 
-		++ (if null vars then "" else "\n") 
+		++ (ifNotNull vars "\n") 
 		++ (mapAndJoinStr show methods)  
 		++ sil ["};"] 
 		++ "\n"  where
@@ -93,4 +95,3 @@ instance Show CppType where
 		= "boost::function" ++ (inAngular $ show ret ++ " (*)" ++ (inParens $ showFunctionArgs args))
 	show (CppTypePolyInstance polyType typeArgs) 
 		= polyType ++ (inAngular $ showFunctionArgs typeArgs)
-	
