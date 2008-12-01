@@ -36,31 +36,34 @@ getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
 
 instance Show CppContext where
 	show (CppContext level templateArgs name vars methods) 
-		=
-				(sil $ getTemplateDecl templateArgs  ++	["struct " ++ name, "{"]
-		++ (map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars)) 
-		++ (ifNotNull vars "\n") 
-		++ (mapAndJoinStr show methods)  
-		++ sil ["};"] 
-		++ "\n"  where
-			sil = showWithIndent level
+		= let sil = showWithIndent level in concat 
+		[
+			(sil $ concat [
+					getTemplateDecl templateArgs
+				,  	["struct " ++ name, "{"]
+				,	map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars
+			])
+		,	ifNotNull vars "\n" 
+		,	mapAndJoinStr show methods  
+		,	sil ["};"] 
+		, 	"\n"
+		]
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal) 
-		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $
-		
-		getTemplateDecl templateArgs
-		++
+		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $ concat $
 		[
-			(if isStatic then "static " else "") ++ showFunctionPrototype def
-		,	"{"
-		] 
-		++ map (\x -> "\t" ++ show x) localVars 
-		++ showContextInit 
-		++ 
-		[ 
-			inStrings "\treturn " ";" $ show retVal 
-		,	"};" 
+			getTemplateDecl templateArgs
+		, 	[
+				(if isStatic then "static " else "") ++ showFunctionPrototype def
+			,	"{"
+			]
+		,	map (\x -> "\t" ++ show x) localVars 
+		,	showContextInit 
+		,	[ 
+				inStrings "\treturn " ";" $ show retVal 
+			,	"};"
+			]
 		]) where
 			getContextInit templateVars tn vars = "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars 
