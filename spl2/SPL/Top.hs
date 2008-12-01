@@ -62,6 +62,9 @@ base = M.fromList $
 	:("iff", Fun
 		(CL (CInFun 2 (InFun "" do_iff)) (K []))
 		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"], TU "a"]))
+	:("foldr", Fun
+		(CList [])
+		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))	
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -105,5 +108,3 @@ do_iff (CList []:CL c L:[]) e = CL (CL c L) (K [CVal "go"])
 do_iff (CList ((CPair (CBool True:exp:[])):is):CL c L:[]) e = CL exp (K [CVal "go"])
 do_iff (CList ((CPair (CBool False:exp:[])):is):CL c L:[]) e = do_iff (CList is:CL c L:[]) e
 do_iff o e = error ("do_iff: "++show o)
-
-
