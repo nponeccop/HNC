@@ -3,7 +3,6 @@ module CPP.Core where
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
-import Maybe
 import Debug.Trace
 
 import HN.Intermediate

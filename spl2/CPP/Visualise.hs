@@ -5,7 +5,6 @@ import Maybe
 import CPP.Intermediate
 import HN.Intermediate
 import Utils
-import CPP.TypeProducer
 
 mapAndJoinStr _ [] = [] 
 mapAndJoinStr x l = foldl1 (++) $ map x l

@@ -3,7 +3,6 @@ module Utils where
 
 import qualified Data.ByteString
 import Data.Char
-import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Debug.Trace

@@ -4,7 +4,6 @@ module SPL.Check3 (P (..), check0, check, res) where
 import Data.Map as M hiding (filter, union)
 
 import SPL.Types
-import SPL.Code hiding (res)
 import SPL.Top
 --import Debug.Trace
 --import Hugs.Observe
@@ -253,6 +252,3 @@ check0 o =
 -- (_*sum (length _) (head _))
 res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
 	SPL.Top.get_types ["flipped"]
-
-
-

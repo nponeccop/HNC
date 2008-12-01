@@ -4,7 +4,6 @@ import Data.List
 import qualified Data.Set as S
 
 import SPL.Types
-import Utils
 import CPP.Intermediate
 
 cppPrimitiveType x = case x of
