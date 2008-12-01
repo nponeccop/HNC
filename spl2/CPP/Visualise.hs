@@ -15,21 +15,30 @@ showJoinedList2 separator = mapAndJoinStr (\x -> (show x) ++ separator)
 showProgram l = showJoinedList "\n\n" l
 
 showWithIndent indentationLevel y
-	= joinStr "" $ (map (\x -> indent ++ x ++ "\n") $ filter (\x -> not $ null x) $ y) where
+	= joinStr "" $ (map (inStrings indent "\n") $ filter (\x -> not $ null x) y) where
 		indent = replicate indentationLevel '\t'
 
-showFree y = mapAndJoinStr (\x -> "\t" ++ (show x) ++ ";") y
+showFree y = mapAndJoinStr (inStrings "\t" ";" . show) y
 
-showFunctionPrototype def = show (functionReturnType def) ++ " " ++ (functionName def) ++ "(" ++ (showFunctionArgsWithTypes $ functionArgs def) ++ ")"
+showFunctionPrototype def = (show $ functionReturnType def) ++ " " ++ functionName def ++ (inParens $ showFunctionArgsWithTypes $ functionArgs def)
+
+inParens x = inStrings "(" ")" x
+inCurly x = inStrings "{" "}" x
+inAngular x = inStrings "<" ">" x
+inStrings l r x = l ++ x ++ r
+
+showFunctionArgs l = showJoinedList ", " l
+
+showFunctionArgsWithTypes args = joinStr ", " $ map show args
 
 getTemplateDecl templateArgs = if null templateArgs then [] else [templateDecl] where
-	templateDecl = "template <"  ++ (joinStr ", " $ map (\x -> "typename " ++ x) templateArgs) ++ ">"
+	templateDecl = "template "  ++ (inAngular $ joinStr ", " $ map (\x -> "typename " ++ x) templateArgs)
 
 instance Show CppContext where
 	show (CppContext level templateArgs name vars methods) 
 		=
 				(sil $ getTemplateDecl templateArgs  ++	["struct " ++ name, "{"]
-		++ (map (\(CppVar t n _) -> "\t" ++ (show $ CppVarDecl t n) ++ ";") vars)) 
+		++ (map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars)) 
 		++ (if null vars then "" else "\n") 
 		++ (mapAndJoinStr show methods)  
 		++ sil ["};"] 
@@ -50,7 +59,7 @@ instance Show CppDefinition where
 		++ showContextInit 
 		++ 
 		[ 
-			"\treturn " ++  show retVal ++ ";" 
+			inStrings "\treturn " ";" $ show retVal 
 		,	"};" 
 		]) where
 			getContextInit templateVars tn vars = "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
@@ -63,11 +72,11 @@ instance Show CppDefinition where
 			contextTypeDef = "\ttypedef main_impl local;"
 			
 			showTemplateArgs [] = ""
-			showTemplateArgs typeArgs =  "<" ++ joinStr ", " typeArgs ++ ">"
+			showTemplateArgs typeArgs = inAngular $ joinStr ", " typeArgs
 			 
    
 instance Show CppLocalVarDef where
-    show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ (show c) ++ ";"
+    show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
     
 instance Show CppVarDecl where
 	show (CppVarDecl typ name) = show typ ++ " " ++ name
@@ -78,20 +87,15 @@ instance Show CppExpression where
     		(ConstInt s) -> show s
     show (CppAtom l) = l
     show (CppApplication (CppAtom a) b)
-        = a ++ "(" ++ showFunctionArgs b ++ ")"
+        = a ++ (inParens $ showFunctionArgs b)
     show (CppApplication a b)
-        = "(" ++ (show a) ++ ")(" ++ showFunctionArgs b ++ ")"
+        = (inParens $ show a) ++ (inParens $ showFunctionArgs b)
 
 instance Show CppType where
 	show (CppTypePrimitive p) 
 		= p 
 	show (CppTypeFunction ret args) 
-		= "boost::function<" ++ show ret ++ " (*)(" ++ showFunctionArgs args ++ ")>"
+		= "boost::function" ++ (inAngular $ show ret ++ " (*)" ++ (inParens $ showFunctionArgs args))
 	show (CppTypePolyInstance polyType typeArgs) 
-		= polyType ++ "<" ++ (showFunctionArgs typeArgs) ++ ">"
- 
-showFunctionArgs l = showJoinedList ", " l
-
-showFunctionArgsWithTypes args = joinStr ", " $ map show args
-	
+		= polyType ++ (inAngular $ showFunctionArgs typeArgs)
 	
