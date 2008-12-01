@@ -11,15 +11,11 @@ mapAndJoinStr x l = foldl1 (++) $ map x l
 
 showJoinedList2 separator = mapAndJoinStr (\x -> (show x) ++ separator)
 
-showProgram l = showJoinedList "\n\n" l
-
 showWithIndent indentationLevel y
-	= joinStr "" $ (map (inStrings indent "\n") $ filter (\x -> not $ null x) y) where
+	= concat $ map (inStrings indent "\n") $ filter (\x -> not $ null x) y where
 		indent = replicate indentationLevel '\t'
 
-showFree y = mapAndJoinStr (inStrings "\t" ";" . show) y
-
-showFunctionPrototype def = (show $ functionReturnType def) ++ " " ++ functionName def ++ (inParens $ showFunctionArgsWithTypes $ functionArgs def)
+showFunctionPrototype def = (show $ functionReturnType def) ++ " " ++ functionName def ++ (inParens $ showFunctionArgs $ functionArgs def)
 
 inParens x = inStrings "(" ")" x
 inCurly x = inStrings "{" "}" x
@@ -29,8 +25,6 @@ inStrings l r x = l ++ x ++ r
 showFunctionArgs l = showJoinedList ", " l
 
 joinComma = joinStr ", "
-
-showFunctionArgsWithTypes args = joinComma $ map show args
 
 showTemplateArgs [] = ""
 showTemplateArgs typeArgs = inAngular $ joinComma typeArgs
