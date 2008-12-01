@@ -60,12 +60,12 @@ main_loop = do
 		Quit -> return ()
 		Help -> do putStrLn help; main_loop
 		Type ->
-			case step $ drop 3 line of
-				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+			case get_type_of_expr $ drop 3 line of
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		TypeDef ->
 			case get_type_debug_of_expr $ drop 4 line of
-				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		Code ->
 			case get_code_of_expr $ drop 3 line of
