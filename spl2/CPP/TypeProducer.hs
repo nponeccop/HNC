@@ -31,6 +31,10 @@ isTypePolymorphic (T _) = False
 isTypePolymorphic (TT l) = maybe False (const True) $ find isTypePolymorphic l 
 isTypePolymorphic (TU _) = True
 
-typePolyVars (TT l) = S.unions $ map typePolyVars l
-typePolyVars (TU v) = S.singleton v
-typePolyVars _ = S.empty
+typePolyVars x = (case x of
+	TU v -> S.singleton v
+	TT l -> union l
+	TD _ l -> union l
+	_    -> S.empty)
+		where
+			union = S.unions . map typePolyVars 
