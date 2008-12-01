@@ -18,7 +18,6 @@ showWithIndent indentationLevel y
 showFunctionPrototype def = (show $ functionReturnType def) ++ " " ++ functionName def ++ (inParens $ showFunctionArgs $ functionArgs def)
 
 inParens x = inStrings "(" ")" x
-inCurly x = inStrings "{" "}" x
 inAngular x = inStrings "<" ">" x
 inStrings l r x = l ++ x ++ r
 
@@ -32,17 +31,17 @@ showTemplateArgs typeArgs = inAngular $ joinComma typeArgs
 ifNotNull l res = if null l then [] else res
 
 getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
-	templateDecl = "template "  ++ (showTemplateArgs $ map (\x -> "typename " ++ x) templateArgs)
+	templateDecl = "template "  ++ (showTemplateArgs $ map ((++) "typename ") templateArgs)
 
 instance Show CppContext where
 	show (CppContext level templateArgs name vars methods) 
 		= let sil = showWithIndent level in concat 
 		[
-			(sil $ concat [
+			sil $ concat [
 					getTemplateDecl templateArgs
 				,  	["struct " ++ name, "{"]
 				,	map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars
-			])
+			]
 		,	ifNotNull vars "\n" 
 		,	mapAndJoinStr show methods  
 		,	sil ["};"] 
@@ -51,29 +50,25 @@ instance Show CppContext where
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal) 
-		= (if isNothing context then "" else show $ fromJust context) ++ (showWithIndent level $ concat $
+		= maybe [] show context ++ (showWithIndent level $ concat $
 		[
 			getTemplateDecl templateArgs
 		, 	[
 				(if isStatic then "static " else "") ++ showFunctionPrototype def
 			,	"{"
 			]
-		,	map (\x -> "\t" ++ show x) localVars 
-		,	showContextInit 
+		,	map ((++) "\t" . show) localVars 
+		,	maybe [] showContextInit context 
 		,	[ 
 				inStrings "\treturn " ";" $ show retVal 
 			,	"};"
 			]
 		]) where
-			getContextInit templateVars tn vars = "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
+			getContextInit (CppContext _ templateVars tn vars _)
+				= "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars 
-			showContextInit = 
-				case context of 
-					Nothing -> []
-					Just (CppContext _ _ _ [] _) -> [ contextTypeDef ]
-					Just (CppContext _ templateVars tn vars _) -> [ contextTypeDef, getContextInit templateVars tn vars ]
-			contextTypeDef = "\ttypedef main_impl local;"
-			 
+			showContextInit ctx @ (CppContext _ _ _ vars _)
+				= "\ttypedef main_impl local;" : ifNotNull vars [getContextInit ctx]
    
 instance Show CppLocalVarDef where
     show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
