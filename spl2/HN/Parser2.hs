@@ -21,13 +21,15 @@ import Text.Parsec.Char
 
 import HN.Intermediate
 import Utils
+import Control.Monad
 
 pzero = parserZero
 
 parseString p input
     = runP p () "test.hn0" (packL input)
  
-identifier = many1 letter
+identifier 
+	= liftM2 (:) letter $ many $ letter <|> digit  
 
 literal = between q q (many $ noneOf "\"") where q = (char '"') 
 	
