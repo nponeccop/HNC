@@ -119,6 +119,7 @@ check (CDebug ii (CL a (K p))) et sv =
 							r = observeN "r" $ TU ('_':n)
 						in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
+		P (ur, TU n) -> P (ur, TU n)
 		N i e -> N i e
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
