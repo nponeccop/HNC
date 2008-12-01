@@ -28,10 +28,15 @@ inStrings l r x = l ++ x ++ r
 
 showFunctionArgs l = showJoinedList ", " l
 
-showFunctionArgsWithTypes args = joinStr ", " $ map show args
+joinComma = joinStr ", "
+
+showFunctionArgsWithTypes args = joinComma $ map show args
+
+showTemplateArgs [] = ""
+showTemplateArgs typeArgs = inAngular $ joinComma typeArgs
 
 getTemplateDecl templateArgs = if null templateArgs then [] else [templateDecl] where
-	templateDecl = "template "  ++ (inAngular $ joinStr ", " $ map (\x -> "typename " ++ x) templateArgs)
+	templateDecl = "template "  ++ (showTemplateArgs $ map (\x -> "typename " ++ x) templateArgs)
 
 instance Show CppContext where
 	show (CppContext level templateArgs name vars methods) 
@@ -62,16 +67,13 @@ instance Show CppDefinition where
 		,	"};" 
 		]) where
 			getContextInit templateVars tn vars = "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
-				where initVars = joinStr ", " $ map (\(CppVar _ _ v) -> show v) vars 
+				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars 
 			showContextInit = 
 				case context of 
 					Nothing -> []
 					Just (CppContext _ _ _ [] _) -> [ contextTypeDef ]
 					Just (CppContext _ templateVars tn vars _) -> [ contextTypeDef, getContextInit templateVars tn vars ]
 			contextTypeDef = "\ttypedef main_impl local;"
-			
-			showTemplateArgs [] = ""
-			showTemplateArgs typeArgs = inAngular $ joinStr ", " typeArgs
 			 
    
 instance Show CppLocalVarDef where
