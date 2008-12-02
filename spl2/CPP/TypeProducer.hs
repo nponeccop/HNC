@@ -6,8 +6,6 @@ import qualified Data.Set as S
 import SPL.Types
 import CPP.Intermediate
 
-import Utils
-
 cppPrimitiveType x = case x of
 	"num" -> "int"
 	"string" -> "std::string"
@@ -19,7 +17,6 @@ cppType (T x) = CppTypePrimitive $ cppPrimitiveType x
 	
 cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
 	cppL = map cppType l
-	isPoly = not $ null templateArgs
 	templateArgs = S.toList $ typePolyVars (TT l)  
 	
 cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) $ map cppType typeArgs
@@ -28,7 +25,6 @@ cppType (TU x) = CppTypePrimitive x
 
 cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
 
-uncurryFunctionType [] [] = []
 uncurryFunctionType [argType] [] = [argType]
 uncurryFunctionType argTypes [] = [TT argTypes]
 uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta 
