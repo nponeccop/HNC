@@ -129,8 +129,8 @@ check (CDebug ii (CL a (K p))) et sv =
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
 		norm (TT o) =
-		  case last o of
-		    TT a -> norm $ TT ((init o)++a)
+		  case reverse o of
+		    (TT a):b -> norm $ TT $ (reverse b)++a
 		    _ -> TT o
 		norm o = o
 
