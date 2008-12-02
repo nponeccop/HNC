@@ -257,9 +257,37 @@ change_tv (TD n tt) i = TD n $ change_tvl tt i
 change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
 
+ren_tu t =rename_tu t (M.empty, Prelude.map (\x -> x:[]) $ ['a'..'z'])
+
+rename_tu (TD n []) d = (d, TD n [])
+rename_tu (TD n (t:ts)) d =
+	case rename_tu t d of
+		(d2, t) -> case rename_tu (TD n ts) d2 of
+								(d3, TD n l) -> (d3, TD n (t:l))
+rename_tu (TT []) d = (d, TT [])
+rename_tu (TT (t:ts)) d =
+	case rename_tu t d of
+		(d2, t) -> case rename_tu (TT ts) d2 of
+								(d3, TT l) -> (d3, TT (t:l))
+rename_tu (TU n) (m, nn) =
+	case M.lookup n m of
+		Just a -> ((m, nn), TU a)
+		Nothing -> ((M.insert n (head nn) m, tail nn), TU $ head nn)
+rename_tu o d = (d, o)
+
 check0 o =
-	observeN "ret" $ check o SPL.Top.get_types []
+	case check o SPL.Top.get_types [] of
+		P (rm, r) -> P (rm, snd $ ren_tu r)
+		N a b -> N a b
+
+check1 o =
+	case check o SPL.Top.get_types [] of
+		P (rm, r) ->
+			let (d, r) = ren_tu r in
+				P (M.map (\x -> snd $ rename_tu x d) rm, r)
+		N a b -> N a b
 
 -- (_*sum (length _) (head _))
 res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
 	SPL.Top.get_types ["flipped"]
+
