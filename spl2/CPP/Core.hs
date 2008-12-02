@@ -47,7 +47,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
     	finalFvt = exprFvt
     	whereNames = map (\(Definition name _ _ _) -> name) wh
-    	P (exprOutputTypes, defType) = check (convertDef self) exprFvt whereNames
+    	P (exprOutputTypes, defType) = check1 (convertDef self) exprFvt whereNames
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
  	
@@ -186,7 +186,7 @@ sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
 	,	vdsTemplateArgs = trace2 $ S.toList $ typePolyVars inferredType 
 	}
 	 where
-		inferredType = case check (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
+		inferredType = case check1 (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x

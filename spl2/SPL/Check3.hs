@@ -1,5 +1,5 @@
 
-module SPL.Check3 (P (..), check0, check, res) where
+module SPL.Check3 (P (..), check0, check, check1, res) where
 
 import Data.Map as M hiding (filter, union)
 
@@ -280,8 +280,8 @@ check0 o =
 		P (rm, r) -> P (rm, snd $ ren_tu r)
 		N a b -> N a b
 
-check1 o sv =
-	case check o SPL.Top.get_types sv of
+check1 o top sv =
+	case check o top sv of
 		P (rm, r) ->
 			let (d, r) = ren_tu r in
 				P (M.map (\x -> snd $ rename_tu x d) rm, r)
