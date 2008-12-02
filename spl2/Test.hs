@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 1
+test_last = 0
 from_i = 0::Int
 --to_i = 68::Int
 to_i = (-) (length tests) 1
@@ -124,9 +124,8 @@ tests = [
 	,("f*(flipped*flipped) (x*y*f y x)", "CL (CL (CL (CVal \"flipped\") (S [\"flipped\"])) (K [CL (CL (CVal \"f\") (K [CVal \"y\",CVal \"x\"])) (S [\"x\",\"y\"])])) (S [\"f\"])", "TT [TT [TU \"y0\",TU \"x0\",TU \"_f0\"],TU \"x0\",TU \"y0\",TU \"_f0\"]")
 	,("(z*z z)", "", "")
 	,("(f*x*y*(f x) y)", "", "")
---	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "")
---	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "")
---	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "")
+	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "")
+	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "")
 	]
 
 {-

@@ -60,7 +60,7 @@ ch (r:[]) [] et ul uv i sv ii =
 ch r [] et ul uv i sv ii =
 	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv ii =
-	case observeN ("ch_p "++show p1) $ check p1 et sv of
+	case observeN ("ch_p "++show r) $ check p1 et sv of
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
 			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
@@ -118,10 +118,18 @@ check (CDebug ii (CL a (K p))) et sv =
 							r = observeN "r" $ TU ('_':n)
 						in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
-		P (ur, TU n) -> P (ur, TU n)
+		P (ur, TU n) ->
+				case get_url p_ok of
+					Right a -> 
+						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
+							r = observeN "r" $ TU ('_':n)
+						in P (M.map (\x -> setm x rm) ur, setm r rm)
+					Left o -> o
 		N i e -> N i e
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
+		normalize (TT (TT b:xs)) =
+		normalize (TT (a:b)) =
 
 check (CL a (K p)) et sv =
 	check (CDebug (-1) (CL a (K p))) et sv
@@ -197,7 +205,7 @@ compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
 --compare (TU a) (TU b) = (M.singleton a (TU b), M.empty, True)
-compare (TU a) (TU b) = (M.unionWith merge (M.singleton b (TU a)) (M.singleton a (TU b)), M.empty, True)
+compare (TU a) (TU b) = (union {-(M.singleton b (TU a))-} M.empty (M.singleton a (TU b)), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
