@@ -38,4 +38,5 @@ typePolyVars x = (case x of
 	TD _ l -> union l
 	_    -> S.empty)
 		where
-			union = S.unions . map typePolyVars 
+			union = S.unions . map typePolyVars
+

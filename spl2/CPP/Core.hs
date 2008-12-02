@@ -88,7 +88,7 @@ data WhereInherited a b c d e f = WhereInherited {
     	
 sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = getWsLocalVars inh self
+		wsLocalVars = map vdsVarDef wsLocalVars
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
 	,	wsMethods = wsMethods
@@ -96,7 +96,9 @@ sem_Where inh self
 	} where
 		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
 		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods' 
-		wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods'  
+		wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs) 
+		wsLocalVars = getWsLocalVars inh self
+		varTemplateArgs = map vdsTemplateArgs wsLocalVars
 	
 getDefinitionTemplateArgs def = "a"
 		
@@ -115,18 +117,22 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) templateVars (name ++ "_impl") vars methods where
+getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях 
-	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh))  ++ contextArgs   
-		
-	lvn = getLocalVars wh
+	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (map vdsVarDef varSem))  ++ contextArgs   
 	
-	contextArgs = case defType of
-		TT funList -> map (\(typ, x) -> CppVar (cppType typ) x $ CppAtom x) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
+	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh
+	
+	contextTemplateVars = nub ((templateVars ++ (concat $ (map vdsTemplateArgs varSem)) ++ (S.toList $ S.unions $ contextArgsTv)))  		
+	
+	lvn = getLocalVars wh
+	(contextArgs, contextArgsTv) = unzip $ case defType of
+		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
+	
 	
 	getCppType x = cppType $ maybe (error "zorro") id $ M.lookup x fvt 
 
@@ -169,10 +175,18 @@ getWhereFuncFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars (filter isFunc
 
 getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
 
+data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
+	vdsVarDef :: a
+,	vdsTemplateArgs :: b 
+}
 
 sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
-	CppVar inferredType name $ sem_Expression fqn val where
-		inferredType = cppType $ case check (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
+	VarDefinitionSynthesized {
+		vdsVarDef = CppVar (cppType inferredType) name $ sem_Expression fqn val
+	,	vdsTemplateArgs = trace2 $ S.toList $ typePolyVars inferredType 
+	}
+	 where
+		inferredType = case check (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x
