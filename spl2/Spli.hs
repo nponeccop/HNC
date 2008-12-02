@@ -69,7 +69,7 @@ main_loop = do
 				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		Code ->
 			case get_code_of_expr $ drop 3 line of
-				SPL.Interpretator.P (i, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.P (t, r) -> do putStrLn r; main_loop
 				SPL.Interpretator.N (i, r) -> do putStrLn (tab i r); main_loop
 		Expr ->
 			case step line of

@@ -34,7 +34,7 @@ get_type_of_expr str =
 get_code_of_expr str =
 	case parse str of
 		SPL.Parser.P _ i p ->
-			SPL.Interpretator.P (show $ compile p, "")
+			SPL.Interpretator.P ("", show $ compile p)
 		SPL.Parser.N i ->
 			SPL.Interpretator.N (i, "  "++(take i $ repeat ' ')++"^ parser error")
 
