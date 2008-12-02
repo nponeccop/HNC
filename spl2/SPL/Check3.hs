@@ -280,8 +280,8 @@ check0 o =
 		P (rm, r) -> P (rm, snd $ ren_tu r)
 		N a b -> N a b
 
-check1 o top sv =
-	case check o top sv of
+check1 o e sv =
+	case check o e sv of
 		P (rm, r) ->
 			let (d, r) = ren_tu r in
 				P (M.map (\x -> snd $ rename_tu x d) rm, r)
