@@ -122,10 +122,10 @@ tests = [
 	,("(x*(y*iff (join1 (pair (less x 5) (l!sum y y)),elist) (l!5)) ((x*sum 1,sum 2 x) 2))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"x\",CNum 5]),CL (CL (CVal \"sum\") (K [CVal \"y\",CVal \"y\"])) L]),CVal \"elist\"]),CL (CNum 5) L])) (S [\"y\"])) (K [CL (CL (CL (CVal \"sum\") (K [CNum 1,CL (CVal \"sum\") (K [CNum 2,CVal \"x\"])])) (S [\"x\"])) (K [CNum 2])])) (S [\"x\"])", "TT [T \"num\",T \"num\"]")
 	,("(l*(f*filter f l) (x*less 1 x))", "CL (CL (CL (CL (CVal \"filter\") (K [CVal \"f\",CVal \"l\"])) (S [\"f\"])) (K [CL (CL (CVal \"less\") (K [CNum 1,CVal \"x\"])) (S [\"x\"])])) (S [\"l\"])", "TT [TD \"list\" [T \"num\"],TD \"list\" [T \"num\"]]")
 	,("f*(flipped*flipped) (x*y*f y x)", "CL (CL (CL (CVal \"flipped\") (S [\"flipped\"])) (K [CL (CL (CVal \"f\") (K [CVal \"y\",CVal \"x\"])) (S [\"x\",\"y\"])])) (S [\"f\"])", "TT [TT [TU \"y0\",TU \"x0\",TU \"_f0\"],TU \"x0\",TU \"y0\",TU \"_f0\"]")
+	,("(f*x*y*(f x) y)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (K [CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "TT [TT [TU \"x\",TU \"y\",TU \"__f\"],TU \"x\",TU \"y\",TU \"__f\"]")
+	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "TT [TT [TU \"x\",TU \"_f0\"],TU \"x\",TD \"list\" [TU \"_f0\"],TD \"list\" [TU \"_f0\"]]")
+	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "TT [TT [TU \"x0\",TU \"_f00\"],TD \"list\" [TU \"x0\"],TD \"list\" [TU \"_f00\"]]")
 	,("(z*z z)", "", "")
-	,("(f*x*y*(f x) y)", "", "")
-	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "")
-	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "")
 	]
 
 {-

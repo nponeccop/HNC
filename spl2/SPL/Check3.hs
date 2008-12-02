@@ -123,13 +123,16 @@ check (CDebug ii (CL a (K p))) et sv =
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P (M.map (\x -> setm x rm) ur, setm r rm)
+						in P (M.map (\x -> norm $ setm x rm) ur, setm r rm)
 					Left o -> o
 		N i e -> N i e
 	where
 		p_ok = Prelude.map (\x -> check x et sv) p
-		normalize (TT (TT b:xs)) =
-		normalize (TT (a:b)) =
+		norm (TT o) =
+		  case last o of
+		    TT a -> norm $ TT ((init o)++a)
+		    _ -> TT o
+		norm o = o
 
 check (CL a (K p)) et sv =
 	check (CDebug (-1) (CL a (K p))) et sv
