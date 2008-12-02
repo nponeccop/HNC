@@ -280,8 +280,8 @@ check0 o =
 		P (rm, r) -> P (rm, snd $ ren_tu r)
 		N a b -> N a b
 
-check1 o =
-	case check o SPL.Top.get_types [] of
+check1 o sv =
+	case check o SPL.Top.get_types sv of
 		P (rm, r) ->
 			let (d, r) = ren_tu r in
 				P (M.map (\x -> snd $ rename_tu x d) rm, r)
