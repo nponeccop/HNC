@@ -51,7 +51,7 @@ sem_Definition inh self @ (Definition name args val wh)
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
  	
-    	cppDefType = cppType inhType
+    	cppDefType = cppUncurryType inhType args
     	inhType = maybe defType id $ diType inh
     	-- localsList : semWhere 
     	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
