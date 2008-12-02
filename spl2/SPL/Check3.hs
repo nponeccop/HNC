@@ -257,7 +257,7 @@ change_tv (TD n tt) i = TD n $ change_tvl tt i
 change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
 
-ren_tu t =rename_tu t (M.empty, Prelude.map (\x -> x:[]) $ ['a'..'z'])
+ren_tu t = rename_tu t (M.empty, Prelude.map (\x -> x:[]) $ ['a'..'z'])
 
 rename_tu (TD n []) d = (d, TD n [])
 rename_tu (TD n (t:ts)) d =
@@ -283,8 +283,8 @@ check0 o =
 check1 o e sv =
 	case check o e sv of
 		P (rm, r) ->
-			let (d, r) = ren_tu r in
-				P (M.map (\x -> snd $ rename_tu x d) rm, r)
+			case ren_tu r of
+				(d, r) -> P (M.map (\x -> snd $ rename_tu x d) rm, r)
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))
