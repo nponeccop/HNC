@@ -10,11 +10,9 @@ import SPL.Top
 
 simpleParse prog = head $ fromRight $ parseProg prog
 
-baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-
 tdi = DefinitionInherited {
-	diLevel        = 3,
-	diSymTab       = baseToTdi,
+	diLevel        = 0,
+	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types,
 	diFreeVarTypes = SPL.Top.get_types
 ,	diType         = Nothing
 }

@@ -1,4 +1,4 @@
-flip f = {
-	flipped x y = f y x
+plus2 x = {
+	f x = sum 2 x
 	flipped
 }
