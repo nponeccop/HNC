@@ -1,1 +1,7 @@
-exe NullaryBinder : NullaryBinder.cpp /pkg/boost : <include>include ;
+project : default-build <include>include <link>static ;
+
+lib hn-cpplib : lib.cpp /pkg/boost ;
+
+exe NullaryBinder : NullaryBinder.cpp hn-cpplib ;
+
+exe Incr : Incr.cpp hn-cpplib ;
