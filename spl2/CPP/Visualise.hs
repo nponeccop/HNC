@@ -54,7 +54,7 @@ instance Show CppDefinition where
 		[
 			getTemplateDecl templateArgs
 		, 	[
-				(if isStatic then "static " else "") ++ showFunctionPrototype def
+				(if isStatic && level > 0 then "static " else "") ++ showFunctionPrototype def
 			,	"{"
 			]
 		,	map ((++) "\t" . show) localVars 
