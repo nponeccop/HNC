@@ -1,0 +1,4 @@
+main = {
+	f x = incr x
+	f 2
+}

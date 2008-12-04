@@ -6,4 +6,6 @@ exe NullaryBinder : NullaryBinder.cpp hn-cpplib ;
 
 exe Incr2 : test.hn hn-cpplib ;
 
+exe test2 : test2.hn hn-cpplib ;
+
 
