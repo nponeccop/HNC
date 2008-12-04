@@ -19,4 +19,5 @@ tdi = DefinitionInherited {
     
 main = do
 	a <- readFile "test.hn"
+	putStrLn "#include <hn/lib.hpp>\n"
 	print $ dsCppDef $ sem_Definition tdi $ simpleParse a
