@@ -77,7 +77,9 @@ testSet =
 	,	"main l f = filter f l"
 	-- polymorphic function without free variables
 	,	"flip f = { flipped x y = f y x\nflipped }"
-	,	"map f l = {\n\tg x y = join1 (f x) y\n\tfoldr g elist l }" 
+	,	"map f l = {\n\tg x y = join1 (f x) y\n\tfoldr g elist l }"
+		-- parameter name conflicts with inferred type variable name
+	,	"main a f = filter f a" 
 	]
 	
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
