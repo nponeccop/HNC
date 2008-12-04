@@ -1,16 +1,9 @@
 project : default-build <include>include <link>static <variant>release ;
 
-lib hn-cpplib : lib.cpp /pkg/boost ;
+import hn ;
 
 exe NullaryBinder : NullaryBinder.cpp hn-cpplib ;
 
-exe Incr2 : Incr2.cpp hn-cpplib ;
+exe Incr2 : test.hn hn-cpplib ;
 
-make Incr2.cpp : test.hn : hn-build ;
 
-actions hn-build
-{
-	rem echo inpath -) $(>[0]:W) outdir -) $(<[0]:D) infile -) $(<[0]:B) foo -) $(<[0])
-	call ..\\..\\..\\config.cmd
-	%HN_RH% ..\\HNC.hs $(>[0]:W) $(<[0]:W)
-}

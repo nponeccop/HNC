@@ -1,0 +1,14 @@
+import type ;
+type.register HN : hn ;
+
+import generators ;
+generators.register-standard hn.compile : HN : CPP ;
+
+actions compile
+{
+	rem echo inpath -) $(>[0]:W) outdir -) $(<[0]:D) infile -) $(<[0]:B) foo -) $(<[0])
+	call ..\\..\\..\\config.cmd
+	%HN_RH% ..\\HNC.hs $(>[0]:W) $(<[0]:W)
+}
+
+lib hn-cpplib : lib.cpp /pkg/boost : <include>include ;
