@@ -65,7 +65,7 @@ instance Show CppDefinition where
 			]
 		]) where
 			getContextInit (CppContext _ templateVars tn vars _)
-				= "\t" ++ tn ++ " impl" ++ showTemplateArgs templateVars ++ " = { " ++ initVars ++ " };" 
+				= "\t" ++ tn ++ showTemplateArgs templateVars ++ " impl = { " ++ initVars ++ " };" 
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars 
 			showContextInit ctx @ (CppContext _ _ _ vars _)
 				= "\ttypedef main_impl local;" : ifNotNull vars [getContextInit ctx]
