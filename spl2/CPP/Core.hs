@@ -208,3 +208,5 @@ getExpressionAtoms _ = S.empty
 
 getDefinitionFreeVars def @ (Definition _ args val wh) 
 	= (S.union (getExpressionAtoms val) (getSetOfListFreeVars wh)) `subtractSet` (S.fromList args) `subtractSet` (getWhereAtoms wh)
+
+	

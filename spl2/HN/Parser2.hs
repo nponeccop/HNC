@@ -13,7 +13,7 @@
 
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy, 
-	atom2, newExpression, simpleDefinition, whereClause, parseProg) where
+	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile) where
 import Text.Parsec.Prim
 import Text.Parsec.ByteString
 import Text.Parsec.Combinator
@@ -167,3 +167,5 @@ simple =
 program = sepBy simple (many1 $ string "\n")
 
 parseProg = parseString program
+
+parseFile = parseFromFile program
