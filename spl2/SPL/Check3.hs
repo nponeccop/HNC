@@ -275,10 +275,7 @@ rename_tu (TU n) (m, nn) =
 		Nothing -> ((M.insert n (head nn) m, tail nn), TU $ head nn)
 rename_tu o d = (d, o)
 
-check0 o =
-	case check1 o SPL.Top.get_types [] of
-		P (rm, r) -> P (rm, snd $ ren_tu r)
-		N a b -> N a b
+check0 o = check1 o SPL.Top.get_types []
 
 check1 o e sv =
 	case check o e sv of
