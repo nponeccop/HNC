@@ -22,7 +22,9 @@ data Syntax =
 	| Sl [Syntax] Int
 	| Sval [Char] Int
 	| Scall Syntax SynParams Int
+	| SSet [Char] Syntax Int
 	| Spair Syntax Syntax Int
+	| Smodule Int
 	deriving (Eq, Show)
 
 get_i (Sc _ i) = i
@@ -61,8 +63,10 @@ data Token =
 	| Tsave
 	| Tsave_args
 	| Twhere_args
+	| Tset
 	| Tmark
 	| Tmarks
+	| Tmodule
 	| Eos
 	deriving Show
 
@@ -85,6 +89,12 @@ call (Tc c) = \s i m ->
 	case i < length s && c == s!!i of
 		True -> P (max i m) 1 (Sc c i)
 		False -> N (max i m)
+call (Ts "") = \s i m ->
+	P (max i m) 0 (Ss "" i)
+call (Ts s) =
+	p_or [
+			((map (Tc) s), \(Sc c i:l) -> Ss s i)
+		]
 call Eos = \s i m ->
 	case i == length s of
 		True -> P (max i m) 0 (Ss "" i)
@@ -163,9 +173,13 @@ call Tsave_args =
 		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l _:[]) -> Sl (c:l) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
+call Tset =
+	p_or [
+		([Tcs,Tc ':',Texpr], \(Ss n i:_:e:[]) -> SSet n e i)
+	]
 call Twhere_args =
 	p_or [
-		([Tc '*',Tcs,Tc ':',Texpr,Twhere_args], \(_:c:_:e:Sl l _:[]) -> Sl ((Spair c e (get_i c)):l) (get_i c))
+		([Tc '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
@@ -180,7 +194,7 @@ call Tsave =
 			let ee =
 				case l of
 					[] -> e
-					xs -> Scall (Scall e (SynS (map (\(Spair (Ss s _) _ _) -> s) l)) (get_i e)) (SynK (map (\(Spair _ e _) -> e) l)) i
+					xs -> Scall (Scall e (SynS (map (\(SSet s _ _) -> s) l)) (get_i e)) (SynK (map (\(SSet _ e _) -> e) l)) i
 			in
 			case w of
 				[] -> ee
@@ -193,6 +207,10 @@ call Tmark =
 				(Sc 'r' _:[]) -> Scall e (SynM [MarkR]) i
 				(Sc 'l' _:[]) -> Scall e SynL i
 				[] -> e)
+		]
+
+call Tmodule =
+	p_or [
 		]
 
 call Texpr_top =
