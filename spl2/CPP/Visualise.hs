@@ -90,6 +90,6 @@ instance Show CppType where
 	show (CppTypePrimitive p) 
 		= p 
 	show (CppTypeFunction ret args) 
-		= "boost::function" ++ (inAngular $ show ret ++ " (*)" ++ (inParens $ showFunctionArgs args))
+		= "boost::function" ++ (inAngular $ show ret ++ " " ++ (inParens $ showFunctionArgs args))
 	show (CppTypePolyInstance polyType typeArgs) 
 		= polyType ++ (inAngular $ showFunctionArgs typeArgs)
