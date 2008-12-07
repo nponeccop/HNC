@@ -64,11 +64,11 @@ instance Show CppDefinition where
 			,	"};"
 			]
 		]) where
-			getContextInit (CppContext _ templateVars tn vars _)
-				= "\t" ++ tn ++ showTemplateArgs templateVars ++ " impl = { " ++ initVars ++ " };" 
+			getContextInit vars
+				= "\tlocal impl = { " ++ initVars ++ " };" 
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars 
-			showContextInit ctx @ (CppContext _ _ _ vars _)
-				= "\ttypedef main_impl local;" : ifNotNull vars [getContextInit ctx]
+			showContextInit ctx @ (CppContext _ templateVars tn vars _)
+				= ("\ttypedef " ++ tn ++ (showTemplateArgs templateVars) ++ " local;") : ifNotNull vars [getContextInit vars]
    
 instance Show CppLocalVarDef where
     show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
