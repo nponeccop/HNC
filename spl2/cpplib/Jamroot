@@ -13,3 +13,5 @@ exe test_flip : test_flip.hn hn-cpplib ;
 exe test_flip2 : test_flip2.cpp hn-cpplib ;
 
 exe test_flip3 : test_flip3.hn hn-cpplib ;
+
+exe test_io : test_io.hn hn-cpplib ;

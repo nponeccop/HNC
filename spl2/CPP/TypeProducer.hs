@@ -11,6 +11,8 @@ cppPrimitiveType x = case x of
 	"string" -> "std::string"
 	"boolean" -> "bool"
 	"list" -> "std::list"
+	"void" -> "void"
+	"IO" -> "ff::IO"
 	_ -> "<<<<Type inference error or unknown primitive type: " ++ x ++ ">>>>"
 
 cppType (T x) = CppTypePrimitive $ cppPrimitiveType x  

@@ -64,7 +64,10 @@ base = M.fromList $
 		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"], TU "a"]))
 	:("foldr", Fun
 		(CL (CInFun 3 (InFun "" do_foldr)) (K []))
-		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))	
+		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))
+	:("print", Fun
+		(CNum 0)
+		(TT [TU "a", TD "IO" [T "void"]] )) 	
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])

@@ -1,4 +1,4 @@
-main = {
+hnMain = {
 	f x = incr x
-	f 2
+	print (f 2)
 }

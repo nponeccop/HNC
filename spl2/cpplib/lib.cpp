@@ -8,3 +8,9 @@ int incr(int i)
 }
 
 };
+
+int main()
+{
+	hnMain();
+	return 0;
+}
