@@ -3,6 +3,7 @@ module CPP.Core where
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
+import Data.Maybe
 import Debug.Trace
 
 import HN.Intermediate
@@ -33,17 +34,18 @@ data DefinitionSynthesized = DefinitionSynthesized {
 sem_Definition inh self @ (Definition name args val wh)
     = DefinitionSynthesized {
         dsCppDef = CppFunctionDef {
-                        functionLevel 			= diLevel inh
+                        	functionLevel 			= diLevel inh
 						,	functionTemplateArgs	= S.toList $ typePolyVars inhType
 						,	functionIsStatic		= isFunctionStatic self
                         ,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType 
-                        ,	functionContext			= getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
+                        ,	functionContext			= ctx
                         ,	functionName 			= name
                         ,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
                         ,	functionLocalVars 		= wsLocalVars semWhere
                         ,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
                     }
     } where
+    	ctx = getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
     	finalFvt = exprFvt
     	whereNames = map (\(Definition name _ _ _) -> name) wh
@@ -62,7 +64,7 @@ sem_Definition inh self @ (Definition name args val wh)
     	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
     	  	
     	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
-	    	classPrefix = CppFqMethod $ name ++ "_impl"
+	    	classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
 	    	-- symTabT : symTabWithStatics 
     		symTabT = symTabTranslator symTabWithStatics
     
