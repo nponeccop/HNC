@@ -38,6 +38,7 @@ data C =
 	| CList [C]
 	| CPair [C]
 	| CDebug Int C
+	| CStruct (Map [Char] C)
 	deriving (Eq, Show)
 
 

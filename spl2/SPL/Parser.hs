@@ -22,9 +22,9 @@ data Syntax =
 	| Sl [Syntax] Int
 	| Sval [Char] Int
 	| Scall Syntax SynParams Int
-	| SSet [Char] Syntax Int
+	| Sset [Char] Syntax Int
 	| Spair Syntax Syntax Int
-	| Smodule Int
+	| Sstruct [Syntax] Int
 	deriving (Eq, Show)
 
 get_i (Sc _ i) = i
@@ -66,7 +66,7 @@ data Token =
 	| Tset
 	| Tmark
 	| Tmarks
-	| Tmodule
+	| Tstruct
 	| Eos
 	deriving Show
 
@@ -139,10 +139,15 @@ call Tnum =
 		,([Tnneg], \(sn:[]) -> sn)
 		]
 call Tstring =
-    p_or [
-        ([Tc '\'', Tcs, Tc '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
+	p_or [
+		([Tc '\'', Tcs, Tc '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
 		]
-
+call Tstruct =
+	p_or [
+		([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
+		,([Tc '{', Tset, Twhere_args, Tc '}'], \(Sc _ i:a:Sl l _:_:[]) -> Sstruct (a:l) i)
+		]
+	
 
 call Tparams =
 	p_or [
@@ -158,6 +163,7 @@ call Tval =
 		,([Tstring], \(n:[]) -> n)
 		,([Tcs,Tnpos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
 		,([Tcs], \(s:[]) -> s)
+		,([Tstruct], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		]
 call Texpr =
@@ -175,7 +181,7 @@ call Tsave_args =
 		]
 call Tset =
 	p_or [
-		([Tcs,Tc ':',Texpr], \(Ss n i:_:e:[]) -> SSet n e i)
+		([Tcs,Tc ':',Texpr], \(Ss n i:_:e:[]) -> Sset n e i)
 	]
 call Twhere_args =
 	p_or [
@@ -194,7 +200,7 @@ call Tsave =
 			let ee =
 				case l of
 					[] -> e
-					xs -> Scall (Scall e (SynS (map (\(SSet s _ _) -> s) l)) (get_i e)) (SynK (map (\(SSet _ e _) -> e) l)) i
+					xs -> Scall (Scall e (SynS (map (\(Sset s _ _) -> s) l)) (get_i e)) (SynK (map (\(Sset _ e _) -> e) l)) i
 			in
 			case w of
 				[] -> ee
@@ -209,10 +215,6 @@ call Tmark =
 				[] -> e)
 		]
 
-call Tmodule =
-	p_or [
-		]
-
 call Texpr_top =
 	p_or [
 		([Tspn, Tmark, Tspn], \(_:e:_:[]) -> e)
@@ -222,6 +224,6 @@ call Texpr_top =
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
 
-res = parse "sum 1 (sum 1,2)"
+res = parse "{a:1*b:2}"
 
 

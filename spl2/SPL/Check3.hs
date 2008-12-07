@@ -33,8 +33,8 @@ union_r a b =
 
 union a b =
 	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
-	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z (union l M.empty), merge a b)) M.empty m in
-		M.unionsWith merge [a, b, r]
+	let (l, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+		M.unionsWith merge [a, b, l]
 
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
 merge (TD n a) (TD n2 b)|n==n2 && length a==length b = TD n $ zipWith merge a b
@@ -56,7 +56,8 @@ get_ul n u =
 ch [] [] et ul uv i sv ii =
 	N ii "too many parameters"
 ch (r:[]) [] et ul uv i sv ii =
-	P (observeN "uv" uv, setmv (setm (observeN "r" $ untv "x" r) (observeN "l" ul)) uv)
+	let z = setmv (setm (observeN "r" $ untv "x" r) (observeN "ul" ul)) uv in
+	P (observeN "uv" uv, z)
 ch r [] et ul uv i sv ii =
 	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv ii =
@@ -74,8 +75,9 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 							ru2 = M.map (\x -> setmv x ru1) ru2a;
 							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
 							ru = observeN "ru" $ union_r (union_r ru1 ru2) ru3;
-							lu1 = M.map (\x -> setm (setm x ul) ru) l2;
-							lu2 = M.map (\x -> setm (setm x l2) ru) ul;
+							lu1a = observeN "lu1" $ M.map (\x -> setm (setm x ul) ru) l2;
+							lu1 = M.map (\x -> setm x lu1a) lu1a;
+							lu2 = observeN "lu2" $ M.map (\x -> setm (setm x l2) ru) ul;
 							lu = observeN "lu" $ union lu1 lu2
 					in ch rs ps et lu ru (i+(1::Int)) sv ii
 				(l2, r2, False) ->
