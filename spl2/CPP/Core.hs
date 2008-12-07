@@ -185,7 +185,7 @@ data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
 	VarDefinitionSynthesized {
 		vdsVarDef = CppVar (cppType inferredType) name $ sem_Expression fqn val
-	,	vdsTemplateArgs = trace2 $ S.toList $ typePolyVars inferredType 
+	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType 
 	}
 	 where
 		inferredType = case check1 (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
