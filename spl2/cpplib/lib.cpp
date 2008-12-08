@@ -7,6 +7,11 @@ int incr(int i)
 	return i + 1;
 }
 
+int sum(int x, int y)
+{
+	return x + y;
+}
+
 };
 
 int main()

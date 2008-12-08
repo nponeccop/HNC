@@ -18,4 +18,6 @@ unit-test test_flip3 : test_flip3.hn hn-cpplib ;
 
 unit-test test_io : test_io.hn hn-cpplib ;
 
+unit-test test3 : test3.hn hn-cpplib ;
+
 explicit test_flip3 test_flip ;
