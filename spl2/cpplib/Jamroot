@@ -2,16 +2,20 @@ project : default-build <include>include <link>static <variant>release ;
 
 import hn ;
 
-exe NullaryBinder : NullaryBinder.cpp hn-cpplib ;
+import testing ;
 
-exe Incr2 : test.hn hn-cpplib ;
+unit-test NullaryBinder : NullaryBinder.cpp hn-cpplib ;
 
-exe test2 : test2.hn hn-cpplib ;
+unit-test test : test.hn hn-cpplib ;
 
-exe test_flip : test_flip.hn hn-cpplib ;
+unit-test test2 : test2.hn hn-cpplib ;
 
-exe test_flip2 : test_flip2.cpp hn-cpplib ;
+unit-test test_flip : test_flip.hn hn-cpplib ;
 
-exe test_flip3 : test_flip3.hn hn-cpplib ;
+unit-test test_flip2 : test_flip2.cpp hn-cpplib ;
 
-exe test_io : test_io.hn hn-cpplib ;
+unit-test test_flip3 : test_flip3.hn hn-cpplib ;
+
+unit-test test_io : test_io.hn hn-cpplib ;
+
+explicit test_flip3 test_flip ;
