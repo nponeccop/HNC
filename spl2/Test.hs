@@ -129,7 +129,7 @@ tests = [
 	,("(sum (f,join1 1,elist) (f,join1 0b,elist)*f:(l*sum 1,length l))", "CNum 4", "T \"num\"")
 	,("f*sum (f 1),f 0b", "", "")
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "", "")
-	,("(z*z z)", "", "")
+--	,("(z*z z)", "", "")
 	]
 
 {-
