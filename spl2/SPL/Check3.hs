@@ -101,6 +101,11 @@ check (CDebug i (CVal n)) et _ =
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
+check (CDebug i (CDebug2 ks (CStruct v))) et sv =
+	P (M.empty, TD name $ Prelude.map (\x -> get_r $ check x et sv) v)
+	where
+		name = "struct_"++(foldr (\a b->a++"_"++b) "" ks)
+
 check (CL a (K [])) et sv =
 	check a et sv
 

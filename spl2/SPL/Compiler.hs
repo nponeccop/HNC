@@ -3,7 +3,7 @@ module SPL.Compiler (compile, remove_cdebug, res) where
 import SPL.Types
 import SPL.Parser hiding (P (..), res)
 import SPL.Code hiding (res)
-import Data.Map as M
+import Data.Map as M hiding (map)
 
 comp (Sn x i) =
 	CDebug i $ CNum x
@@ -14,9 +14,9 @@ comp (Sstr s i) =
 comp (Ss s i) =
 	CDebug i $ CVal s
 comp (Sstruct l i) =
-	CDebug i $ CStruct M.empty 
+	CDebug i $ CDebug2 (map (\(Sset k _ _) -> k) l) $ CStruct (map (\(Sset _ v _) -> comp v) l)
 comp (Scall f (SynK a) i) =
-	CDebug i $ CL (comp f) (K (Prelude.map comp a))
+	CDebug i $ CL (comp f) (K (map comp a))
 comp (Scall f (SynS a) i) =
 	CDebug i $ CL (comp f) (S a)
 comp (Scall f (SynM a) i) =
@@ -28,8 +28,9 @@ compile = comp
 
 
 r_d (CDebug _ c) = r_d c
+r_d (CDebug2 _ c) = r_d c
 r_d (CL c (K p)) =
-	CL (r_d c) (K (Prelude.map r_d p))
+	CL (r_d c) (K (map r_d p))
 r_d (CL c (S a)) =
 	CL (r_d c) (S a)
 r_d (CL c R) =

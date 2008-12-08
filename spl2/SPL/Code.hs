@@ -11,7 +11,7 @@ eval a@(CStr s) e = a
 eval a@(CBool n) e = a
 eval a@(CList l) e = a
 eval a@(CPair l) e = a
-eval a@(CStruct m) e = a
+eval a@(CStruct l) e = CStruct (Prelude.map (\x -> eval x e) l)
 eval a@(CVal v) e = 
 	case M.lookup v e of
 		Just v -> v
