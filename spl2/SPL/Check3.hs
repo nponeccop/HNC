@@ -46,6 +46,8 @@ merge (TV a) b = b
 merge a (TV b) = a
 merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
+merge a (TUL b) = TUL (a:b)
+merge a b = TUL [a, b]
 merge a b = error ("merge: {"++show a++", "++show b++"}")
 
 get_ul n u =

@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 0
+test_last = 1
 from_i = 0::Int
 --to_i = 78::Int
 to_i = (-) (length tests) 1
@@ -126,7 +126,10 @@ tests = [
 	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "TT [TT [TU \"a\",TU \"b\"],TU \"a\",TD \"list\" [TU \"b\"],TD \"list\" [TU \"b\"]]")
 	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "TT [TT [TU \"a\",TU \"b\"],TD \"list\" [TU \"a\"],TD \"list\" [TU \"b\"]]")
 	,("(flip sum*flip:((f*x*y*f x y)))", "CL (CL (CL (CVal \"f\") (K [CVal \"x\",CVal \"y\"])) (S [\"f\",\"x\",\"y\"])) (K [CVal \"sum\"])", "TT [T \"num\",T \"num\",T \"num\"]")
-	,("(z*z z)", "", "")
+	,("(sum (f,join1 1,elist) (f,join1 0b,elist)*f:(l*sum 1,length l))", "CNum 4", "T \"num\"")
+	,("f*sum (f 1),f 0b", "", "")
+	,("f*sum (f 1),sum (f 0b),f 'aa'", "", "")
+--	,("(z*z z)", "", "")
 	]
 
 {-
