@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 1
+test_last = 0
 from_i = 0::Int
 --to_i = 78::Int
 to_i = (-) (length tests) 1
@@ -129,7 +129,7 @@ tests = [
 	,("(sum (f,join1 1,elist) (f,join1 0b,elist)*f:(l*sum 1,length l))", "CNum 4", "T \"num\"")
 	,("f*sum (f 1),f 0b", "", "")
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "", "")
---	,("(z*z z)", "", "")
+	,("(z*z z)", "", "")
 	]
 
 {-
