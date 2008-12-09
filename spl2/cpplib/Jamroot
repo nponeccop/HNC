@@ -22,4 +22,8 @@ unit-test test3 : test3.hn hn-cpplib ;
 
 unit-test test_poly : test_poly.hn hn-cpplib ;
 
-explicit test_flip3 test_flip test_poly ;
+unit-test io2 : io2.hn hn-cpplib ;
+
+unit-test io3 : io3.cpp hn-cpplib ;
+
+explicit test_flip3 test_flip test_poly io2 ;

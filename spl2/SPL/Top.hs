@@ -67,7 +67,13 @@ base = M.fromList $
 		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))
 	:("print", Fun
 		(CNum 0)
-		(TT [TU "a", TD "IO" [T "void"]] )) 	
+		(TT [TU "a", TD "IO" [T "void"]] ))
+	:("bind", Fun
+		(CNum 0)
+		(TT [ TD "IO" [TU "t1"], TT [TU "t1", TD "IO" [TU "t2"]], TD "IO" [TU "t2"]]))
+	:("readnum", Fun
+		(CNum 0)
+		(TD "IO" [T "num"] ))		 	
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
