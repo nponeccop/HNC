@@ -1,4 +1,4 @@
 plus2 x = {
 	f x = sum 2 x
-	flipped
+	f
 }
