@@ -39,8 +39,8 @@ data C =
 	| CList [C]
 	| CPair [C]
 	| CDebug Int C
-	| CStruct [C]
-	| CDebug2 [[Char]] C
+	| CStruct (Map [Char] C)
+	| CDot C [Char]
 	deriving (Eq, Show)
 
 

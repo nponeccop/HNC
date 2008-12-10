@@ -104,10 +104,19 @@ check (CDebug i (CVal n)) et _ =
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
-check (CDebug i (CDebug2 ks (CStruct v))) et sv =
-	P (M.empty, TD name $ Prelude.map (\x -> get_r $ check x et sv) v)
+check (CStruct m) et sv =
+	P (M.empty, TD name $ Prelude.map (\x -> get_r $ check x et sv) $ elems m)
 	where
-		name = "struct_"++(foldr (\a b->a++"_"++b) "" ks)
+		name = "struct" -- "_"++(foldr (\a b->a++"_"++b) "" $ keys m)
+
+--check (CDot (CStruct m) n) et sv =
+--	case M.lookup n m of
+--		Just a -> check a et sv
+--		Nothing -> error "err100"
+
+--check (CDot a n) et sv =
+--	case check a et sv of
+--		P (_, T "struct") -> 
 
 check (CL a (K [])) et sv =
 	check a et sv

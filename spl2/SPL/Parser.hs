@@ -25,6 +25,7 @@ data Syntax =
 	| Sset [Char] Syntax Int
 	| Spair Syntax Syntax Int
 	| Sstruct [Syntax] Int
+	| Sdot Syntax [Char] Int
 	deriving (Eq, Show)
 
 get_i (Sc _ i) = i
@@ -67,6 +68,7 @@ data Token =
 	| Tmark
 	| Tmarks
 	| Tstruct
+	| Tdots
 	| Eos
 	deriving Show
 
@@ -149,10 +151,15 @@ call Tstruct =
 		]
 	
 
+call Tdots =
+	p_or [
+		([Tc '.',Tcs,Tdots], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tc '.',Tcs], \(_:v:[]) -> Sl [v] (get_i v))
+	]
+
 call Tparams =
 	p_or [
 		([Tsp,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
---		,([Tsp,Tval], \(_:v:[]) -> Sl (v:[]))
 		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
@@ -168,8 +175,8 @@ call Tval =
 		]
 call Texpr =
 	p_or [
---		([Tcall,Tsave_args], \(c:Sl w:[]) -> Scall c (SynS (map (\(Ss s) -> s) w)))
-		([Tval,Tparams], \(v:Sl a _:[]) ->
+		([Tval,Tdots], \(v:Sl l _:[]) -> foldl (\a (Ss b i) -> Sdot a b i) v l)
+		,([Tval,Tparams], \(v:Sl a _:[]) ->
 			case a of
 				[] -> v
 				_ -> Scall v (SynK a) (get_i v))
