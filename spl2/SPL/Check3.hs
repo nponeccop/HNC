@@ -96,7 +96,10 @@ check (CBool n) et _ = P (M.empty, T "boolean")
 check (CStr n) et _ = P (M.empty, T "string")
 check (CDebug i (CVal n)) et _ =
 	case M.lookup n et of
-		Just a -> P (M.empty, a)
+		Just a ->
+			case a of
+				TV a -> P (M.empty, TV a)
+				o -> P (M.empty, o)
 		Nothing -> N i ("check cannot find "++show n)
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
@@ -113,13 +116,9 @@ check (CDebug ii (CL a (K p))) et sv =
 	observeN ("K:"++show a++" |"++show p) $
 	case check a et sv of
 		P (rm0, TT r) ->
-			case ch r p et M.empty rm0 0 sv ii of
-				P (rm, r) -> P (rm, r)
+			case ch r p et M.empty (observeN "rm0" rm0) 0 sv ii of
+				P (rm, r) -> P (observeN "rm" rm, r)
 				N i e -> N i e
-{-		P (rm, TU n) ->
-			P (putp [n] [TT ((get_rl p_ok)++[TU ('_':n)])] rm, TU ('_':n))
-		P (ur, TU n) ->
-			P (putp [n] [TT (get_rl p_ok++[TU ('_':n)])] M.empty, TU ('_':n)) -- ? -}
 		P (ur, TV n) ->
 				case get_url p_ok of
 					Right a -> 
@@ -160,7 +159,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case elem p_n sv of
-						True -> ur
+						True -> M.map (\x -> untv p_n x) ur
 						False -> M.delete p_n ur
 					in
 					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p_n w)
@@ -294,6 +293,12 @@ check1 o e sv =
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))
-res = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
+res2 = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
 	SPL.Top.get_types ["flipped"]
+
+res = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
+	SPL.Top.get_types ["flipped", "flipped"]
+
+
+
 
