@@ -9,6 +9,7 @@ data T =
 	| TU [Char]
 	| TV [Char]
 	| TD [Char] [T]
+	| TS (Map [Char] T)
 	| TL
 	| TUL [T]
 	deriving (Eq, Show)

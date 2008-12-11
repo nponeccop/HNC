@@ -17,6 +17,11 @@ eval a@(CVal v) e =
 		Just v -> v
 		Nothing -> error ("cannot find "++show v)
 
+eval (CDot (CStruct m) n) e =
+	case M.lookup n m of
+		Just a -> a
+		Nothing -> error "CDot $ CStruct"
+
 -- reduce
 eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 

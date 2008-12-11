@@ -30,6 +30,8 @@ compile = comp
 
 
 r_d (CDebug _ c) = r_d c
+r_d (CDot c n) = CDot (r_d c) n
+r_d (CStruct m) = CStruct $ M.map r_d m
 r_d (CL c (K p)) =
 	CL (r_d c) (K (map r_d p))
 r_d (CL c (S a)) =
