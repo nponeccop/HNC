@@ -26,4 +26,6 @@ unit-test io2 : io2.hn hn-cpplib ;
 
 unit-test io3 : io3.cpp hn-cpplib ;
 
-explicit test_flip3 test_flip test_poly io2 ;
+unit-test flip4 : flip4.hn hn-cpplib ;
+
+explicit test_flip3 test_flip test_poly io2 flip4 ;

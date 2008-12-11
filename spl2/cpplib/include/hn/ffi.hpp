@@ -48,25 +48,7 @@ namespace ff
 		return a2(a1.value());
 	}
 
-	inline
-	int read()
-	{
-		int t;
-		std::cin >> t;
-		return t;
-	}
-/*
-	template <typename T> 
-	struct read_impl
-	{
-		static T read()
-		{
-//			T t;
-//			t << std::cin;
-			return 75;
-		}
-	};
-
+*
 	template <typename T> 
 	IO<T> read()
 	{
