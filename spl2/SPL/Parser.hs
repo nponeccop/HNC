@@ -175,7 +175,12 @@ call Tval =
 		]
 call Texpr =
 	p_or [
-		([Tval,Tdots], \(v:Sl l _:[]) -> foldl (\a (Ss b i) -> Sdot a b i) v l)
+		([Tval,Tdots,Tparams], \(v:Sl l _:Sl a _:[]) ->
+			let vd = foldl (\a (Ss b i) -> Sdot a b i) v l in
+			case a of
+				[] -> vd
+				_ -> Scall vd (SynK a) (get_i v))
+		,([Tval,Tdots], \(v:Sl l _:[]) -> foldl (\a (Ss b i) -> Sdot a b i) v l)
 		,([Tval,Tparams], \(v:Sl a _:[]) ->
 			case a of
 				[] -> v

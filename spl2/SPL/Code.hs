@@ -22,6 +22,9 @@ eval (CDot (CStruct m) n) e =
 		Just a -> a
 		Nothing -> error "CDot $ CStruct"
 
+eval (CDot s n) e =
+	eval (CDot (eval s e) n) e
+
 -- reduce
 eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 
