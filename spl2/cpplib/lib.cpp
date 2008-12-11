@@ -12,7 +12,7 @@ int sum(int x, int y)
 	return x + y;
 }
 
-IO<int> readnum = IO<int>(&read);
+IO<int> readnum = IO<int>(&read<int>);
 
 };
 

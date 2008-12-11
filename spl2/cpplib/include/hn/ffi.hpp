@@ -48,14 +48,15 @@ namespace ff
 		return a2(a1.value());
 	}
 
-*
+
 	template <typename T> 
-	IO<T> read()
+	T read()
 	{
-		typedef read_impl<T> local;
-		return IO<T>(boost::function<T ()>(&read_impl<T>::read));
+		T t;
+		std::cin >> t;
+		return t;
 	}
-*/
+
 	extern IO<int> readnum;
 
 };
