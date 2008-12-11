@@ -112,13 +112,16 @@ check (CStruct m) et sv =
 --		Just a -> check a et sv
 --		Nothing -> error "err100"
 
-check (CDot a n) et sv =
+check (CDebug i (CDot a n)) et sv =
 	case check a et sv of
 		P (_, TS m) ->
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
-				Nothing -> error "err100"
+				Nothing -> N i ("field is not correct for the structure")
 		N i o -> N i o
+
+check (CDot a n) et sv =
+	check (CDebug (-1) (CDot a n)) et sv
 
 check (CL a (K [])) et sv =
 	check a et sv

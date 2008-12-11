@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 0
+test_last = 1
 from_i = 0::Int
 --to_i = 78::Int
 to_i = (-) (length tests) 1
@@ -130,6 +130,7 @@ tests = [
 	,("f*sum (f 1),f 0b", "", "")
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "", "")
 	,("(z*z z)", "", "")
+	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 
 {-
