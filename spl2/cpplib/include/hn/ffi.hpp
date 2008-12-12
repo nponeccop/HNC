@@ -22,11 +22,6 @@ namespace ff
 		IO(typename thunk<T>::type _v) : value (_v)
 		{
 		};
-
-		IO()
-		{
-
-		}
 	};
 
 	template <typename T1, typename T2> 
@@ -39,25 +34,6 @@ namespace ff
 			return a2(a1.value()).value();
 		}
 	};
-
-	/*
-
-	x = readnum >>= (print >>= ret -1);
-
-	readnum :: void -> int
-	readnum = \void -> readnum_impl
-	
-	print :: int -> (\void -> void)
-	print = \x -> (\void -> print_impl x)
-	
-	ret :: void -> int
-	ret x = \void -> x
-
-	bind :: (void -> t1) -> (t2 -> (\void -> 
-	bind a b = \void -> 
-
-	*/
-
 
 	template <typename T1, typename T2> 
 	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
