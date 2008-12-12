@@ -200,7 +200,7 @@ sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
 	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType 
 	}
 	 where
-		inferredType = case check1 (convertExpr val) fvt [] of P (_, t) -> t ; N _ mesg -> T mesg  
+		inferredType = case check1 (convertExpr val) fvt of P (_, t) -> t ; N _ mesg -> T mesg  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x

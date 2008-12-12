@@ -35,7 +35,7 @@ tdi rt = DefinitionInherited {
     
 testCodeGen = rt (dsCppDef . z) where
 	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
-		P (fv, x) = check1 (convertDef self) SPL.Top.get_types []
+		P (fv, x) = check1 (convertDef self) SPL.Top.get_types
 		types = M.insert name x fv 
 
 test2 = rt (getDefinitionFreeVars) 
@@ -68,7 +68,7 @@ testSet =
 		-- & перед указателями на функции (рекомендуется новым стандартом C++)
 		-- биндеры при передаче локальных функций аргументами
 		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
-	,	"main x z l = { a = incr z\ny z = less (sum x a) z\nfilter y l }"
+--	,	"main x z l = { a = incr z\ny z = less (sum x a) z\nfilter y l }"
 		-- BROKEN & перед указателями на статические функции 
 	,	"main l = {\n\tf x = less 1 x\n\tfilter f l\n}"
 	
@@ -84,7 +84,7 @@ testSet =
 	,	"flip f = { flipped x y = f y x\nflipped }"
 	,	"map f l = {\n\tg x y = join1 (f x) y\n\tfoldr g elist l }"
 		-- parameter name conflicts with inferred type variable name
-	,	"main a f = filter f a" 
+	,	"main a f = filter f a"  
 	]
 	
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
