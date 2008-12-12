@@ -172,7 +172,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					let ur2 = case elem p_n sv of
+					let ur2 = case True of
 						True -> M.map (\x -> untv p_n x) ur
 						False -> M.delete p_n ur
 					in
@@ -183,7 +183,7 @@ check (CL a (S (p:ps))) et sv =
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					let ur2 = case elem p_n sv of
+					let ur2 = case True of
 						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in

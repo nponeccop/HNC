@@ -4,23 +4,32 @@ import qualified Data.Map as M
 
 import HN.Parser2
 import HN.SplExport
+import HN.Intermediate
 import CPP.Core
 import Utils
 import CPP.Intermediate
 import SPL.Top
+import SPL.Check3
 import System
 	
-tdi2 t = DefinitionInherited {
+tdi2 t types = DefinitionInherited {
 	diLevel        = 0,
 	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types,
 	diFreeVarTypes = SPL.Top.get_types
 ,	diType         = Nothing
 ,	diTraceP       = t
+,	diRootTypes	   = types
 }
 
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
-compileFile t inFile = compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . sem_Definition (tdi2 t)
+compileFile t inFile 
+	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . z 
+	where
+		z self @ (Definition name _ _ _) = sem_Definition (tdi2 t types) self where
+			P (fv, x) = check1 (convertDef self) SPL.Top.get_types []
+			types = M.insert name x fv 
+		 
 
 compileToSpl inFile = compile inFile convertDef
 

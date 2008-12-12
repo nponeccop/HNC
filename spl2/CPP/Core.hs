@@ -25,6 +25,7 @@ data DefinitionInherited = DefinitionInherited {
 ,	diFreeVarTypes    :: M.Map String T
 ,	diType			  :: Maybe T
 ,	diTraceP          :: Bool
+,	diRootTypes       :: M.Map String T
 }
 
 -- synthesized attributes for Definition
@@ -46,34 +47,42 @@ sem_Definition inh self @ (Definition name args val wh)
                         ,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
                     }
     } where
-    	ctx = getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
+		ctx = getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
-    	finalFvt = exprFvt
-    	whereNames = map (\(Definition name _ _ _) -> name) wh
-    	P (exprOutputTypes, defType) = smartTrace $ check1 (convertDef self) exprFvt whereNames
-    	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
-    		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
-    		
-    	smartTrace = if diTraceP inh then trace2 else id
- 	
-    	cppDefType = cppUncurryType inhType args
-    	inhType = maybe defType id $ diType inh
-    	-- localsList : semWhere 
-    	localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
-    	-- symTabWithStatics : semWhere
-      	symTabWithStatics = (wsLocalFunctionMap semWhere) `M.union` (diSymTab inh)   	
+		finalFvt = exprFvt
+		whereNames = map (\(Definition name _ _ _) -> name) wh
+
+		rt = diRootTypes inh 
+		
+				
+		defType = smartTrace $ fromJust $ M.lookup name rt 
+		exprOutputTypes = case inhType of
+			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
+			_ -> M.delete name rt
+		
+		exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
+			localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
+			
+		smartTrace x = if diTraceP inh then trace2 x else x
+	
+		cppDefType = cppUncurryType inhType args
+		inhType = maybe defType id $ diType inh
+		-- localsList : semWhere 
+		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
+		-- symTabWithStatics : semWhere
+		symTabWithStatics = (wsLocalFunctionMap semWhere) `M.union` (diSymTab inh)   	
 
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
-    	symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
-    	  	
-    	semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
-	    	classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
-	    	-- symTabT : symTabWithStatics 
-    		symTabT = symTabTranslator symTabWithStatics
-    
-    	isFunctionStatic def  = S.null $ getDefinitionFreeVarsWithoutFqn def where
-    	    getDefinitionFreeVarsWithoutFqn def = getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
-  	
+		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
+			
+		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
+			classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
+			-- symTabT : symTabWithStatics 
+			symTabT = symTabTranslator symTabWithStatics
+	
+		isFunctionStatic def  = S.null $ getDefinitionFreeVarsWithoutFqn def where
+			getDefinitionFreeVarsWithoutFqn def = getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
+	
 data WhereSynthesized d e = WhereSynthesized {
 	wsLocalVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
