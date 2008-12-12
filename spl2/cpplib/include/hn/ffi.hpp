@@ -91,6 +91,18 @@ namespace ff
 		std::cin >> t;
 		return t;
 	}
+
+	template <typename F, typename A>
+	A natrec(F plus, A unit, int start)
+	{
+		int res = unit;
+		for (int i = 0; i < start ; i++)
+		{
+			res = plus(i, res);
+		}
+		return res;
+	}
+
 };
 
 ff::IO<void> hnMain();
