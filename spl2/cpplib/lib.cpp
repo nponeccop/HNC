@@ -16,7 +16,7 @@ IO<int> readnum = IO<int>(&read<int>);
 
 };
 
-int main()
+int main(int, const char*[])
 {
 	hnMain().value();
 	return 0;
