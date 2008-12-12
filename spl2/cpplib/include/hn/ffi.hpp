@@ -42,6 +42,26 @@ namespace ff
 		return impl;
 	};
 
+	template <typename T2> 
+	struct voidbind_impl
+	{
+		IO<void> a1;
+		IO<T2> a2;
+		T2 operator()()
+		{
+			a1.value();
+			return a2.value();
+		}
+	};
+
+	template <typename T2> 
+	IO<T2> voidbind(IO<void> a1, IO<T2> a2)
+	{
+		voidbind_impl<T2> impl = { a1, a2 };
+		return impl;
+	};
+
+
 
 	template <typename T>
 	void print_impl(T t)
