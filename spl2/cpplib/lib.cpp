@@ -18,6 +18,6 @@ IO<int> readnum = IO<int>(&read<int>);
 
 int main()
 {
-	hnMain();
+	hnMain().value();
 	return 0;
 }

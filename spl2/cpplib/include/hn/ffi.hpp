@@ -22,18 +22,62 @@ namespace ff
 		IO(typename thunk<T>::type _v) : value (_v)
 		{
 		};
+
+		IO()
+		{
+
+		}
 	};
 
-	template <>
-	struct IO<void>
+	template <typename T1, typename T2> 
+	struct bind_impl
 	{
+		IO<T1> a1;
+		boost::function<IO<T2> (T1)> a2;
+		T2 operator()()
+		{
+			return a2(a1.value()).value();
+		}
 	};
+
+	/*
+
+	x = readnum >>= (print >>= ret -1);
+
+	readnum :: void -> int
+	readnum = \void -> readnum_impl
+	
+	print :: int -> (\void -> void)
+	print = \x -> (\void -> print_impl x)
+	
+	ret :: void -> int
+	ret x = \void -> x
+
+	bind :: (void -> t1) -> (t2 -> (\void -> 
+	bind a b = \void -> 
+
+	*/
+
+
+	template <typename T1, typename T2> 
+	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
+	{
+		bind_impl<T1, T2> impl = { a1, a2 };
+		return impl;
+	};
+
+
+	template <typename T>
+	void print_impl(T t)
+	{
+		std::cout << t << std::endl;		
+	}
+
 
 	template <typename T>
 	IO<void> print(T t)
 	{
-		std::cout << t << std::endl;
-		return IO<void>();
+		return boost::bind(&print_impl<T>, t);
 	}
 
 	inline
@@ -42,12 +86,7 @@ namespace ff
 		return x;
 	}
 
-	template <typename T1, typename T2> 
-	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
-	{
-		return a2(a1.value());
-	}
-
+	extern IO<int> readnum;
 
 	template <typename T> 
 	T read()
@@ -56,9 +95,6 @@ namespace ff
 		std::cin >> t;
 		return t;
 	}
-
-	extern IO<int> readnum;
-
 };
 
 ff::IO<void> hnMain();
