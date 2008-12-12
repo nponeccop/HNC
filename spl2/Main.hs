@@ -24,15 +24,19 @@ simpleParse prog = head $ fromRight $ parseProg prog
 
 baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
-tdi = DefinitionInherited {
+tdi rt = DefinitionInherited {
 	diLevel        = 3,
 	diSymTab       = baseToTdi,
 	diFreeVarTypes = SPL.Top.get_types
 ,	diType         = Nothing
 ,	diTraceP       = False
+,	diRootTypes    = rt
 }
     
-testCodeGen = rt (dsCppDef . (sem_Definition tdi))
+testCodeGen = rt (dsCppDef . z) where
+	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
+		P (fv, x) = check1 (convertDef self) SPL.Top.get_types []
+		types = M.insert name x fv 
 
 test2 = rt (getDefinitionFreeVars) 
 

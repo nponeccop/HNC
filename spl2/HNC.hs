@@ -29,13 +29,17 @@ compileFile t inFile
 		z self @ (Definition name _ _ _) = sem_Definition (tdi2 t types) self where
 			P (fv, x) = check1 (convertDef self) SPL.Top.get_types []
 			types = M.insert name x fv 
-		 
+
+
+typeCheck inFile = compile inFile f where
+	f self = check1 (convertDef self) SPL.Top.get_types []
 
 compileToSpl inFile = compile inFile convertDef
 
 main = getArgs >>= f where
 	f [inFile, "--spl"] = compileToSpl inFile >>= print
 	f [inFile, "--trace-p"] = compileFile True inFile >>= putStr
+	f [inFile, "--types"] = typeCheck inFile >>= print
 	f [inFile, outFile] = compileFile False inFile >>= writeFile outFile
 	f [inFile] = compileFile False inFile >>= putStr
 	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --trace-p ]\n"
