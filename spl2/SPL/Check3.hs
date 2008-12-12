@@ -90,7 +90,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 					N iii ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N i e -> N i e
 
-check::C -> Map [Char] T -> [[Char]] -> P
+check::C -> Map [Char] T -> Bool -> P
 check (CNum n) et _ = P (M.empty, T "num")
 check (CBool n) et _ = P (M.empty, T "boolean")
 check (CStr n) et _ = P (M.empty, T "string")
@@ -172,7 +172,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					let ur2 = case True of
+					let ur2 = case sv of
 						True -> M.map (\x -> untv p_n x) ur
 						False -> M.delete p_n ur
 					in
@@ -183,7 +183,7 @@ check (CL a (S (p:ps))) et sv =
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					let ur2 = case True of
+					let ur2 = case sv of
 						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
@@ -297,9 +297,10 @@ rename_tu (TU n) (m, nn) =
 		Nothing -> ((M.insert n (head nn) m, tail nn), TU $ head nn)
 rename_tu o d = (d, o)
 
-check0 o = check1 o SPL.Top.get_types []
+check0 o = check_with_rename o SPL.Top.get_types False
+check1 o e = check_with_rename o e True
 
-check1 o e sv =
+check_with_rename o e sv =
 	case check o e sv of
 		P (rm, r) ->
 			case ren_tu r of
@@ -307,11 +308,11 @@ check1 o e sv =
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))
-res2 = check (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
-	SPL.Top.get_types ["flipped"]
+res2 = check1 (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
+	SPL.Top.get_types 
 
 res = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
-	SPL.Top.get_types ["flipped", "flipped"]
+	SPL.Top.get_types True
 
 
 
