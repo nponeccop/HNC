@@ -24,6 +24,7 @@ data DefinitionInherited = DefinitionInherited {
 ,	diSymTab          :: M.Map String CppAtomType
 ,	diFreeVarTypes    :: M.Map String T
 ,	diType			  :: Maybe T
+,	diTraceP          :: Bool
 }
 
 -- synthesized attributes for Definition
@@ -49,9 +50,11 @@ sem_Definition inh self @ (Definition name args val wh)
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
     	finalFvt = exprFvt
     	whereNames = map (\(Definition name _ _ _) -> name) wh
-    	P (exprOutputTypes, defType) = check1 (convertDef self) exprFvt whereNames
+    	P (exprOutputTypes, defType) = smartTrace $ check1 (convertDef self) exprFvt whereNames
     	exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
     		localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
+    		
+    	smartTrace = if diTraceP inh then trace2 else id
  	
     	cppDefType = cppUncurryType inhType args
     	inhType = maybe defType id $ diType inh

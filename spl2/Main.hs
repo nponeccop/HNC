@@ -29,6 +29,7 @@ tdi = DefinitionInherited {
 	diSymTab       = baseToTdi,
 	diFreeVarTypes = SPL.Top.get_types
 ,	diType         = Nothing
+,	diTraceP       = False
 }
     
 testCodeGen = rt (dsCppDef . (sem_Definition tdi))
