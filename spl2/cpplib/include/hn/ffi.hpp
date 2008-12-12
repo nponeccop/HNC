@@ -95,7 +95,7 @@ namespace ff
 	template <typename F, typename A>
 	A natrec(F plus, A unit, int start)
 	{
-		int res = unit;
+		A res = unit;
 		for (int i = 0; i < start ; i++)
 		{
 			res = plus(i, res);
