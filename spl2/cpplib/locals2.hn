@@ -1,0 +1,7 @@
+hnMain = {
+	f b = {
+		a = sum 1 b
+		sum a b
+	}
+	print (f 5)
+}

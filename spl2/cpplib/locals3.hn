@@ -1,0 +1,5 @@
+main x z l = {
+	a = incr z
+	y = sum x a
+	sum y l
+}

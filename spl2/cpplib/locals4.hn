@@ -1,0 +1,5 @@
+hnMain = {
+	a = 5
+	y = a
+	print y
+}
