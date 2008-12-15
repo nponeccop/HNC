@@ -33,6 +33,13 @@ struct arg_helper<F, 1>
 
 
 template <typename F>
+struct arg_helper<F, 3>
+{
+	typedef typename F::arg3_type type;	
+};
+
+
+template <typename F>
 struct deduce<F, false>
 {
 	typedef typename F::result_type result_type;
