@@ -25,6 +25,7 @@ instance Eq InFun where
 data St =
 	K [C]
 	| S [[Char]]
+	| W [([Char], C)]
 	| L
 	| R
 	deriving (Eq, Show)

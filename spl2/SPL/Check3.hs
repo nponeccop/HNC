@@ -6,7 +6,7 @@ import Data.Map as M hiding (filter, union)
 import SPL.Types
 import SPL.Top
 --import Debug.Trace
---import Hugs.Observe
+import Hugs.Observe
 --observe a b = b
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
@@ -127,7 +127,6 @@ check (CL a (K [])) et sv =
 	check a et sv
 
 check (CDebug ii (CL a (K p))) et sv =
-	observeN ("K:"++show a++" |"++show p) $
 	case check a et sv of
 		P (rm0, TT r) ->
 			case ch r p et M.empty (observeN "rm0" rm0) 0 sv ii of
@@ -190,6 +189,17 @@ check (CL a (S (p:ps))) et sv =
 					observeN ("no "++p) $ P (ur2, w) -- rm ?
 		o -> o
 	where p_n = ""++p
+
+check (CL a (W [])) et sv =
+	check a et sv
+
+check (CL a (W ((n, p):ws))) et sv =
+	case check p et sv of
+		P (ur, r) ->
+			case check (CL a (W ws)) (putp [n] [r] et) sv of
+				P (ur2, r2) -> P (union_r ur ur2, r2)
+				N i o -> N i o
+		N i o -> N i o
 
 check (CL a L) et sv =
 	observeN ("L:"++show a) $
@@ -313,7 +323,5 @@ res2 = check1 (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f"
 
 res = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
 	SPL.Top.get_types True
-
-
 
 

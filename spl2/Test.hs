@@ -11,9 +11,9 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 1
+test_last = 0
 from_i = 0::Int
---to_i = 78::Int
+--to_i = 64::Int
 to_i = (-) (length tests) 1
 
 test_res = map test $
@@ -44,7 +44,6 @@ test (s, r, t) =
 --			Ok $ ("ok: "++s++" |err\n    "++r)
 		SPL.Interpretator.N (i, r3) ->
 			No $ "no: "++s++"\n err exp: "++r++"\n err act: "++r3++""
-
 
 
 tests = [
@@ -124,13 +123,13 @@ tests = [
 	,("f*(flipped*flipped) (x*y*f y x)", "CL (CL (CL (CVal \"flipped\") (S [\"flipped\"])) (K [CL (CL (CVal \"f\") (K [CVal \"y\",CVal \"x\"])) (S [\"x\",\"y\"])])) (S [\"f\"])", "TT [TT [TU \"a\",TU \"b\",TU \"c\"],TU \"b\",TU \"a\",TU \"c\"]")
 	,("(f*x*y*(f x) y)", "CL (CL (CL (CVal \"f\") (K [CVal \"x\"])) (K [CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "TT [TT [TU \"a\",TU \"b\",TU \"c\"],TU \"a\",TU \"b\",TU \"c\"]")
 	,("(f*x*y*join1 (f x) y)", "CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"f\",\"x\",\"y\"])", "TT [TT [TU \"a\",TU \"b\"],TU \"a\",TD \"list\" [TU \"b\"],TD \"list\" [TU \"b\"]]")
-	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (S [\"g\"])) (K [CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"])])) (S [\"f\",\"l\"])", "TT [TT [TU \"a\",TU \"b\"],TD \"list\" [TU \"a\"],TD \"list\" [TU \"b\"]]")
+	,("(f*l*foldr g elist l*g:(x*y*join1 (f x) y))", "CL (CL (CL (CVal \"foldr\") (K [CVal \"g\",CVal \"elist\",CVal \"l\"])) (W [(\"g\",CL (CL (CVal \"join1\") (K [CL (CVal \"f\") (K [CVal \"x\"]),CVal \"y\"])) (S [\"x\",\"y\"]))])) (S [\"f\",\"l\"])", "TT [TT [TU \"a\",TU \"b\"],TD \"list\" [TU \"a\"],TD \"list\" [TU \"b\"]]")
 	,("(flip sum*flip:((f*x*y*f x y)))", "CL (CL (CL (CVal \"f\") (K [CVal \"x\",CVal \"y\"])) (S [\"f\",\"x\",\"y\"])) (K [CVal \"sum\"])", "TT [T \"num\",T \"num\",T \"num\"]")
 	,("(sum (f,join1 1,elist) (f,join1 0b,elist)*f:(l*sum 1,length l))", "CNum 4", "T \"num\"")
-	,("f*sum (f 1),f 0b", "", "")
-	,("f*sum (f 1),sum (f 0b),f 'aa'", "", "")
+	,("f*sum (f 1),sum (f 0b),f 'aa'", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 1]),CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CBool False]),CL (CVal \"f\") (K [CStr \"aa\"])])])) (S [\"f\"])", "TT [TT [TUL [T \"num\",T \"boolean\",T \"string\"],T \"num\"],T \"num\"]")
 	,("(z*z z)", "", "")
-	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
+	,("(sum a b*a:3*b:sum 1 a)", "CNum 7", "T \"num\"")
+--	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 
 {-

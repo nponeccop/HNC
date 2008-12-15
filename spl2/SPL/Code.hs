@@ -49,6 +49,11 @@ eval (CL (CL a R) (K p)) e = eval (CL a (K p)) (putp ["_f"] [a] e)
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
 eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
+eval (CL c (W [])) e =
+	eval c e
+eval a@(CL c (W ((n, p):ws))) e =
+	eval (CL c (W ws)) (putp [n] [eval p e] e)
+
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
 eval a@(CL c R) e = a

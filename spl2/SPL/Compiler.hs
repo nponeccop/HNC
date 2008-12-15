@@ -21,6 +21,8 @@ comp (Scall f (SynK a) i) =
 	CDebug i $ CL (comp f) (K (map comp a))
 comp (Scall f (SynS a) i) =
 	CDebug i $ CL (comp f) (S a)
+comp (Scall f (SynW a) i) =
+	CDebug i $ CL (comp f) (W $ map (\(Sset k v _) -> (k, comp v)) a)
 comp (Scall f (SynM a) i) =
 	CDebug i $ CL (comp f) R
 comp (Scall f SynL i) =
@@ -36,6 +38,8 @@ r_d (CL c (K p)) =
 	CL (r_d c) (K (map r_d p))
 r_d (CL c (S a)) =
 	CL (r_d c) (S a)
+r_d (CL c (W a)) =
+	CL (r_d c) (W (map (\(a,b) -> (a, r_d b)) a))
 r_d (CL c R) =
 	CL (r_d c) R
 r_d (CL c L) =
