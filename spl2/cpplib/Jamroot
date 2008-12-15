@@ -36,6 +36,8 @@ unit-test print15 : print15.hn hn-cpplib ;
 
 unit-test fbh : flip_by_hand.cpp hn-cpplib ;
 
+unit-test io2if : io2_intfunc.hn hn-cpplib ;
+
 explicit
 	
 	test_flip  # compile only
