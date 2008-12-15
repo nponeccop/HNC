@@ -11,4 +11,4 @@ actions compile
 	%HN_RH% ..\\HNC.hs $(>[0]:W) $(<[0]:W)
 }
 
-lib hn-cpplib : lib.cpp /pkg/boost : <include>include ;
+lib hn-cpplib : lib.cpp /pkg/boost//boost_1_37 : <include>include ;

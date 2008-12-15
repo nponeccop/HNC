@@ -4,5 +4,6 @@
 #include <iostream>
 
 #include "binder.hpp"
+#include "deduce.hpp"
 
 #include "ffi.hpp"

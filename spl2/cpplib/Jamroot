@@ -34,4 +34,6 @@ unit-test natrec : natrec.hn hn-cpplib ;
 
 unit-test print15 : print15.hn hn-cpplib ;
 
+unit-test fbh : flip_by_hand.cpp hn-cpplib ;
+
 explicit test_flip test_poly io2 flip4 io4_voidbind ;
