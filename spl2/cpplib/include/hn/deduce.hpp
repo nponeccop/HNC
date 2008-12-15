@@ -14,6 +14,24 @@ struct deduce
 };
 
 
+template <typename F, long N>
+struct arg_helper
+{
+};
+
+template <typename F>
+struct arg_helper<F, 0>
+{
+	typedef typename F::arg1_type type;	
+};
+
+template <typename F>
+struct arg_helper<F, 1>
+{
+	typedef typename F::arg2_type type;	
+};
+
+
 template <typename F>
 struct deduce<F, false>
 {
@@ -24,14 +42,9 @@ struct deduce<F, false>
 	template <long N>
 	struct arg
 	{
+		typedef typename arg_helper<F, N>::type type;
 	};
 	
-	template <>
-	struct arg<0>
-	{
-	       typedef typename F::arg1_type type;
-	};
-
 };
 
 
