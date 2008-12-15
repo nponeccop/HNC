@@ -1,0 +1,4 @@
+hnMain = {
+	intprint x = print (sum x 0)
+	bind readnum intprint
+}
