@@ -18,6 +18,8 @@ namespace ff
 
 	template <typename T> struct IO
 	{
+		typedef T value_type;
+
 		typename thunk<T>::type value;
 		IO(typename thunk<T>::type _v) : value (_v)
 		{
@@ -28,18 +30,14 @@ namespace ff
 	struct bind_impl
 	{
 		IO<T1> a1;
-		boost::function<IO<T2> (T1)> a2;
-		T2 operator()()
+		T2 a2;
+
+		typedef typename deduce<T2>::result_type::value_type value_type;
+
+		value_type operator()()
 		{
 			return a2(a1.value()).value();
 		}
-	};
-
-	template <typename T1, typename T2> 
-	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
-	{
-		bind_impl<T1, T2> impl = { a1, a2 };
-		return impl;
 	};
 
 	template <typename T2> 
@@ -76,11 +74,13 @@ namespace ff
 		return boost::bind(&print_impl<T>, t);
 	}
 
-	inline
-	boost::function<IO<void> (int)> fn2(IO<void> (*x)(int))
+	template <typename T1, typename T2> 
+	typename deduce<T2>::result_type bind(IO<T1> a1, T2 a2)
 	{
-		return x;
-	}
+		bind_impl<T1, T2> impl = { a1, a2 };
+		return impl;
+	};
+
 
 	extern IO<int> readnum;
 
