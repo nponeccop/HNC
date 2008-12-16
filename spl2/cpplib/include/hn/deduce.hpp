@@ -6,6 +6,8 @@
 
 #include <boost/function.hpp>
 
+namespace hn
+{
 
 template <typename F, bool isBuiltin = boost::function_types::is_callable_builtin<F>::value>
 struct deduce
@@ -67,5 +69,17 @@ struct deduce<F, true>
 	{
 		typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<F>, N>::type type;
 	};
+
+};
+
+template <typename F> struct result
+{
+	typedef typename deduce<F>::result_type type;
+};
+
+template <typename F, long N> struct arg
+{
+	typedef typename deduce<F>::arg<N>::type type;
+};
 
 };

@@ -32,7 +32,7 @@ namespace ff
 		IO<T1> a1;
 		T2 a2;
 
-		typedef typename deduce<T2>::result_type::value_type value_type;
+		typedef typename hn::result<T2>::type::value_type value_type;
 
 		value_type operator()()
 		{
@@ -75,7 +75,7 @@ namespace ff
 	}
 
 	template <typename T1, typename T2> 
-	typename deduce<T2>::result_type bind(IO<T1> a1, T2 a2)
+	typename hn::result<T2>::type bind(IO<T1> a1, T2 a2)
 	{
 		bind_impl<T1, T2> impl = { a1, a2 };
 		return impl;

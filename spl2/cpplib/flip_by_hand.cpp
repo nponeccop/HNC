@@ -4,26 +4,27 @@
 template <typename F>
 struct flip_impl
 {
-	typedef deduce<F> dF;
-
 	F f;
 
-	typename dF::result_type operator()(typename dF::arg<1>::type b, typename dF::arg<0>::type a)
+	typename hn::result<F>::type flipped(
+		typename hn::arg<F, 1>::type b, 
+		typename hn::arg<F, 0>::type a)
 	{
 		return f(a, b);
 	}
-
-	flip_impl(F _f) : f(_f)
-	{
-			
-	}	
 };
 
 template <typename F>
-flip_impl<F> flip(F f)
+typename boost::function<
+	typename hn::result<F>::type (
+		typename hn::arg<F, 1>::type b, 
+		typename hn::arg<F, 0>::type a)>
+flip(F f)
 {
-	return f;
+	flip_impl<F> impl = { f };
+	return hn::bind(impl, &flip_impl<F>::flipped);
 }
+
 
 int sub(int a, int b)
 {
