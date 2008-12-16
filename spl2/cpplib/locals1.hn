@@ -1,5 +1,8 @@
-main x z l = {
-	a = incr z
-	y z = less (sum x a) z
-	filter y l
+hnMain = {
+	main x z l = {
+		a = incr z
+		y z = less (sum x a) z
+		filter y l
+	}
+	print "foo"
 }

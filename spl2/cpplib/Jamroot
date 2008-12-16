@@ -36,8 +36,27 @@ unit-test print15 : print15.hn hn-cpplib ;
 
 unit-test fbh : flip_by_hand.cpp hn-cpplib ;
 
+unit-test locals1 : locals1.hn hn-cpplib  ;
+
+unit-test locals2 : locals2.hn hn-cpplib ;
+
+unit-test locals3 : locals3.hn hn-cpplib ;
+
+unit-test locals4 : locals4.hn hn-cpplib ;
+
+unit-test locals5 : locals5.hn hn-cpplib ;
+
+unit-test locals6 : locals6.hn hn-cpplib ;
+
+unit-test locals7 : locals7.hn hn-cpplib ;
+
 explicit
-	
+	locals1	   # less and filter functions are not implemented yet
+	locals4	   # TV
+	locals5	   # TV
+	locals6	   # TV
+	locals7	   # TV
+		
 	test_flip  # compile only
 	test_poly  # where polymorphism
 	io2        # no & before readnum constant and template args for pointers to polymorphic functions

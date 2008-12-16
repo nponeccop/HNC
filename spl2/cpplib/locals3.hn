@@ -1,5 +1,8 @@
-main x z l = {
-	a = incr z
-	y = sum x a
-	sum y l
+hnMain = {
+	main x z l = {
+		a = incr z
+		y = sum x a
+		sum y l
+	}
+	print (main 2 4 7)
 }
