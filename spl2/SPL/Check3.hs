@@ -194,12 +194,7 @@ check (CL a (W [])) et sv =
 	check a et sv
 
 check (CL a (W ((n, p):ws))) et sv =
-	case check p et sv of
-		P (ur, r) ->
-			case check (CL a (W ws)) (putp [n] [r] et) sv of
-				P (ur2, r2) -> P (union_r ur ur2, r2)
-				N i o -> N i o
-		N i o -> N i o
+	check (CL (CL (CL a (W ws)) (S [n])) (K [p])) et sv
 
 check (CL a L) et sv =
 	observeN ("L:"++show a) $
