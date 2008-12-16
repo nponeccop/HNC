@@ -183,7 +183,7 @@ call Texpr =
 			in
 			case d of
 				[] -> r1
-				_ -> Sdot r1 "z" 0)
+				_ -> foldl (\a (Ss b i) -> Sdot a b i) r1 d)
 		]
 call Tsave_args =
 	p_or [
