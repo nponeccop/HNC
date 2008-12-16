@@ -21,4 +21,4 @@ convertDef (Definition _ arguments value whereDefinitions)
 		whereVars = whereMap (\(Definition name _ _ _) -> name)
 		whereValues = whereMap convertDef
 		whereMap f = map f whereDefinitions
-		convertedWithWhere = CL (CL (convertExpr value) (S whereVars)) (K whereValues)
+		convertedWithWhere = CL (convertExpr value) $ W $ zip whereVars whereValues
