@@ -118,7 +118,7 @@ check (CDebug i (CDot a n)) et sv =
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
 				Nothing -> N i ("field is not correct for the structure")
-		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2))), TU n)
+		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
 		N i o -> N i o
 
 check (CDot a n) et sv =
@@ -277,6 +277,7 @@ setmv o u = o
 
 untv p (TD n tt) = TD n (Prelude.map (\t -> untv p t) tt)
 untv p (TT tt) = TT (Prelude.map (\t -> untv p t) tt)
+untv p (TS tt) = TS $ M.map (\x -> untv p x) tt
 untv p (TV n)|p == n = TU n
 untv p (TV n) = TV n
 untv p o = o
