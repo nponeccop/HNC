@@ -118,7 +118,7 @@ check (CDebug i (CDot a n)) et sv =
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
 				Nothing -> N i ("field is not correct for the structure")
-		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
+		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2))), TU n)
 		N i o -> N i o
 
 check (CDot a n) et sv =
@@ -239,7 +239,15 @@ compare (TV n) b = (M.empty, M.singleton n b, True)
 compare (TU a) (TU b) = (union {-(M.singleton b (TU a))-} M.empty (M.singleton a (TU b)), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
---compare (TS m1) (TS m2) =
+compare (TS m1) (TS m2) =
+	foldr
+		(\(u1l,u1r,r1) (u2l,u2r,r2) -> (union u1l u2l, union_r u1r u2r, r1 && r2))
+		(M.empty, M.empty, True)
+	$ Prelude.map (\x ->
+		case (M.lookup x m1, M.lookup x m2) of
+			((Just a), Just b) -> SPL.Check3.compare a b
+			((Just a), Nothing) -> (M.empty, M.empty, False)
+	) $ M.keys m1
 	
 
 
@@ -247,15 +255,10 @@ compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
 compare t1 t2 = (M.empty, M.empty, False)
 
-setu (TD n tt) u = TD n (Prelude.map (\t -> setu t u) tt)
-setu (TT tt) u = TT (Prelude.map (\t -> setu t u) tt)
-setu (TU n) (t2:t2s) = t2
-setu o (t2:t2s) = o
-setu o [] = o
-
 setml l u = Prelude.map (\x -> setm x u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
+setm (TS m) u = TS $ M.map (\t -> setm t u) m
 setm (TU n) u =
 	case M.lookup n u of
 		Just a -> a
@@ -265,6 +268,7 @@ setm o u = o
 setmvl l u = Prelude.map (\x -> setmv x u) l
 setmv (TD n tt) u = TD n (Prelude.map (\t -> setmv t u) tt)
 setmv (TT tt) u = TT (Prelude.map (\t -> setmv t u) tt)
+setmv (TS m) u = TS $ M.map (\t -> setmv t u) m
 setmv (TV n) u =
 	case M.lookup n u of
 		Just a -> a
