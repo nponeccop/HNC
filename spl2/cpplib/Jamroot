@@ -58,7 +58,7 @@ explicit
 	locals7	   # TV
 		
 	test_flip  # compile only
-	test_poly  # where polymorphism
+	test_poly  # where polymorphism (TUL is not supported)
 	io2        # no & before readnum constant and template args for pointers to polymorphic functions
-	flip4      # overlapped identifiers in different scopes (looping)
+	flip4      # overlapped identifiers in different scopes (TUL is not supported)
 ;
