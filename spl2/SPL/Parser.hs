@@ -57,6 +57,7 @@ data Token =
 	| Tcs
 	| Tcon
 	| Tval
+	| Tval2
 	| Tpair
 	| Tcall
 	| Texpr
@@ -164,7 +165,7 @@ call Tparams =
 		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
-call Tval =
+call Tval2 =
 	p_or [
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
@@ -174,16 +175,21 @@ call Tval =
 		,([Tstruct], \(s:[]) -> s)
 		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
 		]
+
+call Tval =
+	p_or [
+		([Tval2,Tdots], \(v:Sl l _:[]) ->
+			case l of
+				[] -> v
+				l2 -> foldl (\a (Ss b i) -> Sdot a b i) v l2)
+	]
+
 call Texpr =
 	p_or [
-		([Tval,Tdots,Tparams], \(v:Sl d _:Sl a _:[]) ->
-			let r1 = case a of
+		([Tval,Tparams], \(v:Sl a _:[]) ->
+			case a of
 				[] -> v
-				_ -> Scall v (SynK a) (get_i v)
-			in
-			case d of
-				[] -> r1
-				_ -> foldl (\a (Ss b i) -> Sdot a b i) r1 d)
+				_ -> Scall v (SynK a) (get_i v))
 		]
 call Tsave_args =
 	p_or [
