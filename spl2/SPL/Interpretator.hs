@@ -42,7 +42,7 @@ get_type_debug_of_expr str =
 	case parse str of
 		SPL.Parser.P _ i p ->
 			let c = compile p in
-				case check0 c of
+				case check2 c of
 					SPL.Check3.P (ur, a) -> SPL.Interpretator.P (show $ (ur, a), "")
 					SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 		SPL.Parser.N i ->

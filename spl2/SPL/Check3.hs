@@ -1,5 +1,5 @@
 
-module SPL.Check3 (P (..), check0, check, check1, res) where
+module SPL.Check3 (P (..), check0, check, check1, check2, res) where
 
 import Data.Map as M hiding (filter, union)
 
@@ -304,6 +304,7 @@ rename_tu o d = (d, o)
 
 check0 o = check_with_rename o SPL.Top.get_types False
 check1 o e = check_with_rename o e True
+check2 o = check_with_rename o SPL.Top.get_types True
 
 check_with_rename o e sv =
 	case check o e sv of
