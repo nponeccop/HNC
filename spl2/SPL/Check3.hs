@@ -118,6 +118,7 @@ check (CDebug i (CDot a n)) et sv =
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
 				Nothing -> N i ("field is not correct for the structure")
+		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
 		N i o -> N i o
 
 check (CDot a n) et sv =
@@ -238,6 +239,10 @@ compare (TV n) b = (M.empty, M.singleton n b, True)
 compare (TU a) (TU b) = (union {-(M.singleton b (TU a))-} M.empty (M.singleton a (TU b)), M.empty, True)
 compare (TU n) b = (M.singleton n b, M.empty, True)
 compare a (TU n) = (M.singleton n a, M.empty, True) -- correct ?
+--compare (TS m1) (TS m2) =
+	
+
+
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
 compare t1 t2 = (M.empty, M.empty, False)
