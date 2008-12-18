@@ -89,7 +89,7 @@ data WhereInherited a b c d e f = WhereInherited {
 sem_Where inh self 
 	= WhereSynthesized {
 		wsLocalVars = wsLocalVars 
-	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
+	,	wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
 	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods'
 	,	wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs)
 	} where
@@ -97,10 +97,7 @@ sem_Where inh self
 		wsLocalVars' = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars'
 		wsLocalVars = map vdsVarDef wsLocalVars'
-
-getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
-	objPrefix = CppContextMethod
-	mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && (fn x)) self
+		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && (fn x)) self
 
 isFunction (Definition _ args _ _) = not $ null args
 
@@ -109,22 +106,22 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
+getContext methods inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh)
+	= constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях 
-	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (map vdsVarDef varSem))  ++ contextArgs   
+	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (map vdsVarDef varSem))  ++ contextArgs where
+		lvn = getWhereVarNames wh   
 	
 	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
-	
 	contextTemplateVars = nub ((templateVars ++ (concat $ (map vdsTemplateArgs varSem)) ++ (S.toList $ S.unions $ contextArgsTv)))  		
-	
-	lvn = getLocalVars wh
+
 	(contextArgs, contextArgsTv) = unzip $ case defType of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
-	wfv = getWhereFuncFreeVars def
+	wfv = getSetOfListFreeVars (filter isFunction wh)
 	isArgContext a = S.member a wfv
 
 	
@@ -136,7 +133,6 @@ getWhereVars fqn wiTypes def = getFromWhere def (sem_VarDefinition fqn wiTypes) 
 getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar) 
 	where
 		f def = inh { diType = Just $ uncondLookup (defName def) whereTypes }
-		defName (Definition name _ _ _ ) = name
 
 defName (Definition name _ _ _) = name 
 
@@ -145,21 +141,9 @@ getWhereX wh f = S.fromList $ getFromWhere wh defName f
 getWhereVarNames wh = getWhereX wh isVar 
 getWhereAtoms wh =  getWhereX wh (const True)
 
--- локальные переменные - внутри функции
-getLocalVars wh = getWhereVarNames wh    
-
--- контекстные переменные - в impl
-getContextVars def = getXVars subtractSet def
-
--- внешние переменные - в impl.outer
-getOuterVars def = getXVars S.intersection def
-
-getXVars fn def = fn (getWhereFreeVars def) (getDefinitionFreeVars def)
-
--- переменные, свободные в данном where. Могут быть контекстными или внешними
-getWhereFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars wh
-
-getWhereFuncFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars (filter isFunction wh)
+getXVars fn def = fn (getWhereFreeVars def) (getDefinitionFreeVars def) where
+	-- переменные, свободные в данном where. Могут быть контекстными или внешними
+	getWhereFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars wh
 
 getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
 
