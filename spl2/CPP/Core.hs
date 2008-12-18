@@ -50,7 +50,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
 		whereNames = map (\(Definition name _ _ _) -> name) wh
 		rt = diRootTypes inh 
-		defType = smartTrace $ fromJust $ M.lookup name rt 
+		defType = smartTrace $ uncondLookup name rt 
 		exprOutputTypes = case inhType of
 			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
 			_ -> M.delete name rt
@@ -182,7 +182,7 @@ sem_VarDefinition fqn wiTypes def @ (Definition name [] val _) =
 	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType 
 	}
 	 where
-		inferredType = fromJust $ M.lookup name wiTypes  
+		inferredType = uncondLookup name wiTypes  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x
