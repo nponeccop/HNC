@@ -75,7 +75,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
 		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
 			
-		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprFvt exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
+		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
 			classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
 			-- symTabT : symTabWithStatics 
 			symTabT = symTabTranslator symTabWithStatics
@@ -86,7 +86,6 @@ sem_Definition inh self @ (Definition name args val wh)
 data WhereSynthesized d e = WhereSynthesized {
 	wsLocalVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
-,	wsFvt :: M.Map String T
 ,	wsMethods :: d
 ,	wsTemplateArgs :: e
 }
@@ -95,7 +94,6 @@ data WhereInherited a b c d e f = WhereInherited {
 	wiSymTabT          :: a
 ,	wiClassPrefix      :: b
 ,	wiIsFunctionStatic :: c
-,	wiFvt              :: d
 ,	wiTypes            :: f
 ,	wiDi			   :: e
 }
@@ -104,7 +102,6 @@ sem_Where inh self
 	= WhereSynthesized {
 		wsLocalVars = map vdsVarDef wsLocalVars 
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
-	,	wsFvt = getWsFvt inh self
 	,	wsMethods = wsMethods
 	,	wsTemplateArgs = wsTemplateArgs
 	} where
@@ -122,8 +119,6 @@ getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiI
 		objPrefix = CppContextMethod
 		mapPrefix prefix fn = map (\(Definition locName _ _ _) -> (locName, prefix)) $ filter (\x -> isFunction x && (fn x)) self
 			
-getWsFvt inh self = wiFvt inh
-    
 isFunction (Definition _ args _ _) = not $ null args
 
 symTabTranslator symTab f x = case M.lookup x symTab of
@@ -222,5 +217,3 @@ getExpressionAtoms _ = S.empty
 
 getDefinitionFreeVars def @ (Definition _ args val wh) 
 	= (S.union (getExpressionAtoms val) (getSetOfListFreeVars wh)) `subtractSet` (S.fromList args) `subtractSet` (getWhereAtoms wh)
-
-	
