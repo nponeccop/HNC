@@ -13,9 +13,8 @@ import SPL.Check3
 import System
 	
 tdi2 t types = DefinitionInherited {
-	diLevel        = 0,
-	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types,
-	diFreeVarTypes = SPL.Top.get_types
+	diLevel        = 0
+,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 ,	diType         = Nothing
 ,	diTraceP       = t
 ,	diRootTypes	   = types

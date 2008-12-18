@@ -22,7 +22,6 @@ import SPL.Types
 data DefinitionInherited = DefinitionInherited {
 	diLevel           :: Int
 ,	diSymTab          :: M.Map String CppAtomType
-,	diFreeVarTypes    :: M.Map String T
 ,	diType			  :: Maybe T
 ,	diTraceP          :: Bool
 ,	diRootTypes       :: M.Map String T
@@ -47,21 +46,14 @@ sem_Definition inh self @ (Definition name args val wh)
                         ,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
                     }
     } where
-		ctx = getContext (wsMethods semWhere) finalFvt inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
+		ctx = getContext (wsMethods semWhere) inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
 		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
-		finalFvt = exprFvt
 		whereNames = map (\(Definition name _ _ _) -> name) wh
-
 		rt = diRootTypes inh 
-		
-				
 		defType = smartTrace $ fromJust $ M.lookup name rt 
 		exprOutputTypes = case inhType of
 			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
 			_ -> M.delete name rt
-		
-		exprFvt = ((diFreeVarTypes inh) `subtractMap` localsFvt) `M.union` localsFvt where
-			localsFvt = M.fromList $ map (\arg -> (arg, TV arg)) $ args ++ localsList
 			
 		smartTrace x = if diTraceP inh then trace2 x else x
 	
@@ -75,7 +67,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList      	
 		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
 			
-		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprOutputTypes inh { diLevel = diLevel inh + 1, diFreeVarTypes = finalFvt }) wh where
+		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprOutputTypes inh { diLevel = diLevel inh + 1 }) wh where
 			classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
 			-- symTabT : symTabWithStatics 
 			symTabT = symTabTranslator symTabWithStatics
@@ -126,7 +118,7 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
+getContext methods inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh) = constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
 	-- аргументы главной функции, свободные в where-функциях
@@ -141,12 +133,7 @@ getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (
 	(contextArgs, contextArgsTv) = unzip $ case defType of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
-	
-	
-	getCppType x = cppType $ maybe (error "zorro") id $ M.lookup x fvt 
-
 	wfv = getWhereFuncFreeVars def
-	
 	isArgContext a = S.member a wfv
 
 	

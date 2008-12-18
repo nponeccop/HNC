@@ -25,9 +25,8 @@ simpleParse prog = head $ fromRight $ parseProg prog
 baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
 tdi rt = DefinitionInherited {
-	diLevel        = 3,
-	diSymTab       = baseToTdi,
-	diFreeVarTypes = SPL.Top.get_types
+	diLevel        = 3
+,	diSymTab       = baseToTdi
 ,	diType         = Nothing
 ,	diTraceP       = False
 ,	diRootTypes    = rt
