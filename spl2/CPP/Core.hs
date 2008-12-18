@@ -102,7 +102,7 @@ data WhereInherited a b c d e f = WhereInherited {
     	
 sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = map vdsVarDef wsLocalVars
+		wsLocalVars = wsLocalVars' 
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
 	,	wsMethods = wsMethods
@@ -112,6 +112,7 @@ sem_Where inh self
 		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods' 
 		wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs) 
 		wsLocalVars = getWsLocalVars inh self
+		wsLocalVars' = map (\(CppVar a name value) -> CppVar (cppType $ fromJust $ M.lookup name (wiTypes inh)) name value)  $ map vdsVarDef wsLocalVars
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars
 	
 getDefinitionTemplateArgs def = "a"
