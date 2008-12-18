@@ -148,7 +148,8 @@ call Tstring =
 		]
 call Tstruct =
 	p_or [
-		([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
+		([Tc '{', Tc '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
+		,([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
 		,([Tc '{', Tset, Twhere_args, Tc '}'], \(Sc _ i:a:Sl l _:_:[]) -> Sstruct (a:l) i)
 		]
 	

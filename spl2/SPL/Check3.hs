@@ -191,6 +191,9 @@ check (CL a (S (p:ps))) et sv =
 		o -> o
 	where p_n = ""++p
 
+--check (CDebug _ (CL (CDebug _ (CStruct m)) (W ((n, p):ws)))) et sv|M.null m =
+--	error "z"
+
 check (CL a (W [])) et sv =
 	check a et sv
 
