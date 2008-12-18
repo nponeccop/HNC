@@ -102,7 +102,7 @@ data WhereInherited a b c d e f = WhereInherited {
     	
 sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = wsLocalVars' 
+		wsLocalVars = map vdsVarDef wsLocalVars 
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
 	,	wsFvt = getWsFvt inh self
 	,	wsMethods = wsMethods
@@ -112,12 +112,11 @@ sem_Where inh self
 		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods' 
 		wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs) 
 		wsLocalVars = getWsLocalVars inh self
-		wsLocalVars' = map (\(CppVar a name value) -> CppVar (cppType $ fromJust $ M.lookup name (wiTypes inh)) name value)  $ map vdsVarDef wsLocalVars
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars
 	
 getDefinitionTemplateArgs def = "a"
 		
-getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiFvt inh) self
+getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		
 getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
 		objPrefix = CppContextMethod
@@ -159,7 +158,7 @@ getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
-getWhereVars fqn fvt def = getFromWhere def (sem_VarDefinition fqn fvt) isVar
+getWhereVars fqn wiTypes def = getFromWhere def (sem_VarDefinition fqn wiTypes) isVar
 
 getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar) 
 	where
@@ -195,13 +194,13 @@ data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 ,	vdsTemplateArgs :: b 
 }
 
-sem_VarDefinition fqn fvt def @ (Definition name [] val _) =
+sem_VarDefinition fqn wiTypes def @ (Definition name [] val _) =
 	VarDefinitionSynthesized {
 		vdsVarDef = CppVar (cppType inferredType) name $ sem_Expression fqn val
 	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType 
 	}
 	 where
-		inferredType = case check1 (convertExpr val) fvt of P (_, t) -> t ; N _ mesg -> T mesg  
+		inferredType = fromJust $ M.lookup name wiTypes  
 	
 sem_Expression fqn p = case p of
 	Atom x -> CppAtom $ fqn False x
