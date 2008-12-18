@@ -69,7 +69,7 @@ struct deduce<F, true>
 	{
 		typedef typename boost::mpl::at_c<typename boost::function_types::parameter_types<F>, N>::type type;
 	};
-
+	typedef F type;
 };
 
 template <typename F> struct result

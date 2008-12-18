@@ -50,6 +50,8 @@ unit-test locals6 : locals6.hn hn-cpplib ;
 
 unit-test locals7 : locals7.hn hn-cpplib ;
 
+unit-test poly_size : poly_size.cpp hn-cpplib ;
+
 explicit
 	locals1	   # less and filter functions are not implemented yet
 	locals4	   # TV
