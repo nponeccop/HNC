@@ -138,7 +138,7 @@ getContext methods fvt inh fqnWithLocals whereTypes defType templateVars def @ (
 	-- локальные переменные, свободные в where-функциях 
 	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (map vdsVarDef varSem))  ++ contextArgs   
 	
-	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diFreeVarTypes inh) wh
+	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
 	
 	contextTemplateVars = nub ((templateVars ++ (concat $ (map vdsTemplateArgs varSem)) ++ (S.toList $ S.unions $ contextArgsTv)))  		
 	
