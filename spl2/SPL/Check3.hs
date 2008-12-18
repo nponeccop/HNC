@@ -112,7 +112,7 @@ check (CStruct m) et sv =
 --		Just a -> check a et sv
 --		Nothing -> error "err100"
 
-check (CDebug i (CDot a n)) et sv =
+{-check (CDebug i (CDot a n)) et sv =
 	case check a et sv of
 		P (_, TS m) ->
 			case M.lookup n m of
@@ -122,7 +122,7 @@ check (CDebug i (CDot a n)) et sv =
 		N i o -> N i o
 
 check (CDot a n) et sv =
-	check (CDebug (-1) (CDot a n)) et sv
+	check (CDebug (-1) (CDot a n)) et sv-}
 
 check (CL a (K [])) et sv =
 	check a et sv
@@ -196,6 +196,14 @@ check (CL a (W [])) et sv =
 
 check (CL a (W ((n, p):ws))) et sv =
 	check (CL (CL (CL a (W ws)) (S [n])) (K [p])) et sv
+
+check (CL a (D n)) et sv =
+	case check a et sv of
+		P (_, TS m) ->
+			case M.lookup n m of
+				Just a -> P (M.empty, a)
+				Nothing -> error "struct100"
+		N i o -> N i o
 
 check (CL a L) et sv =
 	observeN ("L:"++show a) $

@@ -26,6 +26,7 @@ data St =
 	K [C]
 	| S [[Char]]
 	| W [([Char], C)]
+	| D [Char]
 	| L
 	| R
 	deriving (Eq, Show)
@@ -42,7 +43,6 @@ data C =
 	| CPair [C]
 	| CDebug Int C
 	| CStruct (Map [Char] C)
-	| CDot C [Char]
 	deriving (Eq, Show)
 
 

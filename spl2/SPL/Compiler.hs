@@ -16,7 +16,7 @@ comp (Ss s i) =
 comp (Sstruct l i) =
 	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
 comp (Sdot v p i) =
-	CDebug i (CDot (comp v) p)
+	CDebug i (CL (comp v) (D p))
 comp (Scall f (SynK a) i) =
 	CDebug i $ CL (comp f) (K (map comp a))
 comp (Scall f (SynS a) i) =
@@ -32,7 +32,6 @@ compile = comp
 
 
 r_d (CDebug _ c) = r_d c
-r_d (CDot c n) = CDot (r_d c) n
 r_d (CStruct m) = CStruct $ M.map r_d m
 r_d (CL c (K p)) =
 	CL (r_d c) (K (map r_d p))
@@ -40,6 +39,8 @@ r_d (CL c (S a)) =
 	CL (r_d c) (S a)
 r_d (CL c (W a)) =
 	CL (r_d c) (W (map (\(a,b) -> (a, r_d b)) a))
+r_d (CL c (D n)) =
+	CL (r_d c) (D n)
 r_d (CL c R) =
 	CL (r_d c) R
 r_d (CL c L) =

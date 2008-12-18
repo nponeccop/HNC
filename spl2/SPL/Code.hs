@@ -17,14 +17,6 @@ eval a@(CVal v) e =
 		Just v -> v
 		Nothing -> error ("cannot find "++show v)
 
-eval (CDot (CStruct m) n) e =
-	case M.lookup n m of
-		Just a -> a
-		Nothing -> error "CDot $ CStruct"
-
-eval (CDot s n) e =
-	eval (CDot (eval s e) n) e
-
 -- reduce
 eval (CL (CL c (K p1)) (K p2)) e = eval (CL c (K (p1++p2))) e
 
@@ -37,7 +29,7 @@ eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
-eval (CL a@(CDot s v) (K p)) e = eval (CL (eval a e) (K p)) e
+--eval (CL a@(CDot s v) (K p)) e = eval (CL (eval a e) (K p)) e
 eval (CL a@(CDebug _ c) (K p)) e = eval (CL (eval c e) (K p)) e
 
 -- put
@@ -49,11 +41,26 @@ eval (CL (CL a R) (K p)) e = eval (CL a (K p)) (putp ["_f"] [a] e)
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
 eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
+-- where
 eval (CL c (W [])) e =
 	eval c e
 eval a@(CL c (W ((n, p):ws))) e =
 	eval (CL c (W ws)) (putp [n] [eval p e] e)
 
+-- struct
+eval (CL (CStruct m) (D n)) e =
+	case M.lookup n m of
+		Just a -> a
+		Nothing -> error "CDot $ CStruct"
+
+eval (CL a (D n)) e =
+	eval (CL (eval a e) (D n)) e
+--eval (CDot s n) e =
+--	eval (CDot (eval s e) n) e
+
+
+
+-- other
 eval a@(CL c (S p)) e = a
 eval a@(CL c L) e = a
 eval a@(CL c R) e = a
