@@ -94,16 +94,14 @@ sem_Where inh self
 	,	wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs)
 	} where
 		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
-		wsLocalVars' = getWsLocalVars inh self
+		wsLocalVars' = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars'
 		wsLocalVars = map vdsVarDef wsLocalVars'
 
-getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiTypes inh) self
-		
 getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
-		objPrefix = CppContextMethod
-		mapPrefix prefix fn = map (\(Definition locName _ _ _) -> (locName, prefix)) $ filter (\x -> isFunction x && (fn x)) self
-			
+	objPrefix = CppContextMethod
+	mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && (fn x)) self
+
 isFunction (Definition _ args _ _) = not $ null args
 
 symTabTranslator symTab f x = case M.lookup x symTab of
@@ -140,8 +138,9 @@ getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Defi
 		f def = inh { diType = Just $ uncondLookup (defName def) whereTypes }
 		defName (Definition name _ _ _ ) = name
 
+defName (Definition name _ _ _) = name 
 
-getWhereX wh f = S.fromList $ getFromWhere wh (\(Definition name _ _ _) -> name) f
+getWhereX wh f = S.fromList $ getFromWhere wh defName f
 
 getWhereVarNames wh = getWhereX wh isVar 
 getWhereAtoms wh =  getWhereX wh (const True)
