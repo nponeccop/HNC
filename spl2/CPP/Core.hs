@@ -7,16 +7,13 @@ import Data.Maybe
 import Debug.Trace
 
 import HN.Intermediate
-import HN.SplExport
 
 import CPP.Intermediate
 import CPP.Visualise
 import CPP.TypeProducer
 import Utils
 
-import SPL.Check3
 import SPL.Types
-
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
@@ -47,8 +44,7 @@ sem_Definition inh self @ (Definition name args val wh)
                     }
     } where
 		ctx = getContext (wsMethods semWhere) inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
-		--	vars = map (\(CppVar _ name val ) -> CppVar (cppType $ uncondLookup name whereTypes) name val) $ trace2 vars1
-		whereNames = map (\(Definition name _ _ _) -> name) wh
+
 		rt = diRootTypes inh 
 		defType = smartTrace $ uncondLookup name rt 
 		exprOutputTypes = case inhType of
@@ -92,19 +88,16 @@ data WhereInherited a b c d e f = WhereInherited {
     	
 sem_Where inh self 
 	= WhereSynthesized {
-		wsLocalVars = map vdsVarDef wsLocalVars 
+		wsLocalVars = wsLocalVars 
 	,	wsLocalFunctionMap = getWsLocalFunctionMap inh self
-	,	wsMethods = wsMethods
-	,	wsTemplateArgs = wsTemplateArgs
+	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods'
+	,	wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs)
 	} where
 		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
-		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods' 
-		wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs) 
-		wsLocalVars = getWsLocalVars inh self
-		varTemplateArgs = map vdsTemplateArgs wsLocalVars
-	
-getDefinitionTemplateArgs def = "a"
-		
+		wsLocalVars' = getWsLocalVars inh self
+		varTemplateArgs = map vdsTemplateArgs wsLocalVars'
+		wsLocalVars = map vdsVarDef wsLocalVars'
+
 getWsLocalVars inh self = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		
 getWsLocalFunctionMap inh self = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix objPrefix (not . wiIsFunctionStatic inh) where
