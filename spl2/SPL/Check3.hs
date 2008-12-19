@@ -6,7 +6,7 @@ import Data.Map as M hiding (filter, union)
 import SPL.Types
 import SPL.Top
 --import Debug.Trace
---import Hugs.Observe
+import Hugs.Observe
 --observe a b = b
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
@@ -191,10 +191,11 @@ check (CL a (S (p:ps))) et sv =
 		o -> o
 	where p_n = ""++p
 
---check (CL (CDebug _ (CStruct m)) (W ((n, p):ws))) et sv|M.null m =
+check (CL (CDebug _ (CStruct m)) (W ws)) et sv|M.null m =
+	ch_struct (TS M.empty) ws et sv
 
-check (CL a (W [])) et sv =
-	check a et sv
+--check (CL a (W [])) et sv =
+--	check a et sv
 
 check (CL a (W ((n, p):ws))) et sv =
 	check (CL (CL (CL a (W ws)) (S [n])) (K [p])) et sv
@@ -204,7 +205,7 @@ check (CL a (D n)) et sv =
 		P (_, TS m) ->
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
-				Nothing -> error "struct100"
+				Nothing -> error ("struct100:"++show m)
 		N i o -> N i o
 
 check (CL a L) et sv =
@@ -224,6 +225,15 @@ check (CDebug _ c) et sv =
 
 check o et sv =
 	error ("check o: "++show o)
+
+ch_struct (TS m) [] et sv =
+	P (M.empty, TS m)
+
+ch_struct (TS m) ((n,p):ws) et sv =
+	case check p et sv of
+		P (_, r) ->
+			ch_struct (TS $ M.insert n r m) ws et sv
+		N i o -> N i o
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
 putp [] [] et = et

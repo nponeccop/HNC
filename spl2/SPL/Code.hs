@@ -41,12 +41,6 @@ eval (CL (CL a R) (K p)) e = eval (CL a (K p)) (putp ["_f"] [a] e)
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
 eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 
--- where
-eval (CL c (W [])) e =
-	eval c e
-eval a@(CL c (W ((n, p):ws))) e =
-	eval (CL c (W ws)) (putp [n] [eval p e] e)
-
 -- struct
 eval (CL (CStruct m) (D n)) e =
 	case M.lookup n m of
@@ -58,6 +52,14 @@ eval (CL a (D n)) e =
 --eval (CDot s n) e =
 --	eval (CDot (eval s e) n) e
 
+eval (CL (CStruct m) (W ws)) e|M.null m =
+	eval_struct (CStruct m) ws e
+
+-- where
+eval (CL c (W [])) e =
+	eval c e
+eval a@(CL c (W ((n, p):ws))) e =
+	eval (CL c (W ws)) (putp [n] [eval p e] e)
 
 
 -- other
@@ -69,6 +71,12 @@ eval a@(CL c R) e = a
 eval (CDebug _ c) e = eval c e
 
 eval o e = error ("eval: "++show o)
+
+eval_struct (CStruct m) [] e =
+	CStruct m
+
+eval_struct (CStruct m) ((n,p):ws) e =
+	eval_struct (CStruct $ M.insert n (eval p e) m) ws (putp [n] [p] e)
 
 evall l e =
 	map (\x -> eval x e) l

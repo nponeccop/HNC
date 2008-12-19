@@ -14,7 +14,8 @@ comp (Sstr s i) =
 comp (Ss s i) =
 	CDebug i $ CVal s
 comp (Sstruct l i) =
-	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
+--	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
+	CDebug i $ CL (CStruct M.empty) (W $ map (\(Sset k v _) -> (k, comp v)) l)
 comp (Sdot v p i) =
 	CDebug i (CL (comp v) (D p))
 comp (Scall f (SynK a) i) =
