@@ -49,8 +49,6 @@ eval (CL (CStruct m) (D n)) e =
 
 eval (CL a (D n)) e =
 	eval (CL (eval a e) (D n)) e
---eval (CDot s n) e =
---	eval (CDot (eval s e) n) e
 
 eval (CL (CStruct m) (W ws)) e|M.null m =
 	eval_struct (CStruct m) ws e

@@ -191,7 +191,8 @@ check (CL a (S (p:ps))) et sv =
 		o -> o
 	where p_n = ""++p
 
-check (CL (CDebug _ (CStruct m)) (W ws)) et sv|M.null m =
+--check (CL (CDebug _ (CStruct m)) (W ws)) et sv|M.null m =
+check (CL (CStruct m) (W ws)) et sv|M.null m =
 	ch_struct (TS M.empty) ws et sv
 
 --check (CL a (W [])) et sv =
@@ -232,7 +233,7 @@ ch_struct (TS m) [] et sv =
 ch_struct (TS m) ((n,p):ws) et sv =
 	case check p et sv of
 		P (_, r) ->
-			ch_struct (TS $ M.insert n r m) ws et sv
+			ch_struct (TS $ M.insert n r m) ws (putp [n] [r] et) sv
 		N i o -> N i o
 
 putp (v:vs) (c:cs) et = putp vs cs (M.insert v c et)
