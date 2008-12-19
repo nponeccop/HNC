@@ -29,7 +29,7 @@ eval a@(CL (CInFun i (InFun n f)) (K p)) e|i < length p =
 eval a@(CL (CInfFun (InFun n f)) (K p)) e = f (evall p e) e
 
 eval (CL a@(CVal v) (K p)) e = eval (CL (eval a e) (K p)) e
---eval (CL a@(CDot s v) (K p)) e = eval (CL (eval a e) (K p)) e
+eval (CL a@(CL c (D _)) (K p)) e = eval (CL (eval a e) (K p)) e
 eval (CL a@(CDebug _ c) (K p)) e = eval (CL (eval c e) (K p)) e
 
 -- put
