@@ -1,1 +1,3 @@
-(r!n*iff (join1 (pair (less n 2) (l!n)),elist) (l!sum (_f,sum n -1),_f,sum n -2)) 20a
+{
+a:1
+}

@@ -113,8 +113,9 @@ call Tb =
 call Tsp =
 	p_or [
 		([Tc ' ', Tsp], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tc ' '], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tc '\n'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tc '\t', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tc '\r', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tc '\n', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
 		]
 call Tspn =
 	p_or [
@@ -149,8 +150,8 @@ call Tstring =
 call Tstruct =
 	p_or [
 		([Tc '{', Tc '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
-		,([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tc '{', Tset, Twhere_args, Tc '}'], \(Sc _ i:a:Sl l _:_:[]) -> Sstruct (a:l) i)
+--		,([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
+		,([Tc '{', Tspn, Tset, Twhere_args, Tspn, Tc '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
 		]
 	
 
