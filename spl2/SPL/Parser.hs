@@ -116,6 +116,10 @@ call Tsp =
 		,([Tc '\t', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
 		,([Tc '\r', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
 		,([Tc '\n', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tc ' '], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tc '\t'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tc '\r'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tc '\n'], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tspn =
 	p_or [
@@ -205,6 +209,7 @@ call Tset =
 call Twhere_args =
 	p_or [
 		([Tc '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tsp,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
