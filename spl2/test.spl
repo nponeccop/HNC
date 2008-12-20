@@ -1,4 +1,4 @@
 {
   a:1
-  incr:sum a
+incr:sum a
 }

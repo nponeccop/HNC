@@ -49,6 +49,7 @@ data Token =
 	| Tc1
 	| Tsp
 	| Tspn
+	| Tsnew
 	| Tn
 	| Tnpos
 	| Tnneg
@@ -125,6 +126,12 @@ call Tspn =
 	p_or [
 		([Tsp], \(Ss s i:[]) -> Ss s i)
 		,([], \([]) -> Ss "" 0)
+		]
+call Tsnew =
+	p_or [
+		([Tspn,Tc '\r',Tc '\n',Tspn], \(Ss s i:_:_:_:[]) -> Ss s i)
+		,([Tspn,Tc '\r',Tspn], \(Ss s i:_:_:[]) -> Ss s i)
+		,([Tspn,Tc '\n',Tspn], \(Ss s i:_:_:[]) -> Ss s i)
 		]
 call Tcs =
 	p_or [
@@ -209,7 +216,7 @@ call Tset =
 call Twhere_args =
 	p_or [
 		([Tc '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tsp,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tsnew,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
