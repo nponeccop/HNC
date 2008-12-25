@@ -195,8 +195,8 @@ check (CL a (S (p:ps))) et sv =
 check (CL (CStruct m) (W ws)) et sv|M.null m =
 	ch_struct (TS M.empty) ws et sv
 
---check (CL a (W [])) et sv =
---	check a et sv
+check (CL a (W [])) et sv =
+	check a et sv
 
 check (CL a (W ((n, p):ws))) et sv =
 	check (CL (CL (CL a (W ws)) (S [n])) (K [p])) et sv
