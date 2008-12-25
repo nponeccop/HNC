@@ -45,19 +45,17 @@ data P = P Int Int Syntax | N Int
 data Token =
 	Ts [Char]
 	| Tchar Char
-	| Tboolean
+	| Tb
 	| Tchar_any
 	| Tspace
 	| Tspace_not
-	| Tspace_any
-	| Tnewline
-	| Tnewline_space
+	| Tsnew
 	| Tdigit
 	| Tnum_pos
 	| Tnum_neg
 	| Tnum
-	| Tstring
 	| Tstring_quoted
+	| Tstring
 	| Tval
 	| Tval2
 	| Tpair
@@ -107,7 +105,7 @@ call Eos = \s i m ->
 		False -> N (max i m)
 call Tchar_any =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
-call Tboolean =
+call Tb =
 	p_or [
 		([Tchar '1', Tchar 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
 		,([Tchar '0', Tchar 'b'], \(c1:c2:[]) -> Sb False (get_i c1))
@@ -116,30 +114,23 @@ call Tspace =
 	p_or [
 		([Tchar ' ', Tspace], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
 		,([Tchar '\t', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tchar '\r', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tchar '\n', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
 		,([Tchar ' '], \(Sc c i:[]) -> Ss (c:"") i)
 		,([Tchar '\t'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tchar '\r'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tchar '\n'], \(Sc c i:[]) -> Ss (c:"") i)
 		]
-call Tnewline =
-	p_or [
-		([Tchar '\r', Tnewline], \(Sc _ i:_:[]) -> Ss "" i)
-		,([Tchar '\n', Tnewline], \(Sc _ i:_:[]) -> Ss "" i)
-		,([Tchar '\r'], \(Sc _ i:[]) -> Ss "" i)
-		,([Tchar '\n'], \(Sc _ i:[]) -> Ss "" i)
-	]
 call Tspace_not =
 	p_or [
 		([Tspace], \(Ss s i:[]) -> Ss s i)
 		,([], \([]) -> Ss "" 0)
 		]
-call Tnewline_space =
+call Tsnew =
 	p_or [
-		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
-		]
-call Tspace_any =
-	p_or [
-		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
-		,([Tnewline], \(Ss s i:[]) -> Ss s i)
-		,([], \([]) -> Ss "" 0)
+		([Tspace_not,Tchar '\r',Tchar '\n',Tspace_not], \(Ss s i:_:_:_:[]) -> Ss s i)
+		,([Tspace_not,Tchar '\r',Tspace_not], \(Ss s i:_:_:[]) -> Ss s i)
+		,([Tspace_not,Tchar '\n',Tspace_not], \(Ss s i:_:_:[]) -> Ss s i)
 		]
 call Tstring =
 	p_or [
@@ -170,7 +161,7 @@ call Tstruct =
 	p_or [
 		([Tchar '{', Tchar '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
 --		,([Tchar '{', Tset, Tchar '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tchar '{', Tspace_any, Tset, Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
+		,([Tchar '{', Tspace_not, Tset, Twhere_args, Tspace_not, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
 		]
 	
 
@@ -188,9 +179,9 @@ call Tparams =
 		]
 call Tval2 =
 	p_or [
-		([Tboolean], \(b:[]) -> b)
+		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
-		,([Tstring], \(n:[]) -> n)
+		,([Tstring_quoted], \(n:[]) -> n)
 		,([Tstring,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
 		,([Tstring], \(s:[]) -> s)
 		,([Tstruct], \(s:[]) -> s)
@@ -224,7 +215,7 @@ call Tset =
 call Twhere_args =
 	p_or [
 		([Tchar '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tnewline_space,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tsnew,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
@@ -256,7 +247,7 @@ call Tmark =
 
 call Texpr_top =
 	p_or [
-		([Tspace_any, Tmark, Tspace_any], \(_:e:_:[]) -> e)
+		([Tspace_not, Tmark, Tspace_not], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		]
 
