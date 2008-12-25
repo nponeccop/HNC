@@ -44,19 +44,20 @@ data P = P Int Int Syntax | N Int
 
 data Token =
 	Ts [Char]
-	| Tc Char
-	| Tb
-	| Tc1
-	| Tsp
-	| Tspn
-	| Tsnew
-	| Tn
-	| Tnpos
-	| Tnneg
+	| Tchar Char
+	| Tboolean
+	| Tchar_any
+	| Tspace
+	| Tspace_not
+	| Tspace_any
+	| Tnewline
+	| Tnewline_space
+	| Tdigit
+	| Tnum_pos
+	| Tnum_neg
 	| Tnum
 	| Tstring
-	| Tcs
-	| Tcon
+	| Tstring_quoted
 	| Tval
 	| Tval2
 	| Tpair
@@ -90,7 +91,7 @@ p_or (o:os) s i m =
 p_or [] s i m =
 	N (max i m)
 
-call (Tc c) = \s i m ->
+call (Tchar c) = \s i m ->
 	case i < length s && c == s!!i of
 		True -> P (max i m) 1 (Sc c i)
 		False -> N (max i m)
@@ -98,95 +99,102 @@ call (Ts "") = \s i m ->
 	P (max i m) 0 (Ss "" i)
 call (Ts s) =
 	p_or [
-			((map (Tc) s), \(Sc c i:l) -> Ss s i)
+			((map (Tchar) s), \(Sc c i:l) -> Ss s i)
 		]
 call Eos = \s i m ->
 	case i == length s of
 		True -> P (max i m) 0 (Ss "" i)
 		False -> N (max i m)
-call Tc1 =
-	p_or (map (\x -> ([Tc x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
-call Tb =
+call Tchar_any =
+	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
+call Tboolean =
 	p_or [
-		([Tc '1', Tc 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
-		,([Tc '0', Tc 'b'], \(c1:c2:[]) -> Sb False (get_i c1))
+		([Tchar '1', Tchar 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
+		,([Tchar '0', Tchar 'b'], \(c1:c2:[]) -> Sb False (get_i c1))
 		]
-call Tsp =
+call Tspace =
 	p_or [
-		([Tc ' ', Tsp], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tc '\t', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
-		,([Tc '\r', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
-		,([Tc '\n', Tsp], \(Sc c i:_:[]) -> Ss (c:"") i)
-		,([Tc ' '], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tc '\t'], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tc '\r'], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tc '\n'], \(Sc c i:[]) -> Ss (c:"") i)
+		([Tchar ' ', Tspace], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar '\t', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tchar ' '], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tchar '\t'], \(Sc c i:[]) -> Ss (c:"") i)
 		]
-call Tspn =
+call Tnewline =
 	p_or [
-		([Tsp], \(Ss s i:[]) -> Ss s i)
+		([Tchar '\r', Tnewline], \(Sc _ i:_:[]) -> Ss "" i)
+		,([Tchar '\n', Tnewline], \(Sc _ i:_:[]) -> Ss "" i)
+		,([Tchar '\r'], \(Sc _ i:[]) -> Ss "" i)
+		,([Tchar '\n'], \(Sc _ i:[]) -> Ss "" i)
+	]
+call Tspace_not =
+	p_or [
+		([Tspace], \(Ss s i:[]) -> Ss s i)
 		,([], \([]) -> Ss "" 0)
 		]
-call Tsnew =
+call Tnewline_space =
 	p_or [
-		([Tspn,Tc '\r',Tc '\n',Tspn], \(Ss s i:_:_:_:[]) -> Ss s i)
-		,([Tspn,Tc '\r',Tspn], \(Ss s i:_:_:[]) -> Ss s i)
-		,([Tspn,Tc '\n',Tspn], \(Ss s i:_:_:[]) -> Ss s i)
+		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
 		]
-call Tcs =
+call Tspace_any =
 	p_or [
-		([Tc1, Tcs], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tc1], \(Sc c i:[]) -> Ss (c:"") i)
-		]
-call Tn =
-	p_or (map (\x -> ([Tc x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
-call Tnpos =
-	p_or [
-		([Tn, Tnpos], \(Sn n i:Sn n2 _:[]) -> Sn (n2 + 10 * n) i)
-		,([Tn], \(sn:[]) -> sn)
-		]
-call Tnneg =
-	p_or [
-		([Tc '-', Tnpos], \(_:Sn n i:[]) -> Sn (-n) i)
-		]
-call Tnum =
-	p_or [
-		([Tnpos], \(sn:[]) -> sn)
-		,([Tnneg], \(sn:[]) -> sn)
+		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
+		,([Tnewline], \(Ss s i:[]) -> Ss s i)
+		,([], \([]) -> Ss "" 0)
 		]
 call Tstring =
 	p_or [
-		([Tc '\'', Tcs, Tc '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
+		([Tchar_any, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar_any], \(Sc c i:[]) -> Ss (c:"") i)
+		]
+call Tdigit =
+	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
+call Tnum_pos =
+	p_or [
+		([Tdigit, Tnum_pos], \(Sn n i:Sn n2 _:[]) -> Sn (n2 + 10 * n) i)
+		,([Tdigit], \(sn:[]) -> sn)
+		]
+call Tnum_neg =
+	p_or [
+		([Tchar '-', Tnum_pos], \(_:Sn n i:[]) -> Sn (-n) i)
+		]
+call Tnum =
+	p_or [
+		([Tnum_pos], \(sn:[]) -> sn)
+		,([Tnum_neg], \(sn:[]) -> sn)
+		]
+call Tstring_quoted =
+	p_or [
+		([Tchar '\'', Tstring, Tchar '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
 		]
 call Tstruct =
 	p_or [
-		([Tc '{', Tc '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
---		,([Tc '{', Tset, Tc '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tc '{', Tspn, Tset, Twhere_args, Tspn, Tc '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
+		([Tchar '{', Tchar '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
+--		,([Tchar '{', Tset, Tchar '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
+		,([Tchar '{', Tspace_any, Tset, Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
 		]
 	
 
 call Tdots =
 	p_or [
-		([Tc '.',Tcs,Tdots], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		([Tchar '.',Tstring,Tdots], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
 		,([], \([]) -> Sl [] 0)
 	]
 
 call Tparams =
 	p_or [
-		([Tsp,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
-		,([Tc ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
+		([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tchar ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tval2 =
 	p_or [
-		([Tb], \(b:[]) -> b)
+		([Tboolean], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(n:[]) -> n)
-		,([Tcs,Tnpos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
-		,([Tcs], \(s:[]) -> s)
+		,([Tstring,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
+		,([Tstring], \(s:[]) -> s)
 		,([Tstruct], \(s:[]) -> s)
-		,([Tc '(', Texpr_top, Tc ')'], \(_:e:_:[]) -> e)
+		,([Tchar '(', Texpr_top, Tchar ')'], \(_:e:_:[]) -> e)
 		]
 
 call Tval =
@@ -206,23 +214,23 @@ call Texpr =
 		]
 call Tsave_args =
 	p_or [
-		([Tcs,Tc '*',Tsave_args], \(c:_:Sl l _:[]) -> Sl (c:l) (get_i c))
+		([Tstring,Tchar '*',Tsave_args], \(c:_:Sl l _:[]) -> Sl (c:l) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tset =
 	p_or [
-		([Tcs,Tc ':',Texpr], \(Ss n i:_:e:[]) -> Sset n e i)
+		([Tstring,Tchar ':',Texpr], \(Ss n i:_:e:[]) -> Sset n e i)
 	]
 call Twhere_args =
 	p_or [
-		([Tc '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tsnew,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		([Tchar '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tnewline_space,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
 	p_or [
-		([Tc 'r',Tc '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'r' (get_i c):l) (get_i c))
-		,([Tc 'l',Tc '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'l' (get_i c):l) (get_i c))
+		([Tchar 'r',Tchar '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'r' (get_i c):l) (get_i c))
+		,([Tchar 'l',Tchar '!',Tmarks], \(c:_:Sl l _:[]) -> Sl (Sc 'l' (get_i c):l) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tsave =
@@ -248,7 +256,7 @@ call Tmark =
 
 call Texpr_top =
 	p_or [
-		([Tspn, Tmark, Tspn], \(_:e:_:[]) -> e)
+		([Tspace_any, Tmark, Tspace_any], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		]
 
