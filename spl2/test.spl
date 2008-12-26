@@ -1,5 +1,7 @@
 {a:1
   incr:sum a
   res:sum z a*z:3
+  r:(sum y a
+    y:5)
 }
 
