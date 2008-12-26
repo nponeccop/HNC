@@ -49,7 +49,9 @@ data Token =
 	| Tchar_any
 	| Tspace
 	| Tspace_not
-	| Tsnew
+	| Tspace_any
+	| Tnewline
+	| Tnewline_space
 	| Tdigit
 	| Tnum_pos
 	| Tnum_neg
@@ -114,24 +116,30 @@ call Tspace =
 	p_or [
 		([Tchar ' ', Tspace], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
 		,([Tchar '\t', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
-		,([Tchar '\r', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
-		,([Tchar '\n', Tspace], \(Sc c i:_:[]) -> Ss (c:"") i)
 		,([Tchar ' '], \(Sc c i:[]) -> Ss (c:"") i)
 		,([Tchar '\t'], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tchar '\r'], \(Sc c i:[]) -> Ss (c:"") i)
-		,([Tchar '\n'], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tspace_not =
 	p_or [
 		([Tspace], \(Ss s i:[]) -> Ss s i)
 		,([], \([]) -> Ss "" 0)
 		]
-call Tsnew =
+call Tspace_any =
 	p_or [
-		([Tspace_not,Tchar '\r',Tchar '\n',Tspace_not], \(Ss s i:_:_:_:[]) -> Ss s i)
-		,([Tspace_not,Tchar '\r',Tspace_not], \(Ss s i:_:_:[]) -> Ss s i)
-		,([Tspace_not,Tchar '\n',Tspace_not], \(Ss s i:_:_:[]) -> Ss s i)
+		([Tnewline_space], \(s:[]) -> s)
+		,([Tspace_not], \(s:[]) -> s)
 		]
+call Tnewline =
+	p_or [
+		([Tchar '\r', Tnewline], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar '\n', Tnewline], \(Sc c i:_:[]) -> Ss (c:"") i)
+		,([Tchar '\r'], \(Sc c i:[]) -> Ss (c:"") i)
+		,([Tchar '\n'], \(Sc c i:[]) -> Ss (c:"") i)
+		]
+call Tnewline_space =
+	p_or [
+		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
+	]
 call Tstring =
 	p_or [
 		([Tchar_any, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
@@ -161,7 +169,7 @@ call Tstruct =
 	p_or [
 		([Tchar '{', Tchar '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
 --		,([Tchar '{', Tset, Tchar '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tchar '{', Tspace_not, Tset, Twhere_args, Tspace_not, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
+		,([Tchar '{', Tspace_any, Tset, Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
 		]
 	
 
@@ -215,7 +223,7 @@ call Tset =
 call Twhere_args =
 	p_or [
 		([Tchar '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tsnew,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tnewline_space,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tmarks =
