@@ -66,12 +66,16 @@ data Token =
 	| Texpr_top
 	| Tparams
 	| Tsave
+	| Tsave_top
 	| Tsave_args
 	| Twhere_args
+	| Twhere_args2
 	| Twhere_args_star
 	| Twhere_args_new
 	| Tset
+	| Tset_top
 	| Tmark
+	| Tmark_top
 	| Tmarks
 	| Tstruct
 	| Tdots
@@ -171,7 +175,7 @@ call Tstruct =
 	p_or [
 		([Tchar '{', Tchar '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
 --		,([Tchar '{', Tset, Tchar '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tchar '{', Tspace_any, Tset, Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:_:a:Sl l _:_:_:[]) -> Sstruct (a:l) i)
+		,([Tchar '{', Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:Sl l _:_:_:[]) -> Sstruct l i)
 		]
 	
 
@@ -222,6 +226,15 @@ call Tset =
 	p_or [
 		([Tstring,Tchar ':',Texpr], \(Ss n i:_:e:[]) -> Sset n e i)
 	]
+call Tset_top =
+	p_or [
+		([Tstring,Tchar ':',Tmark], \(Ss n i:_:e:[]) -> Sset n e i)
+	]
+call Twhere_args2 =
+	p_or [
+		([Twhere_args_star], \(l:[]) -> l)
+		,([], \([]) -> Sl [] 0)
+		]
 call Twhere_args =
 	p_or [
 		([Twhere_args_star], \(l:[]) -> l)
@@ -235,8 +248,8 @@ call Twhere_args_star =
 		]
 call Twhere_args_new =
 	p_or [
-		([Tnewline_space,Tset,Twhere_args_new], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tnewline_space,Tset], \(_:s:[]) -> Sl (s:[]) (get_i s))
+		([Tnewline_space,Tset_top,Twhere_args_new], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tnewline_space,Tset_top], \(_:s:[]) -> Sl (s:[]) (get_i s))
 		]
 call Tmarks =
 	p_or [
@@ -245,6 +258,18 @@ call Tmarks =
 		,([], \([]) -> Sl [] 0)
 		]
 call Tsave =
+	p_or [
+		([Tsave_args,Texpr,Twhere_args2], \(Sl w i:e:Sl l _:[]) ->
+			let ee =
+				case l of
+					[] -> e
+					xs -> Scall e (SynW l) i
+			in
+			case w of
+				[] -> ee
+				xs -> Scall ee (SynS (map (\(Ss s _) -> s) w)) i)
+		]
+call Tsave_top =
 	p_or [
 		([Tsave_args,Texpr,Twhere_args], \(Sl w i:e:Sl l _:[]) ->
 			let ee =
@@ -264,10 +289,18 @@ call Tmark =
 				(Sc 'l' _:[]) -> Scall e SynL i
 				[] -> e)
 		]
+call Tmark_top =
+	p_or [
+		([Tmarks,Tsave_top], \(Sl m i:e:[]) ->
+			case m of
+				(Sc 'r' _:[]) -> Scall e (SynM [MarkR]) i
+				(Sc 'l' _:[]) -> Scall e SynL i
+				[] -> e)
+		]
 
 call Texpr_top =
 	p_or [
-		([Tspace_any, Tmark, Tspace_any], \(_:e:_:[]) -> e)
+		([Tspace_any, Tmark_top, Tspace_any], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		]
 
