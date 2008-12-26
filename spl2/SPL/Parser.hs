@@ -68,6 +68,8 @@ data Token =
 	| Tsave
 	| Tsave_args
 	| Twhere_args
+	| Twhere_args_star
+	| Twhere_args_new
 	| Tset
 	| Tmark
 	| Tmarks
@@ -222,9 +224,19 @@ call Tset =
 	]
 call Twhere_args =
 	p_or [
-		([Tchar '*',Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
-		,([Tnewline_space,Tset,Twhere_args], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		([Twhere_args_star], \(l:[]) -> l)
+		,([Twhere_args_new], \(l:[]) -> l)
 		,([], \([]) -> Sl [] 0)
+		]
+call Twhere_args_star =
+	p_or [
+		([Tchar '*',Tset,Twhere_args_star], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tchar '*',Tset], \(_:s:[]) -> Sl (s:[]) (get_i s))
+		]
+call Twhere_args_new =
+	p_or [
+		([Tnewline_space,Tset,Twhere_args_new], \(_:s:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tnewline_space,Tset], \(_:s:[]) -> Sl (s:[]) (get_i s))
 		]
 call Tmarks =
 	p_or [
@@ -255,7 +267,7 @@ call Tmark =
 
 call Texpr_top =
 	p_or [
-		([Tspace_not, Tmark, Tspace_not], \(_:e:_:[]) -> e)
+		([Tspace_any, Tmark, Tspace_any], \(_:e:_:[]) -> e)
 --		,([Texpr], \(e:[]) -> e)
 		]
 
