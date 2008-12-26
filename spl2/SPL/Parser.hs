@@ -78,6 +78,9 @@ data Token =
 	| Tmark_top
 	| Tmarks
 	| Tstruct
+	| Tstruct_args
+	| Tstruct_args_star
+	| Tstruct_args_new
 	| Tdots
 	| Eos
 	deriving Show
@@ -173,11 +176,24 @@ call Tstring_quoted =
 		]
 call Tstruct =
 	p_or [
-		([Tchar '{', Tchar '}'], \(Sc _ i:_:[]) -> Sstruct [] i)
---		,([Tchar '{', Tset, Tchar '}'], \(Sc _ i:a:_:[]) -> Sstruct (a:[]) i)
-		,([Tchar '{', Twhere_args, Tspace_any, Tchar '}'], \(Sc _ i:Sl l _:_:_:[]) -> Sstruct l i)
+		([Tchar '{',Tspace_any,Tstruct_args,Tspace_any,Tchar '}'], \(Sc _ i:_:Sl l _:_:_:[]) -> Sstruct l i)
 		]
-	
+call Tstruct_args =
+	p_or [
+		([Tstruct_args_new], \(l:[]) -> l)
+		,([Tstruct_args_star], \(l:[]) -> l)
+		,([], \([]) -> Sl [] 0)
+	]
+call Tstruct_args_star =
+	p_or [
+		([Tset,Tchar '*',Tstruct_args_star], \(s:_:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tset], \(s:[]) -> Sl (s:[]) (get_i s))
+	]
+call Tstruct_args_new =
+	p_or [
+		([Tset_top,Tnewline_space,Tstruct_args_new], \(s:_:Sl l _:[]) -> Sl (s:l) (get_i s))
+		,([Tset_top], \(s:[]) -> Sl (s:[]) (get_i s))
+	]
 
 call Tdots =
 	p_or [

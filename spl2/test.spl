@@ -1,5 +1,4 @@
-{
-  a:1
+{a:1
   incr:sum a
   res:sum z a*z:3
 }
