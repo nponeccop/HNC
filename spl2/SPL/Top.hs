@@ -80,6 +80,9 @@ base = M.fromList $
 	:("natrec", Fun
 		(CNum 0)
 		(TT [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]))			 	
+	:("load", Fun
+		(CL (CSpec "load") (K []))
+		(TT [T "string", TU "a"]))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])

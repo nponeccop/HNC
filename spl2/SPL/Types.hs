@@ -39,6 +39,7 @@ data C =
 	| CL C St
 	| CInFun Int InFun
 	| CInfFun InFun
+	| CSpec [Char]
 	| CList [C]
 	| CPair [C]
 	| CDebug Int C
