@@ -5,8 +5,9 @@ import Data.Map as M hiding (filter, union)
 
 import SPL.Types
 import SPL.Top
+import qualified SPL.Parser
+import SPL.Compiler hiding (res)
 --import Debug.Trace
-import Hugs.Observe
 --observe a b = b
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
@@ -126,6 +127,17 @@ check (CDot a n) et sv =
 
 check (CL a (K [])) et sv =
 	check a et sv
+
+check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et sv =
+	error "5"
+{-	do
+		str <- readFile f
+		case SPL.Parser.parse str of
+			SPL.Parser.P _ i p ->
+				case check0 $ compile p of
+					SPL.Check3.P (ur, t) -> return (T "z")
+					SPL.Check3.N i e -> return (T "z2")
+			SPL.Parser.N i -> return (T "zz")-}
 
 check (CDebug ii (CL a (K p))) et sv =
 	case check a et sv of

@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 0
+test_last = 1
 from_i = 0::Int
 --to_i = 76::Int
 to_i = (-) (length tests) 1
@@ -129,6 +129,7 @@ tests = [
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 1]),CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CBool False]),CL (CVal \"f\") (K [CStr \"aa\"])])])) (S [\"f\"])", "TT [TT [TUL [T \"num\",T \"boolean\",T \"string\"],T \"num\"],T \"num\"]")
 	,("(z*z z)", "", "")
 	,("(sum a b*a:3*b:sum 1 a)", "CNum 7", "T \"num\"")
+	,("load 'a'", "CNum 7", "T \"num\"")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 
