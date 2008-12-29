@@ -47,6 +47,7 @@ data Token =
 	| Tchar Char
 	| Tb
 	| Tchar_any
+	| Tchar_string
 	| Tspace
 	| Tspace_not
 	| Tspace_any
@@ -116,6 +117,8 @@ call Eos = \s i m ->
 		False -> N (max i m)
 call Tchar_any =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
+call Tchar_string =
+	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz.0123456789")
 call Tb =
 	p_or [
 		([Tchar '1', Tchar 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
@@ -151,8 +154,8 @@ call Tnewline_space =
 	]
 call Tstring =
 	p_or [
-		([Tchar_any, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tchar_any], \(Sc c i:[]) -> Ss (c:"") i)
+		([Tchar_string, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar_string], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tdigit =
 	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")

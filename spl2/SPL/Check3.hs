@@ -1,6 +1,7 @@
 
 module SPL.Check3 (P (..), check0, check, check1, check2, res) where
 
+import System.IO.Unsafe
 import Data.Map as M hiding (filter, union)
 
 import SPL.Types
@@ -129,15 +130,13 @@ check (CL a (K [])) et sv =
 	check a et sv
 
 check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et sv =
-	error "5"
-{-	do
+	unsafePerformIO $
+	do
 		str <- readFile f
-		case SPL.Parser.parse str of
+		return $ case SPL.Parser.parse str of
 			SPL.Parser.P _ i p ->
-				case check0 $ compile p of
-					SPL.Check3.P (ur, t) -> return (T "z")
-					SPL.Check3.N i e -> return (T "z2")
-			SPL.Parser.N i -> return (T "zz")-}
+				check0 $ compile p
+			SPL.Parser.N i -> N i "check load error"
 
 check (CDebug ii (CL a (K p))) et sv =
 	case check a et sv of

@@ -2,6 +2,9 @@ module SPL.Top where
 
 import Data.Map as M
 
+import System.IO.Unsafe
+import SPL.Parser
+import SPL.Compiler
 import SPL.Types
 import SPL.Code
 
@@ -81,7 +84,7 @@ base = M.fromList $
 		(CNum 0)
 		(TT [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]))			 	
 	:("load", Fun
-		(CL (CSpec "load") (K []))
+		(CL (CInFun 1 (InFun "" do_load)) (K []))
 		(TT [T "string", TU "a"]))
 	:[]
 
@@ -130,5 +133,14 @@ do_iff o e = error ("do_iff: "++show o)
 do_foldr (f:b:CList []:[]) e = b
 do_foldr (f:b:CList (a:as):[]) e =
 	eval (CL f (K [a, do_foldr (f:b:CList as:[]) e])) e
+	
+do_load (CStr f:[]) e =
+  unsafePerformIO $
+  do
+    str <- readFile f
+    return $ case SPL.Parser.parse str of
+      SPL.Parser.P _ i p ->
+        eval (compile p) e
+      SPL.Parser.N i -> error "load error"
 	
 
