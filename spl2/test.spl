@@ -1,5 +1,6 @@
-{
-  m:load 'a'
-  r:sum m 2
-}
+(
+  sum a b
+  a:load 'test2.spl'
+  b:2
+)
 

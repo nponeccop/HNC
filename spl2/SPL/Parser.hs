@@ -161,7 +161,7 @@ call Tdigit =
 	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
 call Tnum_pos =
 	p_or [
-		([Tdigit, Tnum_pos], \(Sn n i:Sn n2 _:[]) -> Sn (n2 + 10 * n) i)
+		([Tdigit, Tnum_pos], \(Sn n i:Sn n2 _:[]) -> Sn (read (show n++show n2)) i)
 		,([Tdigit], \(sn:[]) -> sn)
 		]
 call Tnum_neg =
