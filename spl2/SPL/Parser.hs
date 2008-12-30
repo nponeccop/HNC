@@ -58,6 +58,7 @@ data Token =
 	| Tnum_neg
 	| Tnum
 	| Tstring_quoted
+	| Tstring_quoted2
 	| Tstring
 	| Tval
 	| Tval2
@@ -116,9 +117,9 @@ call Eos = \s i m ->
 		True -> P (max i m) 0 (Ss "" i)
 		False -> N (max i m)
 call Tchar_any =
-	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
-call Tchar_string =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz.0123456789")
+call Tchar_string =
+	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
 call Tb =
 	p_or [
 		([Tchar '1', Tchar 'b'], \(c1:c2:[]) -> Sb True (get_i c1))
@@ -157,6 +158,11 @@ call Tstring =
 		([Tchar_string, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
 		,([Tchar_string], \(Sc c i:[]) -> Ss (c:"") i)
 		]
+call Tstring_quoted2 =
+	p_or [
+		([Tchar_any, Tstring_quoted2], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar_any], \(Sc c i:[]) -> Ss (c:"") i)
+		]
 call Tdigit =
 	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
 call Tnum_pos =
@@ -175,7 +181,7 @@ call Tnum =
 		]
 call Tstring_quoted =
 	p_or [
-		([Tchar '\'', Tstring, Tchar '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
+		([Tchar '\'', Tstring_quoted2, Tchar '\''], \(Sc c1 i:Ss sn _:Sc c2 _:[]) -> Sstr sn i)
 		]
 call Tstruct =
 	p_or [
