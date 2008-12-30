@@ -1,6 +1,5 @@
 (
-  sum a b
-  a:load 'test2.spl'
-  b:2
+  conf.port
+  conf:load 'config.spl'
 )
 
