@@ -1,6 +1,6 @@
 module SPL.Parser (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
 
--- import Hugs.Observe
+--import Hugs.Observe
 
 data SynMark =
 	MarkR
@@ -54,6 +54,7 @@ data Token =
 	| Tnewline
 	| Tnewline_space
 	| Tdigit
+	| Tdigits
 	| Tnum_pos
 	| Tnum_neg
 	| Tnum
@@ -164,11 +165,15 @@ call Tstring_quoted2 =
 		,([Tchar_any], \(Sc c i:[]) -> Ss (c:"") i)
 		]
 call Tdigit =
-	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sn (read (c:"")) i)) "0123456789")
+	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sc c i)) "0123456789")
+call Tdigits =
+	p_or [
+		([Tdigit, Tdigits], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
+		,([Tdigit], \(Sc n i:[]) -> Ss (n:"") i)
+		]
 call Tnum_pos =
 	p_or [
-		([Tdigit, Tnum_pos], \(Sn n i:Sn n2 _:[]) -> Sn (read (show n++show n2)) i)
-		,([Tdigit], \(sn:[]) -> sn)
+		([Tdigits], \(Ss n i:[]) -> Sn (read n) i)
 		]
 call Tnum_neg =
 	p_or [
@@ -332,6 +337,6 @@ call Texpr_top =
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
 
-res = parse "{a:1*b:2}"
+res = parse "1000"
 
 
