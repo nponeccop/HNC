@@ -1,5 +1,5 @@
 (
-  conf.port
+  conf.clients.hosts
   conf:load 'config.spl'
 )
 

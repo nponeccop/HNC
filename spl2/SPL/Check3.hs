@@ -219,6 +219,7 @@ check (CL a (D n)) et sv =
 				Just a -> P (M.empty, a)
 				Nothing -> error ("struct100:"++show m)
 		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
+		P (_, TU n2) -> P (M.empty, TU n)
 		N i o -> N i o
 
 check (CL a L) et sv =
