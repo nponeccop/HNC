@@ -184,7 +184,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case sv of
-						True -> M.map (\x -> untv p_n x) ur
+						True -> M.map (\x -> TDebug $ untv p_n x) ur
 						False -> M.delete p_n ur
 					in
 					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p_n w)
@@ -195,7 +195,7 @@ check (CL a (S (p:ps))) et sv =
 						b -> TT [TU p_n, b]
 					in
 					let ur2 = case sv of
-						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
+						True -> M.insert p_n (TDebug $ TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
 					observeN ("no "++p) $ P (ur2, w) -- rm ?
@@ -361,7 +361,11 @@ check_with_rename o e sv =
 res2 = check1 (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
 	SPL.Top.get_types 
 
-res = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
+res3 = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
 	SPL.Top.get_types True
+
+res = check1 (CL (CL (CL (CL (CVal "sum") (K [CVal "f",CVal "f"])) (S ["f"])) (K [CL (CVal "length") (K [CVal "f"])])) (S ["f"]))
+	SPL.Top.get_types
+
 
 

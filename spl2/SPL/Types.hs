@@ -12,6 +12,7 @@ data T =
 	| TS (Map [Char] T)
 	| TL
 	| TUL [T]
+	| TDebug T
 	deriving (Eq, Show)
 
 -- code
