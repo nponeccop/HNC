@@ -1,0 +1,1 @@
+foldr sum 0,filter (_*or (eq 0,mod _ 5),eq 0,mod _ 3),map (sum 1),to,sum 1000 -1

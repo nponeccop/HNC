@@ -95,6 +95,18 @@ base = M.fromList $
 		(TS $ M.fromList
 			[("concat", TT [T "string", T "string", T "string"])]
 			))
+	:("to", Fun
+		(CL (CInFun 1 (InFun "" do_to)) (K []))
+		(TT [T "num", TD "list" [T "num"]]))
+	:("mod", Fun
+		(CL (CInFun 2 (InFun "" do_mod)) (K []))
+		(TT [T "num", T "num", T "num"]))
+	:("or", Fun
+		(CL (CInFun 2 (InFun "" do_or)) (K []))
+		(TT [T "boolean", T "boolean", T "boolean"]))
+	:("map", Fun
+		(CL (CInFun 2 (InFun "" do_map)) (K []))
+		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -160,6 +172,21 @@ do_out (CStr s:[]) e =
 
 do_str_concat (CStr s1:CStr s2:[]) e =
 	CStr $ (++) s1 s2
+
+do_to (CNum n:[]) e =
+	CList $ Prelude.map CNum $ take n $ enumFrom 0
+
+do_mod (CNum n1:CNum n2:[]) e =
+	CNum $ mod n1 n2
+
+do_or (CBool n1:CBool n2:[]) e =
+	CBool $ (||) n1 n2
+
+do_map (f:CList []:[]) e = CList []
+do_map (f:CList (a:as):[]) e =
+	case do_map (f:CList as:[]) e of
+		CList l -> CList $ (:) (eval (CL f (K [a])) e) l
+		_ -> error "do_map"
 
 
 
