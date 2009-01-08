@@ -129,7 +129,8 @@ tests = [
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 1]),CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CBool False]),CL (CVal \"f\") (K [CStr \"aa\"])])])) (S [\"f\"])", "TT [TT [TUL [T \"num\",T \"boolean\",T \"string\"],T \"num\"],T \"num\"]")
 	,("(z*z z)", "", "")
 	,("(sum a b*a:3*b:sum 1 a)", "CNum 7", "T \"num\"")
-	,("load 'config.spl'", "CNum 7", "T \"num\"")
+	,("load 'spl_tests/config.spl'", "CNum 7", "T \"num\"")
+	,("(r!l*x*iff (join1 (pair (less n x) (l!_f (join1 n l) x)),elist) (l!l)*n:sum (head l) (head,tail l))", "", "")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 

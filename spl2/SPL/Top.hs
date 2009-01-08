@@ -38,6 +38,9 @@ base = M.fromList $
 	:("tail", Fun
 		(CL (CInFun 1 (InFun "" do_tail)) (K []))
 		(TT [TD "list" [TU "a"], TD "list" [TU "a"]]))
+	:("reverse", Fun
+		(CL (CInFun 1 (InFun "" do_reverse)) (K []))
+		(TT [TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("filter", Fun
 		(CL (CInFun 2 (InFun "" do_filter)) (K []))
 		(TT [TT [TU "a", T "boolean"], TD "list" [TU "a"], TD "list" [TU "a"]]))
@@ -135,6 +138,7 @@ do_concat (CList a:CList b:[]) e = CList (a++b)
 
 do_head (CList a:[]) e = head a
 do_tail (CList a:[]) e = CList (tail a)
+do_reverse (CList a:[]) e = CList (reverse a)
 cbool_val (CBool b) = b
 do_filter (a:CList l:[]) e = CList $ Prelude.filter (\x -> cbool_val $ eval (CL a (K [x])) e) l
 
