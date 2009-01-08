@@ -118,7 +118,7 @@ call Eos = \s i m ->
 		True -> P (max i m) 0 (Ss "" i)
 		False -> N (max i m)
 call Tchar_any =
-	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz.0123456789")
+	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz. 0123456789")
 call Tchar_string =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
 call Tb =

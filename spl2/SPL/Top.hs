@@ -86,6 +86,15 @@ base = M.fromList $
 	:("load", Fun
 		(CL (CInFun 1 (InFun "" do_load)) (K []))
 		(TT [T "string", TU "a"]))
+	:("out", Fun
+		(CL (CInFun 1 (InFun "" do_out)) (K []))
+		(TT [T "string", T "void"]))
+	:("str", Fun
+		(CStruct $ M.fromList
+			[("concat", CL (CInFun 2 (InFun "" do_str_concat)) (K []))])
+		(TS $ M.fromList
+			[("concat", TT [T "string", T "string", T "string"])]
+			))
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -143,4 +152,14 @@ do_load (CStr f:[]) e =
         eval (compile p) e
       SPL.Parser.N i -> error "load error"
 	
+do_out (CStr s:[]) e =
+	unsafePerformIO $
+	do
+		putStrLn s
+		return (CNum 0)
+
+do_str_concat (CStr s1:CStr s2:[]) e =
+	CStr $ (++) s1 s2
+
+
 
