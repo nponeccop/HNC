@@ -218,7 +218,7 @@ call Tdots =
 call Tparams =
 	p_or [
 		([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
-		,([Tchar ',',Texpr], \(_:c:[]) -> Sl (c:[]) (get_i c))
+		,([Tspace_any,Tchar ',',Texpr], \(_:_:c:[]) -> Sl (c:[]) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tval2 =
