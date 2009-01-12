@@ -129,8 +129,9 @@ tests = [
 	,("f*sum (f 1),sum (f 0b),f 'aa'", "CL (CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 1]),CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CBool False]),CL (CVal \"f\") (K [CStr \"aa\"])])])) (S [\"f\"])", "TT [TT [TUL [T \"num\",T \"boolean\",T \"string\"],T \"num\"],T \"num\"]")
 	,("(z*z z)", "", "")
 	,("(sum a b*a:3*b:sum 1 a)", "CNum 7", "T \"num\"")
-	,("load 'spl_tests/config.spl'", "CNum 7", "T \"num\"")
-	,("(r!l*x*iff (join1 (pair (less n x) (l!_f (join1 n l) x)),elist) (l!l)*n:sum (head l) (head,tail l))", "", "")
+	,("load 'spl_tests/config.spl'", "CStruct (fromList [(\"clients\",CStruct (fromList [(\"hosts\",CList [CStr \"localhost\",CStr \"localhost2\"]),(\"port\",CNum 2345)])),(\"port\",CNum 1234)])", "TS (fromList [(\"clients\",TS (fromList [(\"hosts\",TD \"list\" [T \"string\"]),(\"port\",T \"num\")])),(\"port\",T \"num\")])")
+	,("(r!l*x*iff (join1 (pair (less n x) (l!_f (join1 n l) x)),elist) (l!l)*n:sum (head l) (head,tail l))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"n\",CVal \"x\"]),CL (CL (CVal \"_f\") (K [CL (CVal \"join1\") (K [CVal \"n\",CVal \"l\"]),CVal \"x\"])) L]),CVal \"elist\"]),CL (CVal \"l\") L])) (W [(\"n\",CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"l\"]),CL (CVal \"head\") (K [CL (CVal \"tail\") (K [CVal \"l\"])])]))])) (S [\"l\",\"x\"])) R", "TT [TD \"list\" [T \"num\"],T \"num\",TD \"list\" [T \"num\"]]")
+	,("(r!a*b*sum a,sum b,_f 1b b)", "type error: expected T \"num\", actual T \"boolean\"", "")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 

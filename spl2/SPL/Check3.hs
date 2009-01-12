@@ -8,7 +8,7 @@ import SPL.Types
 import SPL.Top
 import qualified SPL.Parser
 import SPL.Compiler hiding (res)
---import Debug.Trace
+import Hugs.Observe
 --observe a b = b
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
@@ -60,8 +60,8 @@ get_ul n u =
 ch [] [] et ul uv i sv ii =
 	N ii "too many parameters"
 ch (r:[]) [] et ul uv i sv ii =
-	let z = setmv (setm (observeN "r" $ untv "x" r) (observeN "ul" ul)) uv in
-	P (observeN "uv" uv, z)
+	let z = setmv (setm (observeN "r" r) (observeN "ul" ul)) $ observeN "uv" uv in
+	P (observeN "uv" $ M.map untv_all uv, z)
 ch r [] et ul uv i sv ii =
 	P (uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv ii =
@@ -139,10 +139,10 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 			SPL.Parser.N i -> N i "check load error"
 
 check (CDebug ii (CL a (K p))) et sv =
-	case check a et sv of
+	case check (observeN "a" a) et sv of
 		P (rm0, TT r) ->
-			case ch r p et M.empty (observeN "rm0" rm0) 0 sv ii of
-				P (rm, r) -> P (observeN "rm" rm, r)
+			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii of
+				P (rm, r) -> P (observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
 		P (ur, TV n) ->
 				case get_url p_ok of
@@ -185,9 +185,9 @@ check (CL a (S (p:ps))) et sv =
 					in
 					let ur2 = case sv of
 						True -> M.map (\x -> TDebug $ untv p_n x) ur
-						False -> M.delete p_n ur
+						False -> M.map (untv p_n) $ M.delete p_n ur
 					in
-					observeN ("ok "++p++"|"++show a) $ P (ur2, untv p_n w)
+					observeN ("ok "++p++"|"++show a) $ P (observeN "ur2" ur2, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
@@ -231,7 +231,13 @@ check (CL a L) et sv =
 	
 check (CL a R) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
-		P (ur, r) -> check a (putp ["_f"] [r] et) sv
+		P (ur, r) ->
+			case check a (putp ["_f"] [r] et) sv of
+				P (ur2, r2) ->
+					case M.lookup "_f" ur of
+						Just v -> P (ur2, merge v r)
+						Nothing -> error "_f"
+				o -> o
 		o -> o
 
 check (CDebug _ c) et sv =
@@ -315,6 +321,11 @@ untv p (TS tt) = TS $ M.map (\x -> untv p x) tt
 untv p (TV n)|p == n = TU n
 untv p (TV n) = TV n
 untv p o = o
+untv_all (TD n tt) = TD n (Prelude.map (\t -> untv_all t) tt)
+untv_all (TT tt) = TT (Prelude.map (\t -> untv_all t) tt)
+untv_all (TS tt) = TS $ M.map (\x -> untv_all x) tt
+untv_all (TV n) = TU n
+untv_all o = o
 
 change_tul tt i = Prelude.map (\t -> change_tu t i) tt
 change_tu (TT tt) i = TT $ change_tul tt i
