@@ -295,7 +295,7 @@ call Tmarks =
 		]
 call Tsave =
 	p_or [
-		([Tsave_args,Texpr,Twhere_args2], \(Sl w i:e:Sl l _:[]) ->
+		([Tsave_args,Tspace_any,Texpr,Twhere_args2], \(Sl w i:_:e:Sl l _:[]) ->
 			let ee =
 				case l of
 					[] -> e
@@ -307,7 +307,7 @@ call Tsave =
 		]
 call Tsave_top =
 	p_or [
-		([Tsave_args,Texpr,Twhere_args], \(Sl w i:e:Sl l _:[]) ->
+		([Tsave_args,Tspace_any,Texpr,Twhere_args], \(Sl w i:_:e:Sl l _:[]) ->
 			let ee =
 				case l of
 					[] -> e
