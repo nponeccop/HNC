@@ -1,5 +1,5 @@
 (
-	fib (join1 1,join1 0,elist) 10
-	fib:(r!l*x*iff (join1 (pair (less n x) (l!_f (join1 n l) x)),elist) (l!l)*n:sum (head l) (head,tail l))
+	fib 1 0 4000000 0
+	fib:(r!x2*x1*x*s*iff (join1 (pair (less n x) (l!_f n x2 x rn)),elist) (l!s)*n:sum x2 x1*rn:iff (join1 (pair (eq 0,mod n 2) (l!sum s n)),elist) (l!s))
 )
 

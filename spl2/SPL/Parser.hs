@@ -61,6 +61,7 @@ data Token =
 	| Tstring_quoted
 	| Tstring_quoted2
 	| Tstring
+	| Tstring2
 	| Tval
 	| Tval2
 	| Tpair
@@ -154,10 +155,15 @@ call Tnewline_space =
 	p_or [
 		([Tnewline, Tspace_not], \(Ss s i:_:[]) -> Ss s i)
 	]
+call Tstring2 =
+	p_or [
+		([Tchar_string, Tstring2], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tchar_string], \(Sc c i:[]) -> Ss (c:"") i)
+		]
 call Tstring =
 	p_or [
-		([Tchar_string, Tstring], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tchar_string], \(Sc c i:[]) -> Ss (c:"") i)
+			([Tstring2, Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i)
+			,([Tstring2], \(Ss s i:[]) -> Ss s i)
 		]
 call Tstring_quoted2 =
 	p_or [
@@ -226,7 +232,7 @@ call Tval2 =
 		([Tb], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring_quoted], \(n:[]) -> n)
-		,([Tstring,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
+--		,([Tstring,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i) -- create new token?
 		,([Tstring], \(s:[]) -> s)
 		,([Tstruct], \(s:[]) -> s)
 		,([Tchar '(', Texpr_top, Tchar ')'], \(_:e:_:[]) -> e)
