@@ -1,4 +1,4 @@
-(
+out,to_string (
 	fib 1 0 4000000 0
 	fib:(r!x2*x1*x*s*
 		iff (join1 (pair (less n x) (l!_f n x2 x rn)),elist) (l!s)
