@@ -27,9 +27,11 @@ pzero = parserZero
 
 parseString p input
     = runP p () "test.hn0" (packL input)
+
+xletter = letter <|> char '_'
  
 identifier 
-	= liftM2 (:) letter $ many $ letter <|> digit  
+	= liftM2 (:) xletter $ many $ xletter <|> digit  
 
 literal = between q q (many $ noneOf "\"") where q = (char '"') 
 	
