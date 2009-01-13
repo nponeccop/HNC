@@ -8,7 +8,7 @@ import SPL.Types
 import SPL.Top
 import qualified SPL.Parser
 import SPL.Compiler hiding (res)
-import Hugs.Observe
+--import Hugs.Observe
 --observe a b = b
 --trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
 observeN a b = b
