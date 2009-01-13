@@ -1,0 +1,4 @@
+main = {
+	f x = or (eq 0 (mod x 5)) (eq 0 (mod x 3))
+	out (to_string (foldr sum 0 (filter f (map incr (to 999)))))
+}

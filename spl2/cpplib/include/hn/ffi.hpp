@@ -2,6 +2,7 @@ namespace ff
 {
 	int incr(int);
 	int sum(int, int);
+	bool less(int, int);
 
 	template <typename T> struct elist
 	{

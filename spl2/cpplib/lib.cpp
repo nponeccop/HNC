@@ -12,6 +12,11 @@ int sum(int x, int y)
 	return x + y;
 }
 
+bool less(int x, int y)
+{
+	return x < y;
+}
+
 IO<int> readnum = IO<int>(&read<int>);
 
 };
