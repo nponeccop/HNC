@@ -68,6 +68,15 @@ base = M.fromList $
 	:("iff", Fun
 		(CL (CInFun 2 (InFun "" do_iff)) (K []))
 		(TT [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"], TU "a"]))
+	:("else", Fun
+		(CL (CInFun 1 (InFun "" do_else)) (K []))
+		(TT [TT [TL, TU "a"], TD "pair" [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]]]))
+	:("when", Fun
+		(CL (CInFun 3 (InFun "" do_when)) (K []))
+		(TT [T "boolean", TT [TL, TU "a"], TD "pair" [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]], TD "pair" [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]]]))
+	:("if", Fun
+		(CL (CInFun 1 (InFun "" do_if)) (K []))
+		(TT [TD "pair" [TD "list" [TD "pair" [T "boolean", TT [TL, TU "a"]]], TT [TL, TU "a"]], TU "a"]))
 	:("foldr", Fun
 		(CL (CInFun 3 (InFun "" do_foldr)) (K []))
 		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))
@@ -103,6 +112,9 @@ base = M.fromList $
 		(TT [T "num", TD "list" [T "num"]]))
 	:("mod", Fun
 		(CL (CInFun 2 (InFun "" do_mod)) (K []))
+		(TT [T "num", T "num", T "num"]))
+	:("div", Fun
+		(CL (CInFun 2 (InFun "" do_div)) (K []))
 		(TT [T "num", T "num", T "num"]))
 	:("or", Fun
 		(CL (CInFun 2 (InFun "" do_or)) (K []))
@@ -183,6 +195,9 @@ do_to (CNum n:[]) e =
 do_mod (CNum n1:CNum n2:[]) e =
 	CNum $ mod n1 n2
 
+do_div (CNum n1:CNum n2:[]) e =
+	CNum $ div n1 n2
+
 do_or (CBool n1:CBool n2:[]) e =
 	CBool $ (||) n1 n2
 
@@ -191,6 +206,17 @@ do_map (f:CList (a:as):[]) e =
 	case do_map (f:CList as:[]) e of
 		CList l -> CList $ (:) (eval (CL f (K [a])) e) l
 		_ -> error "do_map"
+
+do_else (f:[]) e =
+	CPair [(CList []), f]
+
+do_when (c:f:CPair (CList l:el:[]):[]) e =
+	CPair [CList (CPair [c,f]:l), el]
+
+do_if (CPair [CList [], CL c L]:[]) e = CL (CL c L) (K [CVal "go"])
+do_if (CPair [CList (CPair (CBool True:CL c L:[]):l), CL cc L]:[]) e = CL (CL c L) (K [CVal "go"])
+do_if (CPair [CList (CPair (CBool False:CL c L:[]):l), CL cc L]:[]) e = do_if ((CPair [CList l, CL cc L]):[]) e
+
 
 
 
