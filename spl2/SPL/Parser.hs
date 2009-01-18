@@ -225,6 +225,7 @@ call Tparams =
 	p_or [
 		([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
 		,([Tspace_any,Tchar ',',Texpr], \(_:_:c:[]) -> Sl (c:[]) (get_i c))
+		,([Tspace_any,Tchar '#',Texpr], \(_:Sc _ i:c:[]) -> Sl ((Scall c SynL i):[]) (get_i c))
 		,([], \([]) -> Sl [] 0)
 		]
 call Tval2 =
@@ -248,7 +249,11 @@ call Tval =
 
 call Texpr =
 	p_or [
-		([Tval,Tparams], \(v:Sl a _:[]) ->
+		([Tchar '#',Tval,Tparams], \(Sc _ i:v:Sl a _:[]) ->
+			case a of
+				[] -> Scall v SynL i
+				_ -> Scall (Scall v (SynK a) (get_i v)) SynL i)
+		,([Tval,Tparams], \(v:Sl a _:[]) ->
 			case a of
 				[] -> v
 				_ -> Scall v (SynK a) (get_i v))
