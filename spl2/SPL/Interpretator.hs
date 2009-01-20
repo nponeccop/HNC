@@ -5,18 +5,25 @@ import SPL.Parser
 import SPL.Compiler
 import SPL.Check3
 import SPL.Top
+import System.IO.Unsafe
 --import Debug.Trace
 
 import Data.Map as M hiding (map, filter)
 
 data P = P ([Char], [Char]) | N (Int, [Char])
 
+out s o =
+	unsafePerformIO $
+	do
+		putStrLn s;
+		return o
+
 step str =
-	case parse str of
+	case parse $ out "parse" str of
 		SPL.Parser.P _ i p ->
-			let c = compile p in
-				case check0 c of
-					SPL.Check3.P (ur, a)|M.null ur -> SPL.Interpretator.P (show a, show $ eval0 $ remove_cdebug c)
+			let c = compile $ out "compile" p in
+				case check0 $ out "check" c of
+					SPL.Check3.P (ur, a)|M.null ur -> SPL.Interpretator.P (show a, show $ eval0 $ out "eval" $ remove_cdebug c)
 					SPL.Check3.P (u2, a) -> error ("check0 returned saved vars: "++show u2++"\n"++show str)
 					SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 		SPL.Parser.N i ->
