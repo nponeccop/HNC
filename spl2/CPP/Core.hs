@@ -43,7 +43,7 @@ sem_Definition inh self @ (Definition name args val wh)
                         ,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val 	    	
                     }
     } where
-		ctx = getContext (wsMethods semWhere) inh symTabWithStatics exprOutputTypes defType (wsTemplateArgs semWhere) self
+		ctx = getContext (wsMethods semWhere) inh defType (wsTemplateArgs semWhere) self
 
 		rt = diRootTypes inh 
 		defType = smartTrace $ uncondLookup name rt 
@@ -106,7 +106,7 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")" 
 	Nothing -> x
 	
-getContext methods inh fqnWithLocals whereTypes defType templateVars def @ (Definition name args _ wh)
+getContext methods inh defType templateVars (Definition name args _ wh)
 	= constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
 
 	-- переменные контекста - это 
@@ -119,7 +119,7 @@ getContext methods inh fqnWithLocals whereTypes defType templateVars def @ (Defi
 	contextTemplateVars = nub ((templateVars ++ (concat $ (map vdsTemplateArgs varSem)) ++ (S.toList $ S.unions $ contextArgsTv)))  		
 
 	(contextArgs, contextArgsTv) = unzip $ case defType of
-		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(x, y) -> isArgContext y) $ zip (init funList) args
+		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
 	wfv = getSetOfListFreeVars (filter isFunction wh)
 	isArgContext a = S.member a wfv
@@ -152,7 +152,7 @@ data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 ,	vdsTemplateArgs :: b 
 }
 
-sem_VarDefinition fqn wiTypes def @ (Definition name [] val _) =
+sem_VarDefinition fqn wiTypes (Definition name [] val _) =
 	VarDefinitionSynthesized {
 		vdsVarDef = CppVar (cppType inferredType) name $ sem_Expression fqn val
 	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType 
@@ -178,5 +178,5 @@ getExpressionAtoms (Atom x) = S.singleton x
 getExpressionAtoms (Application a b) = S.unions $ map getExpressionAtoms (a : b)  
 getExpressionAtoms _ = S.empty
 
-getDefinitionFreeVars def @ (Definition _ args val wh) 
+getDefinitionFreeVars (Definition _ args val wh) 
 	= (S.union (getExpressionAtoms val) (getSetOfListFreeVars wh)) `subtractSet` (S.fromList args) `subtractSet` (getWhereAtoms wh)
