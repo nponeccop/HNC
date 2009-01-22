@@ -347,7 +347,8 @@ call Texpr_top =
 
 
 parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
+parse2 s = p_or [([Tstring2, Eos], \vs -> vs!!0)] s 0 0
 
-res = parse "1000"
+res = parse2 $ take 59 $ repeat 'z'
 
 
