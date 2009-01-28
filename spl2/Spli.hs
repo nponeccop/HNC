@@ -4,6 +4,7 @@ import SPL.Interpretator
 import SPL.Top
 import Data.Map as M hiding (map)
 import System
+import IO
 
 data Cmd =
 	Quit | Help | Type | TypeDef | Code | Expr
@@ -54,7 +55,8 @@ tab i s =
 	(take i (repeat ' '))++"  ^"++s
 
 main_loop = do
-	putStr "  "
+	putStr "  ";
+	hFlush stdout;
 	line <- getLine
 	case get_cmd line of
 		Quit -> return ()
