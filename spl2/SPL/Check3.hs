@@ -375,7 +375,7 @@ res2 = check1 (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f"
 res3 = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
 	SPL.Top.get_types True
 
-res = check1 (CL (CL (CL (CL (CVal "sum") (K [CVal "f",CVal "f"])) (S ["f"])) (K [CL (CVal "length") (K [CVal "f"])])) (S ["f"]))
+res = check1 (Test.hs: CL (CL (CVal "if") (K [CBool True,CL (CL (CVal "r") (K [CNum 1])) L,CL (CL (CVal "r") (K [CNum 2])) L])) (S ["r"]))
 	SPL.Top.get_types
 
 
