@@ -11,7 +11,7 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 0
+test_last = 1
 from_i = 0::Int
 --to_i = 76::Int
 to_i = (-) (length tests) 1
