@@ -11,13 +11,13 @@ get_str (No s) = s
 is_passed (Ok s) = True
 is_passed (No _) = False
 
-test_last = 1
-from_i = 0::Int
---to_i = 76::Int
+test_last = 0
+from_i = 00::Int
+--to_i = 79::Int
 to_i = (-) (length tests) 1
 
-test_res = map test $
-	case test_last of
+test_res =
+	zipWith (\x y -> test x y) [0..] $ case test_last of
 		1 -> [tests!!to_i]
 		_ -> take (1 + to_i - from_i) $ drop from_i tests
 
@@ -27,23 +27,23 @@ res = res1 ++ ("failed: " ++ show (length $ filter (not . is_passed) test_res))
 
 main = putStrLn res
 
-test (s, r, t) =
+test i (s, r, t) =
 	case step s of
 		SPL.Interpretator.P (t2, r2)| r == r2 && t == t2 ->
 			Ok $ "ok: "++s
 --			Ok $ "ok: "++s++"\n    "++r++"\n    "++t
 		SPL.Interpretator.P (t2, r2)| r == r2 ->
-			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
+			No $ show i++"no: "++s++"\n type exp: "++t++"\n type act: "++t2
 		SPL.Interpretator.P (t2, r2)| t == t2 ->
-			No $ "no: "++s++"\n res exp: "++r++"\n res act: "++r2
+			No $ show i++"no: "++s++"\n res exp: "++r++"\n res act: "++r2
 		SPL.Interpretator.P (t2, r2) ->
-			No $ "no: "++s++"\n type exp: "++t++"\n type act: "++t2
+			No $ show i++"no: "++s++"\n type exp: "++t++"\n type act: "++t2
 			++"\n res exp: "++r++"\n res act: "++r2
 		SPL.Interpretator.N (i, r3)| r3 == r ->
 			Ok $ "ok: "++s++" |err"
 --			Ok $ ("ok: "++s++" |err\n    "++r)
 		SPL.Interpretator.N (i, r3) ->
-			No $ "no: "++s++"\n err exp: "++r++"\n err act: "++r3++""
+			No $ show i++"no: "++s++"\n err exp: "++r++"\n err act: "++r3++""
 
 
 tests = [
@@ -101,7 +101,7 @@ tests = [
 	,("(f*debug (sum (f 2)))", "CL (CL (CVal \"debug\") (K [CL (CVal \"sum\") (K [CL (CVal \"f\") (K [CNum 2])])])) (S [\"f\"])", "TT [TT [T \"num\",T \"num\"],T \"num\",T \"num\"]")
 	,("((f*debug (sum (f 2))) (sum 1)) 3", "CNum 6", "T \"num\"")
 	,("(debug (l!11)) go", "CNum 11", "T \"num\"")
-	,("(z*z 1) (r!_*if (less _ 5) (l!sum _,_f,sum _ 1) (l!_))", "type error: check cannot find \"if\"", "")
+	,("(z*z 1) (r!_*iif (less _ 5) (l!sum _,_f,sum _ 1) (l!_))", "type error: check cannot find \"iif\"", "")
 	,("(r!_*iff (join1 (pair (less _ 5) (l!sum _,_f,sum _ 1)),elist) (l!_)) 1", "CNum 15", "T \"num\"")
 	,("(r!_*iff (join1 (pair (less _ 2) (l!_)),elist) (l!sum (_f,sum _ -1),_f,sum _ -2)) 10", "CNum 55", "T \"num\"")
 	,("(h*t*t)", "CL (CVal \"t\") (S [\"h\",\"t\"])", "TT [TU \"a\",TU \"b\",TU \"b\"]")
@@ -132,7 +132,7 @@ tests = [
 	,("load 'spl_tests/config.spl'", "CStruct (fromList [(\"clients\",CStruct (fromList [(\"hosts\",CList [CStr \"localhost\",CStr \"localhost2\"]),(\"port\",CNum 2345)])),(\"port\",CNum 1234)])", "TS (fromList [(\"clients\",TS (fromList [(\"hosts\",TD \"list\" [T \"string\"]),(\"port\",T \"num\")])),(\"port\",T \"num\")])")
 	,("(r!l*x*iff (join1 (pair (less n x) (l!_f (join1 n l) x)),elist) (l!l)*n:sum (head l) (head,tail l))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"n\",CVal \"x\"]),CL (CL (CVal \"_f\") (K [CL (CVal \"join1\") (K [CVal \"n\",CVal \"l\"]),CVal \"x\"])) L]),CVal \"elist\"]),CL (CVal \"l\") L])) (W [(\"n\",CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"l\"]),CL (CVal \"head\") (K [CL (CVal \"tail\") (K [CVal \"l\"])])]))])) (S [\"l\",\"x\"])) R", "TT [TD \"list\" [T \"num\"],T \"num\",TD \"list\" [T \"num\"]]")
 	,("(r!a*b*sum a,sum b,_f 1b b)", "type error: expected T \"num\", actual T \"boolean\"", "")
-	,("(r*if 1b (#r 1)#r 2)", "", "")
+	,("(r*if 1b (#r 1)#r 2)", "CL (CL (CVal \"if\") (K [CBool True,CL (CL (CVal \"r\") (K [CNum 1])) L,CL (CL (CVal \"r\") (K [CNum 2])) L])) (S [\"r\"])", "TT [TT [T \"num\",TU \"a\"],TU \"a\"]")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 

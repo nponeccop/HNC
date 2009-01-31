@@ -8,10 +8,11 @@ import SPL.Types
 import SPL.Top
 import qualified SPL.Parser
 import SPL.Compiler hiding (res)
---import Hugs.Observe
---observe a b = b
---trace2 a b = trace ("<\n"++a++"\n  "++show b++"\n>") b
+import Debug.Trace
 observeN a b = b
+
+observe s v = trace ("{"++s++":"++show v++"}") v
+--observe s v = v
 
 data P = P (Map [Char] T, T) | N Int [Char]
 	deriving Show
@@ -48,14 +49,16 @@ merge (TV a) b = b
 merge a (TV b) = a
 merge TL TL = TL
 merge (T n) (T n2)|n==n2 = T n
-merge a (TUL b) = TUL (a:b)
-merge a b = TUL [a, b]
+merge (TUL a) b = TUL (b:a)
+merge a b = TUL [b, a]
 --merge a b = error ("merge: {"++show a++", "++show b++"}")
 
 get_ul n u =
 	case M.lookup n u of
 		Just n -> show n
 		Nothing -> "<nil>"
+
+setmm a b = M.map (\x -> setm x b) a
 
 ch [] [] et ul uv i sv ii =
 	N ii "too many parameters"
@@ -67,23 +70,33 @@ ch r [] et ul uv i sv ii =
 ch (r:rs) (p1:ps) et ul uv i sv ii =
 	case observeN ("ch_p "++show r) $ check p1 et sv of
 		P (rm, r_p1) ->
-			let r_p2 = change_tu (observeN "r_p1" r_p1) i in
-			let rm2 = M.map (\x -> change_tu x i) (observeN "rm" rm) in
+			let r_p2 = change_tu (observeN "r_p1" r_p1) "" i in
+			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
 			case SPL.Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
-					let ru1u = union_r uv rm2;
+					let rr = union_r r2 $ union_r rm2 uv in
+					let ll = union l2 ul in
+					let rrr = setmm rr rr in
+					let lll = setmm ll ll in
+					let ru = setmm rrr lll in
+					let lu = setmm lll rrr in
+{-					let ru2 = union_r (observe "uv" $! uv) (observe "rm2" $! setmm rm2 $ setmm l2 l2) in
+					let ru3 = union_r (observe "r2" $! r2) ru2 in
+					let lu = union (observe "l2" $! setmm l2 l2) (observe "ul" $! setmm ul $ setmm l2 l2) in
+					let ru = M.map (\x -> setm x lu) ru3 in-}
+{-					let ru1u = union_r uv rm2;
 							ru2u = union_r r2 rm2;
 							ru3u = union_r r2 uv;
-							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) lu) r2;
-							ru2a = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) lu) uv;
+							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) ul) r2;
+							ru2a = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) ul) uv;
 							ru2 = M.map (\x -> setmv x ru1) ru2a;
-							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) lu) rm2;
+							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) ul) rm2;
 							ru = observeN "ru" $ union_r (union_r ru1 ru2) ru3;
 							lu1a = observeN "lu1" $ M.map (\x -> setm (setm x ul) ru) l2;
 							lu1 = M.map (\x -> setm x lu1a) lu1a;
 							lu2 = observeN "lu2" $ M.map (\x -> setm (setm x l2) ru) ul;
-							lu = observeN "lu" $ union lu1 lu2
-					in ch rs ps et lu ru (i+(1::Int)) sv ii
+							lu = observeN "lu" $ union lu1 lu2;-}
+					{-in-} ch rs ps et lu ru (i+(1::Int)) sv ii
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -327,11 +340,11 @@ untv_all (TS tt) = TS $ M.map (\x -> untv_all x) tt
 untv_all (TV n) = TU n
 untv_all o = o
 
-change_tul tt i = Prelude.map (\t -> change_tu t i) tt
-change_tu (TT tt) i = TT $ change_tul tt i
-change_tu (TD n tt) i = TD n $ change_tul tt i
-change_tu (TU n) i = TU (n++show i)
-change_tu o i = o
+change_tul tt p i = Prelude.map (\t -> change_tu t p i) tt
+change_tu (TT tt) p i = TT $ change_tul tt p i
+change_tu (TD n tt) p i = TD n $ change_tul tt p i
+change_tu (TU n) p i = TU (n++p++show i)
+change_tu o p i = o
 
 change_tvl tt i = Prelude.map (\t -> change_tv t i) tt
 change_tv (TT tt) i = TT $ change_tvl tt i
