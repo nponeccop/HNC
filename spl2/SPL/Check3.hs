@@ -80,23 +80,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-{-					let ru2 = union_r (observe "uv" $! uv) (observe "rm2" $! setmm rm2 $ setmm l2 l2) in
-					let ru3 = union_r (observe "r2" $! r2) ru2 in
-					let lu = union (observe "l2" $! setmm l2 l2) (observe "ul" $! setmm ul $ setmm l2 l2) in
-					let ru = M.map (\x -> setm x lu) ru3 in-}
-{-					let ru1u = union_r uv rm2;
-							ru2u = union_r r2 rm2;
-							ru3u = union_r r2 uv;
-							ru1 = observeN "ru1" $ M.map (\x -> setm (setm x ru1u) ul) r2;
-							ru2a = observeN "ru2" $ M.map (\x -> setm (setm x ru2u) ul) uv;
-							ru2 = M.map (\x -> setmv x ru1) ru2a;
-							ru3 = observeN "ru3" $ M.map (\x -> setm (setm x ru3u) ul) rm2;
-							ru = observeN "ru" $ union_r (union_r ru1 ru2) ru3;
-							lu1a = observeN "lu1" $ M.map (\x -> setm (setm x ul) ru) l2;
-							lu1 = M.map (\x -> setm x lu1a) lu1a;
-							lu2 = observeN "lu2" $ M.map (\x -> setm (setm x l2) ru) ul;
-							lu = observeN "lu" $ union lu1 lu2;-}
-					{-in-} ch rs ps et lu ru (i+(1::Int)) sv ii
+						ch rs ps et lu ru (i+(1::Int)) sv ii
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
