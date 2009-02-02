@@ -1,11 +1,10 @@
 
-module SPL.Check3 (P (..), check0, check, check1, check2, res) where
+module SPL.Check3 (P (..), check, check_with_rename, res) where
 
 import System.IO.Unsafe
 import Data.Map as M hiding (filter, union)
 
 import SPL.Types
-import SPL.Top
 import qualified SPL.Parser
 import SPL.Compiler hiding (res)
 import Debug.Trace
@@ -132,7 +131,7 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 		str <- readFile f
 		return $ case SPL.Parser.parse str of
 			SPL.Parser.P _ i p ->
-				check0 $ compile p
+				check (compile p) et sv
 			SPL.Parser.N i -> N i "check load error"
 
 check (CDebug ii (CL a (K p))) et sv =
@@ -354,10 +353,6 @@ rename_tu (TU n) (m, nn) =
 		Nothing -> ((M.insert n (head nn) m, tail nn), TU $ head nn)
 rename_tu o d = (d, o)
 
-check0 o = check_with_rename o SPL.Top.get_types False
-check1 o e = check_with_rename o e True
-check2 o = check_with_rename o SPL.Top.get_types True
-
 check_with_rename o e sv =
 	case check o e sv of
 		P (rm, r) ->
@@ -366,14 +361,7 @@ check_with_rename o e sv =
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))
-res2 = check1 (CL (CL (CL (CVal "flipped") (S ["flipped"])) (K [CL (CL (CVal "f") (K [CVal "y",CVal "x"])) (S ["x","y"])])) (S ["f"]))
-	SPL.Top.get_types 
 
-res3 = check (CDebug 0 (CL (CDebug 1 (CL (CDebug 1 (CL (CDebug 1 (CVal "flipped")) (K [CDebug 10 (CL (CDebug 10 (CL (CDebug 10 (CVal "flip")) (K [CDebug 15 (CVal "sum")]))) (K [CDebug 20 (CNum 3),CDebug 22 (CNum 2)]))]))) (S ["flipped","flip"]))) (K [CDebug 33 (CL (CDebug 35 (CL (CDebug 35 (CVal "sum")) (K [CDebug 39 (CVal "x"),CDebug 41 (CNum 5)]))) (S ["x"])),CDebug 50 (CL (CDebug 50 (CL (CDebug 52 (CL (CDebug 52 (CL (CDebug 52 (CVal "debug")) (K [CDebug 58 (CVal "flipped")]))) (S ["flipped"]))) (K [CDebug 75 (CL (CDebug 79 (CL (CDebug 79 (CVal "f")) (K [CDebug 81 (CVal "y"),CDebug 83 (CVal "x")]))) (S ["x","y"]))]))) (S ["f"]))])))
-	SPL.Top.get_types True
-
-res = check1 (CL (CL (CVal "if") (K [CBool True,CL (CL (CVal "r") (K [CNum 1])) L,CL (CL (CVal "r") (K [CNum 2])) L])) (S ["r"]))
-	SPL.Top.get_types
-
+res = "res"
 
 

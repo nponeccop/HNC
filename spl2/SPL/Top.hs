@@ -7,8 +7,13 @@ import SPL.Parser
 import SPL.Compiler
 import SPL.Types
 import SPL.Code
+import SPL.Check3
 
 data Fun = Fun C T
+
+check0 o = check_with_rename o SPL.Top.get_types False
+check1 o e = check_with_rename o e True
+check2 o = check_with_rename o SPL.Top.get_types True
 
 eval0 c =
 	eval c get_codes
@@ -116,6 +121,7 @@ base = M.fromList $
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
+	:("lib", do_load "lib.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -171,9 +177,13 @@ do_load (CStr f:[]) e =
     str <- readFile f
     return $ case SPL.Parser.parse str of
       SPL.Parser.P _ i p ->
-        eval (compile p) e
+				let c = compile p in
+					case check0 c of
+						SPL.Check3.P (ur, _)|M.null ur -> eval c e
+						SPL.Check3.P (ur, _) -> error "load error"
+						SPL.Check3.N i e -> error "load error"
       SPL.Parser.N i -> error "load error"
-	
+
 do_out (CStr s:[]) e =
 	unsafePerformIO $
 	do

@@ -5,8 +5,8 @@
 	)
 	iter:(r!n*i*p*
 		if (less i,sum n 1)
-			(#if (eq 0,mod n i) (#if (is_prime i) (#_f (div n i) (sum i 1) i)#_f n (sum i 1) p)#_f n (sum i 1) p)
-			#p
+		(#if (eq 0,mod n i) (#if (is_prime i) (#_f (div n i) (sum i 1) i)#_f n (sum i 1) p)#_f n (sum i 1) p)
+		#p
 	)
 )
 
