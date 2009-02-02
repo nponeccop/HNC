@@ -121,7 +121,7 @@ base = M.fromList $
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
-	:("lib", do_load "lib.spl")
+--	:("lib", do_load "lib.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
