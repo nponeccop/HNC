@@ -9,7 +9,7 @@ import SPL.Types
 import SPL.Code
 import SPL.Check3
 
-data Fun = Fun C T
+data Fun = Fun C T | Lib [Char]
 
 check0 o = check_with_rename o SPL.Top.get_types False
 check1 o e = check_with_rename o e True
@@ -121,14 +121,21 @@ base = M.fromList $
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
---	:("lib", do_load "lib.spl")
+	:("lib", Lib "spllib/testlib.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
 put_name n o = o
 
 get_code n (Fun c _) = put_name n c
+get_code n (Lib f) = do_load (CStr f:[]) get_codes
 get_type (Fun _ t) = t
+get_type (Lib f) =
+	case check0 $ get_code "" (Lib f) of
+		SPL.Check3.P (ur, t)|M.null ur -> t
+		SPL.Check3.P (ur, _) -> error "get_type"
+		SPL.Check3.N i e -> error "get_type"
+		
 
 get_codes = M.mapWithKey get_code base
 get_types = M.map get_type base
