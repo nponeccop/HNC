@@ -13,7 +13,7 @@ data T =
 	| TL
 	| TUL [T]
 	| TDebug T
-	deriving (Eq, Show)
+	deriving (Eq, Show, Read)
 
 -- code
 data InFun =

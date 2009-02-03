@@ -239,6 +239,9 @@ check (CL a R) et sv =
 check (CDebug _ c) et sv =
 	check c et sv
 
+check (CInFun _ (InFun n f)) et sv =
+	P (M.empty, ((read n)::SPL.Types.T))
+
 check o et sv =
 	error ("check o: "++show o)
 

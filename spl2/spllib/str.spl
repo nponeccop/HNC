@@ -1,0 +1,3 @@
+{
+	concat:ffi 'TT [T"string",T"string",T"string"]' 'str_concat'
+}

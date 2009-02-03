@@ -8,8 +8,13 @@ import SPL.Compiler
 import SPL.Types
 import SPL.Code
 import SPL.Check3
+import qualified SPL.Lib.Str
+import Debug.Trace
 
 data Fun = Fun C T | Lib [Char]
+
+observe s v = trace ("{"++s++":"++show v++"}") v
+observeN s v = v
 
 check0 o = check_with_rename o SPL.Top.get_types False
 check1 o e = check_with_rename o e True
@@ -121,7 +126,7 @@ base = M.fromList $
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
-	:("lib", Lib "spllib/testlib.spl")
+	:("str", Lib "spllib/str.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -184,12 +189,12 @@ do_load (CStr f:[]) e =
     str <- readFile f
     return $ case SPL.Parser.parse str of
       SPL.Parser.P _ i p ->
-				let c = compile p in
+				let c = ffi_apply $ compile p in
 					case check0 c of
 						SPL.Check3.P (ur, _)|M.null ur -> eval c e
-						SPL.Check3.P (ur, _) -> error "load error"
-						SPL.Check3.N i e -> error "load error"
-      SPL.Parser.N i -> error "load error"
+						SPL.Check3.P (ur, _) -> error "load error1"
+						SPL.Check3.N i e -> error ("load error: "++e)
+      SPL.Parser.N i -> error "load error3"
 
 do_out (CStr s:[]) e =
 	unsafePerformIO $
@@ -222,6 +227,22 @@ do_if (CBool True:t:_:[]) e = eval (CL t (K [CVal "go"])) e
 do_if (CBool False:_:el:[]) e = eval (CL el (K [CVal "go"])) e
 do_if o e = error $ "if: "++show o
 
+ffi_apply (CDebug _ c) = ffi_apply c -- it is partly like r_d from Compile mod
+ffi_apply (CStruct m) = CStruct $ M.map ffi_apply m
 
-
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "str_concat")])) =
+	CL (CInFun 2 (InFun t SPL.Lib.Str.do_concat)) (K [])
+ffi_apply (CL c (K p)) =
+	CL (ffi_apply c) (K (Prelude.map ffi_apply p))
+ffi_apply (CL c (S a)) =
+	CL (ffi_apply c) (S a)
+ffi_apply (CL c (W a)) =
+	CL (ffi_apply c) (W (Prelude.map (\(a,b) -> (a, ffi_apply b)) a))
+ffi_apply (CL c (D n)) =
+	CL (ffi_apply c) (D n)
+ffi_apply (CL c R) =
+	CL (ffi_apply c) R
+ffi_apply (CL c L) =
+	CL (ffi_apply c) L
+ffi_apply o = o
 
