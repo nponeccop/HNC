@@ -9,6 +9,7 @@ import SPL.Types
 import SPL.Code
 import SPL.Check3
 import qualified SPL.Lib.Str
+import qualified SPL.Lib.Bignum
 import Debug.Trace
 
 data Fun = Fun C T | Lib [Char]
@@ -127,6 +128,7 @@ base = M.fromList $
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
 	:("str", Lib "spllib/str.spl")
+	:("bn", Lib "spllib/bn.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])
@@ -232,6 +234,12 @@ ffi_apply (CStruct m) = CStruct $ M.map ffi_apply m
 
 ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "str_concat")])) =
 	CL (CInFun 2 (InFun t SPL.Lib.Str.do_concat)) (K [])
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_bignum_of_int")])) =
+	CL (CInFun 1 (InFun t SPL.Lib.Bignum.do_bignum_of_int)) (K [])
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_sum")])) =
+	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_sum)) (K [])
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr o)])) =
+	error ("ffi: "++o++" not defined in top")
 ffi_apply (CL c (K p)) =
 	CL (ffi_apply c) (K (Prelude.map ffi_apply p))
 ffi_apply (CL c (S a)) =

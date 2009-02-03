@@ -45,6 +45,7 @@ data C =
 	| CPair [C]
 	| CDebug Int C
 	| CStruct (Map [Char] C)
+	| CF Integer
 	deriving (Eq, Show)
 
 

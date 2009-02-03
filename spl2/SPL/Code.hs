@@ -6,6 +6,7 @@ import SPL.Types
 
 -- eval
 
+eval a@(CF n) e = a
 eval a@(CNum n) e = a
 eval a@(CStr s) e = a
 eval a@(CBool n) e = a
