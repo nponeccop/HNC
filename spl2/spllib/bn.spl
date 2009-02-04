@@ -1,0 +1,10 @@
+{
+	int:ffi 'TT[T"num",T"bignum"]' 'bn_bignum_of_int'
+	str:ffi 'TT[T"string",T"bignum"]' 'bn_bignum_of_str'
+	sum:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_sum'
+	div:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_div'
+	mod:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_mod'
+	zero:int 0
+	eq:ffi 'TT[T"bignum",T"bignum",T"boolean"]' 'bn_eq'
+	lt:ffi 'TT[T"bignum",T"bignum",T"boolean"]' 'bn_lt'
+}

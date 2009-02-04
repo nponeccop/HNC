@@ -232,18 +232,17 @@ do_if o e = error $ "if: "++show o
 ffi_apply (CDebug _ c) = ffi_apply c -- it is partly like r_d from Compile mod
 ffi_apply (CStruct m) = CStruct $ M.map ffi_apply m
 
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "str_concat")])) =
-	CL (CInFun 2 (InFun t SPL.Lib.Str.do_concat)) (K [])
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_bignum_of_int")])) =
-	CL (CInFun 1 (InFun t SPL.Lib.Bignum.do_bignum_of_int)) (K [])
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_sum")])) =
-	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_sum)) (K [])
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_div")])) =
-	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_div)) (K [])
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_mod")])) =
-	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_mod)) (K [])
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr o)])) =
-	error ("ffi: "++o++" not defined in top")
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr ffn)])) =
+	case M.lookup ffn lib of
+		Just f ->
+			let t2 = read t::SPL.Types.T in
+				case t2 of
+					TT l -> CL (CInFun ((-) (length l) 1) (InFun t f)) (K [])
+					o -> error "ffi_apply: type"
+		Nothing -> error ("ffi: "++ffn++" did not find in lib")
+	where
+		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
+
 ffi_apply (CL c (K p)) =
 	CL (ffi_apply c) (K (Prelude.map ffi_apply p))
 ffi_apply (CL c (S a)) =
