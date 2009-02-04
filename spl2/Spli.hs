@@ -45,11 +45,26 @@ help2 =
 title =
 	"SPL r"++revision++"\n"++(take 0 $ repeat ' ')++"\\h - help"
 
+get_line ('\r':'\n':cs) s i il l|i>0 = get_line cs "" (i-2) 0 (l+1)
+get_line ('\r':'\n':cs) s i il l = (l, il, s)
+get_line ('\n':'\r':cs) s i il l|i>0 = get_line cs "" (i-2) 0 (l+1)
+get_line ('\n':'\r':cs) s i il l = (l, il, s)
+get_line ('\r':cs) s i il l|i>0 = get_line cs "" (i-1) 0 (l+1)
+get_line ('\r':cs) s i il l = (l, il, s)
+get_line ('\n':cs) s i il l|i>0 = get_line cs "" (i-1) 0 (l+1)
+get_line ('\n':cs) s i il l = (l, il, s)
+get_line ('\t':cs) s i il l|i>0 = get_line cs (s++"    ") (i-1) (il+4) l
+get_line (c:cs) s i il l|i>0 = get_line cs (s++[c]) (i-1) (il+1) l
+get_line (c:cs) s i il l = get_line cs (s++[c]) (i-1) (il+1) l
+get_line [] s i il l = (l, il, s)
+
 exec_file f = do
 	s <- readFile f
 	case step s of
 		SPL.Interpretator.P (t, r) -> putStrLn r
-		SPL.Interpretator.N (i, r) -> putStrLn (r++"\nchar# "++show i)
+		SPL.Interpretator.N (i, r) ->
+			let (line, il, err_line) = get_line s "" i 0 1 in
+				putStrLn (r++"\nline# "++show line++"  char# "++show i++"\n"++err_line++"\n"++(take il $ repeat ' ')++"^ "++r)
 
 tab i s =
 	(take i (repeat ' '))++"  ^"++s
