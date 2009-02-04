@@ -89,6 +89,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 		N i e -> N i e
 
 check::C -> Map [Char] T -> Bool -> P
+--check (CF n) et _ = P (M.empty, T "-z_")
 check (CNum n) et _ = P (M.empty, T "num")
 check (CBool n) et _ = P (M.empty, T "boolean")
 check (CStr n) et _ = P (M.empty, T "string")

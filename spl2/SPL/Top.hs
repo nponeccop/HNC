@@ -193,7 +193,7 @@ do_load (CStr f:[]) e =
       SPL.Parser.P _ i p ->
 				let c = ffi_apply $ compile p in
 					case check0 c of
-						SPL.Check3.P (ur, _)|M.null ur -> eval c e
+						SPL.Check3.P (ur, _)|M.null ur -> {-eval -}c{- e-}
 						SPL.Check3.P (ur, _) -> error "load error1"
 						SPL.Check3.N i e -> error ("load error: "++e)
       SPL.Parser.N i -> error "load error3"
@@ -238,6 +238,10 @@ ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_
 	CL (CInFun 1 (InFun t SPL.Lib.Bignum.do_bignum_of_int)) (K [])
 ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_sum")])) =
 	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_sum)) (K [])
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_div")])) =
+	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_div)) (K [])
+ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr "bn_mod")])) =
+	CL (CInFun 2 (InFun t SPL.Lib.Bignum.do_mod)) (K [])
 ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr o)])) =
 	error ("ffi: "++o++" not defined in top")
 ffi_apply (CL c (K p)) =
