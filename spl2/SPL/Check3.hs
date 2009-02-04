@@ -210,11 +210,14 @@ check (CL a (W ((n, p):ws))) et sv =
 	check (CL (CL (CL a (W ws)) (S [n])) (K [p])) et sv
 
 check (CL a (D n)) et sv =
+	check (CDebug (-1) (CL a (D n))) et sv
+
+check (CDebug i (CL a (D n))) et sv =
 	case check a et sv of
 		P (_, TS m) ->
 			case M.lookup n m of
 				Just a -> P (M.empty, a)
-				Nothing -> error ("struct100:"++show m)
+				Nothing -> N i ("field did not find: "++n)
 		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
 		P (_, TU n2) -> P (M.empty, TU n)
 		N i o -> N i o
