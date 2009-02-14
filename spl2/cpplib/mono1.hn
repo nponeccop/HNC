@@ -1,0 +1,4 @@
+monofunc xx = {
+	divisable x y = eq 0 (mod x y)
+	divisable xx 7
+}

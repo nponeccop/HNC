@@ -54,6 +54,8 @@ unit-test poly_size : poly_size.cpp hn-cpplib ;
 
 unit-test euler1 : euler1.hn hn-cpplib ;
 
+unit-test euler5 : euler5.hn hn-cpplib ;
+
 unit-test euler6 : euler6.hn hn-cpplib ;
 
 unit-test name_clash1w : name_clash1w.hn hn-cpplib ;
