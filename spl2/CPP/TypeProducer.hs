@@ -25,6 +25,8 @@ cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType)
 
 cppType (TU x) = CppTypePrimitive x
 
+-- cppType (TDebug x) = cppType x
+
 cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
 
 uncurryFunctionType [argType] [] = [argType]

@@ -181,7 +181,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case sv of
-						True -> M.map (\x -> TDebug $ untv p_n x) ur
+						True -> M.map (\x -> untv p_n x) ur
 						False -> M.map (untv p_n) $ M.delete p_n ur
 					in
 					observeN ("ok "++p++"|"++show a) $ P (observeN "ur2" ur2, untv p_n w)
@@ -192,7 +192,7 @@ check (CL a (S (p:ps))) et sv =
 						b -> TT [TU p_n, b]
 					in
 					let ur2 = case sv of
-						True -> M.insert p_n (TDebug $ TU p_n) $ M.map (untv p_n) ur
+						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
 					observeN ("no "++p) $ P (ur2, w) -- rm ?
