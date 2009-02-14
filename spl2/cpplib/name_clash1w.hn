@@ -1,0 +1,5 @@
+hnMain = {
+	y x = incr x
+	f a = incr a
+	print (sum (f 5) (y 6))
+}
