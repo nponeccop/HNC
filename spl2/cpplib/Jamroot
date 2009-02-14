@@ -52,6 +52,9 @@ unit-test locals7 : locals7.hn hn-cpplib ;
 
 unit-test poly_size : poly_size.cpp hn-cpplib ;
 
+unit-test euler1 : euler1.hn hn-cpplib ;
+
+
 explicit
 	locals1	   # less and filter functions are not implemented yet
 	locals5	   # static function is not detected

@@ -97,11 +97,32 @@ namespace ff
 	A natrec(F plus, A unit, int start)
 	{
 		A res = unit;
-		for (int i = 0; i < start ; i++)
+		for (int i = 0; i <= start ; i++)
 		{
 			res = plus(i, res);
 		}
 		return res;
+	}
+
+	inline bool eq(int a, int b)
+	{
+		return a == b;
+	}
+	
+	inline int mod(int a, int b)
+	{
+		return a % b;
+	}
+
+	inline bool _or(int a, int b)
+	{
+		return a || b;
+	}
+
+	template <typename T>
+	T _if(bool cond, T t, T f)
+	{
+		return cond ? t : f	;
 	}
 
 };

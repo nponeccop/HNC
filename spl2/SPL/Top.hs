@@ -82,6 +82,9 @@ base = M.fromList $
 	:("if", Fun
 		(CL (CInFun 3 (InFun "" do_if)) (K []))
 		(TT [T "boolean",TT [TL, TU "a"], TT [TL, TU "a"], TU "a"]))
+	:("_if", Fun
+		(CL (CInFun 3 (InFun "" do_if)) (K []))
+		(TT [T "boolean",TU "a", TU "a", TU "a"]))
 	:("foldr", Fun
 		(CL (CInFun 3 (InFun "" do_foldr)) (K []))
 		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))
@@ -124,6 +127,10 @@ base = M.fromList $
 	:("or", Fun
 		(CL (CInFun 2 (InFun "" do_or)) (K []))
 		(TT [T "boolean", T "boolean", T "boolean"]))
+	:("_or", Fun
+		(CL (CInFun 2 (InFun "" do_or)) (K []))
+		(TT [T "boolean", T "boolean", T "boolean"]))
+
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
 		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
