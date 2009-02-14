@@ -54,6 +54,7 @@ unit-test poly_size : poly_size.cpp hn-cpplib ;
 
 unit-test euler1 : euler1.hn hn-cpplib ;
 
+unit-test euler6 : euler6.hn hn-cpplib ;
 
 explicit
 	locals1	   # less and filter functions are not implemented yet

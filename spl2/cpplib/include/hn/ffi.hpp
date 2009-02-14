@@ -119,6 +119,16 @@ namespace ff
 		return a || b;
 	}
 
+	inline int mul(int a, int b)
+	{
+		return a * b;
+	}
+
+	inline int sub(int a, int b)
+	{
+		return a - b;
+	}
+
 	template <typename T>
 	T _if(bool cond, T t, T f)
 	{

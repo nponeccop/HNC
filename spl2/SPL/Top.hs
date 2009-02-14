@@ -28,6 +28,10 @@ base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
 		(TT [T "num", T "num", T "num"]))
+	:("sub", Fun
+		(CL (CInFun 2 (InFun "" do_sub)) (K []))
+		(TT [T "num", T "num", T "num"]))
+	
 	:("eq", Fun
 		(CL (CInFun 2 (InFun "" do_eq)) (K []))
 		(TT [T "num", T "num", T "boolean"]))
@@ -118,6 +122,9 @@ base = M.fromList $
 	:("to", Fun
 		(CL (CInFun 1 (InFun "" do_to)) (K []))
 		(TT [T "num", TD "list" [T "num"]]))
+	:("mul", Fun
+		(CL (CInFun 2 (InFun "" do_mul)) (K []))
+		(TT [T "num", T "num", T "num"]))	
 	:("mod", Fun
 		(CL (CInFun 2 (InFun "" do_mod)) (K []))
 		(TT [T "num", T "num", T "num"]))
@@ -155,8 +162,9 @@ get_codes = M.mapWithKey get_code base
 get_types = M.map get_type base
 
 -- native functions
-do_sum (CNum a:CNum b:[]) e = CNum (a+b)
-do_sum o e = error ("do_sum"++show o)
+do_sum = binary_int_op (+)
+
+do_sub = binary_int_op (-)
 
 do_less (CNum a:CNum b:[]) e = CBool (a < b)
 do_eq (CNum a:CNum b:[]) e = CBool (a == b)
@@ -216,12 +224,14 @@ do_str_concat (CStr s1:CStr s2:[]) e =
 
 do_to (CNum n:[]) e =
 	CList $ Prelude.map CNum $ take n $ enumFrom 0
+	
+binary_int_op op (CNum n1:CNum n2:[]) _ = CNum $ op n1 n2 
 
-do_mod (CNum n1:CNum n2:[]) e =
-	CNum $ mod n1 n2
+do_mul = binary_int_op (*)
 
-do_div (CNum n1:CNum n2:[]) e =
-	CNum $ div n1 n2
+do_mod = binary_int_op mod
+
+do_div = binary_int_op div
 
 do_or (CBool n1:CBool n2:[]) e =
 	CBool $ (||) n1 n2
