@@ -1,8 +1,9 @@
 hnMain = {
-	f x total = sum total (mul x x)
-	g x total = sum total x
-	natr f = natrec f 0 100
-	sum_sq = natr f
-	total = natr g
-	print (sub (mul total total) sum_sq)
+	natr f = {
+		g x total = sum total (f x)
+		natrec g 0 100
+	}
+	id x = sum x 0
+	sqr x = mul x x
+	print (sub (sqr (natr id)) (natr sqr))
 }
