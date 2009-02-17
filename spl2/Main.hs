@@ -34,7 +34,7 @@ tdi rt = DefinitionInherited {
     
 testCodeGen = rt (dsCppDef . z) where
 	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
-		P (fv, x) = check1 (convertDef self) SPL.Top.get_types
+		P (fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
 		types = M.insert name x fv 
 
 test2 = rt (getDefinitionFreeVars) 
@@ -91,7 +91,7 @@ defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 	,	("plus1", "Int -> Int" )
 	]
 
-testCheck3 = mapM (print . check0 . convertExpr) [
+testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 		Constant (ConstInt 123),
 		Atom "a",
 		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2],
@@ -110,7 +110,7 @@ main = do
 
 	testCheck3
 	rt convertDef
-	rt $ \x -> check0 (convertDef x)
+	rt $ \x -> SPL.Top.check0 (convertDef x)
 --	test2
 	print $ cppType $ T "num"
 	
