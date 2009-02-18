@@ -274,3 +274,6 @@ ffi_apply (CL c L) =
 	CL (ffi_apply c) L
 ffi_apply o = o
 
+res = check2 (CL (CL (CNum 1) (W [("foo",CNum 2)])) (W [("foo",CBool True)]))
+res2 = check2 (CL (CNum 1) (S ["z"]))
+res3 = check2 (CL (CL (CVal "foo") (W [("foo",CL (CBool True) (W [("foo",CL (CVal "less") (K [CNum 2,CNum 2]))]))])) (W [("foo",CL (CVal "less") (K [CNum 2,CL (CVal "sum") (K [CNum 2,CNum 2])]))]))

@@ -71,9 +71,9 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 		P (rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) "" i in
 			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
-			case SPL.Check3.compare (observeN ("cmp1") (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
+			case SPL.Check3.compare (observeN "cmp1" (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
-					let rr = union_r r2 $ union_r rm2 uv in
+					let rr = union_r r2 $ union_r rm2 (observeN "uv" uv) in
 					let ll = union l2 ul in
 					let rrr = setmm rr rr in
 					let lll = setmm ll ll in
@@ -173,11 +173,12 @@ check (CL a (S [])) et sv =
 check (CL a (S (p:ps))) et sv =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
 		P (ur, r) ->
-			case M.lookup (p_n) ur of
+			case M.lookup (p_n) (observeN "ur" ur) of
 				Just v ->
 					let w = case (v, r) of
 						(a, TT b) -> TT (a:b)
 						(a, TV n) -> TT [a, TU n]
+						((TDebug a), b) -> TT [TU p_n, b]
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case sv of
@@ -275,6 +276,13 @@ compare (TT (l1:l1s)) (TT (l2:l2s)) =
 	where
 		(l, r, b) = SPL.Check3.compare l1 l2
 		(ll, rr, bb) = SPL.Check3.compare (TT l1s) (TT l2s)
+compare (TUL []) b =
+	(M.empty, M.empty, False)
+compare (TUL (l1:l1s)) l2 =
+	(union l ll, union_r r rr, b || bb)
+	where
+		(l, r, b) = SPL.Check3.compare l1 l2
+		(ll, rr, bb) = SPL.Check3.compare (TT l1s) l2
 compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)
@@ -295,6 +303,8 @@ compare (TS m1) (TS m2) =
 
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
+compare (TDebug a) b = SPL.Check3.compare a b
+compare a (TDebug b) = SPL.Check3.compare a b
 compare t1 t2 = (M.empty, M.empty, False)
 
 setml l u = Prelude.map (\x -> setm x u) l
@@ -303,6 +313,7 @@ setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
 setm (TS m) u = TS $ M.map (\t -> setm t u) m
 setm (TU n) u =
 	case M.lookup n u of
+		Just (TDebug a) -> TU n
 		Just a -> a
 		Nothing -> TU n
 setm (TDebug n) u = TDebug $ setm n u
@@ -314,6 +325,7 @@ setmv (TT tt) u = TT (Prelude.map (\t -> setmv t u) tt)
 setmv (TS m) u = TS $ M.map (\t -> setmv t u) m
 setmv (TV n) u =
 	case M.lookup n u of
+		Just (TDebug a) -> TV n
 		Just a -> a
 		Nothing -> TV n
 setmv (TDebug n) u = TDebug $ setmv n u
