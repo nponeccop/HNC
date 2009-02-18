@@ -181,7 +181,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case sv of
-						True -> M.map (\x -> untv p_n x) ur
+						True -> M.map (\x -> TDebug $ untv p_n x) ur
 						False -> M.map (untv p_n) $ M.delete p_n ur
 					in
 					observeN ("ok "++p++"|"++show a) $ P (observeN "ur2" ur2, untv p_n w)
@@ -192,7 +192,7 @@ check (CL a (S (p:ps))) et sv =
 						b -> TT [TU p_n, b]
 					in
 					let ur2 = case sv of
-						True -> M.insert p_n (TU p_n) $ M.map (untv p_n) ur
+						True -> M.insert p_n (TDebug $ TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
 					observeN ("no "++p) $ P (ur2, w) -- rm ?
@@ -291,7 +291,6 @@ compare (TS m1) (TS m2) =
 			((Just a), Just b) -> SPL.Check3.compare a b
 			((Just a), Nothing) -> (M.empty, M.empty, False)
 	) $ M.keys m1
-	
 
 
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
@@ -306,6 +305,7 @@ setm (TU n) u =
 	case M.lookup n u of
 		Just a -> a
 		Nothing -> TU n
+setm (TDebug n) u = TDebug $ setm n u
 setm o u = o
 
 setmvl l u = Prelude.map (\x -> setmv x u) l
@@ -316,6 +316,7 @@ setmv (TV n) u =
 	case M.lookup n u of
 		Just a -> a
 		Nothing -> TV n
+setmv (TDebug n) u = TDebug $ setmv n u
 setmv o u = o
 
 untv p (TD n tt) = TD n (Prelude.map (\t -> untv p t) tt)
@@ -323,23 +324,27 @@ untv p (TT tt) = TT (Prelude.map (\t -> untv p t) tt)
 untv p (TS tt) = TS $ M.map (\x -> untv p x) tt
 untv p (TV n)|p == n = TU n
 untv p (TV n) = TV n
+untv p (TDebug n) = TDebug $ untv p n
 untv p o = o
 untv_all (TD n tt) = TD n (Prelude.map (\t -> untv_all t) tt)
 untv_all (TT tt) = TT (Prelude.map (\t -> untv_all t) tt)
 untv_all (TS tt) = TS $ M.map (\x -> untv_all x) tt
 untv_all (TV n) = TU n
+untv_all (TDebug n) = TDebug $ untv_all n
 untv_all o = o
 
 change_tul tt p i = Prelude.map (\t -> change_tu t p i) tt
 change_tu (TT tt) p i = TT $ change_tul tt p i
 change_tu (TD n tt) p i = TD n $ change_tul tt p i
 change_tu (TU n) p i = TU (n++p++show i)
+change_tu (TDebug n) p i = TDebug $ change_tu n p i
 change_tu o p i = o
 
 change_tvl tt i = Prelude.map (\t -> change_tv t i) tt
 change_tv (TT tt) i = TT $ change_tvl tt i
 change_tv (TD n tt) i = TD n $ change_tvl tt i
 change_tv (TV n) i = TV (n++show i)
+change_tv (TDebug n) i = TDebug $ change_tv n i
 change_tv o i = o
 
 ren_tu t = rename_tu t (M.empty, Prelude.map (\x -> x:[]) $ ['a'..'z'])
