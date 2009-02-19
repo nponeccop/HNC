@@ -25,7 +25,9 @@ cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType)
 
 cppType (TU x) = CppTypePrimitive x
 
--- cppType (TDebug x) = cppType x
+cppType (TDebug x) = cppType x
+
+cppType (TUL x) = cppType $ head x
 
 cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
 

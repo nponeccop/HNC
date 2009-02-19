@@ -1,6 +1,6 @@
 hnMain = {
 	g x count = {
-		f x = _or (eq 0 (mod x 5)) (eq 0 (mod x 3))
+		f xx = _or (eq 0 (mod xx 5)) (eq 0 (mod xx 3))
 		_if (f x) (sum count x) count
 	}
 	print (natrec g 0 999)
