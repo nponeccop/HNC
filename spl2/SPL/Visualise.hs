@@ -8,11 +8,16 @@ showAsSource (CL l (K x)) = showAsSource l ++ " " ++ joinStr " " (map (paren isC
 showAsSource (CL l (S x)) = joinStr "*" x ++  "*" ++ showAsSource l
 
 showAsSource (CL l (W x)) = (paren (const False) l) ++ "*" ++ joinStr "*" (map showWhere x) where
-	showWhere (x, y) = x ++ ":" ++ paren isLambda y
+	showWhere (x, y) = x ++ ":" ++ paren (\x -> isLambda x || isWhere x) y
 
 showAsSource (CVal x) = x
 
 showAsSource (CNum x) = show x
+
+showAsSource (CBool True) = "1b"
+
+showAsSource (CBool False) = "0b"
+
 
 showAsSource x = ">>>>>>>>>>" ++ show x ++ "<<<<<<<<<<<<<"
 
@@ -24,6 +29,9 @@ isLambda _ = False
 
 isApp (CL l (K x)) = True
 isApp _ = False
+
+isWhere (CL _ (W _)) = True
+isWhere _ = False
 
 isComposed (CL _ _) = True 
 isComposed _  = False

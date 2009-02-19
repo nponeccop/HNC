@@ -4,6 +4,8 @@ import Test.QuickCheck
 import SPL.Types
 import SPL.Check3
 import SPL.Top
+
+import SPL.Visualise
 	
 instance Arbitrary SPL.Types.C where
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
@@ -37,8 +39,16 @@ instance Arbitrary SPL.Types.C where
 			a1 <- arg1 arg1sz
 			a2 <- arg2 (sz - arg1sz)
 			return $ f a1 a2
-			
-prop_Foo xs = (length $ show xs) < 500 ==> case SPL.Top.check2 xs of
+
+data Foo = Foo C
+
+instance Show Foo where
+	show (Foo x) = show x ++ "\n\n" ++ showAsSource x
+
+instance Arbitrary Foo where
+	arbitrary = arbitrary >>= return . Foo 
+		
+prop_Foo (Foo xs) = (length $ show xs) < 500 ==> case SPL.Top.check2 xs of
 	P _ -> True
 	_ -> False
 
