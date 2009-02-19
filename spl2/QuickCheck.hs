@@ -65,12 +65,34 @@ ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 
 fullParse t = case (parse t) of SPL.Parser.P _ _ x -> remove_cdebug $ compile x
 
-tests = TestList $ map ttt [
+tests = map ttt [
 		"(less (incr 2*foo:2) 2*foo:less (incr 2*foo:2) 2)*foo:1b"
 	,	"((incr 2*foo:2)*foo:(incr 2*foo:2))*foo:1b"
 	]
 
+
+ttt2 x = TestCase $ assertEqual (x ++ "\n" ++ show fp) x $ showAsSource fp where
+	fp = fullParse x
+
+tests2 = map ttt2 [
+		"sum"
+	,	"sum a"
+	,	"sum a b"
+	,	"sum a 2"
+	,	"z*z"
+	,	"x y*y:5"
+	,	"x y*y:5*x:incr"
+	,	"x y*y:5*x:(z*incr z)"
+	,	"z*incr z"
+	,	"a*b*sum a b"
+	,	"sum a (incr b)"
+	,	"a*b*sum a (incr b)"
+	,	"foo x*foo:2"
+	,	"(foo bar*foo:incr)*bar:incr"
+	]
+
+
 main = do
-	runTestTT tests
+	runTestTT $ TestList $ tests2 ++ tests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.check (defaultConfig { configMaxTest = 1500}) prop_Foo
