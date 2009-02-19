@@ -1,13 +1,18 @@
 module Main where
 
 import Test.QuickCheck
+import Test.HUnit
+
 import SPL.Types
 import SPL.Check3
+import SPL.Parser
+import SPL.Compiler
 import SPL.Top
 
 import SPL.Visualise
 	
 instance Arbitrary SPL.Types.C where
+	coarbitrary = error "foo"
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
 		-- произвольные выражения типа CNum
 		arb_cnum l 0 = oneof $ (return $ CNum 2) : l
@@ -46,12 +51,25 @@ instance Show Foo where
 	show (Foo x) = show x ++ "\n\n" ++ showAsSource x
 
 instance Arbitrary Foo where
+	coarbitrary = error "bar"
 	arbitrary = arbitrary >>= return . Foo 
 
-check xs = case SPL.Top.check2 xs of
-	P _ -> True
+typeCheck xs = case SPL.Top.check2 xs of
+	SPL.Check3.P _ -> True
 	_ -> False
 		
-prop_Foo (Foo xs) = (length $ show xs) < 500 ==> check xs
+prop_Foo (Foo xs) = (length $ show xs) < 500 ==> typeCheck xs
 
-main = Test.QuickCheck.check (defaultConfig { configMaxTest = 500}) prop_Foo
+ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
+	fp = fullParse x
+
+fullParse t = case (parse t) of SPL.Parser.P _ _ x -> remove_cdebug $ compile x
+
+tests = TestList $ map ttt [
+		"(less (incr 2*foo:2) 2*foo:less (incr 2*foo:2) 2)*foo:1b"
+	]
+
+main = do
+	runTestTT tests
+	putStrLn "QuickCheck :"
+	Test.QuickCheck.check (defaultConfig { configMaxTest = 500}) prop_Foo
