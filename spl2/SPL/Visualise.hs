@@ -7,7 +7,7 @@ showAsSource (CL l (K x)) = showAsSource l ++ " " ++ joinStr " " (map (paren isC
 
 showAsSource (CL l (S x)) = joinStr "*" x ++  "*" ++ showAsSource l
 
-showAsSource (CL l (W x)) = (paren (const False) l) ++ "*" ++ joinStr "*" (map showWhere x) where
+showAsSource (CL l (W x)) = (paren isWhere l) ++ "*" ++ joinStr "*" (map showWhere x) where
 	showWhere (x, y) = x ++ ":" ++ paren (\x -> isLambda x || isWhere x) y
 
 showAsSource (CVal x) = x

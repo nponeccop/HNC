@@ -26,6 +26,7 @@ tests = TestList $ map ttt [
 	,	"sum a (incr b)"
 	,	"a*b*sum a (incr b)"
 	,	"foo x*foo:2"
+	,	"(foo bar*foo:incr)*bar:incr"
 	]
 
 main = runTestTT tests
