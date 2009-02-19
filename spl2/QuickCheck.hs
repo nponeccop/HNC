@@ -34,7 +34,7 @@ instance Arbitrary SPL.Types.C where
 			return $ CL y $ W [("foo", z)]
 		arb_fooBool sz = do
 			x <- return $ CVal "foo"
-			y <- arb_cbool [return $ CVal "foo"] sz
+			y <- arb_cbool [return $ CVal "foo"] (sz + 1)
 			z <- arb_cbool [] sz
 			return $ CL y $ W [("foo", z)]
 
@@ -67,9 +67,10 @@ fullParse t = case (parse t) of SPL.Parser.P _ _ x -> remove_cdebug $ compile x
 
 tests = TestList $ map ttt [
 		"(less (incr 2*foo:2) 2*foo:less (incr 2*foo:2) 2)*foo:1b"
+	,	"((incr 2*foo:2)*foo:(incr 2*foo:2))*foo:1b"
 	]
 
 main = do
 	runTestTT tests
 	putStrLn "QuickCheck :"
-	Test.QuickCheck.check (defaultConfig { configMaxTest = 500}) prop_Foo
+	Test.QuickCheck.check (defaultConfig { configMaxTest = 1500}) prop_Foo
