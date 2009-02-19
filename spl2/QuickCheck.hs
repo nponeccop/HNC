@@ -24,7 +24,7 @@ instance Arbitrary SPL.Types.C where
 			x <- return $ CVal "foo"
 			ysz <- choose (0, sz)
 			let zsz = sz - ysz
-			y <- arb_cnum [return $ CVal "foo"] ysz
+			y <- arb_cnum [return $ CVal "foo"] (ysz + 1)
 			z <- arb_cnum [] zsz
 			return $ CL y $ W [("foo", z)]
 		arb_fooBool sz = do
@@ -47,9 +47,11 @@ instance Show Foo where
 
 instance Arbitrary Foo where
 	arbitrary = arbitrary >>= return . Foo 
-		
-prop_Foo (Foo xs) = (length $ show xs) < 500 ==> case SPL.Top.check2 xs of
+
+check xs = case SPL.Top.check2 xs of
 	P _ -> True
 	_ -> False
+		
+prop_Foo (Foo xs) = (length $ show xs) < 500 ==> check xs
 
 main = Test.QuickCheck.check (defaultConfig { configMaxTest = 500}) prop_Foo
