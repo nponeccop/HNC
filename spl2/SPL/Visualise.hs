@@ -18,6 +18,7 @@ showAsSource (CBool True) = "1b"
 
 showAsSource (CBool False) = "0b"
 
+showAsSource (CStr x) = show x
 
 showAsSource x = ">>>>>>>>>>" ++ show x ++ "<<<<<<<<<<<<<"
 

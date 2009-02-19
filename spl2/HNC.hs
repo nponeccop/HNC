@@ -10,6 +10,7 @@ import Utils
 import CPP.Intermediate
 import SPL.Top
 import SPL.Check3
+import SPL.Visualise
 import System
 	
 tdi2 t types = DefinitionInherited {
@@ -33,7 +34,9 @@ compileFile t inFile
 typeCheck inFile = compile inFile f where
 	f self = check1 (convertDef self) SPL.Top.get_types
 
-compileToSpl inFile = compile inFile convertDef
+compileToSpl inFile = do
+	x <- compile inFile convertDef
+	return $ show x ++ "\n" ++ showAsSource x
 
 main = getArgs >>= f where
 	f [inFile, "--spl"] = compileToSpl inFile >>= print
