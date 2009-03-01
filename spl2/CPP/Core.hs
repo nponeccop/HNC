@@ -46,7 +46,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		ctx = getContext (wsMethods semWhere) inh defType (wsTemplateArgs semWhere) self
 
 		rt = diRootTypes inh 
-		defType = smartTrace $ uncondLookup name rt 
+		defType = smartTrace $ stripTD $ uncondLookup name rt 
 		exprOutputTypes = case inhType of
 			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
 			_ -> M.delete name rt

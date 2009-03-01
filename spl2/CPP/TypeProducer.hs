@@ -35,8 +35,12 @@ uncurryFunctionType [argType] [] = [argType]
 uncurryFunctionType argTypes [] = [TT argTypes]
 uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta 
 
-cppUncurryType (TT argTypes) args = cppType $ TT $ uncurryFunctionType argTypes args  
-cppUncurryType splType _ = cppType splType 
+cppUncurryType (TT argTypes) args = cppType $ TT $ uncurryFunctionType argTypes args
+cppUncurryType (TDebug x) y = cppUncurryType x y
+cppUncurryType splType _ = cppType splType
+
+stripTD (TDebug x) = stripTD x
+stripTD x = x  
 
 typePolyVars x = (case x of
 	TU v -> S.singleton v
