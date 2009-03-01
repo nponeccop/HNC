@@ -72,8 +72,6 @@ explicit
 	locals6	   # polymorphic by mistake
 	locals7	   # polymorphic by mistake
 	euler5     # polymorphic by mistake
-	test3      # function is not static
-	test_flip3 # function is not static
 	locals5	   # function is not static
 	locals2    # typechecking failure
 ;
