@@ -39,9 +39,9 @@ compileToSpl inFile = do
 	return $ show x ++ "\n" ++ showAsSource x
 
 main = getArgs >>= f where
-	f [inFile, "--spl"] = compileToSpl inFile >>= print
+	f [inFile, "--spl"] = compileToSpl inFile >>= putStr
 	f [inFile, "--trace-p"] = compileFile True inFile >>= putStr
 	f [inFile, "--types"] = typeCheck inFile >>= print
 	f [inFile, outFile] = compileFile False inFile >>= writeFile outFile
 	f [inFile] = compileFile False inFile >>= putStr
-	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --trace-p ]\n"
+	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --trace-p | --types ]\n"
