@@ -153,8 +153,8 @@ get_code n (Lib f) = do_load (CStr f:[]) get_codes
 get_type (Fun _ t) = t
 get_type (Lib f) =
 	case check0 $ get_code "" (Lib f) of
-		SPL.Check3.P (ur, t)|M.null ur -> t
-		SPL.Check3.P (ur, _) -> error "get_type"
+		SPL.Check3.P (_, ur, t)|M.null ur -> t
+		SPL.Check3.P (_, ur, _) -> error "get_type"
 		SPL.Check3.N i e -> error "get_type"
 		
 
@@ -208,8 +208,8 @@ do_load (CStr f:[]) e =
       SPL.Parser.P _ i p ->
 				let c = ffi_apply $ compile p in
 					case check0 c of
-						SPL.Check3.P (ur, _)|M.null ur -> {-eval -}c{- e-}
-						SPL.Check3.P (ur, _) -> error "load error1"
+						SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
+						SPL.Check3.P (_, ur, _) -> error "load error1"
 						SPL.Check3.N i e -> error ("load error: "++e)
       SPL.Parser.N i -> error "load error3"
 

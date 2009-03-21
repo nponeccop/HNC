@@ -2,7 +2,7 @@
 module SPL.Check3 (P (..), check, check_with_rename, res) where
 
 import System.IO.Unsafe
-import Data.Map as M hiding (filter, union)
+import qualified Data.Map as M
 
 import SPL.Types
 import qualified SPL.Parser
@@ -13,15 +13,15 @@ observeN a b = b
 observe s v = trace ("{"++s++":"++show v++"}") v
 --observe s v = v
 
-data P = P (Map [Char] T, T) | N Int [Char]
+data P = P ([Char], M.Map [Char] T, T) | N Int [Char]
 	deriving Show
 
 
-get_r (P (ur, r)) = r
+get_r (P (_, ur, r)) = r
 get_rl l = Prelude.map get_r l
 get_url [] =
 	Right []
-get_url ((P (ur, r)):rs) =
+get_url ((P (_, ur, r)):rs) =
 	case get_url rs of
 		Right o -> Right (ur:o)
 		Left o -> Left o
@@ -29,7 +29,9 @@ get_url ((N i o):rs) =
 	Left (N i o)
 
 union_r a b =
-	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
+	let a2 = M.filter (\a -> case a of TDebug _ -> False; _ -> True) a in
+	let b2 = M.filter (\a -> case a of TDebug _ -> False; _ -> True) b in
+	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a2 b2 in
 	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
@@ -63,12 +65,12 @@ ch [] [] et ul uv i sv ii =
 	N ii "too many parameters"
 ch (r:[]) [] et ul uv i sv ii =
 	let z = setmv (setm (observeN "r" r) (observeN "ul" ul)) $ observeN "uv" uv in
-	P (observeN "uv" $ M.map untv_all uv, z)
+	P ("", observeN "uv" $ M.map untv_all uv, z)
 ch r [] et ul uv i sv ii =
-	P (uv, setmv (setm (TT r) ul) uv)
+	P ("", uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv ii =
 	case observeN ("ch_p "++show r) $ check p1 et sv of
-		P (rm, r_p1) ->
+		P (_, rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) "" i in
 			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
 			case SPL.Check3.compare (observeN "cmp1" (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
@@ -88,23 +90,23 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 					N iii ("expected "++show (setm r ul)++", actual "++show r_p1)
 		N i e -> N i e
 
-check::C -> Map [Char] T -> Bool -> P
+check::C -> M.Map [Char] T -> Bool -> P
 --check (CF n) et _ = P (M.empty, T "-z_")
-check (CNum n) et _ = P (M.empty, T "num")
-check (CBool n) et _ = P (M.empty, T "boolean")
-check (CStr n) et _ = P (M.empty, T "string")
+check (CNum n) et _ = P ("", M.empty, T "num")
+check (CBool n) et _ = P ("", M.empty, T "boolean")
+check (CStr n) et _ = P ("", M.empty, T "string")
 check (CDebug i (CVal n)) et _ =
 	case M.lookup n et of
 		Just a ->
 			case a of
-				TV a -> P (M.empty, TV a)
-				o -> P (M.empty, o)
+				TV a -> P ("", M.empty, TV a)
+				o -> P ("", M.empty, o)
 		Nothing -> N i ("check cannot find "++show n)
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
 check (CStruct m) et sv =
-	P (M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
+	P ("", M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
 
 --check (CDot (CStruct m) n) et sv =
 --	case M.lookup n m of
@@ -137,23 +139,23 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 
 check (CDebug ii (CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
-		P (rm0, TT r) ->
+		P (_, rm0, TT r) ->
 			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii of
-				P (rm, r) -> P (observeN "rm" rm, observeN "r" r)
+				P (_, rm, r) -> P ("", observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
-		P (ur, TV n) ->
+		P (_, ur, TV n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P (union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
+						in P ("", union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
-		P (ur, TU n) ->
+		P (_, ur, TU n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P (M.map (\x -> norm $ setm x rm) ur, setm r rm)
+						in P ("", M.map (\x -> norm $ setm x rm) ur, setm r rm)
 					Left o -> o
 		N i e -> N i e
 	where
@@ -172,20 +174,20 @@ check (CL a (S [])) et sv =
 
 check (CL a (S (p:ps))) et sv =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
-		P (ur, r) ->
+		P ("", ur, r) ->
 			case M.lookup (p_n) (observeN "ur" ur) of
 				Just v ->
 					let w = case (v, r) of
+						((TDebug a), b) -> TT [TU p_n, b]
 						(a, TT b) -> TT (a:b)
 						(a, TV n) -> TT [a, TU n]
-						((TDebug a), b) -> TT [TU p_n, b]
 						(a, b) -> TT [a, b]
 					in
 					let ur2 = case sv of
 						True -> M.map (\x -> TDebug $ untv p_n x) ur
 						False -> M.map (untv p_n) $ M.delete p_n ur
 					in
-					observeN ("ok "++p++"|"++show a) $ P (observeN "ur2" ur2, untv p_n w)
+					observeN ("ok "++p++"|"++show a) $ P ("yes", observeN "ur2" ur2, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
@@ -196,7 +198,7 @@ check (CL a (S (p:ps))) et sv =
 						True -> M.insert p_n (TDebug $ TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
-					observeN ("no "++p) $ P (ur2, w) -- rm ?
+					observeN ("no "++p) $ P ("no", ur2, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -215,28 +217,28 @@ check (CL a (D n)) et sv =
 
 check (CDebug i (CL a (D n))) et sv =
 	case check a et sv of
-		P (_, TS m) ->
+		P ("", _, TS m) ->
 			case M.lookup n m of
-				Just a -> P (M.empty, a)
+				Just a -> P ("", M.empty, a)
 				Nothing -> N i ("field did not find: "++n)
-		P (_, TV n2) -> P (M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
-		P (_, TU n2) -> P (M.empty, TU n)
+		P (_, _, TV n2) -> P ("", M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
+		P (_, _, TU n2) -> P ("", M.empty, TU n)
 		N i o -> N i o
 
 check (CL a L) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
-		P (ur, r) ->
-			P (ur, TT [TL, r])
+		P (_, ur, r) ->
+			P ("", ur, TT [TL, r])
 		o -> o
 	
 check (CL a R) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
-		P (ur, r) ->
+		P (_, ur, r) ->
 			case check a (putp ["_f"] [r] et) sv of
-				P (ur2, r2) ->
+				P (_, ur2, r2) ->
 					case M.lookup "_f" ur of
-						Just v -> P (ur2, merge v r)
+						Just v -> P ("", ur2, merge v r)
 						Nothing -> error "_f"
 				o -> o
 		o -> o
@@ -245,17 +247,17 @@ check (CDebug _ c) et sv =
 	check c et sv
 
 check (CInFun _ (InFun n f)) et sv =
-	P (M.empty, ((read n)::SPL.Types.T))
+	P ("", M.empty, ((read n)::SPL.Types.T))
 
 check o et sv =
 	error ("check o: "++show o)
 
 ch_struct (TS m) [] et sv =
-	P (M.empty, TS m)
+	P ("", M.empty, TS m)
 
 ch_struct (TS m) ((n,p):ws) et sv =
 	case check p et sv of
-		P (_, r) ->
+		P (_, _, r) ->
 			ch_struct (TS $ M.insert n r m) ws (putp [n] [r] et) sv
 		N i o -> N i o
 
@@ -303,8 +305,8 @@ compare (TS m1) (TS m2) =
 
 compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
-compare (TDebug a) b = SPL.Check3.compare a b
-compare a (TDebug b) = SPL.Check3.compare a b
+compare (TDebug a) b = error ("d1:"++show a++"/"++show b) -- SPL.Check3.compare a b
+compare a (TDebug b) = error "d2" -- SPL.Check3.compare a b
 compare t1 t2 = (M.empty, M.empty, False)
 
 setml l u = Prelude.map (\x -> setm x u) l
@@ -379,9 +381,9 @@ rename_tu o d = (d, o)
 
 check_with_rename o e sv =
 	case check o e sv of
-		P (rm, r) ->
+		P (_, rm, r) ->
 			case ren_tu r of
-				(d, r) -> P (M.map (\x -> snd $ rename_tu x d) rm, r)
+				(d, r) -> P ("", M.map (\x -> snd $ rename_tu x d) rm, r)
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))
