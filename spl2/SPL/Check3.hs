@@ -61,16 +61,16 @@ get_ul n u =
 
 setmm a b = M.map (\x -> setm x b) a
 
-ch [] [] et ul uv i sv ii =
+ch [] [] et ul uv i sv ii ret =
 	N ii "too many parameters"
-ch (r:[]) [] et ul uv i sv ii =
+ch (r:[]) [] et ul uv i sv ii ret =
 	let z = setmv (setm (observeN "r" r) (observeN "ul" ul)) $ observeN "uv" uv in
-	P ("", observeN "uv" $ M.map untv_all uv, z)
-ch r [] et ul uv i sv ii =
-	P ("", uv, setmv (setm (TT r) ul) uv)
-ch (r:rs) (p1:ps) et ul uv i sv ii =
+	P (ret, observeN "uv" $ M.map untv_all uv, z)
+ch r [] et ul uv i sv ii ret =
+	P (ret, uv, setmv (setm (TT r) ul) uv)
+ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 	case observeN ("ch_p "++show r) $ check p1 et sv of
-		P (_, rm, r_p1) ->
+		P (ret2, rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" r_p1) "" i in
 			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
 			case SPL.Check3.compare (observeN "cmp1" (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
@@ -81,7 +81,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii
+						ch rs ps et lu ru (i+(1::Int)) sv ii (ret++"; set"++show lu)
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -139,23 +139,23 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 
 check (CDebug ii (CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
-		P (_, rm0, TT r) ->
-			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii of
-				P (_, rm, r) -> P ("", observeN "rm" rm, observeN "r" r)
+		P (ret, rm0, TT r) ->
+			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii ret of
+				P (ret, rm, r) -> P (ret, observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
-		P (_, ur, TV n) ->
+		P (ret, ur, TV n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P ("", union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
+						in P (ret, union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
-		P (_, ur, TU n) ->
+		P (ret, ur, TU n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P ("", M.map (\x -> norm $ setm x rm) ur, setm r rm)
+						in P (ret, M.map (\x -> norm $ setm x rm) ur, setm r rm)
 					Left o -> o
 		N i e -> N i e
 	where
@@ -174,7 +174,7 @@ check (CL a (S [])) et sv =
 
 check (CL a (S (p:ps))) et sv =
 	case check (CL a (S ps)) (putp [p] [TV p_n] et) sv of
-		P ("", ur, r) ->
+		P (ret, ur, r) ->
 			case M.lookup (p_n) (observeN "ur" ur) of
 				Just v ->
 					let w = case (v, r) of
@@ -198,7 +198,7 @@ check (CL a (S (p:ps))) et sv =
 						True -> M.insert p_n (TDebug $ TU p_n) $ M.map (untv p_n) ur
 						False -> M.map (untv p_n) ur
 					in
-					observeN ("no "++p) $ P ("no", ur2, w) -- rm ?
+					observeN ("no "++p) $ P ("(no:"++p_n++")", ur2, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -381,9 +381,9 @@ rename_tu o d = (d, o)
 
 check_with_rename o e sv =
 	case check o e sv of
-		P (_, rm, r) ->
+		P (ret, rm, r) ->
 			case ren_tu r of
-				(d, r) -> P ("", M.map (\x -> snd $ rename_tu x d) rm, r)
+				(d, r) -> P (ret, M.map (\x -> snd $ rename_tu x d) rm, r)
 		N a b -> N a b
 
 -- (_*sum (length _) (head _))

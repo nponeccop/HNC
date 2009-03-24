@@ -7,13 +7,14 @@ import System
 import IO
 
 data Cmd =
-	Quit | Help | Type | TypeDef | Code | Expr
+	Quit | Help | Type | TypeDef | TypeTree | Code | Expr
 
 get_cmd line =
 	if "\\q" == take 2 line then Quit
 	else if "\\h" == take 2 line then Help
 	else if "\\t " == take 3 line then Type
 	else if "\\td " == take 4 line then TypeDef
+	else if "\\tt " == take 4 line then TypeTree
 	else if "\\c " == take 3 line then Code
 	else Expr
 
@@ -82,6 +83,10 @@ main_loop = do
 				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		TypeDef ->
 			case get_type_debug_of_expr $ drop 4 line of
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
+		TypeTree ->
+			case get_type_tree_of_expr $ drop 4 line of
 				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (i, r) -> do putStrLn r; main_loop
 		Code ->
