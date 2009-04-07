@@ -79,7 +79,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii (ret++"; set"++show lu++"_"++show ru++"/"++ret2)
+						ch rs ps et lu ru (i+(1::Int)) sv ii ("["++ret++"+"++ret2++"]")
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -180,14 +180,16 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observeN ("ok "++p++"|"++show a) $ P ("(yes:"++p_n++"="++show v++"|"++ret++")", observeN "ur" ur, untv p_n w)
+					let rrr = ret++"|"++p_n++":"++show v++"" in
+					observeN ("ok "++p++"|"++show a) $ P (rrr, observeN "ur" ur, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN ("no "++p) $ P ("(no:"++p_n++")", ur, w) -- rm ?
+					let rrr = ret++"|~"++p_n++"" in
+					observeN ("no "++p) $ P (rrr, ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
