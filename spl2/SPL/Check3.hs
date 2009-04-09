@@ -13,9 +13,18 @@ observeN a b = b
 observe s v = trace ("{"++s++":"++show v++"}") v
 --observe s v = v
 
-data P = P ([Char], M.Map [Char] T, T) | N Int [Char]
+data TypeTree =
+	TTEmpty
+	| TTScope (M.Map [Char] T)
+	| TTParams TypeTree TypeTree
+	| TTTree [TypeTree]
 	deriving Show
 
+data P = P (TypeTree, M.Map [Char] T, T) | N Int [Char]
+	deriving Show
+
+
+er = TTEmpty
 
 get_r (P (_, ur, r)) = r
 get_rl l = Prelude.map get_r l
@@ -59,6 +68,9 @@ get_ul n u =
 
 setmm a b = M.map (\x -> setm x b) a
 
+join_tree t1 t2 =
+	TTP t1 t2
+
 ch [] [] et ul uv i sv ii ret =
 	N ii "too many parameters"
 ch (r:[]) [] et ul uv i sv ii ret =
@@ -79,7 +91,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii ("["++ret++"+"++ret2++"]")
+						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret ret2)
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -90,21 +102,21 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 
 check::C -> M.Map [Char] T -> Bool -> P
 --check (CF n) et _ = P (M.empty, T "-z_")
-check (CNum n) et _ = P ("", M.empty, T "num")
-check (CBool n) et _ = P ("", M.empty, T "boolean")
-check (CStr n) et _ = P ("", M.empty, T "string")
+check (CNum n) et _ = P (er, M.empty, T "num")
+check (CBool n) et _ = P (er, M.empty, T "boolean")
+check (CStr n) et _ = P (er, M.empty, T "string")
 check (CDebug i (CVal n)) et _ =
 	case M.lookup n et of
 		Just a ->
 			case a of
-				TV a -> P ("", M.empty, TV a)
-				o -> P ("", M.empty, o)
+				TV a -> P (er, M.empty, TV a)
+				o -> P (er, M.empty, o)
 		Nothing -> N i ("check cannot find "++show n)
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
 check (CStruct m) et sv =
-	P ("", M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
+	P (er, M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
 
 --check (CDot (CStruct m) n) et sv =
 --	case M.lookup n m of
@@ -180,15 +192,15 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					let rrr = ret++"|"++p_n++":"++show v++"" in
-					observeN ("ok "++p++"|"++show a) $ P (rrr, observeN "ur" ur, untv p_n w)
+					let rrr = ret++[[M.singleton p_n v]] in
+					observeN ("ok "++p++"|"++show a) $ P (rrr, observeN "ur" $ M.delete p_n ur, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					let rrr = ret++"|~"++p_n++"" in
+					let rrr = ret++[[M.singleton p_n (TU p_n)]] in
 					observeN ("no "++p) $ P (rrr, ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
@@ -208,19 +220,19 @@ check (CL a (D n)) et sv =
 
 check (CDebug i (CL a (D n))) et sv =
 	case check a et sv of
-		P ("", _, TS m) ->
+		P (_, _, TS m) ->
 			case M.lookup n m of
-				Just a -> P ("", M.empty, a)
+				Just a -> P (er, M.empty, a)
 				Nothing -> N i ("field did not find: "++n)
-		P (_, _, TV n2) -> P ("", M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
-		P (_, _, TU n2) -> P ("", M.empty, TU n)
+		P (_, _, TV n2) -> P (er, M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
+		P (_, _, TU n2) -> P (er, M.empty, TU n)
 		N i o -> N i o
 
 check (CL a L) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
 		P (_, ur, r) ->
-			P ("", ur, TT [TL, r])
+			P (er, ur, TT [TL, r])
 		o -> o
 	
 check (CL a R) et sv =
@@ -229,7 +241,7 @@ check (CL a R) et sv =
 			case check a (putp ["_f"] [r] et) sv of
 				P (_, ur2, r2) ->
 					case M.lookup "_f" ur of
-						Just v -> P ("", ur2, merge v r)
+						Just v -> P (er, ur2, merge v r)
 						Nothing -> error "_f"
 				o -> o
 		o -> o
@@ -238,13 +250,13 @@ check (CDebug _ c) et sv =
 	check c et sv
 
 check (CInFun _ (InFun n f)) et sv =
-	P ("", M.empty, ((read n)::SPL.Types.T))
+	P (er, M.empty, ((read n)::SPL.Types.T))
 
 check o et sv =
 	error ("check o: "++show o)
 
 ch_struct (TS m) [] et sv =
-	P ("", M.empty, TS m)
+	P (er, M.empty, TS m)
 
 ch_struct (TS m) ((n,p):ws) et sv =
 	case check p et sv of
