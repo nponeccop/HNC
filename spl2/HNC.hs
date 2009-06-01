@@ -27,7 +27,7 @@ compileFile t inFile
 	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . z 
 	where
 		z self @ (Definition name _ _ _) = sem_Definition (tdi2 t types) self where
-			P (fv, x) = check1 (convertDef self) SPL.Top.get_types
+			P (_, fv, x) = check1 (convertDef self) SPL.Top.get_types
 			types = M.insert name x fv 
 
 

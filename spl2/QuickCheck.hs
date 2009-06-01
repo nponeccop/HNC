@@ -58,7 +58,7 @@ typeCheck xs = case SPL.Top.check2 xs of
 	SPL.Check3.P _ -> True
 	_ -> False
 		
-prop_Foo (Foo xs) = (length $ show xs) < 500 ==> typeCheck xs
+prop_Foo (Foo xs) = (length $ show xs) < 1500 ==> typeCheck xs
 
 ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 	fp = fullParse x
@@ -95,4 +95,4 @@ tests2 = map ttt2 [
 main = do
 	runTestTT $ TestList $ tests2 ++ tests
 	putStrLn "QuickCheck :"
-	Test.QuickCheck.check (defaultConfig { configMaxTest = 1500}) prop_Foo
+	Test.QuickCheck.check (defaultConfig { configMaxTest = 200}) prop_Foo
