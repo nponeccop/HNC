@@ -201,7 +201,7 @@ check (CL a (S (p:ps))) et sv =
 						b -> TT [TU p_n, b]
 					in
 					let rrr = TTTree p_n (TU ("~"++p_n)) ret in
-					observeN ("no "++p) $ P (rrr, ur, w) -- rm ?
+					observeN ("no "++p) $ P (rrr, M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
