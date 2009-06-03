@@ -36,8 +36,6 @@ uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta
 cppUncurryType (TT argTypes) args = cppType $ TT $ uncurryFunctionType argTypes args
 cppUncurryType splType _ = cppType splType
 
-stripTD x = x  
-
 typePolyVars x = (case x of
 	TU v -> S.singleton v
 	TT l -> union l
