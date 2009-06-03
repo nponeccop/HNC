@@ -60,7 +60,7 @@ get_type_tree_of_expr str =
 		SPL.Parser.P _ i p ->
 			let c = compile p in
 				case check0 c of
-					SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (ret, "")
+					SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (show ret, "")
 					SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 		SPL.Parser.N i ->
 			SPL.Interpretator.N (i, "parser error")
