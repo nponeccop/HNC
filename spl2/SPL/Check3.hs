@@ -15,9 +15,9 @@ observe s v = trace ("{"++s++":"++show v++"}") v
 
 data TypeTree =
 	TTEmpty
-	| TTScope (M.Map [Char] T)
+--	| TTScope (M.Map [Char] T)
 	| TTParams TypeTree TypeTree -- ::TTScope
-	| TTTree [Char] T TypeTree -- ::TTParams
+	| TTTree [Char] T T TypeTree -- ::TTParams
 	deriving Show
 
 data P = P (TypeTree, M.Map [Char] T, T) | N Int [Char]
@@ -68,8 +68,8 @@ get_ul n u =
 
 setmm a b = M.map (\x -> setm x b) a
 
-join_tree t1 t2 =
-	TTParams t1 t2
+join_tree TTEmpty TTEmpty =	TTEmpty
+join_tree t1 t2 =	TTParams t1 t2
 
 ch [] [] et ul uv i sv ii ret =
 	N ii "too many parameters"
@@ -192,7 +192,7 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					let rrr = TTTree p_n v ret in
+					let rrr = TTTree p_n v (untv p_n w) ret in
 					observeN ("ok "++p++"|"++show a) $ P (rrr, observeN "ur" $ M.delete p_n ur, untv p_n w)
 				Nothing ->
 					let w = case r of
@@ -200,7 +200,7 @@ check (CL a (S (p:ps))) et sv =
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					let rrr = TTTree p_n (TU ("~"++p_n)) ret in
+					let rrr = TTTree p_n (TU ("~"++p_n)) (w) ret in
 					observeN ("no "++p) $ P (rrr, M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
