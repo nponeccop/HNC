@@ -11,6 +11,7 @@ import System.IO.Unsafe
 import Data.Map as M hiding (map, filter)
 
 data P = P ([Char], [Char]) | N (Int, [Char])
+	deriving Show
 
 out s o =
 	unsafePerformIO $
