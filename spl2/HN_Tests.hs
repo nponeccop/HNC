@@ -34,7 +34,7 @@ tdi rt = DefinitionInherited {
     
 testCodeGen = rt (dsCppDef . z) where
 	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
-		P (fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
+		P (_, fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
 		types = M.insert name x fv 
 
 test2 = rt (getDefinitionFreeVars) 
