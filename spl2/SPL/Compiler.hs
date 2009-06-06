@@ -1,4 +1,4 @@
-module SPL.Compiler (compile, remove_cdebug, res) where
+module SPL.Compiler (compile, remove_cdebug, remove_ctyped, res) where
 
 import SPL.Types
 import SPL.Parser hiding (P (..), res)
@@ -49,6 +49,23 @@ r_d (CL c L) =
 r_d o = o
 
 remove_cdebug = r_d
+
+r_t (CDebug _ c) = r_t c
+r_t (CStruct m) = CStruct $ M.map r_t m
+r_t (CL c (K p)) =
+	CL (r_t c) (K (map r_t p))
+r_t (CL c (S a)) =
+	CL (r_t c) (S a)
+r_t (CL c (W a)) =
+	CL (r_t c) (W (map (\(a,b) -> (a, r_t b)) a))
+r_t (CL c (D n)) =
+	CL (r_t c) (D n)
+r_t (CL c R) =
+	CL (r_t c) R
+r_t (CL c L) =
+	CL (r_t c) L
+r_t o = o
+remove_ctyped = r_t
 
 {-tests = [
 	(Sn 2, CNum 2)

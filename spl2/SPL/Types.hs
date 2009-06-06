@@ -43,6 +43,7 @@ data C =
 	| CList [C]
 	| CPair [C]
 	| CDebug Int C
+	| CTyped T C
 	| CStruct (Map [Char] C)
 	| CF Integer
 	deriving (Eq, Show)

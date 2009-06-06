@@ -13,17 +13,9 @@ observeN a b = b
 observe s v = trace ("{"++s++":"++show v++"}") v
 --observe s v = v
 
-data TypeTree =
-	TTAtom
-	| TTApply TypeTree TypeTree
-	| TTLambda T TypeTree
+data P = P (C, M.Map [Char] T, T) | N Int [Char]
 	deriving Show
 
-data P = P (TypeTree, M.Map [Char] T, T) | N Int [Char]
-	deriving Show
-
-
-er = TTAtom
 
 get_r (P (_, ur, r)) = r
 get_rl l = Prelude.map get_r l
@@ -67,7 +59,7 @@ get_ul n u =
 
 setmm a b = M.map (\x -> setm x b) a
 
-join_tree t1 t2 =	TTApply t1 t2
+join_tree t1 t2 =	t1++[t2]
 
 ch [] [] et ul uv i sv ii ret =
 	N ii "too many parameters"
@@ -89,7 +81,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret ret2)
+						ch rs ps et lu ru (i+(1::Int)) sv ii (CList [])
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -100,21 +92,21 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 
 check::C -> M.Map [Char] T -> Bool -> P
 --check (CF n) et _ = P (M.empty, T "-z_")
-check (CNum n) et _ = P (er, M.empty, T "num")
-check (CBool n) et _ = P (er, M.empty, T "boolean")
-check (CStr n) et _ = P (er, M.empty, T "string")
-check (CDebug i (CVal n)) et _ =
+check tt@(CNum n) et _ = P (tt, M.empty, T "num")
+check tt@(CBool n) et _ = P (tt, M.empty, T "boolean")
+check tt@(CStr n) et _ = P (tt, M.empty, T "string")
+check (CDebug i tt@(CVal n)) et _ =
 	case M.lookup n et of
 		Just a ->
 			case a of
-				TV a -> P (er, M.empty, TV a)
-				o -> P (er, M.empty, o)
+				TV a -> P (tt, M.empty, TV a)
+				o -> P (tt, M.empty, o)
 		Nothing -> N i ("check cannot find "++show n)
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
-check (CStruct m) et sv =
-	P (er, M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
+check tt@(CStruct m) et sv =
+	P (tt, M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
 
 --check (CDot (CStruct m) n) et sv =
 --	case M.lookup n m of
@@ -145,25 +137,25 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 				check (compile p) et sv
 			SPL.Parser.N i -> N i "check load error"
 
-check (CDebug ii (CL a (K p))) et sv =
+check (CDebug ii tt@(CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
 		P (ret, rm0, TT r) ->
-			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii ret of
-				P (ret, rm, r) -> P (ret, observeN "rm" rm, observeN "r" r)
+			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii (CList []) of
+				P (CList rt, rm, r) -> P (CTyped r (CL ret (K rt)), observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
 		P (ret, ur, TV n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P (ret, union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
+						in P (tt, union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
 		P (ret, ur, TU n) ->
 				case get_url p_ok of
 					Right a -> 
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
-						in P (ret, M.map (\x -> norm $ setm x rm) ur, setm r rm)
+						in P (tt, M.map (\x -> norm $ setm x rm) ur, setm r rm)
 					Left o -> o
 		N i e -> N i e
 	where
@@ -190,16 +182,14 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					let rrr = TTLambda (untv p_n w) ret in
-					observeN ("ok "++p++"|"++show a) $ P (rrr, observeN "ur" $ M.delete p_n ur, untv p_n w)
+					observeN ("ok "++p++"|"++show a) $ P (CTyped (untv p_n w) (CL ret (S (p:ps))), observeN "ur" $ M.delete p_n ur, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					let rrr = TTLambda w ret in
-					observeN ("no "++p) $ P (rrr, M.map (untv p_n) ur, w) -- rm ?
+					observeN ("no "++p) $ P (CTyped w (CL ret (S (p:ps))), M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
@@ -216,30 +206,30 @@ check (CL a (W ((n, p):ws))) et sv =
 check (CL a (D n)) et sv =
 	check (CDebug (-1) (CL a (D n))) et sv
 
-check (CDebug i (CL a (D n))) et sv =
+check (CDebug i tt@(CL a (D n))) et sv =
 	case check a et sv of
 		P (_, _, TS m) ->
 			case M.lookup n m of
-				Just a -> P (er, M.empty, a)
+				Just a -> P (tt, M.empty, a)
 				Nothing -> N i ("field did not find: "++n)
-		P (_, _, TV n2) -> P (er, M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
-		P (_, _, TU n2) -> P (er, M.empty, TU n)
+		P (_, _, TV n2) -> P (tt, M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
+		P (_, _, TU n2) -> P (tt, M.empty, TU n)
 		N i o -> N i o
 
-check (CL a L) et sv =
+check tt@(CL a L) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
 		P (_, ur, r) ->
-			P (er, ur, TT [TL, r])
+			P (tt, ur, TT [TL, r])
 		o -> o
 	
-check (CL a R) et sv =
+check tt@(CL a R) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
 		P (_, ur, r) ->
 			case check a (putp ["_f"] [r] et) sv of
 				P (_, ur2, r2) ->
 					case M.lookup "_f" ur of
-						Just v -> P (er, ur2, merge v r)
+						Just v -> P (tt, ur2, merge v r)
 						Nothing -> error "_f"
 				o -> o
 		o -> o
@@ -247,14 +237,14 @@ check (CL a R) et sv =
 check (CDebug _ c) et sv =
 	check c et sv
 
-check (CInFun _ (InFun n f)) et sv =
-	P (er, M.empty, ((read n)::SPL.Types.T))
+check tt@(CInFun _ (InFun n f)) et sv =
+	P (tt, M.empty, ((read n)::SPL.Types.T))
 
 check o et sv =
 	error ("check o: "++show o)
 
-ch_struct (TS m) [] et sv =
-	P (er, M.empty, TS m)
+ch_struct tt@(TS m) [] et sv =
+	P (CNum 199, M.empty, TS m)
 
 ch_struct (TS m) ((n,p):ws) et sv =
 	case check p et sv of

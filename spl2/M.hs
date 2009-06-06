@@ -13,5 +13,8 @@ import SPL.Top
 s = "(x*y*sum x y) 5 6"
 
 res = a where SPL.Interpretator.P (a, _) = get_type_tree_of_expr s
-main = putStrLn $ Main.res
+res1 = show $ get_code_of_expr s
+res2 = show $ get_code_of_expr2 s
+
+main = putStrLn $ ("tt:\n"++Main.res++"\n\ncompiled:\n"++Main.res1++"\n\ntt -ctyped:\n"++Main.res2)
 
