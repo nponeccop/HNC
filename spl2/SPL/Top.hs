@@ -211,7 +211,7 @@ do_load (CStr f:[]) e =
 						SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
 						SPL.Check3.P (_, ur, _) -> error "load error1"
 						SPL.Check3.N i e -> error ("load error: "++e)
-      SPL.Parser.N i -> error "load error3"
+      SPL.Parser.N i -> error ("load error3: "++f)
 
 do_out (CStr s:[]) e =
 	unsafePerformIO $
