@@ -45,6 +45,8 @@ data Token =
 	| Tnum
 	| Tvar
 	| Tval
+	| Tspace
+	| Tspace_o_not
 	| Tparams
 	| Texpr
 	| Texpr_top
@@ -134,18 +136,33 @@ call Tval =
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(s:[]) -> s)
 		]
+call Tspace =
+	p_or [
+		([Tchar ' ',Tspace], \_ -> Ss "" 0)
+		,([Tchar '\t',Tspace], \_ -> Ss "" 0)
+		,([Tchar '\n',Tspace], \_ -> Ss "" 0)
+		,([Tchar ' '], \_ -> Ss "" 0)
+		,([Tchar '\t'], \_ -> Ss "" 0)
+		,([Tchar '\n'], \_ -> Ss "" 0)
+		]
+call Tspace_o_not =
+	p_or [
+		([Tspace], \_ -> Ss "" 0)
+		,([], \_ -> Ss "" 0)
+		]
 call Tparams =
 	p_or [
-		([Tchar ',',Texpr], \(_:e:[]) -> Sl (e:[]) (get_i e))
-		,([Tchar '#',Texpr], \(Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
-		,([Tchar ' ',Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
-		,([Tchar ' ',Tval], \(_:v:[]) -> Sl (v:[]) (get_i v))
+		([Tspace_o_not,Tchar ',',Texpr], \(_:_:e:[]) -> Sl (e:[]) (get_i e))
+		,([Tspace_o_not,Tchar '#',Texpr], \(_:Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
+		,([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tspace,Tval], \(_:v:[]) -> Sl (v:[]) (get_i v))
 		]
 call Texpr =
 	p_or [
 		([Tval, Tparams], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
 		,([Tval], \(v:[]) -> v)
-		,([Tchar '{',Texpr_top,Tchar '}'], \(Sc _ i:e:_:[]) -> Scall e SynL i)
+		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
+		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		]
 call Tlambda =
 	p_or [

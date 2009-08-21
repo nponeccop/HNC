@@ -6,7 +6,7 @@ import SPL.Compiler
 import SPL.Types
 import SPL.Top
 
-s = "if"
+s = "{\n1}"
 
 res = parse s
 
