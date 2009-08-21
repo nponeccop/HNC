@@ -47,6 +47,7 @@ data Token =
 	| Tval
 	| Tspace
 	| Tspace_o_not
+	| Tnewline_space
 	| Tparams
 	| Texpr
 	| Texpr_top
@@ -150,6 +151,10 @@ call Tspace_o_not =
 		([Tspace], \_ -> Ss "" 0)
 		,([], \_ -> Ss "" 0)
 		]
+call Tnewline_space =
+	p_or [
+		([Tchar '\n',Tspace_o_not], \_ -> Ss "" 0)
+		]
 call Tparams =
 	p_or [
 		([Tspace_o_not,Tchar ',',Texpr], \(_:_:e:[]) -> Sl (e:[]) (get_i e))
@@ -171,7 +176,8 @@ call Tlambda =
 		]
 call Tset =
 	p_or [
-			([Tchar '*', Tval, Tchar ':', Texpr], \(Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
+			([Tspace_o_not,Tchar '*', Tvar, Tchar ':', Texpr], \(_:Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
+--			,([Tnewline_space, Tvar, Tchar ':', Texpr], \(Ss _ i:Ss n _:_:e:[]) -> Sset n e i)
 		]
 call Twhere =
 	p_or [
