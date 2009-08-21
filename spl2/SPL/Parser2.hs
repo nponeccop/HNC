@@ -1,4 +1,16 @@
-module SPL.Parser2 (P (..), Syntax (..), SynParams (..), SynMark(..), parse, res) where
+module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
+
+data SynMark =
+	MarkR
+	deriving (Eq, Show)
+
+data SynParams =
+	SynK [Syntax]
+	| SynS [[Char]]
+	| SynW [Syntax]
+	| SynL
+	| SynM [SynMark]
+	deriving (Eq, Show)
 
 data Syntax =
 	Sc Char Int
@@ -20,13 +32,35 @@ data P = P Int Int Syntax | N Int
 
 data Token =
 	Eos
+  | Tchar Char
 	| Tstring_char
+	| Tstring_chars
 	| Tletter
+	| Tletters
+	| Tstring
 	| Tdigit
 	| Tdigits
 	| Tnum_pos
 	| Tnum_neg
 	| Tnum
+	| Tvar
+	| Tval
+	| Tparams
+	| Texpr
+	| Texpr_top
+	| Tlambda
+	| Tset
+	| Twhere
+
+get_i (Sc _ i) = i
+get_i (Sb _ i) = i
+get_i (Ss _ i) = i
+get_i (Sstr _ i) = i
+get_i (Sn _ i) = i
+get_i (Sl _ i) = i
+get_i (Sval _ i) = i
+get_i (Scall _ _ i) = i
+get_i (Spair _ _ i) = i
 
 p_and ((t:ts),f) vi vs s i m =
 	case call t s i m of
@@ -47,10 +81,19 @@ call Eos = \s i m ->
 	case i == length s of
 		True -> P (max i m) 0 (Ss "" i)
 		False -> N (max i m)
+call (Tchar c) = \s i m ->
+	case i < length s && c == s!!i of
+		True -> P (max i m) 1 (Sc c i)
+		False -> N (max i m)
 call Tstring_char =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) ("_., /0123456789[]\""++['a'..'z']++['A'..'Z']))
 call Tletter =
 	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
+call Tletters =
+	p_or [
+		([Tletter, Tletters], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
+		,([Tletter], \(Sc n i:[]) -> Ss (n:"") i)
+		]
 call Tdigit =
 	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sc c i)) "0123456789")
 call Tdigits =
@@ -73,8 +116,61 @@ call Tnum =
 		]
 call Tstring_chars =
 	p_or [
-		([Tchar_any, Tstring_chars], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
-		,([Tchar_any], \(Sc c i:[]) -> Ss (c:"") i)
+		([Tstring_char, Tstring_chars], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
+		,([Tstring_char], \(Sc c i:[]) -> Ss (c:"") i)
 		]
+call Tstring =
+	p_or [
+		([Tchar '\'', Tstring_chars, Tchar '\''], \(Sc _ i:Ss s _:_:[]) -> Sstr s i)
+		]
+call Tvar =
+	p_or [
+		([Tletters,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i)
+		,([Tletters], \(Ss s i:[]) -> Ss s i)
+		]
+call Tval =
+	p_or [
+		([Tvar], \(a:[]) -> a)
+		,([Tnum], \(n:[]) -> n)
+		,([Tstring], \(s:[]) -> s)
+		]
+call Tparams =
+	p_or [
+		([Tchar ',',Texpr], \(_:e:[]) -> Sl (e:[]) (get_i e))
+		,([Tchar '#',Texpr], \(Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
+		,([Tchar ' ',Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tchar ' ',Tval], \(_:v:[]) -> Sl (v:[]) (get_i v))
+		]
+call Texpr =
+	p_or [
+		([Tval, Tparams], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
+		,([Tval], \(v:[]) -> v)
+		,([Tchar '{',Texpr_top,Tchar '}'], \(Sc _ i:e:_:[]) -> Scall e SynL i)
+		]
+call Tlambda =
+	p_or [
+			([Tvar, Tchar '*',Tlambda], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
+			,([Tvar, Tchar '*'], \(v:_:[]) -> Sl (v:[]) (get_i v))
+		]
+call Tset =
+	p_or [
+			([Tchar '*', Tval, Tchar ':', Texpr], \(Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
+		]
+call Twhere =
+	p_or [
+			([Tset, Twhere], \(s:Sl l _:[]) -> Sl (s:l) (get_i s))
+			,([Tset], \(s:[]) -> Sl (s:[]) (get_i s))
+		]
+call Texpr_top =
+	p_or [
+		([Tlambda,Texpr,Twhere], \(Sl l i:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Tlambda,Texpr], \(Sl l i:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Texpr,Twhere], \(e:Sl w _:[]) -> Scall e (SynW w) (get_i e))
+		,([Texpr], \(e:[]) -> e)
+		]
+
+parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
+
+res = ""
 
 
