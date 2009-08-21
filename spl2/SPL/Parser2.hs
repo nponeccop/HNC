@@ -43,6 +43,7 @@ data Token =
 	| Tnum_pos
 	| Tnum_neg
 	| Tnum
+	| Tbool
 	| Tvar
 	| Tval
 	| Tspace
@@ -117,6 +118,11 @@ call Tnum =
 		([Tnum_pos], \(sn:[]) -> sn)
 		,([Tnum_neg], \(sn:[]) -> sn)
 		]
+call Tbool =
+	p_or [
+		([Tchar '1', Tchar 'b'], \(Sc _ i:_:[]) -> Sb True i)
+		,([Tchar '0', Tchar 'b'], \(Sc _ i:_:[]) -> Sb False i)
+		]
 call Tstring_chars =
 	p_or [
 		([Tstring_char, Tstring_chars], \(Sc c i:Ss s _:[]) -> Ss (c:s) i)
@@ -134,6 +140,7 @@ call Tvar =
 call Tval =
 	p_or [
 		([Tvar], \(a:[]) -> a)
+		,([Tbool], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(s:[]) -> s)
 		]
