@@ -141,10 +141,8 @@ call Tspace =
 	p_or [
 		([Tchar ' ',Tspace], \_ -> Ss "" 0)
 		,([Tchar '\t',Tspace], \_ -> Ss "" 0)
-		,([Tchar '\n',Tspace], \_ -> Ss "" 0)
 		,([Tchar ' '], \_ -> Ss "" 0)
 		,([Tchar '\t'], \_ -> Ss "" 0)
-		,([Tchar '\n'], \_ -> Ss "" 0)
 		]
 call Tspace_o_not =
 	p_or [
@@ -176,8 +174,8 @@ call Tlambda =
 		]
 call Tset =
 	p_or [
-			([Tspace_o_not,Tchar '*', Tvar, Tchar ':', Texpr], \(_:Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
---			,([Tnewline_space, Tvar, Tchar ':', Texpr], \(Ss _ i:Ss n _:_:e:[]) -> Sset n e i)
+			([Tnewline_space, Tvar, Tchar ':', Texpr], \(Ss _ i:Ss n _:_:e:[]) -> Sset n e i)
+			,([Tspace_o_not,Tchar '*', Tvar, Tchar ':', Texpr], \(_:Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
 		]
 call Twhere =
 	p_or [

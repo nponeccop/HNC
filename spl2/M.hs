@@ -6,7 +6,7 @@ import SPL.Compiler
 import SPL.Types
 import SPL.Top
 
-s = "{f a b\n *a:sum 1 2}"
+s = "{f a b *a:sum 1 2}"
 
 res = parse s
 
