@@ -6,7 +6,8 @@ import SPL.Compiler
 import SPL.Types
 import SPL.Top
 
-s = "{f a b *a:sum 1 2}"
+--s = "{f a b *a:sum 1 2}"
+s = "(_*sum 1,sum ((z*sum 3,length z) _) 2)"
 
 res = parse s
 

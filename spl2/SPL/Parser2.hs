@@ -143,6 +143,8 @@ call Tval =
 		,([Tbool], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(s:[]) -> s)
+		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
+		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		]
 call Tspace =
 	p_or [
@@ -171,8 +173,6 @@ call Texpr =
 	p_or [
 		([Tval, Tparams], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
 		,([Tval], \(v:[]) -> v)
-		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
-		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		]
 call Tlambda =
 	p_or [

@@ -1,7 +1,7 @@
 module SPL.Compiler (compile, remove_cdebug, remove_ctyped, res) where
 
 import SPL.Types
-import SPL.Parser hiding (P (..), res)
+import SPL.Parser2 hiding (P (..), res)
 import SPL.Code hiding (res)
 import qualified Data.Map as M
 

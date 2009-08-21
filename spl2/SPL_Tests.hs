@@ -13,8 +13,8 @@ is_passed (No _) = False
 
 test_last = 0
 from_i = 00::Int
---to_i = 79::Int
-to_i = (-) (length tests) 1
+to_i = 50::Int
+--to_i = (-) (length tests) 1
 
 test_res =
 	zipWith (\x y -> test x y) [0..] $ case test_last of
