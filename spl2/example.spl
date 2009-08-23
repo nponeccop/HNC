@@ -1,0 +1,31 @@
+#1
+() - group
+{} - lazy
+(a*b*...) - lambda
+[...] - recursion 
+
+#2
+() - group
+{} - lazy
+{a*b*...} - lambda
+{&...} - recursion
+
+#3
+() - group
+(#) - lazy
+(a*b*) - labmda
+(&...) - rec
+
+---
+
+ifeq 1 (#'one')
+#ifeq 2 (#'two')
+#other (#'three')
+ili
+(ifeq 1 {'one'}
+#ifeq 2 {'two'}
+#other {'three'}) i
+
+
+
+
