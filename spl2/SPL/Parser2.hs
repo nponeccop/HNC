@@ -145,6 +145,7 @@ call Tval =
 		,([Tstring], \(s:[]) -> s)
 		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
 		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
+		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
 		]
 call Tspace =
 	p_or [
