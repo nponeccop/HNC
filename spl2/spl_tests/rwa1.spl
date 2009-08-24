@@ -1,0 +1,175 @@
+LoadColumnFromCsvFile columnIdx fileName = 
+{
+   skipToSeparator sep line = 
+   {
+      ff line _ = 
+         if (== sep (head line))
+         (
+            Break (tail line)
+         )
+         else
+         (
+            Continue void
+         )
+      foldTailUntil ff void line
+   }
+
+   skipToColumnByIdx line = 
+   {
+      ff _ line = skipToSeparator ',' line
+      fold ff line (range 0 columnIdx)
+   }
+
+   sizeAndCount = 
+   {
+      getSizeUntilSeparator sep line =
+      {
+         ff hd acc = 
+            if (== sep hd)
+            (
+               Break acc
+            )
+            else
+            (
+               Continue (+ acc 1)
+            )
+
+         foldUntil ff 0 line
+      }
+
+      getSize line = getSizeUntilSeparator ',' (skipToColumnByIdx columnIdx line)
+
+      ff curLineSize s = Pair (+ (fst s)) (+ (+ (snd s) curLineSize) 1)
+
+      fold ff (Pair 0 0) (map getSize (ForEachLine fileName))
+   }
+   
+   getColumnByIdx idx line =
+   {
+      ff hd acc = 
+         if (== sep hd)
+         (
+            Break acc
+         )
+         else
+         (
+            Continue (cons hd acc)
+         )
+
+      foldUntil ff nil (skipToColumnByIdx idx line)
+   }
+
+   ff col bufAndArr = 
+   {
+      bufAndBufCol = addToBuf (fst bufAndArr) col
+      Pair (fst bufAndBufCol) (addToArr (snd bufAndArr) (snd BufAndBufCol))
+   }
+
+   CKeywordFilterOld (fold ff (Pair (allocateBuf (fst sizeAndCount)) (allocateArr (snd sizeAndCount)) (map getColumnByIdx (ForEachLine fileName)))
+}
+---
+LoadColumnFromCsvFile:{columnIdx*fileName*
+	CKeywordFilterOld,fold ff,Pair (allocateBuf,fst sizeAndCount) (allocateArr,snd sizeAndCount),map getColumnByIdx,ForEachLine fileName
+	skipToSeparator:{sep*line*
+		foldTailUntil ff void line
+		ff:{line*_*
+			if(eq sep,head line) {
+				Break,tail line
+			} {
+				Continue void
+			}
+		}
+	}
+	skipToColumnByIdx:{line*
+		fold ff line,range 0 columnIdx
+		ff:{_*line*
+			skipToSeparator ',' line
+		}
+	}
+	sizeAndCount:(
+		fold ff (Pair 0 0),map getSize,ForEachLine fileName
+		ff:{curLineSize*s*
+			Pair (+,fst s) (+ 1,+ curLineSize,snd s)
+		}
+		getSize:{line*
+			getSizeUntilSeparator ',',skipToColumnByIdx columnIdx line
+		}
+		getSizeUntilSeparator:{sep*line*
+			foldUntil ff 0 line
+			ff:{hd*acc*
+				if (eq sep hd) {
+					Break acc
+				} {
+					Continue (+ acc 1)
+				}
+			}
+		}
+	)
+	getColumnByIdx:{idx*line*
+		foldUntil ff nil,skipToColumnByIdx idx line
+		ff:{hd*acc
+			if(eq sep hd) {
+				Break acc
+			} {
+				Continue,cons hd acc
+			}
+		}
+	}
+	ff:{col*bufAndArr*
+		Pair (fst bufAndBufCol),addToArr (snd bufAndArr),snd BufAndBufCol
+		bufAndBufCol:addToBuf (fst bufAndBufCol) col
+	}
+}
+---
+LoadColumnFromCsvFile:{columnIdx*fileName*
+	CKeywordFilterOld,fold ff,Pair (allocateBuf,fst sizeAndCount) (allocateArr,snd sizeAndCount),map getColumnByIdx,ForEachLine fileName
+	skipToSeparator:(sep*line*
+		foldTailUntil ff void line
+		ff:(line*_*
+			if(eq sep,head line) {
+				Break,tail line
+			} {
+				Continue void
+			}
+		)
+	)
+	skipToColumnByIdx:{line*
+		fold ff line,range 0 columnIdx
+		ff:(_*line*
+			skipToSeparator ',' line
+		)
+	}
+	sizeAndCount:(
+		fold ff (Pair 0 0),map getSize,ForEachLine fileName
+		ff:(curLineSize*s*
+			Pair (+,fst s) (+ 1,+ curLineSize,snd s)
+		)
+		getSize:(line*
+			getSizeUntilSeparator ',',skipToColumnByIdx columnIdx line
+		)
+		getSizeUntilSeparator:(sep*line*
+			foldUntil ff 0 line
+			ff:(hd*acc*
+				if (eq sep hd) {
+					Break acc
+				} {
+					Continue (+ acc 1)
+				}
+			)
+		)
+	)
+	getColumnByIdx:(idx*line*
+		foldUntil ff nil,skipToColumnByIdx idx line
+		ff:(hd*acc
+			if(eq sep hd) {
+				Break acc
+			} {
+				Continue,cons hd acc
+			}
+		)
+	)
+	ff:(col*bufAndArr*
+		Pair (fst bufAndBufCol),addToArr (snd bufAndArr),snd BufAndBufCol
+		bufAndBufCol:addToBuf (fst bufAndBufCol) col
+	)
+}
