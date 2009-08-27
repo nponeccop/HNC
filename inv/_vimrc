@@ -31,9 +31,8 @@ function SimpleKeyBuf()
 	call feedkeys("\<ESC>")
 endfunction
 
-"map ,o :SessionList<CR>
-"map ,s :SessionSave<CR>
-"map ,, :b#<CR>
+map ,o :SessionList<CR>
+map ,s :SessionSave<CR>
 
 command -nargs=0 SimpleKeyBuf call SimpleKeyBuf(<args>)
 map , :SimpleKeyBuf<CR>
