@@ -1,0 +1,41 @@
+
+let g:lb=0
+
+function SKBLast()
+	if(1==g:lb)
+		call feedkeys(":q!\<CR>:b #\<CR>")
+	else
+		let g:lb=1
+		call feedkeys(":q!\<CR>:bNext\<CR>")
+	endif
+endfunction
+
+
+function SKBSwitch(B)
+	let g:lb=1
+	call feedkeys(":q!\<CR>:b ".a:B."\<CR>")
+endfunction
+
+function SimpleKeyBuf()
+	rightbelow 5new
+	map <buffer> , :call SKBLast()<CR>
+	let l:i = 1
+	call feedkeys("i")
+	while(l:i < bufnr('$'))
+		if(buflisted(l:i))
+			exec "map" "<buffer>" (''.l:i) ':call SKBSwitch('.l:i.')<CR>'
+			call feedkeys(l:i." - ".bufname(l:i)."\<CR>")
+		endif
+		let l:i = l:i + 1
+	endwhile
+	call feedkeys("\<ESC>")
+endfunction
+
+"map ,o :SessionList<CR>
+"map ,s :SessionSave<CR>
+"map ,, :b#<CR>
+
+command -nargs=0 SimpleKeyBuf call SimpleKeyBuf(<args>)
+map , :SimpleKeyBuf<CR>
+
+
