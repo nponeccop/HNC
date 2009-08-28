@@ -26,12 +26,14 @@ function SimpleKeyBuf()
 	map <buffer> , :call SKBLast()<CR>
 	map <buffer> o :q!<CR>:SessionList<CR>
 	map <buffer> s :q!<CR>:SessionSave<CR>
+	let l:n = 1
 	let l:i = 1
 	call feedkeys("i")
 	while(l:i < bufnr('$'))
 		if(buflisted(l:i))
-			exec "map" "<buffer>" (''.l:i) ':call SKBSwitch('.l:i.')<CR>'
-			call feedkeys(l:i." - ".bufname(l:i)."\<CR>")
+			exec "map" "<buffer>" (''.l:n) ':call SKBSwitch('.l:i.')<CR>'
+			call feedkeys(l:n." - ".bufname(l:i)."\<CR>")
+			let l:n = l:n + 1
 		endif
 		let l:i = l:i + 1
 	endwhile
