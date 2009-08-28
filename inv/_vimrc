@@ -1,4 +1,6 @@
 
+let Tlist_Ctags_Cmd='C:\cygwin\bin\ctags.exe'
+
 let g:lb=0
 
 function SKBLast()
@@ -19,6 +21,8 @@ endfunction
 function SimpleKeyBuf()
 	rightbelow 5new
 	map <buffer> , :call SKBLast()<CR>
+	map <buffer> o :q!<CR>:SessionList<CR>
+	map <buffer> s :q!<CR>:SessionSave<CR>
 	let l:i = 1
 	call feedkeys("i")
 	while(l:i < bufnr('$'))
@@ -31,10 +35,10 @@ function SimpleKeyBuf()
 	call feedkeys("\<ESC>")
 endfunction
 
-map ,o :SessionList<CR>
-map ,s :SessionSave<CR>
+set sessionoptions-=options
 
 command -nargs=0 SimpleKeyBuf call SimpleKeyBuf(<args>)
 map , :SimpleKeyBuf<CR>
+map oo :SessionOpenLast<CR>
 
 
