@@ -1,4 +1,7 @@
 
+set nocompatible
+
+"" switcher
 let Tlist_Ctags_Cmd='C:\cygwin\bin\ctags.exe'
 
 let g:lb=0
@@ -39,6 +42,19 @@ set sessionoptions-=options
 
 command -nargs=0 SimpleKeyBuf call SimpleKeyBuf(<args>)
 map , :SimpleKeyBuf<CR>
-map oo :SessionOpenLast<CR>
+map m :SessionOpenLast<CR>
+"" switcher end
+
+set backspace=indent,eol,start
+set ruler
+set showcmd
+set incsearch
+if &t_Co > 2 || has("gui_running")
+  syntax on
+  set hlsearch
+endif
+
+autocmd BufNewFile,BufRead *.hs set ts=2
+
 
 
