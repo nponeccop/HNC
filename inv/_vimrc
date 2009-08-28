@@ -24,6 +24,7 @@ endfunction
 function SimpleKeyBuf()
 	rightbelow 5new
 	map <buffer> , :call SKBLast()<CR>
+	map <buffer> q :q!<CR>
 	map <buffer> o :q!<CR>:SessionList<CR>
 	map <buffer> s :q!<CR>:SessionSave<CR>
 	let l:n = 1
@@ -51,6 +52,7 @@ set backspace=indent,eol,start
 set ruler
 set showcmd
 set incsearch
+set noet
 if &t_Co > 2 || has("gui_running")
   syntax on
   set hlsearch
