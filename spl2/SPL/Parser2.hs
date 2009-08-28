@@ -52,9 +52,11 @@ data Token =
 	| Tparams
 	| Texpr
 	| Texpr_top
+	| Texpr_lambda
 	| Tlambda
 	| Tset
 	| Twhere
+	| Tstruct
 
 get_i (Sc _ i) = i
 get_i (Sb _ i) = i
@@ -145,7 +147,8 @@ call Tval =
 		,([Tstring], \(s:[]) -> s)
 		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
 		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
-		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
+		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
+		,([Tstruct], \(s:[]) -> s)
 		]
 call Tspace =
 	p_or [
@@ -182,13 +185,23 @@ call Tlambda =
 		]
 call Tset =
 	p_or [
-			([Tnewline_space, Tvar, Tchar ':', Texpr], \(Ss _ i:Ss n _:_:e:[]) -> Sset n e i)
-			,([Tspace_o_not,Tchar '*', Tvar, Tchar ':', Texpr], \(_:Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
+			([Tnewline_space, Tvar, Tchar ':', Texpr_lambda], \(Ss _ i:Ss n _:_:e:[]) -> Sset n e i)
+			,([Tspace_o_not,Tchar '*', Tvar, Tchar ':', Texpr_lambda], \(_:Sc _ i:Ss n _:_:e:[]) -> Sset n e i)
 		]
 call Twhere =
 	p_or [
 			([Tset, Twhere], \(s:Sl l _:[]) -> Sl (s:l) (get_i s))
 			,([Tset], \(s:[]) -> Sl (s:[]) (get_i s))
+		]
+call Tstruct =
+	p_or [
+			([Tchar '[',Twhere,Tspace_o_not,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
+			,([Tchar '[',Twhere,Tnewline_space,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
+		]
+call Texpr_lambda =
+	p_or [
+		([Tlambda,Texpr], \(Sl l i:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Texpr], \(e:[]) -> e)
 		]
 call Texpr_top =
 	p_or [

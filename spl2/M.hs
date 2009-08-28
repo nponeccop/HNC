@@ -7,9 +7,9 @@ import SPL.Types
 import SPL.Top
 
 --s = "{f a b *a:sum 1 2}"
-s = "(_*sum 1,sum ((z*sum 3,length z) _) 2)"
+s = "[\n  port:1234\n  clients:[\n    hosts:join1 'localhost',join2 'localhost2',elist\n    port:2345\n  ]\n]\n"
 
 res = parse s
 
-main = putStrLn $ show Main.res
+main = putStrLn $ s++"\n\n"++(show Main.res)
 

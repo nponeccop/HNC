@@ -1,7 +1,7 @@
-{
+[
   port:1234
-  clients:{
+  clients:[
     hosts:join1 'localhost',join1 'localhost2',elist
     port:2345
-  }
-}
+  ]
+]
