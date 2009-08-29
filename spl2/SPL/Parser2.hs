@@ -45,10 +45,12 @@ data Token =
 	| Tnum
 	| Tbool
 	| Tvar
+	| Tval_simple
 	| Tval
 	| Tspace
 	| Tspace_o_not
 	| Tnewline_space
+	| Tspace_any
 	| Tparams
 	| Texpr
 	| Texpr_top
@@ -57,6 +59,7 @@ data Token =
 	| Tset
 	| Twhere
 	| Tstruct
+	| Tkeys
 
 get_i (Sc _ i) = i
 get_i (Sb _ i) = i
@@ -139,7 +142,7 @@ call Tvar =
 		([Tletters,Tnum_pos], \(Ss s i:Sn n _:[]) -> Ss (s++show n) i)
 		,([Tletters], \(Ss s i:[]) -> Ss s i)
 		]
-call Tval =
+call Tval_simple =
 	p_or [
 		([Tvar], \(a:[]) -> a)
 		,([Tbool], \(b:[]) -> b)
@@ -149,6 +152,16 @@ call Tval =
 		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
 		,([Tstruct], \(s:[]) -> s)
+		]
+call Tkeys =
+	p_or [
+			([Tchar '.',Tvar,Tkeys], \(c:v:Sl l _:[]) -> Sl (v:l) (get_i c))
+			([Tchar '.',Tvar], \(c:v:[]) -> Sl (v:[]) (get_i c))
+		]
+call Tval =
+	p_or [
+		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\a (Ss b i) -> Sdot a b i) v [])
+		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [
@@ -164,7 +177,13 @@ call Tspace_o_not =
 		]
 call Tnewline_space =
 	p_or [
-		([Tchar '\n',Tspace_o_not], \_ -> Ss "" 0)
+		([Tchar '\n',Tchar '\r',Tspace_o_not], \_ -> Ss "" 0)
+		,([Tchar '\n',Tspace_o_not], \_ -> Ss "" 0)
+		]
+call Tspace_any =
+	p_or [
+		([Tnewline_space], \_ -> Ss "" 0)
+		,([Tspace_o_not], \_ -> Ss "" 0)
 		]
 call Tparams =
 	p_or [
@@ -211,7 +230,7 @@ call Texpr_top =
 		,([Texpr], \(e:[]) -> e)
 		]
 
-parse s = p_or [([Texpr_top, Eos], \vs -> vs!!0)] s 0 0
+parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Eos], \(_:e:_:_:[]) -> e)] s 0 0
 
 res = ""
 

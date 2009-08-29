@@ -12,9 +12,9 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
-from_i = 81::Int
-to_i = 90::Int
---to_i = (-) (length tests) 1
+from_i = 0::Int
+--to_i = 90::Int
+to_i = (-) (length tests) 1
 
 test_res =
 	zipWith (\x y -> test x y) [0..] $ case test_last of
@@ -130,9 +130,9 @@ tests = [
 	,("(z*z z)", "", "")
 	,("(sum a b*a:3*b:sum 1 a)", "CNum 7", "T \"num\"")
 	,("load 'spl_tests/config.spl'", "CStruct (fromList [(\"clients\",CStruct (fromList [(\"hosts\",CList [CStr \"localhost\",CStr \"localhost2\"]),(\"port\",CNum 2345)])),(\"port\",CNum 1234)])", "TS (fromList [(\"clients\",TS (fromList [(\"hosts\",TD \"list\" [T \"string\"]),(\"port\",T \"num\")])),(\"port\",T \"num\")])")
-	,("[l*x*iff (join1 (pair (less n x) {_f (join1 n l) x}),elist) {l}*n:sum (head l) (head,tail l)]", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"n\",CVal \"x\"]),CL (CL (CVal \"_f\") (K [CL (CVal \"join1\") (K [CVal \"n\",CVal \"l\"]),CVal \"x\"])) L]),CVal \"elist\"]),CL (CVal \"l\") L])) (W [(\"n\",CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"l\"]),CL (CVal \"head\") (K [CL (CVal \"tail\") (K [CVal \"l\"])])]))])) (S [\"l\",\"x\"])) R", "TT [TD \"list\" [T \"num\"],T \"num\",TD \"list\" [T \"num\"]]")
-	,("[a*b*sum a,sum b,_f 1b b]", "type error: expected T \"num\", actual T \"boolean\"", "")
-	,("(r*if 1b (#r 1)#r 2)", "CL (CL (CVal \"if\") (K [CBool True,CL (CL (CVal \"r\") (K [CNum 1])) L,CL (CL (CVal \"r\") (K [CNum 2])) L])) (S [\"r\"])", "TT [TT [T \"num\",TU \"a\"],TU \"a\"]")
+	,("('l*x*iff (join1 (pair (less n x) {_f (join1 n l) x}),elist) {l}*n:sum (head l) (head,tail l))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"n\",CVal \"x\"]),CL (CL (CVal \"_f\") (K [CL (CVal \"join1\") (K [CVal \"n\",CVal \"l\"]),CVal \"x\"])) L]),CVal \"elist\"]),CL (CVal \"l\") L])) (W [(\"n\",CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"l\"]),CL (CVal \"head\") (K [CL (CVal \"tail\") (K [CVal \"l\"])])]))])) (S [\"l\",\"x\"])) R", "TT [TD \"list\" [T \"num\"],T \"num\",TD \"list\" [T \"num\"]]")
+	,("('a*b*sum a,sum b,_f 1b b)", "type error: expected T \"num\", actual T \"boolean\"", "")
+	,("(r*if 1b {r 1}#r 2)", "CL (CL (CVal \"if\") (K [CBool True,CL (CL (CVal \"r\") (K [CNum 1])) L,CL (CL (CVal \"r\") (K [CNum 2])) L])) (S [\"r\"])", "TT [TT [T \"num\",TU \"a\"],TU \"a\"]")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 
