@@ -155,13 +155,13 @@ call Tval_simple =
 		]
 call Tkeys =
 	p_or [
-			([Tchar '.',Tvar,Tkeys], \(c:v:Sl l _:[]) -> Sl (v:l) (get_i c))
-			,([Tchar '.',Tvar], \(c:v:[]) -> Sl (v:[]) (get_i c))
+		([Tchar '.',Tvar,Tkeys], \(c:v:Sl l _:[]) -> Sl (v:l) (get_i c))
+		,([Tchar '.',Tvar], \(c:v:[]) -> Sl (v:[]) (get_i c))
 		]
 call Tval =
 	p_or [
---		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\a (Ss b i) -> Sdot a b i) v [])
-		([Tval_simple], \(v:[]) -> v)
+		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> v)
+		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [
