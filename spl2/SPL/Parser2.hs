@@ -160,7 +160,7 @@ call Tkeys =
 		]
 call Tval =
 	p_or [
-		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> v)
+		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
 		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tspace =
