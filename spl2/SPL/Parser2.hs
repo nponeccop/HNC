@@ -70,6 +70,8 @@ get_i (Sl _ i) = i
 get_i (Sval _ i) = i
 get_i (Scall _ _ i) = i
 get_i (Spair _ _ i) = i
+get_i (Sdot _ _ i) = i
+get_i o = error ("get_i: "++show o)
 
 p_and ((t:ts),f) vi vs s i m =
 	case call t s i m of
