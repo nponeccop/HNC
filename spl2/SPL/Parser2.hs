@@ -179,7 +179,7 @@ call Tspace_o_not =
 		]
 call Tnewline_space =
 	p_or [
-		([Tchar '\n',Tchar '\r',Tspace_o_not], \_ -> Ss "" 0)
+		([Tchar '\r',Tchar '\n',Tspace_o_not], \_ -> Ss "" 0)
 		,([Tchar '\n',Tspace_o_not], \_ -> Ss "" 0)
 		]
 call Tspace_any =
@@ -189,8 +189,8 @@ call Tspace_any =
 		]
 call Tparams =
 	p_or [
-		([Tspace_o_not,Tchar ',',Texpr], \(_:_:e:[]) -> Sl (e:[]) (get_i e))
-		,([Tspace_o_not,Tchar '#',Texpr], \(_:Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
+		([Tspace_any,Tchar ',',Texpr], \(_:_:e:[]) -> Sl (e:[]) (get_i e))
+		,([Tspace_any,Tchar '#',Texpr], \(_:Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
 		,([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
 		,([Tspace,Tval], \(_:v:[]) -> Sl (v:[]) (get_i v))
 		]
