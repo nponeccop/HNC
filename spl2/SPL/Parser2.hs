@@ -232,7 +232,7 @@ call Texpr_top =
 		,([Texpr], \(e:[]) -> e)
 		]
 
-parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Eos], \(_:e:_:_:[]) -> e)] s 0 0
+parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Tspace_any,Eos], \(_:e:_:_:_:[]) -> e)] s 0 0
 
 res = ""
 
