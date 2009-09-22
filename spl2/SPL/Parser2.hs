@@ -1,5 +1,7 @@
 module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
 
+import System.IO.Unsafe
+
 data SynMark =
 	MarkR
 	deriving (Eq, Show)
@@ -60,6 +62,29 @@ data Token =
 	| Twhere
 	| Tstruct
 	| Tkeys
+	deriving Show
+
+out s o =
+	unsafePerformIO $
+	do
+		putStr s;
+		return o
+
+out2 str o s i m =
+	unsafePerformIO $
+	do
+		putStr (str++":"++show i++",");
+		return (o s i m)
+
+out3 t i o =
+	unsafePerformIO $
+	do
+		case t of
+--			Texpr_top -> do putStr ("top:"++show i++",");
+--			Twhere -> do putStr ("where:"++show i++",");
+--			Tparams -> do putStr ("p:"++show i++",");
+			_ -> do return ()
+		return o
 
 get_i (Sc _ i) = i
 get_i (Sb _ i) = i
@@ -75,13 +100,13 @@ get_i o = error ("get_i: "++show o)
 
 p_and ((t:ts),f) vi vs s i m =
 	case call t s i m of
-		P m i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) (max m (i + i1))
+		P m i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) $! out3 t i $! (max m (i + i1))
 		N i2 -> N (max m i2)
 p_and ([],f) vi vs s i m =
 	P m vi (f (reverse vs))
 	
 p_or (o:os) s i m =
-	case p_and o 0 [] s i m of
+	case p_and o 0 [] s  i m of
 		P m i s -> P m i s
 		N i2 -> p_or os s i (max i2 m)
 
@@ -96,17 +121,23 @@ call (Tchar c) = \s i m ->
 	case i < length s && c == s!!i of
 		True -> P (max i m) 1 (Sc c i)
 		False -> N (max i m)
-call Tstring_char =
-	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) ("_., /0123456789[]\""++['a'..'z']++['A'..'Z']))
-call Tletter =
-	p_or (map (\x -> ([Tchar x], \vs -> vs!!0)) "_abcdefghijklmnopqrstuvwxyz")
+call Tstring_char = \s i m ->
+	case i < length s && elem (s!!i) ("_., /0123456789"++['a'..'z']++['A'..'Z']) of
+		True -> P (max i m) 1 (Sc (s!!i) i)
+		False -> N (max i m)
+call Tletter = \s i m ->
+	case i < length s && elem (s!!i) "_abcdefghijklmnopqrstuvwxyz" of
+		True -> P (max i m) 1 (Sc (s!!i) i)
+		False -> N (max i m)
 call Tletters =
 	p_or [
 		([Tletter, Tletters], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
 		,([Tletter], \(Sc n i:[]) -> Ss (n:"") i)
 		]
-call Tdigit =
-	p_or (map (\x -> ([Tchar x], \(Sc c i:[]) -> Sc c i)) "0123456789")
+call Tdigit = \s i m ->
+	case i < length s && elem (s!!i) ("0123456789") of
+		True -> P (max i m) 1 (Sc (s!!i) i)
+		False -> N (max i m)
 call Tdigits =
 	p_or [
 		([Tdigit, Tdigits], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
@@ -151,8 +182,8 @@ call Tval_simple =
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(s:[]) -> s)
 		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
-		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
+		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		,([Tstruct], \(s:[]) -> s)
 		]
 call Tkeys =
@@ -162,8 +193,8 @@ call Tkeys =
 		]
 call Tval =
 	p_or [
-		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
-		,([Tval_simple], \(v:[]) -> v)
+--		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
+		([Tval_simple], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [
