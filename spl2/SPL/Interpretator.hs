@@ -16,7 +16,7 @@ data P = P ([Char], [Char]) | N (Int, [Char])
 out s o =
 	unsafePerformIO $
 	do
---		putStrLn s;
+		putStrLn s;
 		return o
 
 step str =
