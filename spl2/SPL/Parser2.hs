@@ -81,8 +81,9 @@ out3 t i o =
 	do
 		case t of
 --			Texpr_top -> do putStr ("top:"++show i++",");
---			Twhere -> do putStr ("where:"++show i++",");
---			Tparams -> do putStr ("p:"++show i++",");
+--			Tval_simple -> do putStr ("vs:"++show i++",");
+--			Tvar -> do putStr ("var:"++show i++",");
+--			Tkeys -> do putStr ("keys:"++show i++",");
 			_ -> do return ()
 		return o
 
@@ -193,8 +194,8 @@ call Tkeys =
 		]
 call Tval =
 	p_or [
---		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
-		([Tval_simple], \(v:[]) -> v)
+		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
+		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [
