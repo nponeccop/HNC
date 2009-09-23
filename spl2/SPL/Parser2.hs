@@ -101,7 +101,7 @@ get_i o = error ("get_i: "++show o)
 
 p_and ((t:ts),f) vi vs s i m =
 	case call t s i m of
-		P m i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) $! out3 t i $! (max m (i + i1))
+		P m i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) (max m (i + i1))
 		N i2 -> N (max m i2)
 p_and ([],f) vi vs s i m =
 	P m vi (f (reverse vs))
