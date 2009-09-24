@@ -262,7 +262,7 @@ call Tstruct =
 		]
 call Texpr_lambda =
 	p_or [
-		([Tlambda,Texpr], \(Sl l i:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
+		([Tlambda,Tspace_o_not,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr], \(e:[]) -> e)
 		]
 call Texpr_top =
