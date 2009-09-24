@@ -2,4 +2,5 @@
 	concat:ffi 'TT [T"string",T"string",T"string"]' 'str_concat'
 	reverse:ffi 'TT [T"string",T"string"]' 'str_reverse'
 	eq:ffi 'TT [T"string",T"string",T"boolean"]' 'str_eq'
+	num:ffi 'TT [T"num",T"string"]' 'str_num'
 ]
