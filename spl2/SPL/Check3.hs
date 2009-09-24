@@ -133,9 +133,9 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 	do
 		str <- readFile f
 		return $ case SPL.Parser2.parse str of
-			SPL.Parser2.P _ i p ->
+			SPL.Parser2.P _ i p _ ->
 				check (compile p) et sv
-			SPL.Parser2.N i -> N i "check load error"
+			SPL.Parser2.N i _ -> N i "check load error"
 
 check (CDebug ii tt@(CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of

@@ -1,5 +1,6 @@
 module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
 
+import Data.Map as M hiding (map)
 import System.IO.Unsafe
 
 data SynMark =
@@ -29,7 +30,7 @@ data Syntax =
 	| Sdot Syntax [Char] Int
 	deriving (Eq, Show)
 
-data P = P Int Int Syntax | N Int
+data P = P Int Int Syntax (M.Map (Token,Int) (Either (Int,Int,Syntax) Int)) | N Int (M.Map (Token,Int) (Either (Int,Int,Syntax) Int))
 	deriving (Eq, Show)
 
 data Token =
@@ -62,25 +63,19 @@ data Token =
 	| Twhere
 	| Tstruct
 	| Tkeys
-	deriving Show
+	deriving (Eq, Show, Ord)
 
-out s o =
+out o =
 	unsafePerformIO $
 	do
-		putStr s;
+		putStrLn (show o);
 		return o
-
-out2 str o s i m =
-	unsafePerformIO $
-	do
-		putStr (str++":"++show i++",");
-		return (o s i m)
 
 out3 t i o =
 	unsafePerformIO $
 	do
 		case t of
---			Texpr_top -> do putStr ("top:"++show i++",");
+			Texpr_top -> do putStr ("top:"++show i++",");
 --			Tval_simple -> do putStr ("vs:"++show i++",");
 --			Tvar -> do putStr ("var:"++show i++",");
 --			Tkeys -> do putStr ("keys:"++show i++",");
@@ -99,46 +94,53 @@ get_i (Spair _ _ i) = i
 get_i (Sdot _ _ i) = i
 get_i o = error ("get_i: "++show o)
 
-p_and ((t:ts),f) vi vs s i m =
-	case call t s i m of
-		P m i1 s1 -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) (max m (i + i1))
-		N i2 -> N (max m i2)
-p_and ([],f) vi vs s i m =
-	P m vi (f (reverse vs))
+p_and ((t:ts),f) vi vs s i m c =
+	case M.lookup (t,i) c of
+		Just v ->
+			case v of
+				Left (m,i1,s1) -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) (max m (i + i1)) c
+				Right i2 -> N i2 c
+		Nothing ->
+			case call t s i m c of
+				P m i1 s1 c -> p_and (ts,f) (i1+vi) (s1:vs) s (i+i1) (max m (i + i1)) (M.insert (t,i) (Left (m,i1,s1)) c)
+				N i2 c -> N (max m i2) (M.insert (t,i) (Right i2) c)
+
+p_and ([],f) vi vs s i m c =
+	P m vi (f (reverse vs)) c
 	
-p_or (o:os) s i m =
-	case p_and o 0 [] s  i m of
-		P m i s -> P m i s
-		N i2 -> p_or os s i (max i2 m)
+p_or (o:os) s i m c =
+	case p_and o 0 [] s i m c of
+		P m i s c -> P m i s c
+		N i2 c -> p_or os s i (max i2 m) c
 
-p_or [] s i m =
-	N (max i m)
+p_or [] s i m c =
+	N (max i m) c
 
-call Eos = \s i m ->
+call Eos = \s i m c ->
 	case i == length s of
-		True -> P (max i m) 0 (Ss "" i)
-		False -> N (max i m)
-call (Tchar c) = \s i m ->
+		True -> P (max i m) 0 (Ss "" i) c
+		False -> N (max i m) c
+call (Tchar c) = \s i m c2 ->
 	case i < length s && c == s!!i of
-		True -> P (max i m) 1 (Sc c i)
-		False -> N (max i m)
-call Tstring_char = \s i m ->
+		True -> P (max i m) 1 (Sc c i) c2
+		False -> N (max i m) c2
+call Tstring_char = \s i m c ->
 	case i < length s && elem (s!!i) ("_., /0123456789[]\""++['a'..'z']++['A'..'Z']) of
-		True -> P (max i m) 1 (Sc (s!!i) i)
-		False -> N (max i m)
-call Tletter = \s i m ->
+		True -> P (max i m) 1 (Sc (s!!i) i) c
+		False -> N (max i m) c
+call Tletter = \s i m c ->
 	case i < length s && elem (s!!i) "_abcdefghijklmnopqrstuvwxyz" of
-		True -> P (max i m) 1 (Sc (s!!i) i)
-		False -> N (max i m)
+		True -> P (max i m) 1 (Sc (s!!i) i) c
+		False -> N (max i m) c
 call Tletters =
 	p_or [
 		([Tletter, Tletters], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
 		,([Tletter], \(Sc n i:[]) -> Ss (n:"") i)
 		]
-call Tdigit = \s i m ->
+call Tdigit = \s i m c ->
 	case i < length s && elem (s!!i) ("0123456789") of
-		True -> P (max i m) 1 (Sc (s!!i) i)
-		False -> N (max i m)
+		True -> P (max i m) 1 (Sc (s!!i) i) c
+		False -> N (max i m) c
 call Tdigits =
 	p_or [
 		([Tdigit, Tdigits], \(Sc n i:Ss n2 _:[]) -> Ss (n:n2) i)
@@ -264,7 +266,7 @@ call Texpr_top =
 		,([Texpr], \(e:[]) -> e)
 		]
 
-parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Tspace_any,Eos], \(_:e:_:_:_:[]) -> e)] s 0 0
+parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Tspace_any,Eos], \(_:e:_:_:_:[]) -> e)] s 0 0 M.empty
 
 res = ""
 

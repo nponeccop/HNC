@@ -205,13 +205,13 @@ do_load (CStr f:[]) e =
   do
     str <- readFile f
     return $ case SPL.Parser2.parse str of
-      SPL.Parser2.P _ i p ->
+      SPL.Parser2.P _ i p _ ->
 				let c = ffi_apply $ compile p in
 					case check0 c of
 						SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
 						SPL.Check3.P (_, ur, _) -> error "load error1"
 						SPL.Check3.N i e -> error ("load error: "++e)
-      SPL.Parser2.N i -> error ("load error3: "++f)
+      SPL.Parser2.N i _ -> error ("load error3: "++f)
 
 do_out (CStr s:[]) e =
 	unsafePerformIO $
