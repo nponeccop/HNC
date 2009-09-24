@@ -2,6 +2,7 @@
 	int:ffi 'TT[T"num",T"bignum"]' 'bn_bignum_of_int'
 	str:ffi 'TT[T"string",T"bignum"]' 'bn_bignum_of_str'
 	sum:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_sum'
+	incr:sum,int 1
 	div:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_div'
 	mod:ffi 'TT[T"bignum",T"bignum",T"bignum"]' 'bn_mod'
 	zero:int 0
