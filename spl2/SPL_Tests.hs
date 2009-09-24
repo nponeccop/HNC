@@ -133,6 +133,7 @@ tests = [
 	,("('l*x*iff (join1 (pair (less n x) {_f (join1 n l) x}),elist) {l}*n:sum (head l) (head,tail l))", "CL (CL (CL (CL (CVal \"iff\") (K [CL (CVal \"join1\") (K [CL (CVal \"pair\") (K [CL (CVal \"less\") (K [CVal \"n\",CVal \"x\"]),CL (CL (CVal \"_f\") (K [CL (CVal \"join1\") (K [CVal \"n\",CVal \"l\"]),CVal \"x\"])) L]),CVal \"elist\"]),CL (CVal \"l\") L])) (W [(\"n\",CL (CVal \"sum\") (K [CL (CVal \"head\") (K [CVal \"l\"]),CL (CVal \"head\") (K [CL (CVal \"tail\") (K [CVal \"l\"])])]))])) (S [\"l\",\"x\"])) R", "TT [TD \"list\" [T \"num\"],T \"num\",TD \"list\" [T \"num\"]]")
 	,("('a*b*sum a,sum b,_f 1b b)", "type error: expected T \"num\", actual T \"boolean\"", "")
 	,("(r*if 1b {r 1}#r 2)", "CL (CL (CVal \"if\") (K [CBool True,CL (CL (CVal \"r\") (K [CNum 1])) L,CL (CL (CVal \"r\") (K [CNum 2])) L])) (S [\"r\"])", "TT [TT [T \"num\",TU \"a\"],TU \"a\"]")
+	,("foldr concat elist,map (a*map mul/a l) l*l:join1 1,join1 2,elist", "CList [CNum 1,CNum 2,CNum 2,CNum 4]", "TD \"list\" [T \"num\"]")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 
