@@ -50,6 +50,7 @@ data Token =
 	| Tvar
 	| Tval_simple
 	| Tval_sep
+	| Tval_dot
 	| Tval
 	| Tspace
 	| Tspace_o_not
@@ -199,10 +200,15 @@ call Tkeys =
 		([Tchar '.',Tvar,Tkeys], \(c:v:Sl l _:[]) -> Sl (v:l) (get_i c))
 		,([Tchar '.',Tvar], \(c:v:[]) -> Sl (v:[]) (get_i c))
 		]
-call Tval =
+call Tval_dot =
 	p_or [
 		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
 		,([Tval_simple], \(v:[]) -> v)
+		]
+call Tval =
+	p_or [
+			([Tval_dot, Tchar '`', Tval_dot], \(p:_:v:[]) -> Scall v (SynK [p]) (get_i p))
+			,([Tval_dot], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [
