@@ -134,6 +134,7 @@ tests = [
 	,("('a*b*sum a,sum b,_f 1b b)", "type error: expected T \"num\", actual T \"boolean\"", "")
 	,("(r*if 1b {r 1}#r 2)", "CL (CL (CVal \"if\") (K [CBool True,CL (CL (CVal \"r\") (K [CNum 1])) L,CL (CL (CVal \"r\") (K [CNum 2])) L])) (S [\"r\"])", "TT [TT [T \"num\",TU \"a\"],TU \"a\"]")
 	,("foldr concat elist,map (a*map mul/a l) l*l:join1 1,join1 2,elist", "CList [CNum 1,CNum 2,CNum 2,CNum 4]", "TD \"list\" [T \"num\"]")
+	,("map to_string,join1 1,join1 2,elist", "CList [CStr \"CNum 1\",CStr \"CNum 2\"]", "TD \"list\" [T \"string\"]")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
 	]
 

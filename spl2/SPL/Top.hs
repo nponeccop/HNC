@@ -70,7 +70,7 @@ base = M.fromList $
 		(TT [TD "list" [TU "a"], T "num"]))
 	:("to_string", Fun
 		(CL (CInFun 1 (InFun "" do_to_string)) (K []))
-		(TT [TU "a", T "string"]))
+		(TT [TU "num", T "string"]))
 	:("pair", Fun
 		(CL (CInFun 2 (InFun "" do_pair)) (K []))
 		(TT [TU "a", TU "b", TD "pair" [TU "a",TU "b"]]))
@@ -137,10 +137,9 @@ base = M.fromList $
 	:("_or", Fun
 		(CL (CInFun 2 (InFun "" do_or)) (K []))
 		(TT [T "boolean", T "boolean", T "boolean"]))
-
 	:("map", Fun
 		(CL (CInFun 2 (InFun "" do_map)) (K []))
-		(TT [TT [TU "a", TU "a"], TD "list" [TU "a"], TD "list" [TU "a"]]))
+		(TT [TT [TU "a", TU "b"], TD "list" [TU "a"], TD "list" [TU "b"]]))
 	:("str", Lib "spllib/str.spl")
 	:("bn", Lib "spllib/bn.spl")
 	:[]
