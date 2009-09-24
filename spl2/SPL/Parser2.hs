@@ -51,6 +51,7 @@ data Token =
 	| Tval_simple
 	| Tval_sep
 	| Tval_dot
+	| Tparams_add
 	| Tval
 	| Tspace
 	| Tspace_o_not
@@ -205,10 +206,15 @@ call Tval_dot =
 		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
 		,([Tval_simple], \(v:[]) -> v)
 		]
+call Tparams_add =
+	p_or [
+		([Tchar '/',Tval_dot,Tparams_add], \(c:v:Sl l _:[]) -> Sl (v:l) (get_i c))
+		,([Tchar '/',Tval_dot], \(c:v:[]) -> Sl (v:[]) (get_i c))
+		]
 call Tval =
 	p_or [
-			([Tval_dot, Tchar '`', Tval], \(p:_:v:[]) -> Scall v (SynK [p]) (get_i p))
-			,([Tval_dot], \(v:[]) -> v)
+		([Tval_dot, Tparams_add], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
+		,([Tval_dot], \(v:[]) -> v)
 		]
 call Tspace =
 	p_or [

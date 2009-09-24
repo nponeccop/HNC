@@ -1,9 +1,9 @@
 (
-	iter 0`bn.int '600851475143'`bn.str,bn.int 2
+	iter bn.int/0 bn.str/'600851475143' bn.int/2
 	is_prime:(n*
 		('x*
 			if (bn.lt x,bn.div n,bn.int 2) {
-				if (bn.eq bn.zero,bn.mod n x) {
+				if (bn.eq/bn.zero bn.mod/n/x) {
 					0b
 				}#_f,bn.incr x
 			}#1b
@@ -12,8 +12,8 @@
 	iter:('p*n*i*
 		if (bn.lt i,bn.incr n) {
 			if (bn.eq bn.zero,bn.mod n i) {
-				if i`is_prime {
-					_f i i`n`bn.div,bn.incr i
+				if is_prime/i {
+					_f i bn.div/n/i,bn.incr i
 				}#_f p n,bn.incr i
 			}#_f p n,bn.incr i
 		}#p
