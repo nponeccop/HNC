@@ -33,8 +33,9 @@ help =
   "    (v1*v2*...expr) - define function with vX parameters\n"++
   "    (expr*a1:v1*a2:v2...) - (a1*a2*...expr) v1 v2 ...\n"++
   "  lazy/rec\n"++
+	"    f#expr - f {expr}\n"++
   "    {expr} - lazy, eval: (l!expr) go\n"++
-  "    ('expr1,_f,expr2) - save current lambda to _f\n"++
+  "    ('..._f p1 p2...) - save current lambda to _f\n"++
   "  base functions\n"++
 	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys SPL.Top.base)++"\n"++
 	"  web\n"++
