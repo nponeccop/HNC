@@ -1,4 +1,7 @@
-foldr (a*b*if less/a/b {b}#a) 0,filter (a*str.eq v,str.reverse v*v:str.num a),foldr concat elist,map (a*map mul/a nl) nl
+foldr (a*b*if less/a/b {b}#a) 0
+	,filter (a*str.eq v,str.reverse v*v:str.num a)
+	,foldr concat elist
+	,map (a*map mul/a nl) nl
 range:(f*t*
 	range f,incr t
 	range:('i*l*
