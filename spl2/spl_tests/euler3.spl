@@ -1,11 +1,20 @@
 (
 	iter (bn.str '600851475143') (bn.int 2),bn.int 0
-	is_prime:(n*
-		(r!x*if (bn.lt x,bn.div n,bn.int 2) (#if (bn.eq bn.zero,bn.mod n x) (#0b)#_f (bn.sum x,bn.int 1))#1b),bn.int 2
-	)
-	iter:(r!n*i*p*
-		if (bn.lt i,bn.sum n,bn.int 1) (#if (bn.eq bn.zero,bn.mod n i) (#if (is_prime i) (#_f (bn.div n i) (bn.sum i,bn.int 1) i)#_f n (bn.sum i,bn.int 1) p)#_f n (bn.sum i,bn.int 1) p)
-		#p
+	is_prime:(n*('x*if (bn.lt x,bn.div n,bn.int 2) {if (bn.eq bn.zero,bn.mod n x) {0b}{_f (bn.sum x,bn.int 1)}} {1b}),bn.int 2)
+	iter:('n*i*p*
+		if (bn.lt i,bn.sum n,bn.int 1) {
+			if (bn.eq bn.zero,bn.mod n i) {
+				if (is_prime i) {
+					_f (bn.div n i) (bn.sum i,bn.int 1) i
+				}{
+					_f n (bn.sum i,bn.int 1) p
+				}
+			}{
+				_f n (bn.sum i,bn.int 1) p
+			}
+		}{
+			p
+		}
 	)
 )
 
