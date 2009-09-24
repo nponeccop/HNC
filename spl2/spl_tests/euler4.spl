@@ -1,0 +1,12 @@
+foldr debug elist (map (a*map mul/a n2) n1)
+range:(f*t*
+	range f,incr t
+	range:('i*l*
+		if (less i l) {
+			join1 i,_f incr/i l
+		}#elist
+	)
+)
+n1:range 1 10
+n2:range 1 10
+

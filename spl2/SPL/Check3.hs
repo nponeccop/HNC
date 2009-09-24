@@ -262,8 +262,10 @@ compare (TD a l1) (TD b l2)|a == b = foldr (\(u1l,u1r,r1) (u2l,u2r,r2) -> (union
 -- error: TT [T "num",TU "_l"]/TT [TU "_",TU "z",T "num"]
 compare (TT []) (TT []) =
 	(M.empty, M.empty, True)
-compare (TT [TU a]) b@(TT l)|1 < length l =
+compare (TT [TU a]) b@(TT l)|1<length l =
 	(M.singleton a b, M.empty, True)
+compare a@(TT l) (TT [TU b])|1<length l =
+	(M.singleton b a, M.empty, True)
 compare (TT (l1:l1s)) (TT (l2:l2s)) =
 	(union l ll, union_r r rr, b && bb)
 	where
