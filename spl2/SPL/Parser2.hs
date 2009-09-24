@@ -49,6 +49,7 @@ data Token =
 	| Tbool
 	| Tvar
 	| Tval_simple
+	| Tval_sep
 	| Tval
 	| Tspace
 	| Tspace_o_not
@@ -183,7 +184,11 @@ call Tval_simple =
 		([Tvar], \(a:[]) -> a)
 		,([Tbool], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
-		,([Tstring], \(s:[]) -> s)
+		,([Tval_sep], \(n:[]) -> n)
+		]
+call Tval_sep =
+	p_or [
+		([Tstring], \(s:[]) -> s)
 		,([Tchar '{',Tspace_any,Texpr_top,Tspace_any,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
 		,([Tchar '(',Tchar '\'',Tspace_any,Texpr_top,Tspace_any,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
 		,([Tchar '(',Tspace_any,Texpr_top,Tspace_any,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
@@ -227,6 +232,8 @@ call Tparams =
 		,([Tspace_any,Tchar '#',Texpr], \(_:Sc _ i:e:[]) -> Sl ((Scall e SynL i):[]) i)
 		,([Tspace,Tval,Tparams], \(_:v:Sl l _:[]) -> Sl (v:l) (get_i v))
 		,([Tspace,Tval], \(_:v:[]) -> Sl (v:[]) (get_i v))
+		,([Tval_sep,Tparams], \(v:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tval_sep], \(v:[]) -> Sl (v:[]) (get_i v))
 		]
 call Texpr =
 	p_or [
