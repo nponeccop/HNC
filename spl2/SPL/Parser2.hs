@@ -207,7 +207,7 @@ call Tval_dot =
 		]
 call Tval =
 	p_or [
-			([Tval_dot, Tchar '`', Tval_dot], \(p:_:v:[]) -> Scall v (SynK [p]) (get_i p))
+			([Tval_dot, Tchar '`', Tval], \(p:_:v:[]) -> Scall v (SynK [p]) (get_i p))
 			,([Tval_dot], \(v:[]) -> v)
 		]
 call Tspace =
