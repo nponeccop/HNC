@@ -123,7 +123,7 @@ call (Tchar c) = \s i m ->
 		True -> P (max i m) 1 (Sc c i)
 		False -> N (max i m)
 call Tstring_char = \s i m ->
-	case i < length s && elem (s!!i) ("_., /0123456789"++['a'..'z']++['A'..'Z']) of
+	case i < length s && elem (s!!i) ("_., /0123456789[]\""++['a'..'z']++['A'..'Z']) of
 		True -> P (max i m) 1 (Sc (s!!i) i)
 		False -> N (max i m)
 call Tletter = \s i m ->
