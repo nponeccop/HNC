@@ -1,4 +1,4 @@
-filter (a*str.eq a,str.reverse a),map to_string,foldr concat elist ,map (a*map mul/a n2) n1
+filter (a*str.eq a,str.reverse a),map (a*pair a str.num a),foldr concat elist ,map (a*map mul/a n2) n1
 range:(f*t*
 	range f,incr t
 	range:('i*l*
