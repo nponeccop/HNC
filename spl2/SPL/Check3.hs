@@ -87,7 +87,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 						CDebug i _ -> i
 						o -> ii
 					in
-					N iii ("expected "++show (setm r ul)++", actual "++show r_p1)
+					N iii ("expected "++show (setmv (setm r ul) rm2)++", actual "++show r_p2)
 		N i e -> N i e
 
 check::C -> M.Map [Char] T -> Bool -> P
@@ -278,6 +278,13 @@ compare (TUL (l1:l1s)) l2 =
 	where
 		(l, r, b) = SPL.Check3.compare l1 l2
 		(ll, rr, bb) = SPL.Check3.compare (TT l1s) l2
+compare a (TUL []) =
+	(M.empty, M.empty, False)
+compare l1 (TUL (l2:l2s)) =
+	(union l ll, union_r r rr, b || bb)
+	where
+		(l, r, b) = SPL.Check3.compare l1 l2
+		(ll, rr, bb) = SPL.Check3.compare l1 (TT l2s)
 compare (TU a) (TV b) = (M.singleton a (TV b), M.singleton b (TU a), True)
 compare a (TV n) = (M.empty, M.singleton n a, True)
 compare (TV n) b = (M.empty, M.singleton n b, True)

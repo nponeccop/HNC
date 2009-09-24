@@ -1,4 +1,4 @@
-foldr debug elist (map (a*map mul/a n2) n1)
+foldr concat elist (map (a*map mul/a n2) n1)
 range:(f*t*
 	range f,incr t
 	range:('i*l*
