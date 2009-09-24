@@ -1,4 +1,4 @@
-filter (a*str.eq a,str.reverse a),map (a*pair a str.num a),foldr concat elist ,map (a*map mul/a n2) n1
+foldr (a*b*if less/a/b {b}#a) 0,filter (a*str.eq v,str.reverse v*v:str.num a),foldr concat elist,map (a*map mul/a nl) nl
 range:(f*t*
 	range f,incr t
 	range:('i*l*
@@ -7,6 +7,5 @@ range:(f*t*
 		}#elist
 	)
 )
-n1:range 1 10
-n2:range 1 10
+nl:reverse,range 100 999
 
