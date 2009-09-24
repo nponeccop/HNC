@@ -184,9 +184,9 @@ call Tval_simple =
 		,([Tbool], \(b:[]) -> b)
 		,([Tnum], \(n:[]) -> n)
 		,([Tstring], \(s:[]) -> s)
-		,([Tchar '{',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
-		,([Tchar '(',Tchar '\'',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
-		,([Tchar '(',Tspace_o_not,Texpr_top,Tspace_o_not,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
+		,([Tchar '{',Tspace_any,Texpr_top,Tspace_any,Tchar '}'], \(Sc _ i:_:e:_:_:[]) -> Scall e SynL i)
+		,([Tchar '(',Tchar '\'',Tspace_any,Texpr_top,Tspace_any,Tchar ')'], \(Sc _ i:_:_:e:_:_:[]) -> Scall e (SynM [MarkR]) i)
+		,([Tchar '(',Tspace_any,Texpr_top,Tspace_any,Tchar ')'], \(Sc _ i:_:e:_:_:[]) -> e)
 		,([Tstruct], \(s:[]) -> s)
 		]
 call Tkeys =
@@ -260,8 +260,8 @@ call Texpr_lambda =
 		]
 call Texpr_top =
 	p_or [
-		([Tlambda,Texpr,Twhere], \(Sl l i:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
-		,([Tlambda,Texpr], \(Sl l i:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
+		([Tlambda,Tspace_any,Texpr,Twhere], \(Sl l i:_:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Tlambda,Tspace_any,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr,Twhere], \(e:Sl w _:[]) -> Scall e (SynW w) (get_i e))
 		,([Texpr], \(e:[]) -> e)
 		]

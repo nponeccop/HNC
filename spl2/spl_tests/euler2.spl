@@ -1,5 +1,9 @@
-out,to_string (fib 1 0 4000000 0
-	fib:('x2*x1*x*s*iff (join1 (pair (less n x) {_f n x2 x rn}),elist) {s}
+out,to_string (
+	fib 1 0 4000000 0
+	fib:('x2*x1*x*s*
+		iff (join1 (pair (less n x) {_f n x2 x rn}),elist) {s}
 		n:sum x2 x1
-		rn:iff (join1 (pair (eq 0,mod n 2) {sum s n}),elist) {s}))
+		rn:iff (join1 (pair (eq 0,mod n 2) {sum s n}),elist) {s}
+	)
+)
 
