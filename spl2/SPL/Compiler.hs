@@ -1,4 +1,4 @@
-module SPL.Compiler (compile, remove_cdebug, remove_ctyped, res) where
+module SPL.Compiler (compile, remove_cdebug, remove_ctyped, fix_types, res) where
 
 import SPL.Types
 import SPL.Parser2 hiding (P (..), res)
@@ -66,6 +66,30 @@ r_t (CL c L) =
 	CL (r_t c) L
 r_t o = o
 remove_ctyped = r_t
+
+f_t (CTyped t (CL (CVal s) (K p))) e =
+	case el of
+		(h:t) -> CVal ("ok "++(show $ length el))
+		_ -> error "in fix_types"
+	where
+		el = e:(e M.! "bn"):[]
+	
+f_t (CTyped _ c) e = f_t c e
+f_t (CStruct m) e = CStruct $ M.map (\a -> f_t a e) m
+f_t (CL c (K p)) e =
+	CL (f_t c e) (K (map (\a -> f_t a e) p))
+f_t (CL c (S a)) e =
+	CL (f_t c e) (S a)
+f_t (CL c (W a)) e =
+	CL (f_t c e) (W (map (\(a,b) -> (a, f_t b e)) a))
+f_t (CL c (D n)) e =
+	CL (f_t c e) (D n)
+f_t (CL c R) e =
+	CL (f_t c e) R
+f_t (CL c L) e =
+	CL (f_t c e) L
+f_t o e = o
+fix_types = f_t
 
 {-tests = [
 	(Sn 2, CNum 2)
