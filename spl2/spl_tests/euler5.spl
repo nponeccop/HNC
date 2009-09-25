@@ -1,0 +1,27 @@
+max_power
+is_prime:(n*
+	('x*
+		if (bn.lt x,bn.div n,bn.int 2) {
+			if (bn.eq bn.zero,bn.mod n x) {
+				0b
+			}#_f,bn.incr x
+		}#1b
+	),bn.int 2
+)
+max_power:('s*n*
+	if (less ss 20) {
+		_f ss n
+	}{
+		s
+	}
+	ss:mul s n
+)/1
+range:(f*t*
+  range f,incr t
+  range:('i*l*
+    if (less i l) {
+      join1 i,_f incr/i l
+    }#elist
+  )
+)
+
