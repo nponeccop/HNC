@@ -230,7 +230,7 @@ check tt@(CL a R) et sv =
 				P (_, ur2, r2) ->
 					case M.lookup "_f" ur of
 						Just v -> P (tt, ur2, merge v r)
-						Nothing -> error "_f"
+						Nothing -> P (tt, ur2, r2)
 				o -> o
 		o -> o
 
