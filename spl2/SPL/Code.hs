@@ -58,8 +58,7 @@ eval (CL (CStruct m) (W ws)) e|M.null m =
 eval (CL c (W [])) e =
 	eval c e
 eval a@(CL c (W ((n, p):ws))) e =
-	eval (CL c (W ws)) (putp [n] [eval p e] e)
-
+	eval (CL (CL (CL c (W ws)) (S [n])) (K [p])) e
 
 -- other
 eval a@(CL c (S p)) e = a
