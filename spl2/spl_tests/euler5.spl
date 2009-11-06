@@ -1,4 +1,4 @@
-map max_power,filter (n*is_prime,bn.int n),range 3 19
+foldr mul 1,map max_power,filter (n*is_prime,bn.int n),range 3 19
 is_prime:(n*
 	('x*
 		if (bn.lt x,bn.div n,bn.int 2) {
