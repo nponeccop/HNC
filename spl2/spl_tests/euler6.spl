@@ -1,0 +1,6 @@
+sub (sqr,calc2 n),calc1 n
+sqr:a*mul a a
+calc1:('i*n*if (less i incr/n) {sum sqr/i,_f incr/i n}#0)/1
+calc2:('i*n*if (less i incr/n) {sum i,_f incr/i n}#0)/1
+n:100
+
