@@ -44,10 +44,7 @@ help =
   "    wiki http://code.google.com/p/inv/w/"
 
 examples =
-	"  apply:\n"++
-	"    sum 1 2 | sum 1,2 | sum 1,sum 2 3\n"++
-	"  lazy:\n"++
-	"    if (eq x 1) {'one'}#if (eq x 2) {'two'} #'other'"
+	"  http://code.google.com/p/inv/wiki/Examples"
 
 help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
