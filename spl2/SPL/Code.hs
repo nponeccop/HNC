@@ -38,10 +38,20 @@ eval a@(CL (CL c (S s)) (K p)) e|length s > length p = a
 eval a@(CL (CL c (S s)) (K p)) e|length s < length p =
 	eval (CL (eval c (putp s (evall (take (length s) p) e) e)) (K (drop (length s) p))) e
 eval (CL (CL c (S s)) (K p)) e|length s == length p =
-	case eval c (putp s (evall p e) e) of
-		a@(CL (CL _ (S s)) (K p))|length s > length p -> CL a (W $ zipWith (\a b -> (a,b)) s p)
+  case r of
+--		CL (CL c (S s2)) (K p2)|length s2 > length p2 ->
+--			CL (CL c (S (s++s2))) (K (p++p2))
+		CL c (S s2) ->
+			CL (CL c (S (s++s2))) (K p)
 		o -> o
-eval (CL (CL a R) (K p)) e = eval (CL a (K p)) (putp ["_f"] [a] e)
+	where r = eval c (putp s (evall p e) e)
+eval (CL a@(CL _ (W w)) (K p)) e = eval (CL (eval a e) (K p)) e
+eval (CL (CL a R) (K p)) e =
+	case r of
+		CL (CL c (S s2)) (K p2)|length s2 > length p2 ->
+			CL (CL (CL c (S s2)) R) (K p2)
+		o -> o
+	where r = eval (CL a (K p)) (putp ["_f"] [a] e)
 eval (CL (CL a L) (K [CNum 0])) e = eval a e
 eval (CL a@(CL a2 L) (K p)) e = eval (CL a (K (evall p e))) e
 

@@ -136,6 +136,7 @@ tests = [
 	,("foldr concat elist,map (a*map mul/a l) l*l:join1 1,join1 2,elist", "CList [CNum 1,CNum 2,CNum 2,CNum 4]", "TD \"list\" [T \"num\"]")
 	,("map to_string,join1 1,join1 2,elist", "CList [CStr \"CNum 1\",CStr \"CNum 2\"]", "TD \"list\" [T \"string\"]")
 	,("f 2*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
+	,("f 5*f:('a*e*if (less a e) {mul 10,_f incr/a e} {a})/1", "CNum 50000", "T \"num\"")
 --	,("f 2*a:200*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
 --	,("f 10*f:('a*b*if (less b a) {1b} {_f incr/a b})/2", "", "")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
