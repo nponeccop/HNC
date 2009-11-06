@@ -7,11 +7,12 @@ import System
 import IO
 
 data Cmd =
-	Quit | Help | Type | TypeDef | TypeTree | Code | Expr
+	Quit | Help | Examples | Type | TypeDef | TypeTree | Code | Expr
 
 get_cmd line =
 	if "\\q" == take 2 line then Quit
 	else if "\\h" == take 2 line then Help
+	else if "\\e" == take 2 line then Examples
 	else if "\\t " == take 3 line then Type
 	else if "\\td " == take 4 line then TypeDef
 	else if "\\tt " == take 4 line then TypeTree
@@ -25,6 +26,7 @@ help =
 	"  interactive commands\n"++
   "    \\ - interpretator internal commands\n"++
   "     h - help\n"++
+  "     e - examples\n"++
   "     t exp - type\n"++
   "     q - quit\n"++
   "  apply\n"++
@@ -34,12 +36,18 @@ help =
   "    (expr*a1:v1*a2:v2...) - (a1*a2*...expr) v1 v2 ...\n"++
   "  lazy/rec\n"++
 	"    f#expr - f {expr}\n"++
-  "    {expr} - lazy, eval: (l!expr) go\n"++
+  "    {expr} - lazy, eval: {expr} go\n"++
   "    ('..._f p1 p2...) - save current lambda to _f\n"++
   "  base functions\n"++
 	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys SPL.Top.base)++"\n"++
 	"  web\n"++
   "    wiki http://code.google.com/p/inv/w/"
+
+examples =
+	"  apply:\n"++
+	"    sum 1 2 | sum 1,2 | sum 1,sum 2 3\n"++
+	"  lazy:\n"++
+	"    if (eq x 1) {'one'}#if (eq x 2) {'two'} #'other'"
 
 help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
@@ -78,6 +86,7 @@ main_loop = do
 	case get_cmd line of
 		Quit -> return ()
 		Help -> do putStrLn help; main_loop
+		Examples -> do putStrLn examples; main_loop
 		Type ->
 			case get_type_of_expr $ drop 3 line of
 				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
