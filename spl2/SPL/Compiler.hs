@@ -4,33 +4,52 @@ import SPL.Types
 import SPL.Parser2 hiding (P (..), res)
 import SPL.Code hiding (res)
 import qualified Data.Map as M
+import qualified List as L
 
-comp (Sn x i) =
-	CDebug i $ CNum x
-comp (Sb x i) =
-	CDebug i $ CBool x
-comp (Sstr s i) =
-	CDebug i $ CStr s
-comp (Ss s i) =
-	CDebug i $ CVal s
-comp (Sstruct l i) =
+data P = P C | N [Char]
+
+comp (Sn x i) u e =
+	P $ CDebug i $ CNum x
+comp (Sb x i) u e =
+	P $ CDebug i $ CBool x
+comp (Sstr s i) u e =
+	P $ CDebug i $ CStr s
+comp (Ss s i) u e =
+	case M.lookup s e of
+		Just _ -> P $ CDebug i $ CVal s
+		Nothing ->  N "unknown function"
+comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
-	CDebug i $ CL (CStruct M.empty) (W $ map (\(Sset k v _) -> (k, comp v)) l)
-comp (Sdot v p i) =
-	CDebug i (CL (comp v) (D p))
-comp (Scall f (SynK a) i) =
-	CDebug i $ CL (comp f) (K (map comp a))
-comp (Scall f (SynS a) i) =
-	CDebug i $ CL (comp f) (S a)
-comp (Scall f (SynW a) i) =
-	CDebug i $ CL (comp f) (W $ map (\(Sset k v _) -> (k, comp v)) a)
-comp (Scall f (SynM a) i) =
-	CDebug i $ CL (comp f) R
-comp (Scall f SynL i) =
-	CDebug i $ CL (comp f) L
+	case f l of
+		Right w -> P $ CDebug i $ CStruct $ M.fromList w
+		Left e -> e 
+	where
+		f [] = Right []
+		f ((Sset k v _):l) =
+			case comp v u e of
+				P c ->
+					case f l of
+						Right v -> Right $ (k, c):v
+						o -> o
+				N e -> Left $ N e
+comp (Sdot v p i) u e =
+	case comp v u e of
+		P r -> P $ CDebug i $ CL r (D p)
+		N e -> N e
+comp (Scall f (SynK a) i) u e =
+	CDebug i $ CL (comp f u e) (K (map (\x -> comp x u e) a))
+comp (Scall f (SynS a) i) u e =
+	CDebug i $ CL (comp f u e) (S a)
+comp (Scall f (SynW a) i) u e =
+	CDebug i $ CL (comp f u e) (W $ map (\(Sset k v _) -> (k, comp v u e)) a)
+comp (Scall f (SynM a) i) u e =
+	CDebug i $ CL (comp f u e) R
+comp (Scall f SynL i) u e =
+	CDebug i $ CL (comp f u e) L
+comp (Scall f (SynU u) i) u2 e =
+	CDebug i $ comp f (u++u2) e
 
-compile = comp
-
+compile c = comp c []
 
 r_d (CDebug _ c) = r_d c
 r_d (CStruct m) = CStruct $ M.map r_d m

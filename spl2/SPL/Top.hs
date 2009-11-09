@@ -24,6 +24,9 @@ check2 o = check_with_rename o SPL.Top.get_types True
 eval0 c =
 	eval c get_codes
 
+compile0 c =
+	compile c get_codes
+
 base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
@@ -205,7 +208,7 @@ do_load (CStr f:[]) e =
     str <- readFile f
     return $ case SPL.Parser2.parse str of
       SPL.Parser2.P _ i p _ ->
-				let c = ffi_apply $ compile p in
+				let c = ffi_apply $ compile p e in
 					case check0 c of
 						SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
 						SPL.Check3.P (_, ur, _) -> error "load error1"

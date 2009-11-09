@@ -13,6 +13,7 @@ data SynParams =
 	| SynW [Syntax]
 	| SynL
 	| SynM [SynMark]
+	| SynU [[Char]]
 	deriving (Eq, Show)
 
 data Syntax =
@@ -59,6 +60,7 @@ data Token =
 	| Tspace_any
 	| Tparams
 	| Texpr
+	| Texpr_top_expr
 	| Texpr_top
 	| Texpr_lambda
 	| Tlambda
@@ -66,6 +68,8 @@ data Token =
 	| Twhere
 	| Tstruct
 	| Tkeys
+	| Tuses
+	| Tmod
 	deriving (Eq, Show, Ord)
 
 out o =
@@ -277,12 +281,26 @@ call Texpr_lambda =
 		([Tlambda,Tspace_o_not,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr], \(e:[]) -> e)
 		]
-call Texpr_top =
+call Texpr_top_expr =
 	p_or [
 		([Tlambda,Tspace_any,Texpr,Twhere], \(Sl l i:_:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Tlambda,Tspace_any,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr,Twhere], \(e:Sl w _:[]) -> Scall e (SynW w) (get_i e))
 		,([Texpr], \(e:[]) -> e)
+		]
+call Tmod =
+	p_or [
+		([Tvar], \(v:[]) -> v)
+		]
+call Tuses =
+	p_or [
+		([Tmod, Tchar '^',Tuses], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tmod, Tchar '^'], \(v:_:[]) -> Sl (v:[]) (get_i v))
+		]
+call Texpr_top =
+	p_or [
+		([Tuses,Texpr_top_expr], \(Sl u i:e:[]) -> Scall e (SynU $ map (\(Ss s _) -> s) u) i)
+		,([Texpr_top_expr], \(e:[]) -> e)
 		]
 
 parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Tspace_any,Eos], \(_:e:_:_:_:[]) -> e)] s 0 0 M.empty
