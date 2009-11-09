@@ -1,4 +1,3 @@
-
 module SPL.Check3 (P (..), check, check_with_rename, res) where
 
 import System.IO.Unsafe
@@ -6,7 +5,7 @@ import qualified Data.Map as M
 
 import SPL.Types
 import qualified SPL.Parser2
-import SPL.Compiler hiding (res)
+import qualified SPL.Compiler hiding (res)
 import Debug.Trace
 observeN a b = b
 
@@ -134,7 +133,9 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 		str <- readFile f
 		return $ case SPL.Parser2.parse str of
 			SPL.Parser2.P _ i p _ ->
-				check (compile p M.empty) et sv
+				case SPL.Compiler.compile p M.empty of -- M.empty is not correct
+					SPL.Compiler.P c -> check c et sv
+					SPL.Compiler.N e -> N (-1) e
 			SPL.Parser2.N i _ -> N i "check load error"
 
 check (CDebug ii tt@(CL a (K p))) et sv =

@@ -34,7 +34,6 @@ base = M.fromList $
 	:("sub", Fun
 		(CL (CInFun 2 (InFun "" do_sub)) (K []))
 		(TT [T "num", T "num", T "num"]))
-	
 	:("eq", Fun
 		(CL (CInFun 2 (InFun "" do_eq)) (K []))
 		(TT [T "num", T "num", T "boolean"]))
@@ -116,12 +115,12 @@ base = M.fromList $
 	:("out", Fun
 		(CL (CInFun 1 (InFun "" do_out)) (K []))
 		(TT [T "string", T "void"]))
-	:("str", Fun
+{-	:("str", Fun
 		(CStruct $ M.fromList
 			[("concat", CL (CInFun 2 (InFun "" do_str_concat)) (K []))])
 		(TS $ M.fromList
 			[("concat", TT [T "string", T "string", T "string"])]
-			))
+			))-}
 	:("to", Fun
 		(CL (CInFun 1 (InFun "" do_to)) (K []))
 		(TT [T "num", TD "list" [T "num"]]))
@@ -208,11 +207,13 @@ do_load (CStr f:[]) e =
     str <- readFile f
     return $ case SPL.Parser2.parse str of
       SPL.Parser2.P _ i p _ ->
-				let c = ffi_apply $ compile p e in
-					case check0 c of
-						SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
-						SPL.Check3.P (_, ur, _) -> error "load error1"
-						SPL.Check3.N i e -> error ("load error: "++e)
+				case compile p e of
+					SPL.Compiler.P c ->
+						case check0 $ c of
+							SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
+							SPL.Check3.P (_, ur, _) -> error "load error1"
+							SPL.Check3.N i e -> error ("load error: "++e)
+					SPL.Compiler.N e -> error ("load error218: "++e);
       SPL.Parser2.N i _ -> error ("load error3: "++f)
 
 do_out (CStr s:[]) e =

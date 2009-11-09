@@ -1,10 +1,12 @@
-module SPL.Compiler (compile, remove_cdebug, remove_ctyped, res) where
+module SPL.Compiler (P (..), compile, remove_cdebug, remove_ctyped, res) where
 
 import SPL.Types
 import SPL.Parser2 hiding (P (..), res)
 import SPL.Code hiding (res)
 import qualified Data.Map as M
 import qualified List as L
+import SPL.Lib.Bignum (lib)
+import SPL.Lib.Str (lib)
 
 data P = P C | N [Char]
 
@@ -14,21 +16,34 @@ comp (Sb x i) u e =
 	P $ CDebug i $ CBool x
 comp (Sstr s i) u e =
 	P $ CDebug i $ CStr s
+--comp (Ss "ffi" i) u e =
+--	P $ CDebug i $ CVal "ffi"
+comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
+	case M.lookup ffn lib of
+		Just f ->
+			let t2 = read t::SPL.Types.T in
+				case t2 of
+					TT l -> P $ CL (CInFun ((-) (length l) 1) (InFun t f)) (K [])
+					o -> error "ffi_apply: type"
+		Nothing -> error ("ffi: "++ffn++" did not find in lib")
+	where
+		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
+
 comp (Ss s i) u e =
 	case M.lookup s e of
 		Just _ -> P $ CDebug i $ CVal s
-		Nothing ->  N "unknown function"
+		Nothing ->  N $ "unknown function: "++s
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
-	case f l of
+	case fn l of
 		Right w -> P $ CDebug i $ CStruct $ M.fromList w
 		Left e -> e 
 	where
-		f [] = Right []
-		f ((Sset k v _):l) =
+		fn [] = Right []
+		fn ((Sset k v _):l) =
 			case comp v u e of
 				P c ->
-					case f l of
+					case fn l of
 						Right v -> Right $ (k, c):v
 						o -> o
 				N e -> Left $ N e
@@ -37,17 +52,55 @@ comp (Sdot v p i) u e =
 		P r -> P $ CDebug i $ CL r (D p)
 		N e -> N e
 comp (Scall f (SynK a) i) u e =
-	CDebug i $ CL (comp f u e) (K (map (\x -> comp x u e) a))
+--	CDebug i $ CL (comp f u e) (K (map (\x -> comp x u e) a))
+	case comp f u e of
+		P r ->
+			case fn a of
+				Right l -> P $ CDebug i $ CL r (K l)
+				Left (N e) -> N e
+		N e -> N e
+	where
+		fn [] = Right []
+		fn (x:xs) =
+			case comp x u e of
+				P x ->
+					case fn xs of
+						Right l -> Right (x:l)
+						o -> o
+				N e -> Left $ N e
 comp (Scall f (SynS a) i) u e =
-	CDebug i $ CL (comp f u e) (S a)
+	case comp f u e of
+		P r -> P $ CDebug i $ CL r (S a)
+		N e -> N e
 comp (Scall f (SynW a) i) u e =
-	CDebug i $ CL (comp f u e) (W $ map (\(Sset k v _) -> (k, comp v u e)) a)
+--	CDebug i $ CL (comp f u e) (W $ map (\(Sset k v _) -> (k, comp v u e)) a)
+	case comp f u e of
+		P r ->
+			case fn a of
+				Right l -> P $ CDebug i $ CL r (W l)
+				Left (N e) -> N e
+		N e -> N e
+	where
+		fn [] = Right []
+		fn ((Sset k v _):l) =
+			case comp v u e of
+				P c ->
+					case fn l of
+						Right v -> Right $ (k, c):v
+						o -> o
+				N e -> Left $ N e
 comp (Scall f (SynM a) i) u e =
-	CDebug i $ CL (comp f u e) R
+	case comp f u e of
+		P r -> P $ CDebug i $ CL r R
+		N e -> N e
 comp (Scall f SynL i) u e =
-	CDebug i $ CL (comp f u e) L
+	case comp f u e of
+		P r -> P $ CDebug i $ CL r L
+		N e -> N e
 comp (Scall f (SynU u) i) u2 e =
-	CDebug i $ comp f (u++u2) e
+	case comp f (u++u2) e of
+		P r -> P $ CDebug i r
+		N e -> N e
 
 compile c = comp c []
 
