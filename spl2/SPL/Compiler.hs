@@ -28,9 +28,30 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
 
 comp (Ss s i) u e =
-	case M.lookup s e of
-		Just _ -> P $ CDebug i $ CVal s
-		Nothing -> N i $ "unknown function: "++s
+	case f u of
+		Just v -> P $ CDebug i v
+		Nothing ->
+			case M.lookup s e of
+				Just e -> P $ CDebug i $ CVal s
+				Nothing -> N i $ "unknown function: "++s
+	where
+		f [] = Nothing
+		f ((m:ms):us) =
+			case f2 (CVal m) ms e of
+				Just r -> Just r
+				Nothing -> f us
+		f2 m1 [] e =
+			Just $ CL m1 (D s)
+		f2 m1 (m:ms) e =
+			case M.lookup m (e::M.Map [Char] C) of
+				Just (CStruct e) -> 
+					case f2 (CL m1 (D m)) ms e of
+						Just v -> Just v
+						Nothing -> Nothing
+				Nothing -> Nothing
+
+-- Sdot (Sval "bn") (D "int")
+
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
 	case fn l e of
