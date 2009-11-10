@@ -17,6 +17,7 @@ data P = P (C, M.Map [Char] T, T) | N Int [Char]
 
 
 get_r (P (_, ur, r)) = r
+get_r o = error $ "get_r: "++show o
 get_rl l = Prelude.map get_r l
 get_url [] =
 	Right []
