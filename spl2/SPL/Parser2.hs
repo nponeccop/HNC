@@ -13,7 +13,7 @@ data SynParams =
 	| SynW [Syntax]
 	| SynL
 	| SynM [SynMark]
-	| SynU [[Char]]
+	| SynU [[[Char]]]
 	deriving (Eq, Show)
 
 data Syntax =
@@ -290,7 +290,7 @@ call Texpr_top_expr =
 		]
 call Tmod =
 	p_or [
-		([Tvar], \(v:[]) -> v)
+		([Tvar], \(v:[]) -> Sl (v:[]) (get_i v))
 		]
 call Tuses =
 	p_or [
@@ -299,7 +299,7 @@ call Tuses =
 		]
 call Texpr_top =
 	p_or [
-		([Tuses,Texpr_top_expr], \(Sl u i:e:[]) -> Scall e (SynU $ map (\(Ss s _) -> s) u) i)
+		([Tuses,Texpr_top_expr], \(Sl u i:e:[]) -> Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i)
 		,([Texpr_top_expr], \(e:[]) -> e)
 		]
 
