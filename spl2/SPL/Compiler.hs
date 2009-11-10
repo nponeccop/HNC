@@ -29,8 +29,7 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 
 comp (Ss s i) u e =
 	case M.lookup s e of
---		Just _ -> P $ CDebug i $ CVal s
-		Just _ -> N i $ "mods "++show u
+		Just _ -> P $ CDebug i $ CVal s
 		Nothing -> N i $ "unknown function: "++s
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l

@@ -290,7 +290,8 @@ call Texpr_top_expr =
 		]
 call Tmod =
 	p_or [
-		([Tvar], \(v:[]) -> Sl (v:[]) (get_i v))
+		([Tvar, Tchar '.', Tmod], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
+		,([Tvar], \(v:[]) -> Sl (v:[]) (get_i v))
 		]
 call Tuses =
 	p_or [
