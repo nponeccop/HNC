@@ -16,8 +16,6 @@ comp (Sb x i) u e =
 	P $ CDebug i $ CBool x
 comp (Sstr s i) u e =
 	P $ CDebug i $ CStr s
---comp (Ss "ffi" i) u e =
---	P $ CDebug i $ CVal "ffi"
 comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 	case M.lookup ffn lib of
 		Just f ->

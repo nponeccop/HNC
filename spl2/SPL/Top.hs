@@ -249,34 +249,6 @@ do_if (CBool True:t:_:[]) e = eval (CL t (K [CVal "go"])) e
 do_if (CBool False:_:el:[]) e = eval (CL el (K [CVal "go"])) e
 do_if o e = error $ "if: "++show o
 
-ffi_apply (CDebug _ c) = ffi_apply c -- it is partly like r_d from Compile mod
-ffi_apply (CStruct m) = CStruct $ M.map ffi_apply m
-
-ffi_apply (CL (CDebug _ (CVal "ffi")) (K [CDebug _ (CStr t), CDebug _ (CStr ffn)])) =
-	case M.lookup ffn lib of
-		Just f ->
-			let t2 = read t::SPL.Types.T in
-				case t2 of
-					TT l -> CL (CInFun ((-) (length l) 1) (InFun t f)) (K [])
-					o -> error "ffi_apply: type"
-		Nothing -> error ("ffi: "++ffn++" did not find in lib")
-	where
-		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
-
-ffi_apply (CL c (K p)) =
-	CL (ffi_apply c) (K (Prelude.map ffi_apply p))
-ffi_apply (CL c (S a)) =
-	CL (ffi_apply c) (S a)
-ffi_apply (CL c (W a)) =
-	CL (ffi_apply c) (W (Prelude.map (\(a,b) -> (a, ffi_apply b)) a))
-ffi_apply (CL c (D n)) =
-	CL (ffi_apply c) (D n)
-ffi_apply (CL c R) =
-	CL (ffi_apply c) R
-ffi_apply (CL c L) =
-	CL (ffi_apply c) L
-ffi_apply o = o
-
 res = check2 (CL (CL (CNum 1) (W [("foo",CNum 2)])) (W [("foo",CBool True)]))
 res2 = check2 (CL (CNum 1) (S ["z"]))
 res3 = check2 (CL (CL (CVal "foo") (W [("foo",CL (CBool True) (W [("foo",CL (CVal "less") (K [CNum 2,CNum 2]))]))])) (W [("foo",CL (CVal "less") (K [CNum 2,CL (CVal "sum") (K [CNum 2,CNum 2])]))]))
