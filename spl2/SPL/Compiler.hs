@@ -21,7 +21,7 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 		Just f ->
 			let t2 = read t::SPL.Types.T in
 				case t2 of
-					TT l -> P $ CL (CInFun ((-) (length l) 1) (InFun t f)) (K [])
+					TT l -> P $ CL (CInFun ((-) (length l) 1) (InFun ("ffi_"++t) f)) (K [])
 					o -> error "ffi_apply: type"
 		Nothing -> error ("ffi: "++ffn++" did not find in lib")
 	where

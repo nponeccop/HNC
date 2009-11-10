@@ -239,7 +239,7 @@ check (CDebug _ c) et sv =
 	check c et sv
 
 check tt@(CInFun _ (InFun n f)) et sv =
-	P (tt, M.empty, ((read n)::SPL.Types.T))
+	P (tt, M.empty, ((read $ drop 4 n)::SPL.Types.T))
 
 check o et sv =
 	error ("check o: "++show o)
