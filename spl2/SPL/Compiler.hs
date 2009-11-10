@@ -35,15 +35,15 @@ comp (Ss s i) u e =
 		Nothing ->  N $ "unknown function: "++s
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
-	case fn l of
+	case fn l e of
 		Right w -> P $ CDebug i $ CStruct $ M.fromList w
 		Left e -> e 
 	where
-		fn [] = Right []
-		fn ((Sset k v _):l) =
+		fn [] e = Right []
+		fn ((Sset k v _):l) e =
 			case comp v u e of
 				P c ->
-					case fn l of
+					case fn l (M.insert k c e) of
 						Right v -> Right $ (k, c):v
 						o -> o
 				N e -> Left $ N e
