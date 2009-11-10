@@ -135,7 +135,7 @@ check (CDebug ii (CL (CDebug _ (CVal "load")) (K ((CDebug _ (CStr f)):[])))) et 
 			SPL.Parser2.P _ i p _ ->
 				case SPL.Compiler.compile p M.empty of -- M.empty is not correct
 					SPL.Compiler.P c -> check c et sv
-					SPL.Compiler.N e -> N (-1) e
+					SPL.Compiler.N i e -> N i e
 			SPL.Parser2.N i _ -> N i "check load error"
 
 check (CDebug ii tt@(CL a (K p))) et sv =

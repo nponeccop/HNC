@@ -8,7 +8,7 @@ import qualified List as L
 import SPL.Lib.Bignum (lib)
 import SPL.Lib.Str (lib)
 
-data P = P C | N [Char]
+data P = P C | N Int [Char]
 
 comp (Sn x i) u e =
 	P $ CDebug i $ CNum x
@@ -30,7 +30,7 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 comp (Ss s i) u e =
 	case M.lookup s e of
 		Just _ -> P $ CDebug i $ CVal s
-		Nothing ->  N $ "unknown function: "++s
+		Nothing ->  N i $ "unknown function: "++s
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
 	case fn l e of
@@ -38,25 +38,25 @@ comp (Sstruct l i) u e =
 		Left e -> e 
 	where
 		fn [] e = Right []
-		fn ((Sset k v _):l) e =
+		fn ((Sset k v i):l) e =
 			case comp v u e of
 				P c ->
 					case fn l (M.insert k c e) of
 						Right v -> Right $ (k, c):v
 						o -> o
-				N e -> Left $ N e
+				N i e -> Left $ N i e
 comp (Sdot v p i) u e =
 	case comp v u e of
 		P r -> P $ CDebug i $ CL r (D p)
-		N e -> N e
+		N i e -> N i e
 comp (Scall f (SynK a) i) u e =
 --	CDebug i $ CL (comp f u e) (K (map (\x -> comp x u e) a))
 	case comp f u e of
 		P r ->
 			case fn a of
 				Right l -> P $ CDebug i $ CL r (K l)
-				Left (N e) -> N e
-		N e -> N e
+				Left (N i e) -> N i e
+		N i e -> N i e
 	where
 		fn [] = Right []
 		fn (x:xs) =
@@ -65,19 +65,19 @@ comp (Scall f (SynK a) i) u e =
 					case fn xs of
 						Right l -> Right (x:l)
 						o -> o
-				N e -> Left $ N e
+				N i e -> Left $ N i e
 comp (Scall f (SynS a) i) u e =
 	case comp f u e of
 		P r -> P $ CDebug i $ CL r (S a)
-		N e -> N e
+		N i e -> N i e
 comp (Scall f (SynW a) i) u e =
 --	CDebug i $ CL (comp f u e) (W $ map (\(Sset k v _) -> (k, comp v u e)) a)
 	case comp f u e of
 		P r ->
 			case fn a of
 				Right l -> P $ CDebug i $ CL r (W l)
-				Left (N e) -> N e
-		N e -> N e
+				Left (N i e) -> N i e
+		N i e -> N i e
 	where
 		fn [] = Right []
 		fn ((Sset k v _):l) =
@@ -86,19 +86,19 @@ comp (Scall f (SynW a) i) u e =
 					case fn l of
 						Right v -> Right $ (k, c):v
 						o -> o
-				N e -> Left $ N e
+				N i e -> Left $ N i e
 comp (Scall f (SynM a) i) u e =
 	case comp f u e of
 		P r -> P $ CDebug i $ CL r R
-		N e -> N e
+		N i e -> N i e
 comp (Scall f SynL i) u e =
 	case comp f u e of
 		P r -> P $ CDebug i $ CL r L
-		N e -> N e
+		N i e -> N i e
 comp (Scall f (SynU u) i) u2 e =
 	case comp f (u++u2) e of
 		P r -> P $ CDebug i r
-		N e -> N e
+		N i e -> N i e
 
 compile c = comp c []
 

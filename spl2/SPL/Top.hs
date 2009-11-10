@@ -213,7 +213,7 @@ do_load (CStr f:[]) e =
 							SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
 							SPL.Check3.P (_, ur, _) -> error "load error1"
 							SPL.Check3.N i e -> error ("load error: "++e)
-					SPL.Compiler.N e -> error ("load error218: "++e);
+					SPL.Compiler.N i e -> error ("load error218: "++e);
       SPL.Parser2.N i _ -> error ("load error3: "++f)
 
 do_out (CStr s:[]) e =

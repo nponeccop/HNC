@@ -27,7 +27,7 @@ step str =
 						SPL.Check3.P (_, ur, a)|M.null ur -> SPL.Interpretator.P (show a, show $ eval0 $ out "eval" $ remove_cdebug c)
 						SPL.Check3.P (_, u2, a) -> error ("check0 returned saved vars: "++show u2++"\n"++show str)
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
-				SPL.Compiler.N e -> SPL.Interpretator.N (-100, "compiler: "++e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N (i, "compiler: "++e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
@@ -39,7 +39,7 @@ get_type_of_expr str =
 					case check0 c of
 						SPL.Check3.P (_, ur, t) -> SPL.Interpretator.P (show t, "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
-				SPL.Compiler.N e -> SPL.Interpretator.N (i, "compile: "++e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N (i, "compile: "++e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
@@ -48,7 +48,7 @@ get_code_of_expr str =
 		SPL.Parser2.P _ i p _ ->
 			case compile0 p of
 				SPL.Compiler.P c -> SPL.Interpretator.P ("", show $ remove_cdebug c)
-				SPL.Compiler.N e -> SPL.Interpretator.N (-100, e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N (i, e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "  "++(take i $ repeat ' ')++"^ parser error")
 
@@ -57,7 +57,7 @@ get_code_of_expr2 str =
 		SPL.Parser2.P _ i p _ ->
 			case compile0 p of
 				SPL.Compiler.P c -> SPL.Interpretator.P ("", show $ remove_ctyped c)
-				SPL.Compiler.N e -> SPL.Interpretator.N (-100, e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N (i, e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "  "++(take i $ repeat ' ')++"^ parser error")
 
@@ -69,7 +69,7 @@ get_type_debug_of_expr str =
 					case check2 c of
 						SPL.Check3.P (s, ur, a) -> SPL.Interpretator.P ((show $ (s, ur, a)), "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
-				SPL.Compiler.N e -> SPL.Interpretator.N $ (-100, "compile: "++e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N $ (i, "compile: "++e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
@@ -81,7 +81,7 @@ get_type_tree_of_expr str =
 					case check0 c of
 						SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (show ret, "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
-				SPL.Compiler.N e -> SPL.Interpretator.N (-100, "compile: "++e)
+				SPL.Compiler.N i e -> SPL.Interpretator.N (i, "compile: "++e)
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
