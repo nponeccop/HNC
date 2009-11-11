@@ -4,7 +4,6 @@ import SPL.Types
 import SPL.Parser2 hiding (P (..), res)
 import SPL.Code hiding (res)
 import qualified Data.Map as M
-import qualified List as L
 import SPL.Lib.Bignum (lib)
 import SPL.Lib.Str (lib)
 
@@ -55,7 +54,7 @@ comp (Ss s i) u e =
 comp (Sstruct l i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
 	case fn l e of
-		Right w -> P $ CDebug i $ CStruct $ M.fromList w
+		Right w -> P $ CDebug i $ CL (CStruct M.empty) $ W w
 		Left e -> e 
 	where
 		fn [] e = Right []
