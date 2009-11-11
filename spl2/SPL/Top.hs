@@ -25,7 +25,7 @@ eval0 c =
 	eval c get_codes
 
 compile0 c =
-	compile c get_codes
+	compile c get_types
 
 base = M.fromList $
 	("sum", Fun
@@ -207,7 +207,7 @@ do_load (CStr f:[]) e =
     str <- readFile f
     return $ case SPL.Parser2.parse str of
       SPL.Parser2.P _ i p _ ->
-				case compile p e of
+				case compile p get_types of
 					SPL.Compiler.P c ->
 						case check0 $ c of
 							SPL.Check3.P (_, ur, _)|M.null ur -> {-eval -}c{- e-}
