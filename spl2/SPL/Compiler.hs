@@ -36,15 +36,20 @@ comp (Ss s i) u e =
 	where
 		f [] = Nothing
 		f ((m:ms):us) =
-			case f2 (CVal m) ms e of
-				Just r -> Just r
-				Nothing -> f us
+			case M.lookup m e of
+				Just (CDebug _ e2@(CL (CStruct m2) (W w)))|M.null m2 ->
+					case f2 (CVal m) ms $ M.fromList w of
+						Just r -> Just r
+						Nothing -> f us
+				Nothing -> Nothing
 		f2 m1 [] e =
-			Just $ CL m1 (D s)
+			case M.lookup s e of
+				Just _ -> Just $ CL m1 (D s)
+				Nothing -> Nothing
 		f2 m1 (m:ms) e =
 			case M.lookup m (e::M.Map [Char] C) of
-				Just (CStruct e) -> 
-					case f2 (CL m1 (D m)) ms e of
+				Just (CStruct e2) -> 
+					case f2 (CL m1 (D m)) ms e2 of
 						Just v -> Just v
 						Nothing -> Nothing
 				Nothing -> Nothing
