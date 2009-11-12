@@ -37,12 +37,13 @@ help =
   "  lazy/rec\n"++
 	"    f#expr - f {expr}\n"++
   "    {expr} - lazy, eval: {expr} go\n"++
-  "    ('..._f p1 p2...) - save current lambda to _f\n"++
+  "    ('..._f p1 p2...) - save current lambda to _f (recursion)\n"++
   "  base functions\n"++
 	"    "++(foldr1 (\a b -> a++" "++b) $ M.keys SPL.Top.base)++"\n"++
 	"  structures\n"++
 	"    struct.field - field from structure\n"++
 	"    struct^field - import struct env\n"++
+	"    .field - from top level\n"++
 	"  web\n"++
   "    wiki http://code.google.com/p/inv/w/"
 
