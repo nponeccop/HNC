@@ -53,7 +53,7 @@ help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
 
 title =
-	"SPL r"++revision++"\n"++(take 0 $ repeat ' ')++"\\h - help"
+	"SPL "++revision++"\n"++(take 0 $ repeat ' ')++"\\h - help"
 
 get_line ('\r':'\n':cs) s i il l|i>0 = get_line cs "" (i-2) 0 (l+1)
 get_line ('\r':'\n':cs) s i il l = (l, il, s)
