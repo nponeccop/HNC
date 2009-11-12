@@ -1,21 +1,21 @@
 (
-	iter (bn.int 0) (bn.str '600851475143'),bn.int 2
+	bn^iter (int 0) (str '600851475143'),int 2
 	is_prime:(n*
-		bn^('x*
+		('x*
 			if (lt x,div n,int 2) {
 				if (eq zero,mod n x) {
 					0b
 				}#_f,incr x
 			}#1b
-		),bn.int 2
+		),int 2
 	)
 	iter:('p*n*i*
-		if (bn.lt i,bn.incr n) {
-			if (bn.eq bn.zero,bn.mod n i) {
+		if (lt i,incr n) {
+			if (eq zero,mod n i) {
 				if (is_prime i) {
-					_f i (bn.div n i),bn.incr i
-				}#_f p n,bn.incr i
-			}#_f p n,bn.incr i
+					_f i (div n i),incr i
+				}#_f p n,incr i
+			}#_f p n,incr i
 		}#p
 	)
 )
