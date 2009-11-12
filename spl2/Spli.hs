@@ -19,7 +19,7 @@ get_cmd line =
 	else if "\\c " == take 3 line then Code
 	else Expr
 
-revision = "$Revision$"
+revision = (:) 'r' $ reverse $ drop 2 $ reverse $ drop 11 $ "$Revision$"
 
 help = 
 	"help\n"++
