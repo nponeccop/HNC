@@ -32,8 +32,9 @@ help =
   "  apply\n"++
   "    f p - apply p to f\n"++
   "    f,expr - f (expr)\n"++
-  "    (v1*v2*...expr) - define function with vX parameters\n"++
-  "    (expr*a1:v1*a2:v2...) - (a1*a2*...expr) v1 v2 ...\n"++
+  "    a1*a2*...expr - define function with aX parameters\n"++
+  "    expr*a1:v1*a2:v2... - (a1*a2*...expr) v1 v2 ...\n"++
+  "    a1*a2*expr*a3:v3*a4:v4 - both ^ and ^^\n"++
   "  lazy/rec\n"++
 	"    f#expr - f {expr}\n"++
   "    {expr} - lazy, eval: {expr} go\n"++
