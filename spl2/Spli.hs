@@ -19,7 +19,7 @@ get_cmd line =
 	else if "\\c " == take 3 line then Code
 	else Expr
 
-revision = (:) 'r' $ reverse $ drop 2 $ reverse $ drop 11 $ "$Revision$"
+revision = "$Revision$"
 
 help = 
 	"help\n"++
@@ -53,7 +53,7 @@ help2 =
 	"use spli <spl module> to run file\nspli for interactive mode"
 
 title =
-	"SPL "++revision++"\n"++(take 0 $ repeat ' ')++"\\h - help"
+	"SPL "++((:) 'r' $ reverse $ drop 2 $ reverse $ drop 11 $ revision)++"\n"++(take 0 $ repeat ' ')++"\\h - help"
 
 get_line ('\r':'\n':cs) s i il l|i>0 = get_line cs "" (i-2) 0 (l+1)
 get_line ('\r':'\n':cs) s i il l = (l, il, s)
