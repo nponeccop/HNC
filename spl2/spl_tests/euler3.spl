@@ -1,11 +1,11 @@
 (
 	iter (bn.int 0) (bn.str '600851475143'),bn.int 2
 	is_prime:(n*
-		('x*
-			if (bn.lt x,bn.div n,bn.int 2) {
-				if (bn.eq bn.zero,bn.mod n x) {
+		bn^('x*
+			if (lt x,div n,int 2) {
+				if (eq zero,mod n x) {
 					0b
-				}#_f,bn.incr x
+				}#_f,incr x
 			}#1b
 		),bn.int 2
 	)

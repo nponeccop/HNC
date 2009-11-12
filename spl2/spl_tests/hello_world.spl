@@ -1,1 +1,2 @@
-out,str.concat 'hello',str.concat ' ' 'world'
+out,str^concat 'hello',concat ' ' 'world'
+

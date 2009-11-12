@@ -253,7 +253,9 @@ call Tparams =
 		]
 call Texpr =
 	p_or [
-		([Tval, Tparams], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
+		([Tuses,Tval, Tparams], \(Sl u i:v:Sl p _:[]) -> Scall (Scall v (SynK p) i) (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i)
+		,([Tuses,Tval], \(Sl u i:v:[]) -> Scall v (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i)
+		,([Tval, Tparams], \(v:Sl p _:[]) -> Scall v (SynK p) (get_i v))
 		,([Tval], \(v:[]) -> v)
 		]
 call Tlambda =
@@ -281,13 +283,19 @@ call Texpr_lambda =
 		([Tlambda,Tspace_o_not,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr], \(e:[]) -> e)
 		]
-call Texpr_top_expr =
+call Texpr_top =
 	p_or [
-		([Tlambda,Tspace_any,Texpr,Twhere], \(Sl l i:_:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
+		([Tlambda,Tspace_any,Tuses,Tspace_any,Texpr,Twhere], \(Sl l i:_:u:_:e:Sl w _:[]) -> use u $ Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Tlambda,Tspace_any,Tuses,Tspace_any,Texpr], \(Sl l i:_:u:_:e:[]) -> use u $ Scall e (SynS $ map (\(Ss s _) -> s) l) i)
+		,([Tuses,Texpr,Twhere], \(u:e:Sl w _:[]) -> use u $ Scall e (SynW w) (get_i e))
+		,([Tuses,Texpr], \(u:e:[]) -> use u e)
+		,([Tlambda,Tspace_any,Texpr,Twhere], \(Sl l i:_:e:Sl w _:[]) -> Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Tlambda,Tspace_any,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr,Twhere], \(e:Sl w _:[]) -> Scall e (SynW w) (get_i e))
 		,([Texpr], \(e:[]) -> e)
 		]
+	where
+		use (Sl u i) e = Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i
 call Tmod =
 	p_or [
 		([Tvar, Tchar '.', Tmod], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
@@ -298,11 +306,11 @@ call Tuses =
 		([Tmod, Tchar '^',Tuses], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
 		,([Tmod, Tchar '^'], \(v:_:[]) -> Sl (v:[]) (get_i v))
 		]
-call Texpr_top =
+{-call Texpr_top =
 	p_or [
 		([Tuses,Texpr_top_expr], \(Sl u i:e:[]) -> Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i)
 		,([Texpr_top_expr], \(e:[]) -> e)
-		]
+		]-}
 
 parse s = p_or [([Tspace_any,Texpr_top,Tspace_any,Tspace_any,Eos], \(_:e:_:_:_:[]) -> e)] s 0 0 M.empty
 
