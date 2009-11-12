@@ -29,6 +29,7 @@ data Syntax =
 	| Spair Syntax Syntax Int
 	| Sstruct [Syntax] Int
 	| Sdot Syntax [Char] Int
+	| Sroot Int
 	deriving (Eq, Show)
 
 data P = P Int Int Syntax (M.Map (Token,Int) (Either (Int,Int,Syntax) Int)) | N Int (M.Map (Token,Int) (Either (Int,Int,Syntax) Int))
@@ -207,7 +208,8 @@ call Tkeys =
 		]
 call Tval_dot =
 	p_or [
-		([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
+		([Tkeys], \(Sl l i:[]) -> foldl (\v (Ss k i) -> Sdot v k i) (Sroot i) l)
+		,([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
 		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tparams_add =

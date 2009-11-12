@@ -26,6 +26,9 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 	where
 		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
 
+comp (Sdot (Sroot _) p i) u e = 
+	comp (Ss p i) [] e
+
 comp (Ss s i) u e =
 	case f u of
 		Just v -> P $ CDebug i v
