@@ -30,6 +30,7 @@ data Syntax =
 	| Sstruct [Syntax] Int
 	| Sdot Syntax [Char] Int
 	| Sroot Int
+	| Stype Syntax [Syntax] Int
 	deriving (Eq, Show)
 
 data P = P Int Int Syntax (M.Map (Token,Int) (Either (Int,Int,Syntax) Int)) | N Int (M.Map (Token,Int) (Either (Int,Int,Syntax) Int))
@@ -72,7 +73,6 @@ data Token =
 	| Tuses
 	| Tmod
 	| Ttype
-	| Ttype_mk
 	deriving (Eq, Show, Ord)
 
 out o =
@@ -300,18 +300,14 @@ call Texpr_top_expr =
 		]
 	where
 		use (Sl u i) e = Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i
-call Ttype_mk =
-	p_or [
-		([Tvar, Tstring, Tchar ',', Ttype_mk], \(Ss v i:t:_:l:[]) -> Sl ((Sset v t i):[]) i)
-		,([Tvar, Tstring], \(Ss v i:t:[]) -> Sl ((Sset v t i):[]) i)
-		]
 call Ttype =
 	p_or [
-		([Ttype_mk, Tchar '~'], \(t:ts:_:[]) -> Ss "type" (get_i t))
+		([Tvar, Tstring, Tchar ',', Ttype], \(Ss v i:t:_:Sl l _:[]) -> Sl ((Sset v t i):l) i)
+		,([Tvar, Tstring, Tchar '~'], \(Ss v i:t:_:[]) -> Sl ((Sset v t i):[]) i)
 		]
 call Texpr_top =
 	p_or [
-		([Ttype, Texpr_top_expr], \(t:e:[]) -> e)
+		([Ttype, Texpr_top_expr], \(Sl l i:e:[]) -> Stype e l i)
 		,([Texpr_top_expr], \(e:[]) -> e)
 		]
 call Tmod =

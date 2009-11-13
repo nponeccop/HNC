@@ -115,6 +115,20 @@ comp (Scall f (SynW a) i) u e =
 						Right v -> Right $ (k, c):v
 						o -> o
 				N i e -> Left $ N i e
+comp (Stype f a i) u e =
+	case fn a e of
+		Right l ->
+			case comp f u $ putp (map fst l) e of
+				P r -> P $ CDebug i $ CL r (W l)
+				N i e -> N i e
+		Left (N i e) -> N i e
+	where
+		fn [] e = Right []
+		fn ((Sset k v _):l) e =
+					case fn l $ putp [k] e of
+						Right v -> Right $ (k, (CStr ("t_"++k))):v
+						o -> o
+	
 comp (Scall f (SynM a) i) u e =
 	case comp f u $ putp ["_f"] e of
 		P r -> P $ CDebug i $ CL r R
