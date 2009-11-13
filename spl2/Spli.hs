@@ -7,7 +7,7 @@ import System
 import IO
 
 data Cmd =
-	Quit | Help | Examples | Type | TypeDef | TypeTree | Code | Expr
+	Quit | Help | Examples | Type | TypeDef | TypeTree | Code | Expr | Syntax
 
 get_cmd line =
 	if "\\q" == take 2 line then Quit
@@ -17,6 +17,7 @@ get_cmd line =
 	else if "\\td " == take 4 line then TypeDef
 	else if "\\tt " == take 4 line then TypeTree
 	else if "\\c " == take 3 line then Code
+	else if "\\s " == take 3 line then Syntax
 	else Expr
 
 revision = "$Revision$"
@@ -104,6 +105,10 @@ main_loop = do
 		Code ->
 			case get_code_of_expr $ drop 3 line of
 				SPL.Interpretator.P (t, r) -> do putStrLn r; main_loop
+				SPL.Interpretator.N (i, r) -> do putStrLn (tab i r); main_loop
+		Syntax ->
+			case get_syntax_of_expr $ drop 3 line of
+				SPL.Interpretator.P (t, r) -> do putStrLn t; main_loop
 				SPL.Interpretator.N (i, r) -> do putStrLn (tab i r); main_loop
 		Expr ->
 			case step line of

@@ -72,6 +72,7 @@ data Token =
 	| Tuses
 	| Tmod
 	| Ttype
+	| Ttype_mk
 	deriving (Eq, Show, Ord)
 
 out o =
@@ -299,8 +300,14 @@ call Texpr_top_expr =
 		]
 	where
 		use (Sl u i) e = Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i
+call Ttype_mk =
+	p_or [
+		([Tvar, Tstring, Tchar ',', Ttype_mk], \(Ss v i:t:_:l:[]) -> Sl ((Sset v t i):[]) i)
+		,([Tvar, Tstring], \(Ss v i:t:[]) -> Sl ((Sset v t i):[]) i)
+		]
 call Ttype =
 	p_or [
+		([Ttype_mk, Tchar '~'], \(t:ts:_:[]) -> Ss "type" (get_i t))
 		]
 call Texpr_top =
 	p_or [

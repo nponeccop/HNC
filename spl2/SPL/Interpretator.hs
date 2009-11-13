@@ -1,4 +1,4 @@
-module SPL.Interpretator (SPL.Interpretator.P (..), step, get_type_of_expr, get_code_of_expr, get_code_of_expr2, get_type_debug_of_expr, get_type_tree_of_expr) where
+module SPL.Interpretator (SPL.Interpretator.P (..), step, get_type_of_expr, get_code_of_expr, get_code_of_expr2, get_type_debug_of_expr, get_type_tree_of_expr, get_syntax_of_expr) where
 
 import SPL.Parser2
 import SPL.Compiler
@@ -82,6 +82,12 @@ get_type_tree_of_expr str =
 						SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (show ret, "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 				SPL.Compiler.N i e -> SPL.Interpretator.N (i, "compile: "++e)
+		SPL.Parser2.N i _ ->
+			SPL.Interpretator.N (i, "parser error")
+
+get_syntax_of_expr str =
+	case parse str of
+		SPL.Parser2.P _ i p _ -> SPL.Interpretator.P (show p, "")
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
