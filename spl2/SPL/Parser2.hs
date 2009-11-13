@@ -71,6 +71,7 @@ data Token =
 	| Tkeys
 	| Tuses
 	| Tmod
+	| Ttype
 	deriving (Eq, Show, Ord)
 
 out o =
@@ -285,7 +286,7 @@ call Texpr_lambda =
 		([Tlambda,Tspace_o_not,Texpr], \(Sl l i:_:e:[]) -> Scall e (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Texpr], \(e:[]) -> e)
 		]
-call Texpr_top =
+call Texpr_top_expr =
 	p_or [
 		([Tlambda,Tspace_any,Tuses,Tspace_any,Texpr,Twhere], \(Sl l i:_:u:_:e:Sl w _:[]) -> use u $ Scall (Scall e (SynW w) i) (SynS $ map (\(Ss s _) -> s) l) i)
 		,([Tlambda,Tspace_any,Tuses,Tspace_any,Texpr], \(Sl l i:_:u:_:e:[]) -> use u $ Scall e (SynS $ map (\(Ss s _) -> s) l) i)
@@ -298,6 +299,14 @@ call Texpr_top =
 		]
 	where
 		use (Sl u i) e = Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i
+call Ttype =
+	p_or [
+		]
+call Texpr_top =
+	p_or [
+		([Ttype, Texpr_top_expr], \(t:e:[]) -> e)
+		,([Texpr_top_expr], \(e:[]) -> e)
+		]
 call Tmod =
 	p_or [
 		([Tvar, Tchar '.', Tmod], \(v:_:Sl l _:[]) -> Sl (v:l) (get_i v))
