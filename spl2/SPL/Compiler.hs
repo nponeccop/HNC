@@ -123,11 +123,32 @@ comp (Stype f a i) u e =
 				N i e -> N i e
 		Left (N i e) -> N i e
 	where
+		type_name = foldr (++) "" $ map (\(Sset k (Sn n _) _) -> k++show n) a
 		fn [] e = Right []
-		fn ((Sset k v _):l) e =
+		fn ((Sset k (Sn n _) _):l) e =
 					case fn l $ putp [k] e of
-						Right v -> Right $ (k, (CStr ("t_"++k))):v
+						Right v -> Right $ (("mk_"++k), mktp k n):(("if_"++k), mkif k n):v
 						o -> o
+		mktp k n =
+			CL (CInFun (n+1) (InFun ("typ_"++ft) do_type)) (K[CStr k])
+			where
+				ft = "TT [T \"string\", "
+					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
+					++"T \""++type_name++"\"]"
+				do_type l e =
+					CList l
+		mkif k n =
+			CL (CInFun (n+2) (InFun ("ift_"++ft) do_ift)) (K[CStr k])
+			where
+				ft = "TT [T \"string\", TT ["
+					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
+					++"TU \"zzz\"], TT [TL, TU \"zzz\"], T \""++type_name++"\", TU \"zzz\"]"
+				do_ift ((CStr t):f:f2:(CList ((CStr t2):ts)):[]) e =
+					case t == t2 of
+						True -> eval (CL f2 (K ts)) e
+						False -> eval f2 e
+				do_ift o e = error $ show o
+			
 	
 comp (Scall f (SynM a) i) u e =
 	case comp f u $ putp ["_f"] e of
