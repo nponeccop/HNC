@@ -138,16 +138,16 @@ comp (Stype f a i) u e =
 				do_type l e =
 					CList l
 		mkif k n =
-			CL (CInFun (n+2) (InFun ("ift_"++ft) do_ift)) (K[CStr k])
+			CL (CInFun 4 (InFun ("ift_"++ft) do_ift)) (K[CStr k])
 			where
 				ft = "TT [T \"string\", TT ["
 					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
 					++"TU \"zzz\"], TT [TL, TU \"zzz\"], T \""++type_name++"\", TU \"zzz\"]"
 				do_ift ((CStr t):f:f2:(CList ((CStr t2):ts)):[]) e =
 					case t == t2 of
-						True -> eval (CL f2 (K ts)) e
-						False -> eval f2 e
-				do_ift o e = error $ show o
+						True -> eval (CL f (K ts)) e
+						False -> eval (CL f2 (K [CVal "go"])) e
+				do_ift o e = error $ "E: "++show o
 			
 	
 comp (Scall f (SynM a) i) u e =
