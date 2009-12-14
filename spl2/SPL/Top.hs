@@ -144,6 +144,7 @@ base = M.fromList $
 		(TT [TT [TU "a", TU "b"], TD "list" [TU "a"], TD "list" [TU "b"]]))
 	:("str", Lib "spllib/str.spl")
 	:("bn", Lib "spllib/bn.spl")
+	:("adt", Lib "spllib/adt.spl")
 	:[]
 
 put_name n (CL (CInFun i (InFun "" f)) (K [])) = CL (CInFun i (InFun n f)) (K [])

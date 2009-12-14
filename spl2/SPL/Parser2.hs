@@ -279,7 +279,8 @@ call Twhere =
 		]
 call Tstruct =
 	p_or [
-			([Tchar '[',Twhere,Tspace_o_not,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
+			([Tchar '[',Ttype,Twhere,Tspace_o_not,Tchar ']'], \(c:Sl t _:Sl l _:_:_:[]) -> Stype (Sstruct l (get_i c)) t (get_i c))
+			,([Tchar '[',Twhere,Tspace_o_not,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
 			,([Tchar '[',Twhere,Tnewline_space,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
 		]
 call Texpr_lambda =
@@ -307,7 +308,7 @@ call Ttype =
 		]
 call Texpr_top =
 	p_or [
-		([Ttype, Texpr_top_expr], \(Sl l i:e:[]) -> Stype e l i)
+		([Ttype, Tspace_any, Texpr_top_expr], \(Sl l i:_:e:[]) -> Stype e l i)
 		,([Texpr_top_expr], \(e:[]) -> e)
 		]
 call Tmod =
