@@ -11,8 +11,8 @@ import CPP.Intermediate
 import SPL.Top
 import SPL.Check3
 import SPL.Visualise
-import System
-	
+import System.Environment
+
 tdi2 t types = DefinitionInherited {
 	diLevel        = 0
 ,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
@@ -23,12 +23,12 @@ tdi2 t types = DefinitionInherited {
 
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
-compileFile t inFile 
-	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . z 
+compileFile t inFile
+	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . z
 	where
 		z self @ (Definition name _ _ _) = sem_Definition (tdi2 t types) self where
 			P (_, fv, x) = check1 (convertDef self) SPL.Top.get_types
-			types = M.insert name x fv 
+			types = M.insert name x fv
 
 
 typeCheck inFile = compile inFile f where
