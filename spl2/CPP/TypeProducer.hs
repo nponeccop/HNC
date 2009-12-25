@@ -15,12 +15,12 @@ cppPrimitiveType x = case x of
 	"IO" -> "ff::IO"
 	_ -> "<<<<Type inference error or unknown primitive type: " ++ x ++ ">>>>"
 
-cppType (T x) = CppTypePrimitive $ cppPrimitiveType x  
-	
+cppType (T x) = CppTypePrimitive $ cppPrimitiveType x
+
 cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
 	cppL = map cppType l
-	templateArgs = S.toList $ typePolyVars (TT l)  
-	
+	templateArgs = S.toList $ typePolyVars (TT l)
+
 cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) $ map cppType typeArgs
 
 cppType (TU x) = CppTypePrimitive x
@@ -31,16 +31,13 @@ cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
 
 uncurryFunctionType [argType] [] = [argType]
 uncurryFunctionType argTypes [] = [TT argTypes]
-uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta 
+uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta
 
 cppUncurryType (TT argTypes) args = cppType $ TT $ uncurryFunctionType argTypes args
 cppUncurryType splType _ = cppType splType
 
-typePolyVars x = (case x of
+typePolyVars x = let union = S.unions . map typePolyVars in case x of
 	TU v -> S.singleton v
 	TT l -> union l
 	TD _ l -> union l
-	_    -> S.empty)
-		where
-			union = S.unions . map typePolyVars
-
+	_    -> S.empty

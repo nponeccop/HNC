@@ -14,16 +14,16 @@ import HN.MyTypeCheck
 
 pair a b = (a, b)
 
-pf x y =  y >>= (return . x) 
+pf x y =  y >>= (return . x)
 
-simpleParse2 prog = fromRight $ P.parseString parseType prog
+simpleParse2 = fromRight . P.parseString parseType
 
 typeVar = do
 	a <- many1 digit
 	return $ TypeVar $ read a
-	
+
 fun = pf Fun $ sepBy parseSimpleType (string " -> ")
-	
+
 parens = do
 	char '('
 	a <- parseType
@@ -31,9 +31,9 @@ parens = do
 	return a
 
 simpleType = pf Type $ many1 letter
-	
+
 adt = pf g (sepBy parseSimpleType $ char ' ') where
-	g a = case a of 
+	g a = case a of
 		[b] -> b
 		_ -> ADT a
 

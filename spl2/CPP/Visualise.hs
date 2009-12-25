@@ -5,10 +5,10 @@ import HN.Intermediate
 import Utils
 
 showWithIndent indentationLevel y
-	= concat $ map (inStrings indent "\n") $ filter (\x -> not $ null x) y where
+	= concat $ map (inStrings indent "\n") $ filter (not . null) y where
 		indent = replicate indentationLevel '\t'
 
-showFunctionPrototype def = (show $ functionReturnType def) ++ " " ++ functionName def ++ (inParens $ showFunctionArgs $ functionArgs def)
+showFunctionPrototype def = show (functionReturnType def) ++ " " ++ functionName def ++ inParens (showFunctionArgs $ functionArgs def)
 
 inParens x = inStrings "(" ")" x
 inAngular x = inStrings "<" ">" x
@@ -23,7 +23,7 @@ showTemplateArgs typeArgs = inAngular $ joinComma typeArgs
 ifNotNull l res = if null l then [] else res
 
 getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
-	templateDecl = "template "  ++ (showTemplateArgs $ map ((++) "typename ") templateArgs)
+	templateDecl = "template "  ++ showTemplateArgs (map ("typename " ++) templateArgs)
 
 instance Show CppContext where
 	show (CppContext level templateArgs name vars methods)
@@ -42,7 +42,7 @@ instance Show CppContext where
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal)
-		= maybe [] show context ++ (showWithIndent level $ concat $
+		= maybe [] show context ++ showWithIndent level (concat
 		[
 			getTemplateDecl templateArgs
 		, 	[
@@ -60,7 +60,7 @@ instance Show CppDefinition where
 				= "\tlocal impl = { " ++ initVars ++ " };"
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars
 			showContextInit ctx @ (CppContext _ templateVars tn vars _)
-				= ("\ttypedef " ++ tn ++ (showTemplateArgs templateVars) ++ " local;") : ifNotNull vars [getContextInit vars]
+				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : ifNotNull vars [getContextInit vars]
 
 instance Show CppLocalVarDef where
     show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
@@ -74,14 +74,14 @@ instance Show CppExpression where
     		(ConstInt s) -> show s
     show (CppAtom l) = l
     show (CppApplication (CppAtom a) b)
-        = a ++ (inParens $ showFunctionArgs b)
+        = a ++ inParens (showFunctionArgs b)
     show (CppApplication a b)
-        = (inParens $ show a) ++ (inParens $ showFunctionArgs b)
+        = inParens (show a) ++ inParens (showFunctionArgs b)
 
 instance Show CppType where
 	show (CppTypePrimitive p)
 		= p
 	show (CppTypeFunction ret args)
-		= "boost::function" ++ (inAngular $ show ret ++ " " ++ (inParens $ showFunctionArgs args))
+		= "boost::function" ++ inAngular (show ret ++ " " ++ inParens (showFunctionArgs args))
 	show (CppTypePolyInstance polyType typeArgs)
-		= polyType ++ (inAngular $ showFunctionArgs typeArgs)
+		= polyType ++ inAngular (showFunctionArgs typeArgs)

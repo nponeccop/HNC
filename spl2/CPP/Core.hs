@@ -63,13 +63,13 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- localsList : semWhere
 		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
 		-- symTabWithStatics : semWhere
-		symTabWithStatics = (wsLocalFunctionMap semWhere) `M.union` (diSymTab inh)
+		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
 
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList
 		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
 
 		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprOutputTypes inh { diLevel = diLevel inh + 1 }) wh where
-			classPrefix = CppFqMethod $ (contextTypeName $ fromJust ctx) ++ (showTemplateArgs $ contextTemplateArgs $ fromJust ctx)
+			classPrefix = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
 			-- symTabT : symTabWithStatics
 			symTabT = symTabTranslator symTabWithStatics
 
@@ -96,13 +96,13 @@ sem_Where inh self
 		wsLocalVars = wsLocalVars
 	,	wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
 	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods'
-	,	wsTemplateArgs = nub $ (concat $ (map functionTemplateArgs wsMethods') ++ varTemplateArgs)
+	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods' ++ varTemplateArgs
 	} where
 		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
 		wsLocalVars' = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars'
 		wsLocalVars = map vdsVarDef wsLocalVars'
-		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && (fn x)) self
+		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
 
 isFunction (Definition _ args _ _) = not $ null args
 
@@ -117,11 +117,13 @@ getContext methods inh defType templateVars (Definition name args _ wh)
 	-- переменные контекста - это
 	-- аргументы главной функции, свободные в where-функциях
 	-- локальные переменные, свободные в where-функциях
-	vars = (filter (\(CppVar _ name _ ) -> not $ S.member name lvn) $ (map vdsVarDef varSem))  ++ contextArgs where
+	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
 		lvn = getWhereVarNames wh
 
-	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
-	contextTemplateVars = nub ((templateVars ++ (concat $ (map vdsTemplateArgs varSem)) ++ (S.toList $ S.unions $ contextArgsTv)))
+	whereList = case diTyped inh of x -> x
+
+	varSem = trace (show whereList) $ getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
+	contextTemplateVars = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
 
 	(contextArgs, contextArgsTv) = unzip $ case defType of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
@@ -141,7 +143,7 @@ getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Defi
 
 defName (Definition name _ _ _) = name
 
-getWhereX wh f = S.fromList $ getFromWhere wh defName f
+getWhereX wh = S.fromList . getFromWhere wh defName
 
 getWhereVarNames wh = getWhereX wh isVar
 getWhereAtoms wh =  getWhereX wh (const True)
@@ -150,7 +152,7 @@ getXVars fn def = fn (getWhereFreeVars def) (getDefinitionFreeVars def) where
 	-- переменные, свободные в данном where. Могут быть контекстными или внешними
 	getWhereFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars wh
 
-getSetOfListFreeVars ww = S.unions $ map getDefinitionFreeVars ww
+getSetOfListFreeVars = S.unions . map getDefinitionFreeVars
 
 data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 	vdsVarDef :: a
@@ -175,7 +177,7 @@ sem_Expression fqn p = case p of
 		transformApplicand = case x of
 			Atom a -> CppAtom $ fqn True a
 			_ -> sem_Expression fqn x
-		transformOperand (Atom a) = CppAtom $ if elem ':' aaa && (not $ isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
+		transformOperand (Atom a) = CppAtom $ if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
 				aaa = fqn False a
 		transformOperand x = sem_Expression fqn x
 
@@ -184,4 +186,4 @@ getExpressionAtoms (Application a b) = S.unions $ map getExpressionAtoms (a : b)
 getExpressionAtoms _ = S.empty
 
 getDefinitionFreeVars (Definition _ args val wh)
-	= (S.union (getExpressionAtoms val) (getSetOfListFreeVars wh)) `subtractSet` (S.fromList args) `subtractSet` (getWhereAtoms wh)
+	= S.union (getExpressionAtoms val) (getSetOfListFreeVars wh) `subtractSet` S.fromList args `subtractSet` getWhereAtoms wh

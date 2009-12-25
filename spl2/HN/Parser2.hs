@@ -1,18 +1,18 @@
 -----------------------------------------------------------------------------------------
 {-| Module      : Main
-    Copyright   : 
+    Copyright   :
     License     : All Rights Reserved
 
-    Maintainer  : 
-    Stability   : 
-    Portability : 
+    Maintainer  :
+    Stability   :
+    Portability :
 -}
 -----------------------------------------------------------------------------------------
 
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
 module HN.Parser2 (
-	program, parseString, application, expression, mySepBy, 
+	program, parseString, application, expression, mySepBy,
 	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile) where
 import Text.Parsec.Prim
 import Text.Parsec.ByteString
@@ -29,15 +29,15 @@ parseString p input
     = runP p () "test.hn0" (packL input)
 
 xletter = letter <|> char '_'
- 
-identifier 
-	= liftM2 (:) xletter $ many $ xletter <|> digit  
 
-literal = between q q (many $ noneOf "\"") where q = (char '"') 
-	
+identifier
+	= liftM2 (:) xletter $ many $ xletter <|> digit
+
+literal = between q q $ many $ noneOf "\"" where q = char '"'
+
 constructLambda h (Lambda args ex) = Lambda (h:args) ex
-	
-lambdaTail = 
+
+lambdaTail =
 	do
 		h <- identifier
 		char ' '
@@ -48,27 +48,23 @@ lambdaTail =
 		string "-> "
 		e <- expression
 		return $ Lambda [] e
-	
+
 lambda = do
 	string "\\ "
 	lambdaTail
 
-expression = 
-	do
-		a <- many1 digit
-		return $ Constant (ConstInt (read a))
-	<|> 
-	do
-		a <- literal
-		return $ Constant (ConstString a)
+expression =
+	(many1 digit >>= return . Constant . ConstInt . read)
+	<|>
+	(literal >>= return . Constant . ConstString)
 	<|>
 	lambda
 	<|>
-	(try application)
+	try application
 	<|>
 	atom2
 
-argument = 	
+argument =
 	do
 		a <- many1 digit
 		return $ Constant (ConstInt $ read a)
@@ -81,33 +77,33 @@ argument =
 	<|>
 		do
 			string "where"
-			parserZero 
+			parserZero
 	<|>
 	atom
-	
+
 atom = do
 	a <- identifier
 	return $ Atom a
-	
+
 atom2 =
 		do
 			try (string "where")
 			pzero
-		<|> 
+		<|>
 		atom
-		
+
 mySepBy atom2 sep = try (do
-	a <- atom2 
+	a <- atom2
 	bb <- do
 		sep
-		b <- mySepBy atom2 sep
-		return b
+		mySepBy atom2 sep
+
 	return (a : bb))
 	<|>
 	do
 		a <- atom2
 		return [a]
-		
+
 parens = do
 	char '('
 	x <- (lambda <|> application)
@@ -115,7 +111,7 @@ parens = do
 	return x
 
 
-application = 
+application =
 	do
 		a <- function
 		string " "
@@ -133,39 +129,39 @@ newExpression def = do
 	string " " <|> nlIndent
 	char '}'
 	return $ def xx x
-	
+
 simpleDefinition = 	do
 	many $ char '\t'
 	parms <- mySepBy identifier (char ' ')
 	string " = "
 	let def = Definition (head parms) (tail parms)
-	do
-		(newExpression def)
+	(
+		newExpression def
 		<|>
 		(do
 			b <- expression
-			return $ def b [])
-			
+			return $ def b []))
+
 nlIndent = do
 	many1 $ string "\n"
 	many $ string "\t"
 	return []
 
-	
-		
+
+
 whereClause = do
 	string " where\n"
-	p <- program	
+	p <- program
 	string ";"
 	return p
 
-simple = 
+simple =
 	do
 		a <- simpleDefinition
 		w <- option [] whereClause
 		return $ case a of Definition a p b x -> Definition a p b (x ++ w)
 
-   
+
 program = sepBy simple (many1 $ string "\n")
 
 parseProg = parseString program

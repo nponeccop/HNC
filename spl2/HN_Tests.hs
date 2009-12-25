@@ -20,7 +20,7 @@ import SPL.Types
 import SPL.Check3
 import qualified SPL.Top
 
-simpleParse prog = head $ fromRight $ parseProg prog
+simpleParse  = head . fromRight . parseProg
 
 baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
@@ -31,13 +31,13 @@ tdi rt = DefinitionInherited {
 ,	diTraceP       = False
 ,	diRootTypes    = rt
 }
-    
+
 testCodeGen = rt (dsCppDef . z) where
 	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
 		P (_, fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
-		types = M.insert name x fv 
+		types = M.insert name x fv
 
-test2 = rt (getDefinitionFreeVars) 
+test2 = rt getDefinitionFreeVars
 
 rt f = mapM (print . f . simpleParse) testSet
 
@@ -53,26 +53,26 @@ testSet =
 	,	"main sum = incr sum"
 		-- перекрытие fqn-функции статической локальной
 		-- BROKEN не должно быть typedef local
-	,	"main x = { elist a b = sum a b\nelist x x }" 
+	,	"main x = { elist a b = sum a b\nelist x x }"
 		-- перекрытие fqn-функции локальной переменной
 	,	"main x z = { head = incr z\nsum x head }"
 		-- константные строки
 	,	"main = \"aaa\""
 		-- локальное замыкание c аргументом
 	,	"main a b = { c i = sum i b\nincr (sum a (c a)) }"
- 
+
 	,	"main a b = { c i x = sum b (sum x i)\nd i = sum i i\nincr (c a (d a)) }"
 		-- локальная переменная
 	,	"main x = { y = sum x x\nsum y y }"
 		-- & перед указателями на функции (рекомендуется новым стандартом C++)
 		-- биндеры при передаче локальных функций аргументами
-		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a)) 
+		-- f x y a -> f(x, y, hn::bind(impl, &main_impl::a))
 --	,	"main x z l = { a = incr z\ny z = less (sum x a) z\nfilter y l }"
-		-- BROKEN & перед указателями на статические функции 
+		-- BROKEN & перед указателями на статические функции
 	,	"main l = {\n\tf x = less 1 x\n\tfilter f l\n}"
-	
-	-- l*((f*(filter f l)) (x*less 1 x)) 		
-		-- перекрытие fqn-функции статической 
+
+	-- l*((f*(filter f l)) (x*less 1 x))
+		-- перекрытие fqn-функции статической
 	,	"main x = { head z a = z a x\nhead sum 5 }"
 			-- статическая функция
 		-- BROKEN не должно быть typedef local
@@ -83,9 +83,9 @@ testSet =
 	,	"flip f = { flipped x y = f y x\nflipped }"
 	,	"map f l = {\n\tg x y = join1 (f x) y\n\tfoldr g elist l }"
 		-- parameter name conflicts with inferred type variable name
-	,	"main a f = filter f a"  
+	,	"main a f = filter f a"
 	]
-	
+
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 		("head",  "(List 1) -> 1" )
 	,	("plus1", "Int -> Int" )
@@ -95,25 +95,25 @@ testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 		Constant (ConstInt 123),
 		Atom "a",
 		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2],
-		Application (Atom "incr") $ [Atom "x"]
+		Application (Atom "incr") [Atom "x"]
 	]
-	
+
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
---	print defaultEnv 
-	mapM (print . snd . (typeCheck defaultEnv)) [
+--	print defaultEnv
+	mapM_ (print . snd . typeCheck defaultEnv) [
 --			Atom "l"
 --		,	Atom "head"
 --		,	Application (Atom "head") [Atom "l"]
-		]  
+		]
 	runTests
 
 	testCheck3
 	rt convertDef
-	rt $ \x -> SPL.Top.check0 (convertDef x)
+	rt $ SPL.Top.check0 . convertDef
 --	test2
 	print $ cppType $ T "num"
-	
+
 	testCodeGen
  	getLine
 	return ()
