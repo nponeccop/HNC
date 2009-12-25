@@ -1,4 +1,4 @@
-module HNC where
+module Main where
 
 import qualified Data.Map as M
 
