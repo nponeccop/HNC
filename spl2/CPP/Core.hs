@@ -52,9 +52,11 @@ sem_Definition inh self @ (Definition name args val wh)
 		rt = diRootTypes inh
 		defType = getDefType (diTyped inh)
 
-		exprOutputTypes = case inhType of
+{-		exprOutputTypes = case inhType of
 			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
 			_ -> M.delete name rt
+-}
+		exprOutputTypes = whereList $ diTyped inh
 
 		smartTrace x = if diTraceP inh then trace2 x else x
 
@@ -91,6 +93,8 @@ data WhereInherited a b c d e f = WhereInherited {
 ,	wiDi               :: e
 }
 
+whereList tt = case tt of CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
+
 sem_Where inh self
 	= WhereSynthesized {
 		wsLocalVars = wsLocalVars
@@ -120,9 +124,7 @@ getContext methods inh defType templateVars (Definition name args _ wh)
 	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
 		lvn = getWhereVarNames wh
 
-	whereList = case diTyped inh of x -> x
-
-	varSem = trace (show whereList) $ getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
+	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
 	contextTemplateVars = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
 
 	(contextArgs, contextArgsTv) = unzip $ case defType of
