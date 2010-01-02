@@ -94,7 +94,8 @@ data WhereInherited a b c d e f = WhereInherited {
 }
 
 whereList tt = case tt of
-	CTyped _ (CL (CTyped (TT (a : _)) (CL _ (S (b : _)))) _) -> M.fromList [(b, a)]
+	CTyped _ (CL (CTyped (TT (a : _)) (CL xx (S (b : _)))) _) -> M.insert b a (whereList xx)
+	_ -> M.empty
 --	CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
 
 sem_Where inh self

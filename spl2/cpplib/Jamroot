@@ -66,7 +66,7 @@ unit-test where : where.hn hn-cpplib ;
 
 unit-test where2 : where2.hn hn-cpplib ;
 
-unit-test where3 : where3.hn hn-cpplib ;
+unit-test where3 : where3.hn hn-cpplib ; # multiple local vars
 
 explicit
 	locals1	   # less and filter functions are not implemented yet
@@ -90,5 +90,4 @@ explicit
 	name_clash1w
 	name_clash1f
 	where
-	where3    # multiple local vars
 ;
