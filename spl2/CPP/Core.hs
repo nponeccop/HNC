@@ -93,7 +93,9 @@ data WhereInherited a b c d e f = WhereInherited {
 ,	wiDi               :: e
 }
 
-whereList tt = case tt of CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
+whereList tt = case tt of
+	CTyped _ (CL (CTyped (TT (a : _)) (CL _ (S (b : _)))) _) -> M.fromList [(b, a)]
+--	CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
 
 sem_Where inh self
 	= WhereSynthesized {
