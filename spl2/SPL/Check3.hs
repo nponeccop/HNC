@@ -311,7 +311,15 @@ compare t1 t2 = (M.empty, M.empty, False)
 
 setml l u = Prelude.map (\x -> setm x u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
-setm (TT tt) u = TT (Prelude.map (\t -> setm t u) tt)
+setm (TT []) u = TT []
+setm (TT (t:[])) u =
+	case setm t u of
+		TT tt -> TT tt
+		o -> TT (o:[])
+setm (TT (t:ts)) u =
+	case setm (TT ts) u of
+		TT tt -> TT ((setm t u):tt)
+		o -> o
 setm (TS m) u = TS $ M.map (\t -> setm t u) m
 setm (TU n) u =
 	case M.lookup n u of
