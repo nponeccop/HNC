@@ -216,6 +216,7 @@ check (CDebug i tt@(CL a (D n))) et sv =
 				Nothing -> N i ("field did not find: "++n)
 		P (_, _, TV n2) -> P (tt, M.singleton n2 (TS $ M.singleton n (TU (n2++"."++n))), TU n)
 		P (_, _, TU n2) -> P (tt, M.empty, TU n)
+		P (_, _, o) -> N i ("cannot get field from type: "++show o)
 		N i o -> N i o
 
 check tt@(CL a L) et sv =
