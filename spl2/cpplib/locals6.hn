@@ -1,8 +1,8 @@
 hnMain = {
-	b = 5
-	tmp c = {
-		y = c
+	a = 5
+	tmp z = {
+		y = z
 		print y
 	}
-	tmp b
+	tmp a
 }
