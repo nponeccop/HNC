@@ -1,0 +1,7 @@
+hnMain = {
+	f b = {
+		a = 1
+		a
+	}
+	print 5
+}
