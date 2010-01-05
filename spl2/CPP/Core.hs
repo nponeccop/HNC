@@ -56,7 +56,7 @@ sem_Definition inh self @ (Definition name args val wh)
 			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
 			_ -> M.delete name rt
 -}
-		exprOutputTypes = whereList $ diTyped inh
+		exprOutputTypes = whereList $ traceU (show $ wh) $ diTyped inh
 
 		smartTrace x = if diTraceP inh then trace2 x else x
 
@@ -70,7 +70,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList
 		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
 
-		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic exprOutputTypes inh { diLevel = diLevel inh + 1 }) wh where
+		semWhere = sem_Where (WhereInherited symTabT classPrefix isFunctionStatic (traceU ("exprOutputTypes = " ++ show exprOutputTypes) exprOutputTypes) inh { diLevel = diLevel inh + 1 }) wh where
 			classPrefix = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
 			-- symTabT : symTabWithStatics
 			symTabT = symTabTranslator symTabWithStatics
@@ -95,8 +95,11 @@ data WhereInherited a b c d e f = WhereInherited {
 
 whereList tt = case tt of
 	CTyped _ (CL (CTyped (TT (a : _)) (CL xx (S (b : _)))) _) -> M.insert b a (whereList xx)
+	CTyped _ (CL (CTyped (a) (CL (CTyped _ (CL xx (S (b : _)))) y)) _) -> M.insert b a (whereList xx)
 	_ -> M.empty
 --	CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
+
+traceU x y = y
 
 sem_Where inh self
 	= WhereSynthesized {
@@ -144,7 +147,7 @@ getWhereVars fqn wiTypes def = getFromWhere def (sem_VarDefinition fqn wiTypes) 
 
 getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar)
 	where
-		f def = inh { diType = Just $ uncondLookup (defName def) whereTypes }
+		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes }
 
 defName (Definition name _ _ _) = name
 
