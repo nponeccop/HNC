@@ -84,7 +84,7 @@ explicit
 	locals5	   # uncondLookup
 	locals6	   # uncondLookup
 	locals7	   # uncondLookup
-	test_flip  # uncondLookup
+	test_flip  # compile only
 	euler1     # uncondLookup
 	euler5     # uncondLookup
 	euler6     # uncondLookup
