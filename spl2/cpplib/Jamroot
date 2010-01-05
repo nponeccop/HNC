@@ -24,6 +24,8 @@ unit-test test_poly : test_poly.hn hn-cpplib ;
 
 unit-test io2 : io2.hn hn-cpplib ;
 
+unit-test io2_intfunc : io2_intfunc.hn hn-cpplib ;
+
 unit-test io3 : io3.cpp hn-cpplib ;
 
 unit-test io4_voidbind : io4_voidbind.hn hn-cpplib ;
@@ -69,25 +71,26 @@ unit-test where2 : where2.hn hn-cpplib ;
 unit-test where3 : where3.hn hn-cpplib ; # multiple local vars
 
 explicit
-	locals1	   # less and filter functions are not implemented yet
-	test_flip  # compile only
-	test_poly  # where polymorphism (elist polymorphic constant is not supported)
+	test_poly  # bug #11 elist polymorphic constant is not supported
 	io2        # no template args for pointers to polymorphic functions
-	flip4      # overlapped identifiers in different scopes (TUL is not supported)
-	euler6     # polymorphic by mistake
-	locals6	   # polymorphic by mistake
-	locals7	   # polymorphic by mistake
-	euler5     # polymorphic by mistake
-	locals5	   # function is not static
-	locals2    # typechecking failure
-	test2
-	test_flip3
-	test3
-	print15
-	locals3
-	locals4
-	euler1
-	name_clash1w
-	name_clash1f
-	where
+	flip4      # bug #30 Prelude.last
+	locals4    # polymorphic by mistake
+	test2      # polymorphic by mistake
+	test_flip3 # bug #29
+
+	locals1	   # uncondLookup
+	locals2    # uncondLookup
+	locals3    # uncondLookup
+	locals5	   # uncondLookup
+	locals6	   # uncondLookup
+	locals7	   # uncondLookup
+	test_flip  # uncondLookup
+	euler1     # uncondLookup
+	euler5     # uncondLookup
+	euler6     # uncondLookup
+	test3      # uncondLookup
+	print15    # uncondLookup
+
+	where      # bug#27
+	io2_intfunc # bug #28
 ;
