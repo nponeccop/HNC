@@ -18,7 +18,6 @@ import CPP.TypeProducer
 tdi2 t types typed = DefinitionInherited {
 	diLevel        = 0
 ,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-,	diType         = Nothing
 ,	diTraceP       = t
 ,	diRootTypes    = types
 ,	diTyped        = typed

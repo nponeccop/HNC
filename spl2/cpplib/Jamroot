@@ -78,19 +78,17 @@ explicit
 	test2      # polymorphic by mistake
 	test_flip3 # bug #29
 
-	locals1	   # uncondLookup
-	locals2    # uncondLookup
-	locals3    # uncondLookup
-	locals5	   # uncondLookup
-	locals6	   # uncondLookup
-	locals7	   # uncondLookup
+	locals1	   # not supported at getWhereMethods
+	locals5	   # not exhaustive patterns in getDefType
+	locals6	   # not exhaustive patterns in getDefType
+	locals7	   # not exhaustive patterns in getDefType
 	test_flip  # compile only
-	euler1     # uncondLookup
-	euler5     # uncondLookup
-	euler6     # uncondLookup
-	test3      # uncondLookup
-	print15    # uncondLookup
+	euler1     # not supported at getWhereMethods
+	euler5     # not supported at getWhereMethods
+	euler6     # not supported at getWhereMethods
+	test3      # not supported at getWhereMethods
+	print15    # C++ doesn't typecheck
 
 	where      # bug#27
-	io2_intfunc # bug #28
+	io2_intfunc # bug #28, not supported at getWhereMethods
 ;

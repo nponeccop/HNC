@@ -20,7 +20,6 @@ import qualified Bar as AG
 data DefinitionInherited = DefinitionInherited {
 	diLevel           :: Int
 ,	diSymTab          :: M.Map String CppAtomType
-,	diType            :: Maybe T
 ,	diTraceP          :: Bool
 ,	diRootTypes       :: M.Map String T
 ,	diTyped           :: C
@@ -67,7 +66,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		smartTrace x = if diTraceP inh then trace2 x else x
 
 		cppDefType = cppUncurryType inhType args
-		inhType = maybe defType (\x -> trace (show x) x) $ diType inh
+		inhType = defType
 		-- localsList : semWhere
 		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
 		-- symTabWithStatics : semWhere
@@ -160,7 +159,7 @@ getWhereVars fqn wiTypes def = getFromWhere def sem_VarDefinition isVar where
 getWhereMethods inh whereTypes whereTyped wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar)
 	where
 --		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes, diTyped = trace2 $ whereTyped }
-		f def = inh { diType = Nothing, diTyped = getWhereTyped whereTyped }
+		f def = inh { diTyped = getWhereTyped whereTyped }
 
 		getWhereTyped (CTyped _ (CL x (K (y : _)))) = y
 		getWhereTyped x = error "Not supported at getWhereMethods"
