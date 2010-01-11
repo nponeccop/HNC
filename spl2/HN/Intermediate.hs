@@ -14,7 +14,7 @@ data Const      =   ConstString String
 data Definition
     =   Definition String [String] Expression [Definition]
     deriving(Eq,Show)
-    
+
 data TypedDefinition = TypedDefinition T String [String] Expression [TypedDefinition]
 
 data Expression

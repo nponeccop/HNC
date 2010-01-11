@@ -1,8 +1,13 @@
 {
+module Bar where
+
 import CPP.Intermediate
 import CPP.Visualise
 import HN.Intermediate hiding(Expression,Constant,Atom,Application)
 import Data.List
+import HN.Intermediate
+
+type ExpressionList  = [Expression]
 
 }
 
@@ -14,10 +19,9 @@ DATA Expression
 	| Constant c : Const
 
 ATTR Expression ExpressionList
-	[ atomFlag : Bool  isApplicand : Bool
+	[ fqnTransformer : {(Bool -> String -> String) -> String -> String} fqn : {Bool -> String -> String}
 	|
 	| 
-
 	]
 
 ATTR Expression
@@ -36,20 +40,31 @@ SEM Expression
 	| Constant
 		lhs.sem = CppLiteral @c
 	| Atom
-		lhs.sem = CppAtom $ (if @lhs.isApplicand then transformOperand else fqn @lhs.atomFlag) @name
+		lhs.sem = CppAtom $ @lhs.fqnTransformer @lhs.fqn @name
 	| Application
-		fn.atomFlag = True
-		arg.atomFlag = False
+		fn.fqnTransformer = transformFunction
+		arg.fqnTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
 
 {
 
-transformOperand a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
+transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
 				aaa = fqn False a
+
+transformFunction fqn name = fqn True name
+
+transformGlobal fqn name = fqn False name
+
 
 fqn _ a = a
 
-main = print $ sem_Syn_Expression $ wrap_Expression (sem_Expression (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])) Inh_Expression { atomFlag_Inh_Expression = False, isApplicand_Inh_Expression = False }
+sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr) 
+	Inh_Expression { 
+		fqnTransformer_Inh_Expression = transformGlobal
+	,	fqn_Inh_Expression = fqn
+	}
+
+main = print $ sem_Expression2 fqn (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])
 
 }

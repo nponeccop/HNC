@@ -14,6 +14,7 @@ import CPP.TypeProducer
 import Utils
 
 import SPL.Types
+import Bar hiding (sem_Expression)
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
@@ -175,19 +176,7 @@ sem_VarDefinition fqn wiTypes (Definition name [] val _) =
 	 where
 		inferredType = uncondLookup name wiTypes
 
-sem_Expression fqn p = case p of
-	Atom x -> CppAtom $ fqn False x
-	Constant x -> CppLiteral x
-	-- либо hn::bind(impl, &main_impl::a) - CppApplication CppAtom "hn::bind" [ CppAtom "impl", CppPtr (CppAtom a) ]
-	-- либо impl.a - CppField impl a
-	-- либо &main_impl::a - CppPtr (CppAtom a)
-	Application x y -> CppApplication transformApplicand (map transformOperand y) where
-		transformApplicand = case x of
-			Atom a -> CppAtom $ fqn True a
-			_ -> sem_Expression fqn x
-		transformOperand (Atom a) = CppAtom $ if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
-				aaa = fqn False a
-		transformOperand x = sem_Expression fqn x
+sem_Expression fqn p = sem_Expression2 fqn p
 
 getExpressionAtoms (Atom x) = S.singleton x
 getExpressionAtoms (Application a b) = S.unions $ map getExpressionAtoms (a : b)

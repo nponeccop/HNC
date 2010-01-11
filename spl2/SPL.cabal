@@ -30,6 +30,3 @@ Main-Is:	SPLI.hs
 
 Executable:	spl-milnerext
 Main-Is:	Milner-ext.hs
-
-Executable:	spl-agtest
-Main-Is:	Bar.hs
