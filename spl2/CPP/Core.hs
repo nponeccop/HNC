@@ -37,7 +37,7 @@ sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = CppFunctionDef {
 			functionLevel 			= diLevel inh
-		,	functionTemplateArgs	= S.toList $ typePolyVars inhType
+		,	functionTemplateArgs	= S.toList $ typePolyVars defType
 		,	functionIsStatic		= isFunctionStatic self
 		,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
 		,	functionContext			= ctx
@@ -65,8 +65,8 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		smartTrace x = if diTraceP inh then trace2 x else x
 
-		cppDefType = cppUncurryType inhType args
-		inhType = defType
+		cppDefType = cppUncurryType defType args
+
 		-- localsList : semWhere
 		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
 		-- symTabWithStatics : semWhere
@@ -127,16 +127,21 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Nothing -> x
 
 getContext methods inh defType templateVars (Definition name args _ wh)
-	= constructJust (null vars && null methods) $ CppContext (diLevel inh) contextTemplateVars (name ++ "_impl") vars methods where
+	= constructJust (null vars && null methods) $ CppContext {
+		   contextLevel        = diLevel inh
+		,  contextTemplateArgs = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
+		,  contextTypeName	   = name ++ "_impl"
+		-- переменные контекста - это
+		-- аргументы главной функции, свободные в where-функциях
+		-- локальные переменные, свободные в where-функциях
+ 		,  contextVars 	  	   = vars
+ 		,  contextMethods 	   = methods
+	} where
 
-	-- переменные контекста - это
-	-- аргументы главной функции, свободные в where-функциях
-	-- локальные переменные, свободные в where-функциях
 	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
 		lvn = getWhereVarNames wh
 
 	varSem = getWhereVars (symTabTranslator $ diSymTab inh) (diRootTypes inh) wh
-	contextTemplateVars = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
 
 	(contextArgs, contextArgsTv) = unzip $ case defType of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
