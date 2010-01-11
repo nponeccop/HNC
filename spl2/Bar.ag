@@ -1,6 +1,9 @@
 {
 import CPP.Intermediate
+import CPP.Visualise
 import HN.Intermediate hiding(Expression,Constant,Atom,Application)
+import Data.List
+
 }
 
 TYPE ExpressionList = [Expression]
@@ -11,41 +14,42 @@ DATA Expression
 	| Constant c : Const
 
 ATTR Expression ExpressionList
-	[
+	[ atomFlag : Bool  isApplicand : Bool
+	|
 	| 
-	| sum : String sem : CppExpression
+
 	]
 
+ATTR Expression
+	[
+	|
+	| sem : CppExpression
+	]
 
-SEM Expression
-	| Application 
-		lhs.sum = "(" ++ @fn.sum ++ " " ++ @arg.sum ++ ")"
-	| Atom
-		lhs.sum = @name
-	| Constant 
-		lhs.sum = processConst @c
-
-SEM ExpressionList
-	| Cons
-		lhs.sum = @hd.sum ++ case @tl.sum of
-				"" -> ""
-				_ -> " " ++ @tl.sum
-	| Nil
-		lhs.sum = ""
+ATTR ExpressionList
+	[
+	|
+	| sem USE {:} {[]} : {[CppExpression]}
+	]
 
 SEM Expression
 	| Constant
 		lhs.sem = CppLiteral @c
 	| Atom
-		lhs.sem = CppAtom @name
+		lhs.sem = CppAtom $ (if @lhs.isApplicand then transformOperand else fqn @lhs.atomFlag) @name
 	| Application
-		lhs.sem = CppApplication (CppAtom "foo") [CppAtom "bar"]
-	
+		fn.atomFlag = True
+		arg.atomFlag = False
+		lhs.sem = CppApplication @fn.sem @arg.sem
+
 
 {
 
-processConst c = "coo"
+transformOperand a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
+				aaa = fqn False a
 
-main = print $ sum_Syn_Expression $ wrap_Expression (sem_Expression (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])) Inh_Expression
+fqn _ a = a
+
+main = print $ sem_Syn_Expression $ wrap_Expression (sem_Expression (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])) Inh_Expression { atomFlag_Inh_Expression = False, isApplicand_Inh_Expression = False }
 
 }
