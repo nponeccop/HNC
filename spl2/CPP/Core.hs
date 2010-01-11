@@ -14,7 +14,7 @@ import CPP.TypeProducer
 import Utils
 
 import SPL.Types
-import Bar hiding (sem_Expression)
+import qualified Bar as AG
 
 -- inherited attributes for Definition
 data DefinitionInherited = DefinitionInherited {
@@ -42,12 +42,17 @@ sem_Definition inh self @ (Definition name args val wh)
 		,	functionIsStatic		= isFunctionStatic self
 		,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
 		,	functionContext			= ctx
-		,	functionName 			= name
+		,	functionName 			= AG.name_Syn_Definition semDef
 		,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 		,	functionLocalVars 		= wsLocalVars semWhere
-		,	functionRetExpr			= sem_Expression (symTabTranslator symTabWithoutArgsAndLocals) val
+		,	functionRetExpr			= AG.retExpr_Syn_Definition semDef
 		}
 	} where
+		semDef =  AG.wrap_Definition (AG.sem_Definition self)
+			(AG.Inh_Definition {
+			   AG.fqn_Inh_Definition = symTabTranslator symTabWithoutArgsAndLocals
+			})
+
 		ctx = getContext (wsMethods semWhere) inh defType (wsTemplateArgs semWhere) self
 
 		rt = diRootTypes inh
@@ -144,7 +149,13 @@ getContext methods inh defType templateVars (Definition name args _ wh)
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
-getWhereVars fqn wiTypes def = getFromWhere def (sem_VarDefinition fqn wiTypes) isVar
+getWhereVars fqn wiTypes def = getFromWhere def sem_VarDefinition isVar where
+	sem_VarDefinition (Definition name [] val _) =
+		VarDefinitionSynthesized {
+			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
+		,	vdsTemplateArgs = S.toList $ typePolyVars inferredType
+		} where
+			inferredType = uncondLookup name wiTypes
 
 getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar)
 	where
@@ -157,10 +168,6 @@ getWhereX wh = S.fromList . getFromWhere wh defName
 getWhereVarNames wh = getWhereX wh isVar
 getWhereAtoms wh =  getWhereX wh (const True)
 
-getXVars fn def = fn (getWhereFreeVars def) (getDefinitionFreeVars def) where
-	-- переменные, свободные в данном where. Могут быть контекстными или внешними
-	getWhereFreeVars (Definition _ _ _ wh) = getSetOfListFreeVars wh
-
 getSetOfListFreeVars = S.unions . map getDefinitionFreeVars
 
 data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
@@ -168,15 +175,6 @@ data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 ,	vdsTemplateArgs :: b
 }
 
-sem_VarDefinition fqn wiTypes (Definition name [] val _) =
-	VarDefinitionSynthesized {
-		vdsVarDef = CppVar (cppType inferredType) name $ sem_Expression fqn val
-	,	vdsTemplateArgs = S.toList $ typePolyVars inferredType
-	}
-	 where
-		inferredType = uncondLookup name wiTypes
-
-sem_Expression fqn p = sem_Expression2 fqn p
 
 getDefinitionFreeVars (Definition _ args val wh)
-	= S.union (getExpressionAtoms val) (getSetOfListFreeVars wh) `subtractSet` S.fromList args `subtractSet` getWhereAtoms wh
+	= S.union (AG.getExpressionAtoms val) (getSetOfListFreeVars wh) `subtractSet` S.fromList args `subtractSet` getWhereAtoms wh

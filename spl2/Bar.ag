@@ -16,13 +16,13 @@ TYPE ExpressionList = [Expression]
 
 DATA Expression
 	| Application fn : Expression arg : ExpressionList
-	| Atom name : String 
+	| Atom name : String
 	| Constant c : Const
 
 ATTR Expression ExpressionList
 	[ fqnTransformer : {(Bool -> String -> String) -> String -> String} fqn : {Bool -> String -> String}
 	|
-	| 
+	|
 	]
 
 ATTR Expression	[ | | sem : CppExpression ]
@@ -49,8 +49,8 @@ transformFunction fqn name = fqn True name
 transformGlobal fqn name = fqn False name
 
 
-sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr) 
-	Inh_Expression { 
+sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr)
+	Inh_Expression {
 		fqnTransformer_Inh_Expression = transformGlobal
 	,	fqn_Inh_Expression = fqn
 	}
@@ -68,9 +68,34 @@ SEM Expression
 
 
 {
-
 getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression expr)
-	Inh_Expression { 
+	Inh_Expression {
 	}
 
 }
+
+TYPE Program = [Definition]
+
+DATA Definition
+	| Definition name : String params : {[String]} value : Expression where : Program
+
+ATTR Definition Program
+	[
+		fqn : {Bool -> String -> String}
+	|
+	|
+	]
+
+ATTR Definition
+	[
+	|
+	|
+ 		name : String
+		retExpr : CppExpression
+	]
+
+SEM Definition
+	| Definition
+		value.fqnTransformer = transformGlobal
+		lhs.retExpr = @value.sem
+		lhs.name = @name
