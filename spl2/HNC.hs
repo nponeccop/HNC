@@ -56,10 +56,14 @@ makeType2 x = makeType x
 
 printFF a (CTyped x y) = (if a then "[" ++ makeType x ++ "] " else "" ) ++  printFF a y
 printFF a (CL x (K y)) = "(" ++ (printFF a x) ++ " " ++ (concatMap (printFF a) y) ++ ")"
-printFF a (CL x (S y)) =  "(\\" ++ (concatMap (\x -> x ++ " ") y) ++ "-> " ++ (printFF a x) ++ ")"
+printFF a (CL x (S y)) =  "(\\" ++ (concatMap (\x -> x ++ " ") y) ++ "-> " ++ (printFF2 a x) ++ ")"
 printFF _ (CVal x) = x
 printFF _ (CNum x) = show x
 printFF _ x = show x
+
+printFF2 a (CL x (K y)) = (printFF a x) ++ " " ++ (concatMap (printFF a) y)
+printFF2 a (CTyped x y) = if a then "[" ++ makeType x ++ "] " ++ printFF a y else printFF2 a y
+printFF2 a b = "*" ++ printFF a b
 
 compileToSpl inFile = do
 	x <- compile inFile convertDef
