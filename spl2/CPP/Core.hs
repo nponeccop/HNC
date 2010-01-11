@@ -67,7 +67,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		smartTrace x = if diTraceP inh then trace2 x else x
 
 		cppDefType = cppUncurryType inhType args
-		inhType = maybe defType id $ diType inh
+		inhType = maybe defType (\x -> trace (show x) x) $ diType inh
 		-- localsList : semWhere
 		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
 		-- symTabWithStatics : semWhere
@@ -114,7 +114,7 @@ sem_Where inh self
 	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods'
 	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods' ++ varTemplateArgs
 	} where
-		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) self
+		wsMethods' = getWhereMethods (wiDi inh) (wiTypes inh) (diTyped $ wiDi inh) self
 		wsLocalVars' = getWhereVars (wiSymTabT inh) (wiTypes inh) self
 		varTemplateArgs = map vdsTemplateArgs wsLocalVars'
 		wsLocalVars = map vdsVarDef wsLocalVars'
@@ -157,9 +157,13 @@ getWhereVars fqn wiTypes def = getFromWhere def sem_VarDefinition isVar where
 		} where
 			inferredType = uncondLookup name wiTypes
 
-getWhereMethods inh whereTypes wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar)
+getWhereMethods inh whereTypes whereTyped wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (f def) def) (not . isVar)
 	where
-		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes }
+--		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes, diTyped = trace2 $ whereTyped }
+		f def = inh { diType = Nothing, diTyped = getWhereTyped whereTyped }
+
+		getWhereTyped (CTyped _ (CL x (K (y : _)))) = y
+		getWhereTyped x = error "Not supported at getWhereMethods"
 
 defName (Definition name _ _ _) = name
 
