@@ -15,12 +15,11 @@ Tested-With:    GHC == 6.10.4
 Synopsis:       SPL is a strictly, statically and implicitly typed functional universal language with translator into C++ language.
 License-File:   COPYING.LESSER
 Build-Depends: base, containers, bytestring, parsec >= 3, HUnit, QuickCheck, haskell98, mtl, uuagc
-extra-source-files:	
+HS-Source-dirs:	.
 
 Executable:     spl-hnc
 Main-Is:        HNC.hs
-HS-Source-dirs:	.
-Other-modules:
+Other-modules:	Bar
 
 Executable:	spl-quickcheck
 Main-Is:	QuickCheck.hs

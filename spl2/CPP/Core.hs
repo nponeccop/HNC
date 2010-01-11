@@ -178,9 +178,5 @@ sem_VarDefinition fqn wiTypes (Definition name [] val _) =
 
 sem_Expression fqn p = sem_Expression2 fqn p
 
-getExpressionAtoms (Atom x) = S.singleton x
-getExpressionAtoms (Application a b) = S.unions $ map getExpressionAtoms (a : b)
-getExpressionAtoms _ = S.empty
-
 getDefinitionFreeVars (Definition _ args val wh)
 	= S.union (getExpressionAtoms val) (getSetOfListFreeVars wh) `subtractSet` S.fromList args `subtractSet` getWhereAtoms wh

@@ -6,6 +6,7 @@ import CPP.Visualise
 import HN.Intermediate hiding(Expression,Constant,Atom,Application)
 import Data.List
 import HN.Intermediate
+import qualified Data.Set as S
 
 type ExpressionList  = [Expression]
 
@@ -24,17 +25,9 @@ ATTR Expression ExpressionList
 	| 
 	]
 
-ATTR Expression
-	[
-	|
-	| sem : CppExpression
-	]
+ATTR Expression	[ | | sem : CppExpression ]
 
-ATTR ExpressionList
-	[
-	|
-	| sem USE {:} {[]} : {[CppExpression]}
-	]
+ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
 
 SEM Expression
 	| Constant
@@ -46,7 +39,6 @@ SEM Expression
 		arg.fqnTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
-
 {
 
 transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
@@ -57,14 +49,28 @@ transformFunction fqn name = fqn True name
 transformGlobal fqn name = fqn False name
 
 
-fqn _ a = a
-
 sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr) 
 	Inh_Expression { 
 		fqnTransformer_Inh_Expression = transformGlobal
 	,	fqn_Inh_Expression = fqn
 	}
+}
 
-main = print $ sem_Expression2 fqn (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])
+
+ATTR Expression [ | | atoms : {S.Set String} ]
+
+ATTR ExpressionList [ | | atoms USE {:} {[]} : {[S.Set String]} ]
+
+SEM Expression
+	| Constant    lhs.atoms = S.empty
+	| Atom        lhs.atoms = S.singleton @name
+	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)
+
+
+{
+
+getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression expr)
+	Inh_Expression { 
+	}
 
 }
