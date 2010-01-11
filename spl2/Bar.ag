@@ -1,0 +1,51 @@
+{
+import CPP.Intermediate
+import HN.Intermediate hiding(Expression,Constant,Atom,Application)
+}
+
+TYPE ExpressionList = [Expression]
+
+DATA Expression
+	| Application fn : Expression arg : ExpressionList
+	| Atom name : String 
+	| Constant c : Const
+
+ATTR Expression ExpressionList
+	[
+	| 
+	| sum : String sem : CppExpression
+	]
+
+
+SEM Expression
+	| Application 
+		lhs.sum = "(" ++ @fn.sum ++ " " ++ @arg.sum ++ ")"
+	| Atom
+		lhs.sum = @name
+	| Constant 
+		lhs.sum = processConst @c
+
+SEM ExpressionList
+	| Cons
+		lhs.sum = @hd.sum ++ case @tl.sum of
+				"" -> ""
+				_ -> " " ++ @tl.sum
+	| Nil
+		lhs.sum = ""
+
+SEM Expression
+	| Constant
+		lhs.sem = CppLiteral @c
+	| Atom
+		lhs.sem = CppAtom @name
+	| Application
+		lhs.sem = CppApplication (CppAtom "foo") [CppAtom "bar"]
+	
+
+{
+
+processConst c = "coo"
+
+main = print $ sum_Syn_Expression $ wrap_Expression (sem_Expression (Application (Atom "foo") [Atom "bar", Constant (ConstInt 2)])) Inh_Expression
+
+}

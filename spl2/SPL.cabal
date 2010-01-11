@@ -5,8 +5,8 @@ Copyright:      (c)
 Author:         Zorro Zorrowich
 Author:         Andy Melnikov <andy.melnikov@gmail.com>
 
-Version:	0.0.0.670
-Build-Type:	Simple
+Version:	0.0.0.682
+Build-Type:	Custom
 Homepage:	http://code.google.com/p/inv/
 ---Package-Url:
 Category:       Compiler
@@ -14,7 +14,7 @@ Stability:      Experimental
 Tested-With:    GHC == 6.10.4
 Synopsis:       SPL is a strictly, statically and implicitly typed functional universal language with translator into C++ language.
 License-File:   COPYING.LESSER
-Build-Depends: base, containers, bytestring, parsec >= 3, HUnit, QuickCheck, haskell98, mtl
+Build-Depends: base, containers, bytestring, parsec >= 3, HUnit, QuickCheck, haskell98, mtl, uuagc
 extra-source-files:	
 
 Executable:     spl-hnc
@@ -30,3 +30,6 @@ Main-Is:	SPLI.hs
 
 Executable:	spl-milnerext
 Main-Is:	Milner-ext.hs
+
+Executable:	spl-agtest
+Main-Is:	Bar.hs

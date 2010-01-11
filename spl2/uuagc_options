@@ -1,0 +1,2 @@
+file : "Bar.ag"
+options : data, catas, semfuns, signatures, pretty, wrappers
