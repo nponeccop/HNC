@@ -61,8 +61,8 @@ setmm a b = M.map (\x -> setm x b) a
 
 join_tree (CList t1) t2 =	CList $ t1++[t2]
 
-ch [] [] et ul uv i sv ii ret =
-	N ii "too many parameters"
+ch [] ps et ul uv i sv ii ret =
+	N ii ("too many parameters: "++show ps)
 ch (r:[]) [] et ul uv i sv ii ret =
 	let z = setmv (setm (observeN "r" r) (observeN "ul" ul)) $ observeN "uv" uv in
 	P (ret, observeN "uv" $ M.map untv_all uv, z)
