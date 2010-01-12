@@ -81,7 +81,7 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret ret2)
+						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (r_p2) ret2)
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -143,7 +143,7 @@ check (CDebug ii tt@(CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
 		P (ret, rm0, TT r) ->
 			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii (CList []) of
-				P (CList rt, rm, r) -> P (CTyped r (CL ret (K rt)), observeN "rm" rm, observeN "r" r)
+				P (CList rt, rm, r) -> P ((CL ret (K rt)), observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
 		P (ret, ur, TV n) ->
 				case get_url p_ok of
@@ -184,14 +184,14 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observeN ("ok "++p++"|"++show a) $ P (CTyped (untv p_n w) (CL ret (S (p:ps))), observeN "ur" $ M.delete p_n ur, untv p_n w)
+					observeN ("ok "++p++"|"++show a) $ P (CTyped (r) (CL ret (S (p:ps))), observeN "ur" $ M.delete p_n ur, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN ("no "++p) $ P (CTyped w (CL ret (S (p:ps))), M.map (untv p_n) ur, w) -- rm ?
+					observeN ("no "++p) $ P (CTyped r (CL ret (S (p:ps))), M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
