@@ -62,7 +62,7 @@ printFF _ x = show x
 
 printFF2 a (CL x (K y)) = (printFF a x) ++ " " ++ (concatMap (printFF a) y)
 printFF2 a (CTyped x y) = if a then "[" ++ makeType x ++ "] " ++ printFF a y else printFF2 a y
-printFF2 a b = "*" ++ printFF a b
+printFF2 a b = printFF a b
 
 compileToSpl inFile = do
 	x <- compile inFile convertDef
