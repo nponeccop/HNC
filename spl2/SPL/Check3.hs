@@ -143,7 +143,7 @@ check (CDebug ii tt@(CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
 		P (ret, rm0, TT r) ->
 			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii (CList []) of
-				P (CList rt, rm, r) -> P ((CL ret (K rt)), observeN "rm" rm, observeN "r" r)
+				P (CList rt, rm, r) -> P (CTyped r (CL ret (K rt)), observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
 		P (ret, ur, TV n) ->
 				case get_url p_ok of
