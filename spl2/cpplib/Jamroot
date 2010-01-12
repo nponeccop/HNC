@@ -52,6 +52,10 @@ unit-test locals6 : locals6.hn hn-cpplib ;
 
 unit-test locals7 : locals7.hn hn-cpplib ;
 
+unit-test locals8 : locals8.hn hn-cpplib ;
+
+unit-test locals9 : locals9.hn hn-cpplib ;
+
 unit-test poly_size : poly_size.cpp hn-cpplib ;
 
 unit-test euler1 : euler1.hn hn-cpplib ;
@@ -78,17 +82,22 @@ explicit
 	test2      # polymorphic by mistake
 	test_flip3 # bug #29
 
-	locals1	   # not supported at getWhereMethods
-	locals5	   # not exhaustive patterns in getDefType
-	locals6	   # not exhaustive patterns in getDefType
-	locals7	   # not exhaustive patterns in getDefType
+	locals1	   # 102 not supported at getWhereMethods
+	locals5	   #  65 not exhaustive patterns in getDefType
+	locals6	   #  65 not exhaustive patterns in getDefType
+	locals7	   #  67 not exhaustive patterns in getDefType
+	locals8    # polymorphic by mistake
+	locals9    # uncondLookup failed
 	test_flip  # compile only
-	euler1     # not supported at getWhereMethods
-	euler5     # not supported at getWhereMethods
-	euler6     # not supported at getWhereMethods
-	test3      # not supported at getWhereMethods
-	print15    # C++ doesn't typecheck
+	euler1     # 141 not supported at getWhereMethods
+	euler5     # 361 not supported at getWhereMethods
+	euler6     # 155 not supported at getWhereMethods
+	test3      #  75 not supported at getWhereMethods
+	test4      #  69 not supported at getWhereMethods
+	test5      #  66 non-exhaustive patterns in function ch
+	test6      #  27 non-exhaustive patterns in function ch
+	print15    # 118 C++ doesn't typecheck
 
-	where      # bug#27
-	io2_intfunc # bug #28, not supported at getWhereMethods
+	where      #  31 bug#27
+	io2_intfunc # 90 bug #28, not supported at getWhereMethods
 ;

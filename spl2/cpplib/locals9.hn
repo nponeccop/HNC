@@ -1,0 +1,8 @@
+hnMain = {
+	a = incr 5
+	tmp z = {
+		y = a
+		print y
+	}
+	tmp 7
+}
