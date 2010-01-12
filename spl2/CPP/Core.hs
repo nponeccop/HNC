@@ -166,7 +166,8 @@ getWhereMethods inh whereTypes whereTyped wh = getFromWhere wh (\def -> dsCppDef
 --		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes, diTyped = trace2 $ whereTyped }
 		f def = inh { diTyped = getWhereTyped whereTyped }
 
-		getWhereTyped (CTyped _ (CL x (K (y : _)))) = y
+		getWhereTyped (CTyped _ (CL _ (K (y : _)))) = y
+		getWhereTyped (CTyped _ (CL x (S _))) = x
 		getWhereTyped x = error $ show x ++ "\nNot supported at getWhereMethods"
 
 defName (Definition name _ _ _) = name

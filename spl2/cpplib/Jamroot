@@ -10,6 +10,14 @@ unit-test test : test.hn hn-cpplib ;
 
 unit-test test2 : test2.hn hn-cpplib ;
 
+unit-test test3 : test3.hn hn-cpplib ;
+
+unit-test test4 : test4.hn hn-cpplib ;
+
+unit-test test5 : test5.hn hn-cpplib ;
+
+unit-test test6 : test6.hn hn-cpplib ;
+
 unit-test test_flip : test_flip.hn hn-cpplib ;
 
 unit-test test_flip2 : test_flip2.cpp hn-cpplib ;
@@ -17,8 +25,6 @@ unit-test test_flip2 : test_flip2.cpp hn-cpplib ;
 unit-test test_flip3 : test_flip3.hn hn-cpplib ;
 
 unit-test test_io : test_io.hn hn-cpplib ;
-
-unit-test test3 : test3.hn hn-cpplib ;
 
 unit-test test_poly : test_poly.hn hn-cpplib ;
 
@@ -77,9 +83,8 @@ unit-test where3 : where3.hn hn-cpplib ; # multiple local vars
 explicit
 	test_poly  # bug #11 elist polymorphic constant is not supported
 	io2        # no template args for pointers to polymorphic functions
-	flip4      # bug #30 Prelude.last
+	flip4      # C++ doesn't typecheck
 	locals4    # polymorphic by mistake
-	test2      # polymorphic by mistake
 	test_flip3 # bug #29
 
 	locals1	   # 102 not supported at getWhereMethods
@@ -89,11 +94,9 @@ explicit
 	locals8    # polymorphic by mistake
 	locals9    # uncondLookup failed
 	test_flip  # compile only
-	euler1     # 141 not supported at getWhereMethods
-	euler5     # 361 not supported at getWhereMethods
-	euler6     # 155 not supported at getWhereMethods
-	test3      #  75 not supported at getWhereMethods
-	test4      #  69 not supported at getWhereMethods
+	euler5     # 361 uncondLookup
+	euler6     # 155 C++ doesn't typecheck
+	test4      #  69 C++ doesn't typecheck
 	test5      #  66 non-exhaustive patterns in function ch
 	test6      #  27 non-exhaustive patterns in function ch
 	print15    # 118 C++ doesn't typecheck
