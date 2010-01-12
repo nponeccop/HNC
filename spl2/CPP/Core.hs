@@ -167,7 +167,7 @@ getWhereMethods inh whereTypes whereTyped wh = getFromWhere wh (\def -> dsCppDef
 		f def = inh { diTyped = getWhereTyped whereTyped }
 
 		getWhereTyped (CTyped _ (CL x (K (y : _)))) = y
-		getWhereTyped x = error "Not supported at getWhereMethods"
+		getWhereTyped x = error $ show x ++ "\nNot supported at getWhereMethods"
 
 defName (Definition name _ _ _) = name
 
