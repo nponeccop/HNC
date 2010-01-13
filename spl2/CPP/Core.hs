@@ -98,12 +98,14 @@ data WhereInherited a b c d e f = WhereInherited {
 ,	wiDi               :: e
 }
 
+typeMap vars types = M.fromList $ zip vars $ map (\(CTyped t _) -> t) types
+
 whereList tt = case tt of
---	CTyped _ (CL (CTyped (TT (a : _)) (CL xx (S (b : _)))) _) -> M.insert b a (whereList xx)
---	CTyped _ (CL (CTyped (a) (CL (CTyped _ (CL xx (S (b : _)))) y)) _) -> M.insert b a (whereList xx)
-	CTyped _ (CL (CL _ (S vars)) (K types)) -> M.fromList $ zip vars $ map (\(CTyped t _) -> t) types
-	_ -> error $ show tt
---	CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
+	CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
+	CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
+	CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
+	_ -> error $ "non-exhaustive patterns in whereList: " ++ show tt
+
 
 traceU x y = y
 

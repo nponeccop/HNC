@@ -84,23 +84,26 @@ explicit
 	test_poly  # bug #11 elist polymorphic constant is not supported
 	io2        # no template args for pointers to polymorphic functions
 	flip4      # C++ doesn't typecheck
-	locals4    # polymorphic by mistake
+	locals4    # uncondLookup
 	test_flip3 # bug #29
 
-	locals1	   # 102 uncondLookup
-	locals5	   #  65 not exhaustive patterns in getDefType
-	locals6	   #  65 not exhaustive patterns in getDefType
-	locals7	   #  67 not exhaustive patterns in getDefType
-	locals8    # polymorphic by mistake
-	locals9    # uncondLookup failed
-	test_flip  # compile only
-	euler5     # 361 uncondLookup
+	locals1	   # 102 non-exhaustive patterns in getDefType
+
+	euler1     # non-exhaustive patterns in function getWhereType
+	where3     # uncondLookup
+
+	locals5	   #  65 uncondLookup
+	locals6	   #  65 uncondLookup
+	locals7	   #  67 non-exhaustive patterns in getDefType
+	locals8    # C++ doesn't compile
+	locals9    # uncondLookup 
+	test_flip  # non-exhaustive patterns in getDefType
+	euler5     # 361 non-exhaustive patterns in getDefType
 	euler6     # 155 C++ doesn't typecheck
 	test4      #  69 C++ doesn't typecheck
 	test5      #  66 compile-fail test
 	test6      #  27 compile-fail test
-	print15    # 118 C++ doesn't typecheck
+	print15    # 118 non-exhaustive patterns in whereList
 
-	where      #  31 bug#27
-	io2_intfunc # 90 bug #28, not supported at getWhereMethods
+	io2_intfunc # 90 bug #28
 ;
