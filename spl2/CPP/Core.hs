@@ -46,7 +46,7 @@ sem_Definition inh self @ (Definition name args val wh)
 	} where
 		semDef =  AG.wrap_Definition (AG.sem_Definition self)
 			AG.Inh_Definition {
-			   AG.fqn_Inh_Definition = symTabTranslator symTabWithoutArgsAndLocals
+			   AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` (map (\(CppVar _ name _ ) -> name) $ wsVars semWhere)
 			}
 
 		ctx = sem_Context self ContextInherited {
@@ -65,22 +65,9 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		defType = getDefType (diTyped inh)
 
-{-		exprOutputTypes = case inhType of
-			TUL (_: innerDefs) -> M.insert name (TUL innerDefs) rt
-			_ -> M.delete name rt
--}
-		smartTrace x = if diTraceP inh then trace2 x else x
-
 		cppDefType = cppUncurryType defType args
 
-		-- localsList : semWhere
-		localsList = map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
-		-- symTabWithStatics : semWhere
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
-
-		-- symTabWithoutArgsAndLocals : self symTabWithStatics localsList
-		symTabWithoutArgsAndLocals = symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` localsList
-
 		isFunctionStatic def  = S.null $ getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
 
 data WhereSynthesized d e = WhereSynthesized {
