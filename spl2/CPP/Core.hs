@@ -4,7 +4,6 @@ import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
 import Data.Maybe
-import Debug.Trace
 
 import HN.Intermediate
 
@@ -66,7 +65,8 @@ sem_Definition inh self @ (Definition name args val wh)
 											CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
 											_ -> error $ "non-exhaustive patterns in whereList: " ++ show (diTyped inh)
 				,	wiDi               = inh { diLevel = diLevel inh + 1 }
-				}
+				} where
+				typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
 
 		defType = case diTyped inh of
 			CTyped t _ -> t
@@ -108,7 +108,7 @@ data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
 ,	vdsTemplateArgs :: b
 }
 
-sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition isVar where
+sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) where
 	sem_VarDefinition (Definition name [] val _) =
 		VarDefinitionSynthesized {
 			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
@@ -116,7 +116,7 @@ sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition isVar where
 		} where
 			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
 
-sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition (not . isVar) where
+sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition (isFunction) where
 	sem_MethodDefinition = dsCppDef . sem_Definition newInh
 	newInh = inh {
 		diTyped =  case whereTyped of
@@ -147,17 +147,15 @@ sem_Context (Definition name args _ wh) inh
  	templateVars = wsTemplateArgs $ ciSemWhere inh
 
 	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
-		lvn = getWhereVarNames wh
+		lvn = S.fromList $ getFromWhere wh defName $ not . isFunction
 
 	varSem = sem_WhereVars (symTabTranslator $ diSymTab $ ciDi inh) (traceU ("getContext.varSem" ++ show (diRootTypes $ ciDi inh)) $ diRootTypes $ ciDi inh) wh
 
 	(contextArgs, contextArgsTv) = unzip $ case ciDefType inh of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
 		_ -> []
-	wfv = getSetOfListFreeVars (filter isFunction wh)
-	isArgContext a = S.member a wfv
 
-typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
+	isArgContext a = S.member a $ getSetOfListFreeVars (filter isFunction wh)
 
 traceU x y = y
 
@@ -168,17 +166,11 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")"
 	Nothing -> x
 
-isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
 
 defName (Definition name _ _ _) = name
 
-getWhereX wh = S.fromList . getFromWhere wh defName
-
-getWhereVarNames wh = getWhereX wh isVar
-getWhereAtoms wh =  getWhereX wh (const True)
-
 getSetOfListFreeVars = S.unions . map getDefinitionFreeVars
 
 getDefinitionFreeVars (Definition _ args val wh)
-	= S.union (AG.getExpressionAtoms val) (getSetOfListFreeVars wh) `subtractSet` S.fromList args `subtractSet` getWhereAtoms wh
+	= AG.getExpressionAtoms val `S.union` getSetOfListFreeVars wh `subtractSet` S.fromList args `subtractSet` S.fromList (map defName wh)

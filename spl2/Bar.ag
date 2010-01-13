@@ -3,7 +3,6 @@ module Bar where
 
 import CPP.Intermediate
 import CPP.Visualise
-import HN.Intermediate hiding(Expression,Constant,Atom,Application)
 import Data.List
 import HN.Intermediate
 import qualified Data.Set as S
