@@ -59,11 +59,18 @@ sem_Definition inh self @ (Definition name args val wh)
 					wiSymTabT          = symTabTranslator symTabWithStatics
 				,	wiClassPrefix      = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
 				,	wiIsFunctionStatic = isFunctionStatic
-				,	wiTypes            = whereList $ traceU ("sem_Definition.diTyped inh = " ++ show (diTyped inh)) $ diTyped inh
+				,	wiTypes            = case diTyped inh of
+											CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
+											CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
+											CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
+											CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
+											_ -> error $ "non-exhaustive patterns in whereList: " ++ show (diTyped inh)
 				,	wiDi               = inh { diLevel = diLevel inh + 1 }
 				}
 
-		defType = getDefType (diTyped inh)
+		defType = case diTyped inh of
+			CTyped t _ -> t
+			t -> error $ "getDefType: " ++ show t
 
 		cppDefType = cppUncurryType defType args
 
@@ -150,18 +157,7 @@ sem_Context (Definition name args _ wh) inh
 	wfv = getSetOfListFreeVars (filter isFunction wh)
 	isArgContext a = S.member a wfv
 
--- support for CTyped
-getDefType (CTyped t _) = t
-getDefType (t) = error $ "getDefType: " ++ show t
-
 typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
-
-whereList tt = case tt of
-	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
-	CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
-	CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
-	CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
-	_ -> error $ "non-exhaustive patterns in whereList: " ++ show tt
 
 traceU x y = y
 
