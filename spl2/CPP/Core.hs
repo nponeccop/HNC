@@ -32,6 +32,8 @@ data DefinitionSynthesized = DefinitionSynthesized {
 
 -- support for CTyped
 getDefType (CTyped t _) = t
+getDefType (t) = error $ "getDefType: " ++ show t
+
 
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
@@ -101,6 +103,8 @@ data WhereInherited a b c d e f = WhereInherited {
 typeMap vars types = M.fromList $ zip vars $ map (\(CTyped t _) -> t) types
 
 whereList tt = case tt of
+
+	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
 	CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
 	CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
 	CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
@@ -166,9 +170,11 @@ getWhereMethods inh whereTypes whereTyped wh = getFromWhere wh (\def -> dsCppDef
 --		f def = inh { diType = Just $ traceU ("getWhereMethods: whereTypes = " ++ show whereTypes) $ uncondLookup (defName def) whereTypes, diTyped = trace2 $ whereTyped }
 		f def = inh { diTyped = getWhereTyped whereTyped }
 
-		getWhereTyped (CTyped _ (CL _ (K (y : _)))) = y
-		getWhereTyped (CTyped _ (CL x (S _))) = x
-		getWhereTyped x = error $ show x ++ "\nNot supported at getWhereMethods"
+		getWhereTyped (CTyped _ (CL _ (K (y @ (CTyped _ _) : _)))) = y
+		getWhereTyped (CTyped _ (CL x @ (CTyped _ _) (S _))) = x
+--		getWhereTyped (CTyped _ (CL (CL x _) (S _))) = trace2 x
+
+		getWhereTyped x = error $ "getWhereMethods: " ++ show x
 
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh
