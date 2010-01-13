@@ -1,0 +1,129 @@
+digraph "foo" {
+
+	graph [
+
+	]
+
+	node [	
+		fontsize = 8,
+		height = 0.4
+	];
+
+
+subgraph "sem_Where" {
+	sem_Where
+	wsTemplateArgs
+	wsMethods
+	wsVars
+	wsLocalFunctionMap
+	wsVars1
+}
+
+"getDefinitionFreeVars" -> "getExpressionAtoms"
+"getDefinitionFreeVars" -> "getSetOfListFreeVars" -> "getDefinitionFreeVars"
+"getDefinitionFreeVars" -> "getWhereAtoms"
+
+
+sem_WhereMethods -> sem_Definition
+sem_WhereVars -> sem_VarDefinition 
+
+sem_Context -> contextVars -> vars
+sem_Context -> contextTemplateArgs
+sem_Context -> contextTypeName
+sem_Context -> contextLevel -> ciDi -> diLevel
+sem_Context -> contextMethods -> ciSemWhere
+
+contextTemplateArgs -> wsVars1
+contextTemplateArgs -> varSem
+contextTemplateArgs -> "contextArgs+Tv" -> ciDefType -> defType
+
+vars -> varSem
+vars -> "contextArgs+Tv"
+vars -> getWhereVarNames
+
+varSem -> sem_WhereVars
+varSem -> ciDi
+
+
+"contextArgs+Tv" -> isArgContext
+
+wfv -> getSetOfListFreeVars
+wfv -> isFunction
+
+isArgContext -> wfv
+
+wiClassPrefix -> ctx
+
+wiIsFunctionStatic -> isFunctionStatic
+
+wiTypes -> exprOutputTypes
+
+wiTypes -> whereList
+wiTypes -> diTyped
+
+wiDi -> diLevel
+wiDi -> diTyped
+
+wsLocalFunctionMap -> wiClassPrefix
+wsLocalFunctionMap -> wiIsFunctionStatic
+wsLocalFunctionMap -> mapPrefix
+
+
+wsTemplateArgs -> wsMethods1
+wsTemplateArgs -> wsVars1 -> wiSymTabT
+
+semWhere -> sem_Where
+
+sem_Where -> wsVars -> wsVars1 -> sem_WhereVars
+sem_Where -> wsLocalFunctionMap
+sem_Where -> wsMethods -> wsMethods1
+
+sem_Where -> wsTemplateArgs
+
+wsMethods1 -> wiTypes
+wsMethods1 -> wiDi
+wsMethods1 -> sem_WhereMethods
+
+wsVars1 -> wiTypes
+
+sem_VarDefinition -> vdsVarDef -> "AG.sem_Expression2"
+sem_VarDefinition -> vdsTemplateArgs -> wiTypes
+
+ctx -> sem_Context
+ctx -> semWhere
+
+ciDi -> diSymTab
+
+sem_Definition -> functionContext -> ctx
+sem_Definition -> functionLevel -> diLevel
+sem_Definition -> functionIsStatic -> isFunctionStatic
+sem_Definition -> functionTemplateArgs
+sem_Definition -> functionReturnType -> cppDefType
+sem_Definition -> functionArgs -> cppDefType
+
+functionTemplateArgs -> defType
+
+cppDefType -> defType
+
+defType -> diTyped
+defType -> getDefType
+
+diTyped -> getWhereTyped
+
+
+semWhere -> symTabT -> symTabTranslator
+
+symTabT -> symTabWithStatics
+
+symTabWithStatics -> wsLocalFunctionMap
+symTabWithStatics -> semWhere
+symTabWithStatics -> diSymTab
+
+isFunctionStatic -> getDefinitionFreeVars
+isFunctionStatic -> diSymTab
+
+
+ciDi -> diRootTypes
+
+}
+
