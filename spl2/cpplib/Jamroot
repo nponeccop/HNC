@@ -14,9 +14,9 @@ unit-test test3 : test3.hn hn-cpplib ;
 
 unit-test test4 : test4.hn hn-cpplib ;
 
-unit-test test5 : test5.hn hn-cpplib ;
+compile-fail test5.hn ;
 
-unit-test test6 : test6.hn hn-cpplib ;
+compile-fail test6.hn ;
 
 unit-test test_flip : test_flip.hn hn-cpplib ;
 
@@ -87,7 +87,7 @@ explicit
 	locals4    # polymorphic by mistake
 	test_flip3 # bug #29
 
-	locals1	   # 102 not supported at getWhereMethods
+	locals1	   # 102 uncondLookup
 	locals5	   #  65 not exhaustive patterns in getDefType
 	locals6	   #  65 not exhaustive patterns in getDefType
 	locals7	   #  67 not exhaustive patterns in getDefType
@@ -97,8 +97,8 @@ explicit
 	euler5     # 361 uncondLookup
 	euler6     # 155 C++ doesn't typecheck
 	test4      #  69 C++ doesn't typecheck
-	test5      #  66 non-exhaustive patterns in function ch
-	test6      #  27 non-exhaustive patterns in function ch
+	test5      #  66 compile-fail test
+	test6      #  27 compile-fail test
 	print15    # 118 C++ doesn't typecheck
 
 	where      #  31 bug#27
