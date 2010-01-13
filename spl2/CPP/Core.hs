@@ -101,7 +101,7 @@ data WhereInherited a b c d e f = WhereInherited {
 whereList tt = case tt of
 --	CTyped _ (CL (CTyped (TT (a : _)) (CL xx (S (b : _)))) _) -> M.insert b a (whereList xx)
 --	CTyped _ (CL (CTyped (a) (CL (CTyped _ (CL xx (S (b : _)))) y)) _) -> M.insert b a (whereList xx)
-	CTyped _ (CL (CL _ (S (b : _))) (K ((CTyped a _) : _))) -> M.insert b a M.empty
+	CTyped _ (CL (CL _ (S vars)) (K types)) -> M.fromList $ zip vars $ map (\(CTyped t _) -> t) types
 	_ -> error $ show tt
 --	CTyped _ (CL (CTyped a (CL (CVal b) _)) _) -> M.fromList [(b, a)]
 
