@@ -87,17 +87,17 @@ explicit
 	locals4    # TV
 	test_flip3 # bug #29
 
-	locals1	   # 102 non-exhaustive patterns in getDefType
+	locals1	   # 102 getWhereMethods
 
 	euler1
 
 	locals5	   #  65 uncondLookup
 	locals6	   #  65 uncondLookup
-	locals7	   #  67 non-exhaustive patterns in getDefType
+	locals7	   #  67 uncondLookup
 	locals8    # C++ doesn't compile
 	locals9    # uncondLookup 
-	test_flip  # non-exhaustive patterns in getDefType
-	euler5     # 361 non-exhaustive patterns in getDefType
+	test_flip  # getDefType
+	euler5     # 361 getWhereMethods
 	euler6     # 155 C++ doesn't typecheck
 	test4      #  69 C++ doesn't typecheck
 	test5      #  66 compile-fail test
