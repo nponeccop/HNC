@@ -9,8 +9,6 @@
 -}
 -----------------------------------------------------------------------------------------
 
-{-# LANGUAGE NoMonomorphismRestriction #-}
-
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,
 	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile) where
@@ -25,8 +23,7 @@ import Control.Monad
 
 pzero = parserZero
 
-parseString p input
-    = runP p () "test.hn0" (packL input)
+parseString p = runP p () "test.hn0" . packL
 
 xletter = letter <|> char '_'
 

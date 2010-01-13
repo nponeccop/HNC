@@ -45,7 +45,7 @@ sem_Definition inh self @ (Definition name args val wh)
 	} where
 		semDef =  AG.wrap_Definition (AG.sem_Definition self)
 			AG.Inh_Definition {
-			   AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` (map (\(CppVar _ name _ ) -> name) $ wsVars semWhere)
+			   AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
 			}
 
 		ctx = sem_Context self ContextInherited {
@@ -116,7 +116,7 @@ sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFuncti
 		} where
 			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
 
-sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition (isFunction) where
+sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunction where
 	sem_MethodDefinition = dsCppDef . sem_Definition newInh
 	newInh = inh {
 		diTyped =  case whereTyped of
