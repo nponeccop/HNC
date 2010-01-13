@@ -40,26 +40,26 @@ sem_Definition inh self @ (Definition name args val wh)
 		,	functionContext			= ctx
 		,	functionName 			= AG.name_Syn_Definition semDef
 		,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
-		,	functionLocalVars 		= wsLocalVars semWhere
+		,	functionLocalVars 		= wsVars semWhere
 		,	functionRetExpr			= AG.retExpr_Syn_Definition semDef
 		}
 	} where
 		semDef =  AG.wrap_Definition (AG.sem_Definition self)
-			(AG.Inh_Definition {
+			AG.Inh_Definition {
 			   AG.fqn_Inh_Definition = symTabTranslator symTabWithoutArgsAndLocals
-			})
+			}
 
-		ctx = sem_Context self $ ContextInherited {
+		ctx = sem_Context self ContextInherited {
 				ciSemWhere = semWhere
 			,   ciDefType = defType
 			, 	ciDi = inh
 		}
 
-		semWhere = sem_Where wh $ WhereInherited {
+		semWhere = sem_Where wh WhereInherited {
 					wiSymTabT          = symTabTranslator symTabWithStatics
 				,	wiClassPrefix      = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
 				,	wiIsFunctionStatic = isFunctionStatic
-				,	wiTypes            = whereList $ traceU ("sem_Definition.diTyped inh = " ++ (show $ diTyped inh)) $ diTyped inh
+				,	wiTypes            = whereList $ traceU ("sem_Definition.diTyped inh = " ++ show (diTyped inh)) $ diTyped inh
 				,	wiDi               = inh { diLevel = diLevel inh + 1 }
 				}
 
@@ -74,7 +74,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		cppDefType = cppUncurryType defType args
 
 		-- localsList : semWhere
-		localsList = map (\(CppVar _ name _ ) -> name) (wsLocalVars semWhere)
+		localsList = map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
 		-- symTabWithStatics : semWhere
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
 
@@ -84,7 +84,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		isFunctionStatic def  = S.null $ getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
 
 data WhereSynthesized d e = WhereSynthesized {
-	wsLocalVars :: [CppLocalVarDef]
+	wsVars :: [CppLocalVarDef]
 ,	wsLocalFunctionMap :: M.Map String CppAtomType
 ,	wsMethods :: d
 ,	wsTemplateArgs :: e
@@ -100,15 +100,36 @@ data WhereInherited a b c d e f = WhereInherited {
 
 sem_Where self inh
 	= WhereSynthesized {
-		wsLocalVars = map vdsVarDef wsLocalVars1
+		wsVars = map vdsVarDef wsVars1
 	,	wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
 	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
-	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ varTemplateArgs
+	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ map vdsTemplateArgs wsVars1
 	} where
-		wsMethods1 = getWhereMethods (wiDi inh) (diTyped $ wiDi inh) self
-		wsLocalVars1 = sem_WhereVars (wiSymTabT inh) (traceU ("sem_Where.wsLocalVars1: wiTypes inh = " ++ (show $ wiTypes inh)) (wiTypes inh)) self
-		varTemplateArgs = map vdsTemplateArgs wsLocalVars1
+		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
+		wsVars1      = sem_WhereVars    (wiSymTabT inh) (wiTypes inh)        self
 		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
+
+data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
+	vdsVarDef :: a
+,	vdsTemplateArgs :: b
+}
+
+sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition isVar where
+	sem_VarDefinition (Definition name [] val _) =
+		VarDefinitionSynthesized {
+			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
+		,	vdsTemplateArgs = S.toList $ typePolyVars inferredType
+		} where
+			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
+
+sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition (not . isVar) where
+	sem_MethodDefinition = dsCppDef . sem_Definition newInh
+	newInh = inh {
+		diTyped =  case whereTyped of
+			CTyped _ (CL _ (K (y @ (CTyped _ _) : _))) -> y
+			CTyped _ (CL x @ (CTyped _ _) (S _)) -> x
+			x -> error $ "sem_WhereMethods: " ++ show x
+	}
 
 data ContextInherited a b c = ContextInherited {
 	ciSemWhere :: a
@@ -117,7 +138,7 @@ data ContextInherited a b c = ContextInherited {
 }
 
 sem_Context (Definition name args _ wh) inh
-	= constructJust (null vars && null methods) $ CppContext {
+	= constructJust (null vars && null methods) CppContext {
 		   contextLevel        = diLevel $ ciDi inh
 		,  contextTemplateArgs = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
 		,  contextTypeName	   = name ++ "_impl"
@@ -134,7 +155,7 @@ sem_Context (Definition name args _ wh) inh
 	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
 		lvn = getWhereVarNames wh
 
-	varSem = sem_WhereVars (symTabTranslator $ diSymTab $ ciDi inh) ((traceU ("getContext.varSem" ++ (show $ diRootTypes $ ciDi inh))) $ diRootTypes $ ciDi inh) wh
+	varSem = sem_WhereVars (symTabTranslator $ diSymTab $ ciDi inh) (traceU ("getContext.varSem" ++ show (diRootTypes $ ciDi inh)) $ diRootTypes $ ciDi inh) wh
 
 	(contextArgs, contextArgsTv) = unzip $ case ciDefType inh of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
@@ -142,24 +163,11 @@ sem_Context (Definition name args _ wh) inh
 	wfv = getSetOfListFreeVars (filter isFunction wh)
 	isArgContext a = S.member a wfv
 
-data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
-	vdsVarDef :: a
-,	vdsTemplateArgs :: b
-}
-
-sem_WhereVars fqn wiTypes def = getFromWhere def sem_VarDefinition isVar where
-	sem_VarDefinition (Definition name [] val _) =
-		VarDefinitionSynthesized {
-			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
-		,	vdsTemplateArgs = S.toList $ typePolyVars inferredType
-		} where
-			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
-
 -- support for CTyped
 getDefType (CTyped t _) = t
 getDefType (t) = error $ "getDefType: " ++ show t
 
-typeMap vars types = M.fromList $ zip vars $ map (\(CTyped t _) -> t) types
+typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
 
 whereList tt = case tt of
 	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
@@ -176,14 +184,6 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 	Just (CppFqMethod prefix) -> prefix ++ "::" ++ x
 	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")"
 	Nothing -> x
-
-getWhereMethods inh whereTyped wh = getFromWhere wh (\def -> dsCppDef $ sem_Definition (inh { diTyped = getWhereTyped whereTyped }) def) (not . isVar)
-	where
-		getWhereTyped (CTyped _ (CL _ (K (y @ (CTyped _ _) : _)))) = y
-		getWhereTyped (CTyped _ (CL x @ (CTyped _ _) (S _))) = x
---		getWhereTyped (CTyped _ (CL (CL x _) (S _))) = trace2 x
-
-		getWhereTyped x = error $ "getWhereMethods: " ++ show x
 
 isVar (Definition _ args _ _) = null args
 getFromWhere wh mf ff = map mf $ filter ff wh

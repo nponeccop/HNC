@@ -39,6 +39,6 @@ inStrings l r x = l ++ x ++ r
 -- TODO refactor Utils.showJoinedList and Utils.showJoinedList2 to extract
 showJoinedList separator = joinStr separator . map show
 
-showJoinedList2 separator = mapAndJoinStr (\x -> (show x) ++ separator)
+showJoinedList2 separator = mapAndJoinStr (\x -> show x ++ separator)
 
 uncondLookup k m = maybe (error $ "Utils.uncondLookup: cannot find " ++ show k ++ " in " ++ show m) id $ M.lookup k m
