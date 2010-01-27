@@ -5,6 +5,7 @@ import SPL.Compiler
 import SPL.Check3
 import SPL.Top
 import System.IO.Unsafe
+import SPL.Optimizer1
 --import Debug.Trace
 
 import Data.Map as M hiding (map, filter)
@@ -67,7 +68,7 @@ get_type_debug_of_expr str =
 			case compile0 p of
 				SPL.Compiler.P c ->
 					case check2 c of
-						SPL.Check3.P (s, ur, a) -> SPL.Interpretator.P ((show $ (s, ur, a)), "")
+						SPL.Check3.P (s, ur, a) -> SPL.Interpretator.P ((show $ (opt s, ur, a)), "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 				SPL.Compiler.N i e -> SPL.Interpretator.N $ (i, "compile: "++e)
 		SPL.Parser2.N i _ ->

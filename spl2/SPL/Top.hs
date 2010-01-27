@@ -8,6 +8,7 @@ import SPL.Compiler
 import SPL.Types
 import SPL.Code
 import SPL.Check3
+import SPL.Optimizer1
 import qualified SPL.Lib.Str
 import qualified SPL.Lib.Bignum
 import Debug.Trace
@@ -18,8 +19,14 @@ observe s v = trace ("{"++s++":"++show v++"}") v
 observeN s v = v
 
 check0 o = check_with_rename o SPL.Top.get_types False
-check1 o e = check_with_rename o e True
-check2 o = check_with_rename o SPL.Top.get_types True
+check1 o e =
+	case check_with_rename o e True of
+		SPL.Check3.P (a, b, c) -> SPL.Check3.P (opt a, b, c)
+		o -> o
+check2 o =
+	case check_with_rename o SPL.Top.get_types True of
+		SPL.Check3.P (a, b, c) -> SPL.Check3.P (opt a, b, c)
+		o -> o
 
 eval0 c =
 	eval c get_codes
