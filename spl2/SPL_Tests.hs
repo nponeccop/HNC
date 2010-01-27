@@ -25,6 +25,8 @@ res1 = foldr1 (++) $ map (\r -> (get_str r)++"\n") test_res
 
 res = res1 ++ ("failed: " ++ show (length $ filter (not . is_passed) test_res))
 
+--res = show $ map (\(a,_,_) -> get_type_debug_of_expr a) tests
+
 main = putStrLn res
 
 test i (s, r, t) =
