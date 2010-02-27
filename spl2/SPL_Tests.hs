@@ -12,7 +12,7 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
-from_i = 0::Int
+from_i = 90::Int
 --to_i = 90::Int
 to_i = (-) (length tests) 1
 
@@ -139,6 +139,9 @@ tests = [
 	,("map to_string,join1 1,join1 2,elist", "CList [CStr \"CNum 1\",CStr \"CNum 2\"]", "TD \"list\" [T \"string\"]")
 	,("f 2*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
 	,("f 5*f:('a*e*if (less a e) {mul 10,_f incr/a e} {a})/1", "CNum 50000", "T \"num\"")
+	,("a/1~(a)*a:mk_a 1", "", "")
+	,("a/1~(if_a (a*1) {2} a)*a:mk_a 1", "", "")
+	,("ab/4~mk_ab 1 1b 'true'", "", "")
 --	,("f 2*a:200*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
 --	,("f 10*f:('a*b*if (less b a) {1b} {_f incr/a b})/2", "", "")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")
