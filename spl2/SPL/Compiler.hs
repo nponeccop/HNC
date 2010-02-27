@@ -140,8 +140,9 @@ comp (Stype f a i) u e =
 		mkif k n =
 			CL (CInFun 4 (InFun ("ift_"++ft) do_ift)) (K[CStr k])
 			where
-				ft = "TT [T \"string\", TT ["
+				ft = "TT [T \"string\", "++"TT ["
 					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
+--					++"T \""++type_name++"\", "
 					++"TU \"zzz\"], TT [TL, TU \"zzz\"], T \""++type_name++"\", TU \"zzz\"]"
 				do_ift ((CStr t):f:f2:(CList ((CStr t2):ts)):[]) e =
 					case t == t2 of

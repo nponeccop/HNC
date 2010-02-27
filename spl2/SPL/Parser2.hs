@@ -303,8 +303,8 @@ call Texpr_top_expr =
 		use (Sl u i) e = Scall e (SynU $ map (\(Sl l _) -> map (\(Ss s _) -> s) l) u) i
 call Ttype =
 	p_or [
-		([Tvar, Tspace_any, Tnum, Tchar ',', Ttype], \(Ss v i:_:t:_:Sl l _:[]) -> Sl ((Sset v t i):l) i)
-		,([Tvar, Tspace_any, Tnum, Tchar '~'], \(Ss v i:_:t:_:[]) -> Sl ((Sset v t i):[]) i)
+		([Tvar, Tchar '/', Tnum, Tchar ',', Ttype], \(Ss v i:_:t:_:Sl l _:[]) -> Sl ((Sset v t i):l) i)
+		,([Tvar, Tchar '/', Tnum, Tchar '~'], \(Ss v i:_:t:_:[]) -> Sl ((Sset v t i):[]) i)
 		]
 call Texpr_top =
 	p_or [
