@@ -142,6 +142,7 @@ tests = [
 	,("a/1~(a)*a:mk_a 1", "CList [CStr \"a\",CNum 1]", "T \"a1\"")
 	,("a/2~(if_a (a*b*b) {0} a)*a:mk_a 1b 7", "CNum 7", "T \"num\"")
 	,("ab/4~mk_ab 1 1b 'true'", "CL (CInFun 5 InFun \"typ_TT [T \"string\", TU \"ab4_1\", TU \"ab4_2\", TU \"ab4_3\", TU \"ab4_4\", T \"ab4\"]\") (K [CStr \"ab\",CNum 1,CBool True,CStr \"true\"])", "TT [TU \"a\",T \"ab4\"]")
+	,("[a/1~]", "", "")
 --	,("f 2*a:200*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
 --	,("f 10*f:('a*b*if (less b a) {1b} {_f incr/a b})/2", "", "")
 --	,("{incr:(x*{b:sum x})}.incr 1,.b", "", "")

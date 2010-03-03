@@ -8,6 +8,7 @@ import SPL.Lib.Bignum (lib)
 import SPL.Lib.Str (lib)
 
 data P = P C | N Int [Char]
+	deriving Show
 
 comp (Sn x i) u e =
 	P $ CDebug i $ CNum x
@@ -59,10 +60,18 @@ comp (Ss s i) u e =
 
 -- Sdot (Sval "bn") (D "int")
 
-comp (Sstruct l i) u e =
+comp (Sstruct l t i) u e =
 --	CDebug i $ CStruct $ M.fromList $ map (\(Sset k v _) -> (k, comp v)) l
+	let t2 =
+		case comp (Stype (Sn 1 0) t 0) u e of
+			P c ->
+				case remove_cdebug c of
+					CL _ (W l) -> l
+					o -> error "3"
+			N i e -> error "2"
+	in
 	case fn l e of
-		Right w -> P $ CDebug i $ CL (CStruct M.empty) $ W w
+		Right w -> P $ CDebug i $ CL (CStruct M.empty) $ W (w++t2)
 		Left e -> e 
 	where
 		fn [] e = Right []

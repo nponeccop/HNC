@@ -27,7 +27,7 @@ data Syntax =
 	| Scall Syntax SynParams Int
 	| Sset [Char] Syntax Int
 	| Spair Syntax Syntax Int
-	| Sstruct [Syntax] Int
+	| Sstruct [Syntax] [Syntax] Int
 	| Sdot Syntax [Char] Int
 	| Sroot Int
 	| Stype Syntax [Syntax] Int
@@ -279,9 +279,11 @@ call Twhere =
 		]
 call Tstruct =
 	p_or [
-			([Tchar '[',Ttype,Twhere,Tspace_o_not,Tchar ']'], \(c:Sl t _:Sl l _:_:_:[]) -> Stype (Sstruct l (get_i c)) t (get_i c))
-			,([Tchar '[',Twhere,Tspace_o_not,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
-			,([Tchar '[',Twhere,Tnewline_space,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l (get_i c))
+--			([Tchar '[',Ttype,Twhere,Tspace_o_not,Tchar ']'], \(c:Sl t _:Sl l _:_:_:[]) -> Stype (Sstruct l (get_i c)) t (get_i c))
+			([Tchar '[',Ttype,Twhere,Tspace_o_not,Tchar ']'], \(c:Sl t _:Sl l _:_:_:[]) -> Sstruct l t (get_i c))
+			,([Tchar '[',Ttype,Tspace_o_not,Tchar ']'], \(c:Sl t _:_:_:[]) -> Sstruct [] t (get_i c))
+			,([Tchar '[',Twhere,Tspace_o_not,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l [] (get_i c))
+			,([Tchar '[',Twhere,Tnewline_space,Tchar ']'], \(c:Sl l _:_:_:[]) -> Sstruct l [] (get_i c))
 		]
 call Texpr_lambda =
 	p_or [
