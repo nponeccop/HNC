@@ -32,7 +32,7 @@ data DefinitionSynthesized = DefinitionSynthesized {
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = CppFunctionDef {
-			functionLevel 			= diLevel inh
+			functionLevel 			= AG.level_Inh_Definition agInh
 		,	functionTemplateArgs	= S.toList $ typePolyVars defType
 		,	functionIsStatic		= isFunctionStatic self
 		,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
@@ -43,15 +43,18 @@ sem_Definition inh self @ (Definition name args val wh)
 		,	functionRetExpr			= AG.retExpr_Syn_Definition semDef
 		}
 	} where
-		semDef =  AG.wrap_Definition (AG.sem_Definition self)
-			AG.Inh_Definition {
-			   AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
+		agInh = AG.Inh_Definition {
+				AG.level_Inh_Definition = diLevel inh
+			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
 			}
+		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
+
 
 		ctx = sem_Context self ContextInherited {
 				ciSemWhere = semWhere
 			,   ciDefType = defType
 			, 	ciDi = inh
+			,   ciLevel = AG.level_Inh_Definition agInh
 		}
 
 		semWhere = sem_Where wh WhereInherited {
@@ -64,7 +67,7 @@ sem_Definition inh self @ (Definition name args val wh)
 											CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
 											CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
 											_ -> error $ "non-exhaustive patterns in whereList: " ++ show (diTyped inh)
-				,	wiDi               = inh { diLevel = diLevel inh + 1 }
+				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				} where
 				typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
 
@@ -125,15 +128,16 @@ sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunc
 			x -> error $ "sem_WhereMethods: " ++ show x
 	}
 
-data ContextInherited a b c = ContextInherited {
+data ContextInherited a b c d = ContextInherited {
 	ciSemWhere :: a
 ,	ciDi :: b
 ,	ciDefType :: c
+,   ciLevel :: d
 }
 
 sem_Context (Definition name args _ wh) inh
 	= constructJust (null vars && null methods) CppContext {
-		   contextLevel        = diLevel $ ciDi inh
+		   contextLevel        = ciLevel inh
 		,  contextTemplateArgs = nub ((templateVars ++ concat (map vdsTemplateArgs varSem)) ++ S.toList (S.unions contextArgsTv))
 		,  contextTypeName	   = name ++ "_impl"
 		-- переменные контекста - это

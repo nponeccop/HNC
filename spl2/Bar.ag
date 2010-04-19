@@ -75,6 +75,13 @@ getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression
 
 TYPE Program = [Definition]
 
+ATTR Program
+	[
+			level : Int
+ 		|
+		|
+	]
+
 DATA Definition
 	| Definition name : String params : {[String]} value : Expression where : Program
 
@@ -87,6 +94,7 @@ ATTR Definition Program
 
 ATTR Definition
 	[
+		level : Int
 	|
 	|
  		name : String
@@ -96,5 +104,6 @@ ATTR Definition
 SEM Definition
 	| Definition
 		value.fqnTransformer = transformGlobal
+		where.level = @lhs.level + 1
 		lhs.retExpr = @value.sem
 		lhs.name = @name
