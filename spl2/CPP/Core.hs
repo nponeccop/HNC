@@ -31,21 +31,20 @@ data DefinitionSynthesized = DefinitionSynthesized {
 
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
-		dsCppDef = CppFunctionDef {
-			functionLevel 			= AG.level_Inh_Definition agInh
-		,	functionTemplateArgs	= S.toList $ typePolyVars defType
+		dsCppDef = (AG.cppDefinition_Syn_Definition semDef) {
+			functionTemplateArgs	= S.toList $ typePolyVars defType
 		,	functionIsStatic		= isFunctionStatic self
 		,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
 		,	functionContext			= ctx
-		,	functionName 			= AG.name_Syn_Definition semDef
 		,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 		,	functionLocalVars 		= wsVars semWhere
-		,	functionRetExpr			= AG.retExpr_Syn_Definition semDef
 		}
 	} where
+
 		agInh = AG.Inh_Definition {
 				AG.level_Inh_Definition = diLevel inh
 			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
+			,   AG.symTab_Inh_Definition = diSymTab inh
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
@@ -78,7 +77,7 @@ sem_Definition inh self @ (Definition name args val wh)
 		cppDefType = cppUncurryType defType args
 
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
-		isFunctionStatic def  = S.null $ getDefinitionFreeVars def `subtractSet` M.keysSet (diSymTab inh)
+		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition semDef) `subtractSet` M.keysSet (diSymTab inh)
 
 data WhereSynthesized d e = WhereSynthesized {
 	wsVars :: [CppLocalVarDef]
@@ -157,9 +156,12 @@ sem_Context (Definition name args _ wh) inh
 
 	(contextArgs, contextArgsTv) = unzip $ case ciDefType inh of
 		TT funList -> map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
-		_ -> []
+		_ -> [] where
 
-	isArgContext a = S.member a $ getSetOfListFreeVars (filter isFunction wh)
+	isArgContext a = S.member a $ getSetOfListFreeVars (filter isFunction wh) where
+		getSetOfListFreeVars = S.unions . map getDefinitionFreeVars where
+			getDefinitionFreeVars (Definition _ args val wh)
+				= AG.getExpressionAtoms val `S.union` getSetOfListFreeVars wh `subtractSet` S.fromList args `subtractSet` S.fromList (map defName wh)
 
 traceU x y = y
 
@@ -173,8 +175,3 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 getFromWhere wh mf ff = map mf $ filter ff wh
 
 defName (Definition name _ _ _) = name
-
-getSetOfListFreeVars = S.unions . map getDefinitionFreeVars
-
-getDefinitionFreeVars (Definition _ args val wh)
-	= AG.getExpressionAtoms val `S.union` getSetOfListFreeVars wh `subtractSet` S.fromList args `subtractSet` S.fromList (map defName wh)

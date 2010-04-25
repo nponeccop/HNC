@@ -6,6 +6,8 @@ import CPP.Visualise
 import Data.List
 import HN.Intermediate
 import qualified Data.Set as S
+import qualified Data.Map as M
+import Utils
 
 type ExpressionList  = [Expression]
 
@@ -80,6 +82,8 @@ ATTR Program
 			level : Int
  		|
 		|
+		    name USE {:} {[]} : {[String]}
+			freeVars USE {:} {[]} : {[S.Set String]}
 	]
 
 DATA Definition
@@ -95,15 +99,16 @@ ATTR Definition Program
 ATTR Definition
 	[
 		level : Int
+		symTab : {M.Map String CppAtomType}
 	|
 	|
- 		name : String
-		retExpr : CppExpression
+		cppDefinition : CppDefinition
+		freeVars : {S.Set String}
 	]
 
 SEM Definition
 	| Definition
 		value.fqnTransformer = transformGlobal
 		where.level = @lhs.level + 1
-		lhs.retExpr = @value.sem
-		lhs.name = @name
+		lhs.freeVars = @value.atoms `S.union` S.unions @where.freeVars `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
+		lhs.cppDefinition = CppFunctionDef { functionLevel = @lhs.level, functionName = @name, functionRetExpr = @value.sem }
