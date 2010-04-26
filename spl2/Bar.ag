@@ -2,12 +2,15 @@
 module Bar where
 
 import CPP.Intermediate
+import CPP.TypeProducer
 import CPP.Visualise
 import Data.List
 import HN.Intermediate
+import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Utils
+import Debug.Trace
 
 type ExpressionList  = [Expression]
 
@@ -100,15 +103,38 @@ ATTR Definition
 	[
 		level : Int
 		symTab : {M.Map String CppAtomType}
+		typed : C
 	|
 	|
+		name : String
 		cppDefinition : CppDefinition
 		freeVars : {S.Set String}
+		isStatic : Bool
 	]
+
+{
+
+
+cppDefType typed args = cppUncurryType defType args where
+	defType = case typed of
+		CTyped t _ -> t
+		t -> error $ "getDefType: " ++ show t
+
+}
 
 SEM Definition
 	| Definition
 		value.fqnTransformer = transformGlobal
 		where.level = @lhs.level + 1
-		lhs.freeVars = @value.atoms `S.union` S.unions @where.freeVars `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
-		lhs.cppDefinition = CppFunctionDef { functionLevel = @lhs.level, functionName = @name, functionRetExpr = @value.sem }
+		loc.freeVars = (@value.atoms `S.union` S.unions @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
+		lhs.freeVars = @loc.freeVars
+		lhs.cppDefinition = { CppFunctionDef {
+				functionLevel = @lhs.level
+			,	functionName = @name
+			,	functionRetExpr = @value.sem
+			,	functionIsStatic =  @loc.isStatic
+			,	functionArgs = zipWith CppVarDecl (case cppDefType @lhs.typed @params of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
+		    } }
+		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
+		lhs.isStatic = @loc.isStatic
+		lhs.name = @name
