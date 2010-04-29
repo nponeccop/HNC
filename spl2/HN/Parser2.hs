@@ -8,7 +8,7 @@
     Portability :
 -}
 -----------------------------------------------------------------------------------------
-
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,
 	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile) where
@@ -30,7 +30,11 @@ xletter = letter <|> char '_'
 identifier
 	= liftM2 (:) xletter $ many $ xletter <|> digit
 
-literal = between q q $ many $ noneOf "\"" where q = char '"'
+literal = between q q $ many $ noneOf "\"" where q = char '"' --"
+
+cr = char '\r'
+lf = char '\n'
+nl = optional cr >> lf
 
 constructLambda h (Lambda args ex) = Lambda (h:args) ex
 
@@ -140,14 +144,15 @@ simpleDefinition = 	do
 			return $ def b []))
 
 nlIndent = do
-	many1 $ string "\n"
+	many1 nl
 	many $ string "\t"
 	return []
 
 
 
 whereClause = do
-	string " where\n"
+	string " where"
+	nl
 	p <- program
 	string ";"
 	return p
@@ -159,7 +164,7 @@ simple =
 		return $ case a of Definition a p b x -> Definition a p b (x ++ w)
 
 
-program = sepBy simple (many1 $ string "\n")
+program = sepBy simple $ many1 nl
 
 parseProg = parseString program
 
