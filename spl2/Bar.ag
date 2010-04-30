@@ -132,6 +132,8 @@ deconstructTyped t = (case t of
 defType (CTyped t _) = t
 deftype t =  error $ "defType: " ++ show t
 
+typeTemplateArgs = S.toList . typePolyVars
+
 }
 
 SEM Definition
@@ -146,7 +148,8 @@ SEM Definition
 			,	functionRetExpr = @value.sem
 			,	functionIsStatic =  @loc.isStatic
 			,	functionArgs = zipWith CppVarDecl (case cppDefType @lhs.typed @params of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
-		    } }
+			, 	functionTemplateArgs = typeTemplateArgs $ defType @lhs.typed
+			} }
 		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
 		lhs.isStatic = @loc.isStatic
 		lhs.name = @name

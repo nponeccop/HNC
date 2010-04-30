@@ -30,13 +30,12 @@ data DefinitionSynthesized = DefinitionSynthesized {
 	dsCppDef :: CppDefinition
 }
 
-typeTemplateArgs = S.toList . typePolyVars
+
 
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = (AG.cppDefinition_Syn_Definition semDef) {
-			functionTemplateArgs	= typeTemplateArgs defType
-		,	functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
+			functionReturnType 		= case cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> cppDefType
 		,	functionContext			= ctx
 		,	functionArgs 			= zipWith CppVarDecl (case cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) args
 		,	functionLocalVars 		= wsVars semWhere
@@ -111,7 +110,7 @@ sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFuncti
 	sem_VarDefinition (Definition name [] val _) =
 		VarDefinitionSynthesized {
 			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
-		,	vdsTemplateArgs = typeTemplateArgs inferredType
+		,	vdsTemplateArgs = AG.typeTemplateArgs inferredType
 		} where
 			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
 
