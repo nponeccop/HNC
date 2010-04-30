@@ -50,7 +50,7 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		ctx0 = sem_Context self (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
-			,   ciDefType = defType
+			,   ciDefType = AG.defType $ AG.typed_Inh_Definition agInh
 			, 	ciDi = inh
 			,   ciLevel = AG.level_Inh_Definition agInh
 		}
@@ -64,10 +64,6 @@ sem_Definition inh self @ (Definition name args val wh)
 				,	wiTypes            = AG.deconstructTyped $ diTyped inh
 				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				}
-
-		defType = AG.defType $ diTyped inh
-
-		cppDefType = cppUncurryType defType args
 
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
 		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition semDef) `subtractSet` M.keysSet (diSymTab inh)
