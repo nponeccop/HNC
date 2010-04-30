@@ -12,7 +12,6 @@ import SPL.Top
 import SPL.Visualise
 
 instance Arbitrary SPL.Types.C where
-	coarbitrary = error "foo"
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
 		-- произвольные выражения типа CNum
 		arb_cnum l 0 = oneof $ return (CNum 2) : l
@@ -51,14 +50,13 @@ instance Show Foo where
 	show (Foo x) = show x ++ "\n\n" ++ showAsSource x
 
 instance Arbitrary Foo where
-	coarbitrary = error "bar"
 	arbitrary = arbitrary >>= return . Foo
 
 typeCheck xs = case SPL.Top.check2 xs of
 	SPL.Check3.P _ -> True
 	_ -> False
 
-prop_Foo (Foo xs) = length (show xs) < 1500 ==> typeCheck xs
+prop_Foo (Foo xs) = length (show xs) < 6000 ==> typeCheck xs
 
 ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 	fp = fullParse x
@@ -95,4 +93,4 @@ tests2 = map ttt2 [
 main = do
 	runTestTT $ TestList $ tests2 ++ tests
 	putStrLn "QuickCheck :"
-	Test.QuickCheck.check (defaultConfig { configMaxTest = 200}) prop_Foo
+	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 200}) prop_Foo
