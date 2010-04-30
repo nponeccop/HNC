@@ -115,10 +115,7 @@ ATTR Definition
 {
 
 
-cppDefType typed args = cppUncurryType defType args where
-	defType = case typed of
-		CTyped t _ -> t
-		t -> error $ "getDefType: " ++ show t
+cppDefType typed args = cppUncurryType (defType typed) args
 
 deconstructTyped t = (case t of
 	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
@@ -142,14 +139,16 @@ SEM Definition
 		where.level = @lhs.level + 1
 		loc.freeVars = (@value.atoms `S.union` S.unions @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
+		loc.cppDefType = cppDefType @lhs.typed @params
 		lhs.cppDefinition = { CppFunctionDef {
-				functionLevel = @lhs.level
-			,	functionName = @name
-			,	functionRetExpr = @value.sem
-			,	functionIsStatic =  @loc.isStatic
-			,	functionArgs = zipWith CppVarDecl (case cppDefType @lhs.typed @params of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
-			, 	functionTemplateArgs = typeTemplateArgs $ defType @lhs.typed
-			} }
+				functionLevel           = @lhs.level
+			,	functionName            = @name
+			,	functionRetExpr         = @value.sem
+			,	functionIsStatic        = @loc.isStatic
+			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
+			, 	functionTemplateArgs    = typeTemplateArgs $ defType @lhs.typed
+			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
+		} }
 		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
 		lhs.isStatic = @loc.isStatic
 		lhs.name = @name
