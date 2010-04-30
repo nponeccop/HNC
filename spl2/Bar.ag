@@ -120,6 +120,18 @@ cppDefType typed args = cppUncurryType defType args where
 		CTyped t _ -> t
 		t -> error $ "getDefType: " ++ show t
 
+deconstructTyped t = (case t of
+	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
+	CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
+	CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
+	CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
+	_ -> error $ "non-exhaustive patterns in deconstructTyped: " ++ show t)
+	where
+		typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
+
+defType (CTyped t _) = t
+deftype t =  error $ "defType: " ++ show t
+
 }
 
 SEM Definition

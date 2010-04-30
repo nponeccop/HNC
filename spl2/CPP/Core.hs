@@ -51,7 +51,6 @@ sem_Definition inh self @ (Definition name args val wh)
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
-
 		ctx0 = sem_Context self (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
 			,   ciDefType = defType
@@ -65,24 +64,17 @@ sem_Definition inh self @ (Definition name args val wh)
 					wiSymTabT          = symTabTranslator symTabWithStatics
 				,	wiClassPrefix      = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
 				,	wiIsFunctionStatic = isFunctionStatic
-				,	wiTypes            = case diTyped inh of
-											CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
-											CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
-											CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
-											CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
-											_ -> error $ "non-exhaustive patterns in whereList: " ++ show (diTyped inh)
+				,	wiTypes            = AG.deconstructTyped $ diTyped inh
 				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
-				} where
-				typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
+				}
 
-		defType = case diTyped inh of
-			CTyped t _ -> t
-			t -> error $ "getDefType: " ++ show t
+		defType = AG.defType $ diTyped inh
 
 		cppDefType = cppUncurryType defType args
 
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
 		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition semDef) `subtractSet` M.keysSet (diSymTab inh)
+
 
 data WhereSynthesized d e = WhereSynthesized {
 	wsVars :: [CppLocalVarDef]
