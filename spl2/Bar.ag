@@ -90,7 +90,7 @@ ATTR Program
  		|
 		|
 		    name USE {:} {[]} : {[String]}
-			freeVars USE {:} {[]} : {[S.Set String]}
+			freeVars USE {`S.union`} {S.empty} : {S.Set String}
 			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 	]
 
@@ -142,7 +142,7 @@ SEM Definition
 	| Definition
 		value.fqnTransformer = transformGlobal
 		where.level = @lhs.level + 1
-		loc.freeVars = (@value.atoms `S.union` S.unions @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
+		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
 		loc.cppDefType = cppDefType @lhs.typed @params
 		lhs.cppDefinition = { CppFunctionDef {
