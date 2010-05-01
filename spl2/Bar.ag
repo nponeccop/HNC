@@ -79,7 +79,6 @@ getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression
 consMaybe Nothing value = value
 consMaybe (Just x) value = x : value
 
-concatMaybe l = foldr consMaybe [] l
 
 }
 
@@ -92,7 +91,7 @@ ATTR Program
 		|
 		    name USE {:} {[]} : {[String]}
 			freeVars USE {:} {[]} : {[S.Set String]}
-			cppVarDefinition USE {:} {[]} : {[Maybe CppLocalVarDef]}
+			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 	]
 
 DATA Definition
@@ -155,7 +154,7 @@ SEM Definition
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = typeTemplateArgs $ @loc.inferredType
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
-			,   functionLocalVars       = concatMaybe @where.cppVarDefinition
+			,   functionLocalVars       = @where.cppVarDefinition
 		} }
 		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
 		lhs.isStatic = @loc.isStatic
