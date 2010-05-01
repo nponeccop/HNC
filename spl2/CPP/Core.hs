@@ -63,29 +63,31 @@ sem_Definition inh self @ (Definition name args val wh)
 				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				}
 
-		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
+		symTabWithStatics = lfm (wsMapPrefix semWhere) `M.union` diSymTab inh
+
+		lfm mapPrefix = M.fromList $ mapPrefix classPrefix isFunctionStatic ++ mapPrefix CppContextMethod (not . isFunctionStatic) where
+			classPrefix = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
+
 		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition xsemDef) `subtractSet` M.keysSet (diSymTab inh) where
 			xsemDef = AG.wrap_Definition (AG.sem_Definition def) agInh
 
-data WhereSynthesized d e = WhereSynthesized {
-	wsLocalFunctionMap :: M.Map String CppAtomType
-,	wsMethods :: d
+data WhereSynthesized d e f = WhereSynthesized {
+	wsMethods :: d
 ,	wsTemplateArgs :: e
+,   wsMapPrefix :: f
 }
 
-data WhereInherited a b c d e f = WhereInherited {
+data WhereInherited a d e = WhereInherited {
 	wiSymTabT          :: a
-,	wiClassPrefix      :: b
-,	wiIsFunctionStatic :: c
-,	wiTypes            :: f
+,	wiTypes            :: d
 ,	wiDi               :: e
 }
 
 sem_Where self inh
 	= WhereSynthesized {
-		wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
-	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
+		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
 	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ map vdsTemplateArgs wsVars1
+	,   wsMapPrefix = mapPrefix
 	} where
 		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
 		wsVars1      = sem_WhereVars    (wiSymTabT inh) (wiTypes inh)        self
