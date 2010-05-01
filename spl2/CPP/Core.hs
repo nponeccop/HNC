@@ -57,8 +57,6 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		semWhere = sem_Where wh WhereInherited {
 					wiSymTabT          = symTabTranslator symTabWithStatics
-				,	wiClassPrefix      = CppFqMethod $ contextTypeName (fromJust ctx) ++ showTemplateArgs (contextTemplateArgs $ fromJust ctx)
-				,	wiIsFunctionStatic = isFunctionStatic
 				,	wiTypes            = AG.deconstructTyped $ diTyped inh
 				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				}
