@@ -76,6 +76,11 @@ getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression
 	Inh_Expression {
 	}
 
+consMaybe Nothing value = value
+consMaybe (Just x) value = x : value
+
+concatMaybe l = foldr consMaybe [] l
+
 }
 
 TYPE Program = [Definition]
@@ -87,6 +92,7 @@ ATTR Program
 		|
 		    name USE {:} {[]} : {[String]}
 			freeVars USE {:} {[]} : {[S.Set String]}
+			cppVarDefinition USE {:} {[]} : {[Maybe CppLocalVarDef]}
 	]
 
 DATA Definition
@@ -95,6 +101,7 @@ DATA Definition
 ATTR Definition Program
 	[
 		fqn : {Bool -> String -> String}
+		typed : C
 	|
 	|
 	]
@@ -103,14 +110,13 @@ ATTR Definition
 	[
 		level : Int
 		symTab : {M.Map String CppAtomType}
-		typed : C
 	|
 	|
 		name : String
 		cppDefinition : CppDefinition
 		freeVars : {S.Set String}
 		isStatic : Bool
-		cppVarDefinition : CppLocalVarDef
+		cppVarDefinition : {Maybe CppLocalVarDef}
 	]
 
 {
@@ -149,9 +155,11 @@ SEM Definition
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = typeTemplateArgs $ @loc.inferredType
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
+			,   functionLocalVars       = concatMaybe @where.cppVarDefinition
 		} }
 		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
 		lhs.isStatic = @loc.isStatic
 		loc.inferredType = defType @lhs.typed
 		lhs.name = @name
-		lhs.cppVarDefinition = CppVar (cppType @loc.inferredType) @name @value.sem
+		loc.isFunction = not $ null @params
+		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @loc.inferredType) @name @value.sem

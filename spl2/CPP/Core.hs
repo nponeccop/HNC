@@ -36,7 +36,6 @@ sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = (AG.cppDefinition_Syn_Definition semDef) {
 			functionContext			= ctx
-		,	functionLocalVars 		= wsVars semWhere
 		}
 	} where
 
