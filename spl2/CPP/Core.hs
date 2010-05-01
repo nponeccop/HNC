@@ -145,7 +145,7 @@ sem_Context (Definition name args _ wh) noMethods inh
 	isArgContext a = S.member a $ getSetOfListFreeVars (filter isFunction wh) where
 		getSetOfListFreeVars = S.unions . map getDefinitionFreeVars where
 			getDefinitionFreeVars (Definition _ args val wh)
-				= AG.getExpressionAtoms val `S.union` getSetOfListFreeVars wh `subtractSet` S.fromList args `subtractSet` S.fromList (map defName wh)
+				= AG.getExpressionAtoms val `S.union` getSetOfListFreeVars wh `subtractSet` S.fromList (args ++ map defName wh)
 
 traceU x y = y
 
