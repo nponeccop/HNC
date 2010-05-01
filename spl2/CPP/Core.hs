@@ -31,30 +31,29 @@ data DefinitionSynthesized = DefinitionSynthesized {
 }
 
 
-
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = (AG.cppDefinition_Syn_Definition semDef) {
-			functionContext			= ctx
+			functionContext			=  fmap (\ctt -> ctt { contextMethods = wsMethods semWhere }) ctx
 		}
 	} where
 
 		agInh = AG.Inh_Definition {
 				AG.level_Inh_Definition = diLevel inh
 			, 	AG.typed_Inh_Definition = diTyped inh
-			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` args `subtractKeysFromMap` map (\(CppVar _ name _ ) -> name) (wsVars semWhere)
+			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` (args ++ map (\(CppVar _ name _ ) -> name) flv)
 			,   AG.symTab_Inh_Definition = diSymTab inh
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
-		ctx0 = sem_Context self (null $ wsMethods semWhere) ContextInherited {
+		flv = functionLocalVars $ AG.cppDefinition_Syn_Definition semDef
+
+		ctx = sem_Context self (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
 			,   ciDefType = AG.defType $ AG.typed_Inh_Definition agInh
 			, 	ciDi = inh
 			,   ciLevel = AG.level_Inh_Definition agInh
 		}
-
-		ctx = fmap (\ctt -> ctt { contextMethods = wsMethods semWhere }) ctx0
 
 		semWhere = sem_Where wh WhereInherited {
 					wiSymTabT          = symTabTranslator symTabWithStatics
@@ -69,8 +68,7 @@ sem_Definition inh self @ (Definition name args val wh)
 			xsemDef = AG.wrap_Definition (AG.sem_Definition def) agInh
 
 data WhereSynthesized d e = WhereSynthesized {
-	wsVars :: [CppLocalVarDef]
-,	wsLocalFunctionMap :: M.Map String CppAtomType
+	wsLocalFunctionMap :: M.Map String CppAtomType
 ,	wsMethods :: d
 ,	wsTemplateArgs :: e
 }
@@ -85,8 +83,7 @@ data WhereInherited a b c d e f = WhereInherited {
 
 sem_Where self inh
 	= WhereSynthesized {
-		wsVars = map vdsVarDef wsVars1
-	,	wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
+		wsLocalFunctionMap = M.fromList $ mapPrefix (wiClassPrefix inh) (wiIsFunctionStatic inh) ++ mapPrefix CppContextMethod (not . wiIsFunctionStatic inh)
 	,	wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
 	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ map vdsTemplateArgs wsVars1
 	} where
