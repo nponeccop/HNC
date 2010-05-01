@@ -114,7 +114,6 @@ ATTR Definition
 		name : String
 		cppDefinition : CppDefinition
 		freeVars : {S.Set String}
-		isStatic : Bool
 		cppVarDefinition : {Maybe CppLocalVarDef}
 	]
 
@@ -150,14 +149,12 @@ SEM Definition
 				functionLevel           = @lhs.level
 			,	functionName            = @name
 			,	functionRetExpr         = @value.sem
-			,	functionIsStatic        = @loc.isStatic
+			,	functionIsStatic        = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = typeTemplateArgs $ @loc.inferredType
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = @where.cppVarDefinition
 		} }
-		loc.isStatic = { S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab }
-		lhs.isStatic = @loc.isStatic
 		loc.inferredType = defType @lhs.typed
 		lhs.name = @name
 		loc.isFunction = not $ null @params
