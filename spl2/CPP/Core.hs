@@ -66,8 +66,8 @@ sem_Definition inh self @ (Definition name args val wh)
 				}
 
 		symTabWithStatics = wsLocalFunctionMap semWhere `M.union` diSymTab inh
-		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition semDef) `subtractSet` M.keysSet (diSymTab inh)
-
+		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition xsemDef) `subtractSet` M.keysSet (diSymTab inh) where
+			xsemDef = AG.wrap_Definition (AG.sem_Definition def) agInh
 
 data WhereSynthesized d e = WhereSynthesized {
 	wsVars :: [CppLocalVarDef]
