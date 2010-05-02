@@ -23,15 +23,14 @@ tdi2 t types typed = DefinitionInherited {
 ,	diTyped        = typed
 }
 
+compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed) self where
+	P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
+	types = M.insert name x fv
+
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
 compileFile t inFile
-	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . z
-	where
-		z self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed) self where
-			P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
-			types = M.insert name x fv
-
+	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . compileDefinition t
 
 typeCheck inFile = compile inFile f where
 	f self = check1 (convertDef self) SPL.Top.get_types

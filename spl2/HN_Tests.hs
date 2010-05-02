@@ -16,6 +16,7 @@ import CPP.Core
 import CPP.Intermediate
 import CPP.TypeProducer
 
+import SPL.Top
 import SPL.Types
 import SPL.Check3
 import qualified SPL.Top
@@ -24,17 +25,19 @@ simpleParse  = head . fromRight . parseProg
 
 baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
-tdi rt = DefinitionInherited {
-	diLevel        = 3
-,	diSymTab       = baseToTdi
-,	diTraceP       = False
-,	diRootTypes    = rt
+tdi2 t types typed = DefinitionInherited {
+	diLevel        = 0
+,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
+,	diTraceP       = t
+,	diRootTypes    = types
+,	diTyped        = typed
 }
 
-testCodeGen = rt (dsCppDef . z) where
-	z self @ (Definition name _ _ _) = sem_Definition (tdi types) self where
-		P (_, fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
-		types = M.insert name x fv
+compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed) self where
+	P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
+	types = M.insert name x fv
+
+testCodeGen = rt (dsCppDef . compileDefinition False)
 
 -- test2 = rt getDefinitionFreeVars
 
