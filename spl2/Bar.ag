@@ -132,7 +132,7 @@ deconstructTyped t = (case t of
 		typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
 
 defType (CTyped t _) = t
-deftype t =  error $ "defType: " ++ show t
+defType t =  error $ "defType: " ++ show t
 
 typeTemplateArgs = S.toList . typePolyVars
 
