@@ -27,7 +27,6 @@ baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 tdi rt = DefinitionInherited {
 	diLevel        = 3
 ,	diSymTab       = baseToTdi
-,	diType         = Nothing
 ,	diTraceP       = False
 ,	diRootTypes    = rt
 }
@@ -37,7 +36,7 @@ testCodeGen = rt (dsCppDef . z) where
 		P (_, fv, x) = SPL.Top.check1 (convertDef self) SPL.Top.get_types
 		types = M.insert name x fv
 
-test2 = rt getDefinitionFreeVars
+-- test2 = rt getDefinitionFreeVars
 
 rt f = mapM (print . f . simpleParse) testSet
 

@@ -30,3 +30,6 @@ Main-Is:	SPLI.hs
 
 Executable:	spl-milnerext
 Main-Is:	Milner-ext.hs
+
+Executable:     spl-hn-tests
+Main-Is:        HN_Tests.hs
