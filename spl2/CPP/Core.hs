@@ -93,18 +93,15 @@ sem_Where self inh
 		wsVars1      = sem_WhereVars    (wiSymTabT inh) (wiTypes inh)        self
 		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
 
-data VarDefinitionSynthesized a b = VarDefinitionSynthesized {
-	vdsVarDef :: a
-,	vdsTemplateArgs :: b
+data VarDefinitionSynthesized b = VarDefinitionSynthesized {
+	vdsTemplateArgs :: b
 }
 
 sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) where
 	sem_VarDefinition (Definition name [] val _) =
 		VarDefinitionSynthesized {
-			vdsVarDef = CppVar (cppType inferredType) name $ AG.sem_Expression2 fqn val
-		,	vdsTemplateArgs = AG.typeTemplateArgs inferredType
-		} where
-			inferredType = traceU ("sem_VarDefinition: wiTypes = " ++ show wiTypes) $ uncondLookup name wiTypes
+			vdsTemplateArgs = AG.typeTemplateArgs $ uncondLookup name wiTypes
+		}
 
 sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunction where
 	sem_MethodDefinition = dsCppDef . sem_Definition newInh
