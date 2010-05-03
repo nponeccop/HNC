@@ -54,7 +54,6 @@ sem_Definition inh self @ (Definition name args val wh)
 				ciSemWhere = semWhere
 			,   ciDefType = trace4 "Core.ciDefType" (AG.typed_Inh_Definition agInh) $ AG.defType $ AG.typed_Inh_Definition agInh
 			, 	ciDi = inh
-			,   ciLevel = AG.level_Inh_Definition agInh
 		}
 
 		semWhere = sem_Where wh WhereInherited {
@@ -106,11 +105,10 @@ sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunc
 			x -> error $ "sem_WhereMethods: " ++ show x
 	}
 
-data ContextInherited a b c d = ContextInherited {
+data ContextInherited a b c = ContextInherited {
 	ciSemWhere :: a
 ,	ciDi :: b
 ,	ciDefType :: c
-,   ciLevel :: d
 }
 
 sem_Context (Definition name args _ wh) agContext noMethods inh
