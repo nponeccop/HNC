@@ -86,22 +86,16 @@ data WhereInherited a d e = WhereInherited {
 sem_Where self inh
 	= WhereSynthesized {
 		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
-	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ map vdsTemplateArgs wsVars1
+	,	wsTemplateArgs = nub $ concat $ map functionTemplateArgs wsMethods1 ++ wsVars1
 	,   wsMapPrefix = mapPrefix
 	} where
 		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
 		wsVars1      = sem_WhereVars    (wiSymTabT inh) (wiTypes inh)        self
 		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
 
-data VarDefinitionSynthesized b = VarDefinitionSynthesized {
-	vdsTemplateArgs :: b
-}
-
 sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) where
-	sem_VarDefinition (Definition name [] val _) =
-		VarDefinitionSynthesized {
-			vdsTemplateArgs = AG.typeTemplateArgs $ uncondLookup name wiTypes
-		}
+	sem_VarDefinition (Definition name [] val _) = AG.typeTemplateArgs $ uncondLookup name wiTypes
+
 
 sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunction where
 	sem_MethodDefinition = dsCppDef . sem_Definition newInh
@@ -121,7 +115,7 @@ data ContextInherited a b c d = ContextInherited {
 
 sem_Context (Definition name args _ wh) agContext noMethods inh
 	= constructJust (null vars && noMethods) agContext {
-		   contextTemplateArgs = S.toList $ S.unions $ S.fromList templateVars : S.fromList (concat $ map vdsTemplateArgs varSem) : contextArgsTv
+		   contextTemplateArgs = S.toList $ S.unions $ S.fromList templateVars : S.fromList (concat $ varSem) : contextArgsTv
 		-- переменные контекста - это
 		-- аргументы главной функции, свободные в where-функциях
 		-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
