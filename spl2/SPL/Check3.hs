@@ -143,18 +143,18 @@ check (CDebug ii tt@(CL a (K p))) et sv =
 	case check (observeN "a" a) et sv of
 		P (ret, rm0, TT r) ->
 			case ch (observeN ("r_"++show a) r) p et M.empty (observeN "rm0" rm0) 0 sv ii (CList []) of
-				P (CList rt, rm, r) -> P (CTyped r (CL ret (K rt)), observeN "rm" rm, observeN "r" r)
+				P (CList rt, rm, r) -> P ((\a b -> b) r (CL ret (K rt)), observeN "rm" rm, observeN "r" r)
 				N i e -> N i e
 		P (ret, ur, TV n) ->
 				case get_url p_ok of
-					Right a -> 
+					Right a ->
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
 						in P (tt, union_r (observeN ("rm"++show rm) rm) ur, setm r rm)
 					Left o -> o
 		P (ret, ur, TU n) ->
 				case get_url p_ok of
-					Right a -> 
+					Right a ->
 						let rm = observeN "rm" $ putp [n] [TT (get_rl p_ok++[TU ('_':n)])] $ foldr (\a b -> union_r a b) M.empty a;
 							r = observeN "r" $ TU ('_':n)
 						in P (tt, M.map (\x -> norm $ setm x rm) ur, setm r rm)
@@ -225,7 +225,7 @@ check tt@(CL a L) et sv =
 		P (_, ur, r) ->
 			P (tt, ur, TT [TL, r])
 		o -> o
-	
+
 check tt@(CL a R) et sv =
 	case check a (putp ["_f"] [TV "_f"] et) sv of
 		P (_, ur, r) ->

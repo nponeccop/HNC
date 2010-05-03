@@ -108,6 +108,7 @@ ATTR Definition Program
 
 ATTR Definition
 	[
+		inferredType : T
 	|
 	|
 		name : String
@@ -146,14 +147,14 @@ SEM Definition
 		where.level = @lhs.level + 1
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
-		loc.cppDefType = cppDefType @lhs.typed @params
+		loc.cppDefType = cppUncurryType @lhs.inferredType @params
 		lhs.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
 			,	functionName            = @name
 			,	functionRetExpr         = @value.sem
 			,	functionIsStatic        = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
-			, 	functionTemplateArgs    = typeTemplateArgs $ @loc.inferredType
+			, 	functionTemplateArgs    = typeTemplateArgs $ @lhs.inferredType
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = @where.cppVarDefinition
 			,   functionContext         = constructJust False $ CppContext {
@@ -161,25 +162,23 @@ SEM Definition
 				,   contextTypeName = @name ++ "_impl"
 				}
 		} }
-		loc.inferredType = trace4 "loc.inferredType" @lhs.typed $ defType @lhs.typed
 		lhs.name = @name
 		loc.isFunction = not $ null @params
-		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @loc.inferredType) @name @value.sem
+		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @lhs.inferredType) @name @value.sem
 
 {
 
-xt x = case x of
-	CTyped _ (CL _ (K [t])) -> t
-	CTyped _ (CL t (S _)) -> error $ "xt.1: " ++ show t
-	_ -> error $ "xt:" ++ show x
-
 xxt x = case x of
-	CTyped _ (CL (CL t _) (K _)) -> t
-	_ -> error $ "xxt:" ++ show x
+	CL (CL w (S _)) (K [CTyped t _]) -> w
+	_ -> error $ "xxt: " ++ show x
+
+it x = case x of
+	CL (CL w (S _)) (K [CTyped t _]) -> t
+	_ -> error $ "it: " ++ show x
 }
 
 SEM Program
 	| Cons
-		hd.typed = xt @lhs.typed
 		tl.typed = xxt @lhs.typed
+		hd.inferredType = it @lhs.typed
 

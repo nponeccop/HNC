@@ -23,6 +23,7 @@ data DefinitionInherited = DefinitionInherited {
 ,	diTraceP          :: Bool
 ,	diRootTypes       :: M.Map String T
 ,	diTyped           :: C
+,   diInferredType    :: T
 }
 
 -- synthesized attributes for Definition
@@ -43,6 +44,7 @@ sem_Definition inh self @ (Definition name args val wh)
 			, 	AG.typed_Inh_Definition = diTyped inh
 			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` (args ++ map (\(CppVar _ name _ ) -> name) flv)
 			,   AG.symTab_Inh_Definition = diSymTab inh
+			,   AG.inferredType_Inh_Definition = diInferredType inh
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
@@ -52,7 +54,7 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		ctx = sem_Context self agContext (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
-			,   ciDefType = trace4 "Core.ciDefType" (AG.typed_Inh_Definition agInh) $ AG.defType $ AG.typed_Inh_Definition agInh
+			,   ciDefType = AG.inferredType_Inh_Definition agInh
 			, 	ciDi = inh
 		}
 
@@ -102,7 +104,7 @@ sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunc
 		diTyped =  case whereTyped of
 			CTyped _ (CL _ (K (y @ (CTyped _ _) : _))) -> y
 			CTyped _ (CL x @ (CTyped _ _) (S _)) -> x
-			x -> error $ "sem_WhereMethods: " ++ show x
+			x -> const x $ error $ "sem_WhereMethods: " ++ show x
 	}
 
 data ContextInherited a b c = ContextInherited {
