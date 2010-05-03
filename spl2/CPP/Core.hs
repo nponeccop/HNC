@@ -127,14 +127,13 @@ sem_Context (Definition name args _ wh) noMethods inh
 		,  contextTypeName	   = name ++ "_impl"
 		-- переменные контекста - это
 		-- аргументы главной функции, свободные в where-функциях
-		-- локальные переменные, свободные в where-функциях
+		-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
  		,  contextVars 	  	   = vars
 	} where
 
  	templateVars = wsTemplateArgs $ ciSemWhere inh
 
-	vars = filter (\(CppVar _ name _ ) -> not $ S.member name lvn) (map vdsVarDef varSem)  ++ contextArgs where
-		lvn = S.fromList $ getFromWhere wh defName $ not . isFunction
+	vars = contextArgs
 
 	varSem = sem_WhereVars (symTabTranslator $ diSymTab $ ciDi inh) (diRootTypes $ ciDi inh) wh
 
