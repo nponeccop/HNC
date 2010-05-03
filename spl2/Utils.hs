@@ -10,7 +10,11 @@ import Debug.Trace
 ll l = [last l]
 ff (l :_) = [l]
 
+traceOff x y = y
+
 trace2 x = trace (show x) x
+trace3 x y = traceOff ("trace3 " ++ x ++ ": " ++ show y) y
+trace4 x y z = traceOff ("trace4 " ++ x ++ ": " ++ show y) z
 
 fromRight v = case v of
 	Right r -> r

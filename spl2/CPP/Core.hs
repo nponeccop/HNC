@@ -50,7 +50,7 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		ctx = sem_Context self (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
-			,   ciDefType = AG.defType $ AG.typed_Inh_Definition agInh
+			,   ciDefType = trace4 "Core.ciDefType" (AG.typed_Inh_Definition agInh) $ AG.defType $ AG.typed_Inh_Definition agInh
 			, 	ciDi = inh
 			,   ciLevel = AG.level_Inh_Definition agInh
 		}

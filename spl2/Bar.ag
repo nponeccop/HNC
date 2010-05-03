@@ -120,7 +120,7 @@ ATTR Definition
 {
 
 
-cppDefType typed args = cppUncurryType (defType typed) args
+cppDefType typed args = cppUncurryType (trace3 "AG.cppDefType" $ defType typed) args
 
 deconstructTyped t = (case t of
 	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
@@ -131,7 +131,10 @@ deconstructTyped t = (case t of
 	where
 		typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
 
+justTyped (CTyped t _) = t
+
 defType (CTyped t _) = t
+defType (CL (CTyped t (CL _ (K argTypes))) (S _)) = TT $ (map justTyped argTypes) ++ [t]
 defType t =  error $ "defType: " ++ show t
 
 typeTemplateArgs = S.toList . typePolyVars
@@ -155,7 +158,7 @@ SEM Definition
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = @where.cppVarDefinition
 		} }
-		loc.inferredType = defType @lhs.typed
+		loc.inferredType = trace4 "loc.inferredType" @lhs.typed $ defType @lhs.typed
 		lhs.name = @name
 		loc.isFunction = not $ null @params
 		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @loc.inferredType) @name @value.sem

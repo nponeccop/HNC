@@ -30,7 +30,7 @@ tdi2 t types typed = DefinitionInherited {
 ,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 ,	diTraceP       = t
 ,	diRootTypes    = types
-,	diTyped        = typed
+,	diTyped        = trace3 "HN_Tests.tdi2" typed
 }
 
 compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed) self where
