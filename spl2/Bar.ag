@@ -165,3 +165,21 @@ SEM Definition
 		lhs.name = @name
 		loc.isFunction = not $ null @params
 		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @loc.inferredType) @name @value.sem
+
+{
+
+xt x = case x of
+	CTyped _ (CL _ (K [t])) -> t
+	CTyped _ (CL t (S _)) -> error $ "xt.1: " ++ show t
+	_ -> error $ "xt:" ++ show x
+
+xxt x = case x of
+	CTyped _ (CL (CL t _) (K _)) -> t
+	_ -> error $ "xxt:" ++ show x
+}
+
+SEM Program
+	| Cons
+		hd.typed = xt @lhs.typed
+		tl.typed = xxt @lhs.typed
+
