@@ -116,10 +116,6 @@ data ContextInherited a b c = ContextInherited {
 sem_Context (Definition name args _ wh) agContext noMethods inh
 	= constructJust (null vars && noMethods) agContext {
 		   contextTemplateArgs = S.toList $ S.unions $ S.fromList templateVars : S.fromList (concat $ varSem) : contextArgsTv
-		-- переменные контекста - это
-		-- аргументы главной функции, свободные в where-функциях
-		-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
- 		,  contextVars 	  	   = vars
 	} where
 
  	templateVars = wsTemplateArgs $ ciSemWhere inh

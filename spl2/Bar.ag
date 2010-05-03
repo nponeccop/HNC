@@ -91,6 +91,7 @@ ATTR Program
 		    name USE {:} {[]} : {[String]}
 			freeVars USE {`S.union`} {S.empty} : {S.Set String}
 			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
+			varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
 	]
 
 DATA Definition
@@ -115,6 +116,7 @@ ATTR Definition
 		cppDefinition : CppDefinition
 		freeVars : {S.Set String}
 		cppVarDefinition : {Maybe CppLocalVarDef}
+		varsFreeInFunctions : {S.Set String}
 	]
 
 {
@@ -139,6 +141,7 @@ defType t =  error $ "defType: " ++ show t
 
 typeTemplateArgs = S.toList . typePolyVars
 
+
 }
 
 SEM Definition
@@ -160,11 +163,21 @@ SEM Definition
 			,   functionContext         = constructJust False $ CppContext {
 					contextLevel    = @lhs.level
 				,   contextTypeName = @name ++ "_impl"
+				-- переменные контекста - это
+				-- аргументы главной функции, свободные в where-функциях
+				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
+				,   contextVars     = fst @loc.argsAndArgsTv
 				}
 		} }
 		lhs.name = @name
 		loc.isFunction = not $ null @params
 		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @lhs.inferredType) @name @value.sem
+		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
+		loc.isArgContext  = { \a -> S.member a @where.varsFreeInFunctions }
+		loc.argsAndArgsTv = { case @lhs.inferredType of
+			TT funList -> unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> @loc.isArgContext y) $ zip (init funList) @params
+			_ -> ([], []) }
+
 
 {
 
