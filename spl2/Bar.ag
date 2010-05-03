@@ -86,7 +86,6 @@ TYPE Program = [Definition]
 
 ATTR Program
 	[
-			level : Int
  		|
 		|
 		    name USE {:} {[]} : {[String]}
@@ -101,14 +100,14 @@ ATTR Definition Program
 	[
 		fqn : {Bool -> String -> String}
 		typed : C
+		symTab : {M.Map String CppAtomType}
+		level : Int
 	|
 	|
 	]
 
 ATTR Definition
 	[
-		level : Int
-		symTab : {M.Map String CppAtomType}
 	|
 	|
 		name : String
