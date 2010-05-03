@@ -89,10 +89,10 @@ sem_Where self inh
 	,   wsMapPrefix = mapPrefix
 	} where
 		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
-		wsVars1      = sem_WhereVars    (wiSymTabT inh) (wiTypes inh)        self
+		wsVars1      = sem_WhereVars    (wiTypes inh)                        self
 		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
 
-sem_WhereVars fqn wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) where
+sem_WhereVars wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) where
 	sem_VarDefinition (Definition name [] val _) = AG.typeTemplateArgs $ uncondLookup name wiTypes
 
 
@@ -124,7 +124,7 @@ sem_Context (Definition name args _ wh) agContext noMethods inh
 
 	vars = contextArgs
 
-	varSem = sem_WhereVars (symTabTranslator $ diSymTab $ ciDi inh) (diRootTypes $ ciDi inh) wh
+	varSem = sem_WhereVars (diRootTypes $ ciDi inh) wh
 
 	(contextArgs, contextArgsTv) = case ciDefType inh of
 		TT funList -> unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) args
