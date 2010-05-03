@@ -157,6 +157,10 @@ SEM Definition
 			, 	functionTemplateArgs    = typeTemplateArgs $ @loc.inferredType
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = @where.cppVarDefinition
+			,   functionContext         = constructJust False $ CppContext {
+					contextLevel    = @lhs.level
+				,   contextTypeName = @name ++ "_impl"
+				}
 		} }
 		loc.inferredType = trace4 "loc.inferredType" @lhs.typed $ defType @lhs.typed
 		lhs.name = @name

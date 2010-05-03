@@ -48,7 +48,9 @@ sem_Definition inh self @ (Definition name args val wh)
 
 		flv = functionLocalVars $ AG.cppDefinition_Syn_Definition semDef
 
-		ctx = sem_Context self (null $ wsMethods semWhere) ContextInherited {
+		agContext = fromJust $ functionContext $ AG.cppDefinition_Syn_Definition semDef
+
+		ctx = sem_Context self agContext (null $ wsMethods semWhere) ContextInherited {
 				ciSemWhere = semWhere
 			,   ciDefType = trace4 "Core.ciDefType" (AG.typed_Inh_Definition agInh) $ AG.defType $ AG.typed_Inh_Definition agInh
 			, 	ciDi = inh
@@ -120,11 +122,9 @@ data ContextInherited a b c d = ContextInherited {
 ,   ciLevel :: d
 }
 
-sem_Context (Definition name args _ wh) noMethods inh
-	= constructJust (null vars && noMethods) CppContext {
-		   contextLevel        = ciLevel inh
-		,  contextTemplateArgs = S.toList $ S.unions $ S.fromList templateVars : S.fromList (concat $ map vdsTemplateArgs varSem) : contextArgsTv
-		,  contextTypeName	   = name ++ "_impl"
+sem_Context (Definition name args _ wh) agContext noMethods inh
+	= constructJust (null vars && noMethods) agContext {
+		   contextTemplateArgs = S.toList $ S.unions $ S.fromList templateVars : S.fromList (concat $ map vdsTemplateArgs varSem) : contextArgsTv
 		-- переменные контекста - это
 		-- аргументы главной функции, свободные в where-функциях
 		-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
