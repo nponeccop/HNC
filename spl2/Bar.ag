@@ -92,6 +92,7 @@ ATTR Program
 			freeVars USE {`S.union`} {S.empty} : {S.Set String}
 			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 			varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
+			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
 	]
 
 DATA Definition
@@ -117,6 +118,7 @@ ATTR Definition
 		freeVars : {S.Set String}
 		cppVarDefinition : {Maybe CppLocalVarDef}
 		varsFreeInFunctions : {S.Set String}
+		templateArgs : {S.Set String}
 	]
 
 {
@@ -157,7 +159,7 @@ SEM Definition
 			,	functionRetExpr         = @value.sem
 			,	functionIsStatic        = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
-			, 	functionTemplateArgs    = typeTemplateArgs $ @lhs.inferredType
+			, 	functionTemplateArgs    = S.toList @loc.templateArgs
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = @where.cppVarDefinition
 			,   functionContext         = constructJust False $ CppContext {
@@ -166,7 +168,8 @@ SEM Definition
 				-- переменные контекста - это
 				-- аргументы главной функции, свободные в where-функциях
 				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
-				,   contextVars     = fst @loc.argsAndArgsTv
+				,   contextVars         = fst @loc.argsAndArgsTv
+				,   contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : snd @loc.argsAndArgsTv)
 				}
 		} }
 		lhs.name = @name
@@ -177,7 +180,8 @@ SEM Definition
 		loc.argsAndArgsTv = { case @lhs.inferredType of
 			TT funList -> unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> @loc.isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
-
+		loc.templateArgs = typePolyVars @lhs.inferredType
+		lhs.templateArgs = @loc.templateArgs
 
 {
 
