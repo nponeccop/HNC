@@ -50,12 +50,10 @@ transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '
 
 transformFunction fqn name = fqn True name
 
-transformGlobal fqn name = fqn False name
-
 
 sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr)
 	Inh_Expression {
-		fqnTransformer_Inh_Expression = transformGlobal
+		fqnTransformer_Inh_Expression = transformArgument
 	,	fqn_Inh_Expression = fqn
 	}
 }
@@ -72,9 +70,6 @@ SEM Expression
 
 
 {
-getExpressionAtoms expr = atoms_Syn_Expression $ wrap_Expression (sem_Expression expr)
-	Inh_Expression {
-	}
 
 consMaybe Nothing value = value
 consMaybe (Just x) value = x : value
@@ -95,6 +90,7 @@ ATTR Program
 			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
 			staticFunctionNames USE {`consMaybe`} {[]} : {[String]}
 			nonStaticFunctionNames USE {`consMaybe`} {[]} : {[String]}
+			contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
 	]
 
 DATA Definition
@@ -122,29 +118,10 @@ ATTR Definition
 		templateArgs : {S.Set String}
 		staticFunctionNames : {Maybe String}
 		nonStaticFunctionNames : {Maybe String}
+		contextMethods : {Maybe CppDefinition}
 	]
 
 {
-
-
-cppDefType typed args = cppUncurryType (trace3 "AG.cppDefType" $ defType typed) args
-
-deconstructTyped t = (case t of
-	CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types)) -> typeMap (vars ++ vars2) (types ++ types2)
-	CTyped _ (CL (CL _ (S vars)) (K types)) -> typeMap vars types
-	CTyped _ (CL (CTyped _ (CL (CL _ (S vars)) (K types))) _) -> typeMap vars types
-	CTyped _ (CL (CL (CL (CTyped _ (CL (CL (CTyped _ (CL (CL _ (S vars2)) (K types2))) (S vars)) (K types))) _) _) _) -> typeMap (vars ++ vars2) (types ++ types2)
-	_ -> error $ "non-exhaustive patterns in deconstructTyped: " ++ show t)
-	where
-		typeMap vars = M.fromList . zip vars . map (\(CTyped t _) -> t)
-
-justTyped (CTyped t _) = t
-
-defType (CTyped t _) = t
-defType (CL (CTyped t (CL _ (K argTypes))) (S _)) = TT $ (map justTyped argTypes) ++ [t]
-defType t =  error $ "defType: " ++ show t
-
-typeTemplateArgs = S.toList . typePolyVars
 
 symTabTranslator symTab f x = case M.lookup x symTab of
 	Just (CppFqMethod prefix) -> prefix ++ "::" ++ x
@@ -154,12 +131,14 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 
 SEM Definition
 	| Definition
-		value.fqnTransformer = transformGlobal
+		value.fqnTransformer = transformArgument
 		where.level = @lhs.level + 1
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
 		loc.cppDefType = cppUncurryType @lhs.inferredType @params
-		lhs.cppDefinition = { CppFunctionDef {
+
+		lhs.cppDefinition = @loc.cppDefinition
+		loc.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
 			,	functionName            = @name
 			,	functionRetExpr         = @value.sem
@@ -176,8 +155,13 @@ SEM Definition
 				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
 				,   contextVars         = fst @loc.argsAndArgsTv
 				,   contextTemplateArgs = @loc.contextTemplateArgs
+				,   contextMethods      = @where.contextMethods
 				}
 		} }
+
+		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition { functionTemplateArgs = [] }
+
+
 		lhs.name = @name
 		loc.isFunction = not $ null @params
 		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @lhs.inferredType) @name @value.sem
@@ -201,8 +185,6 @@ SEM Definition
 		loc.symTabWithStatics = M.fromList $ map (\name -> (name, @classPrefix)) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames
 
 {
-
-unfoldTyped (CL (CL w (S _)) (K [CTyped t ww])) = (t, ww) : unfoldTyped w
 
 xxt x = case x of
 	CL (CL w (S _)) (K [CTyped t _]) -> w
