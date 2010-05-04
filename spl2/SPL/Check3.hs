@@ -81,7 +81,8 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = setmm rrr lll in
 					let lu = setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ setmv (setm r ul) rm2) ret2)
+						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ merge (setmv (setm r ul) rm2) r_p2) ret2)
+--						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ r_p2) ret2)
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
