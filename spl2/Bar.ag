@@ -50,14 +50,7 @@ transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '
 
 transformFunction fqn name = fqn True name
 
-
-sem_Expression2 fqn expr = sem_Syn_Expression $ wrap_Expression (sem_Expression expr)
-	Inh_Expression {
-		fqnTransformer_Inh_Expression = transformArgument
-	,	fqn_Inh_Expression = fqn
-	}
 }
-
 
 ATTR Expression [ | | atoms : {S.Set String} ]
 
@@ -68,12 +61,10 @@ SEM Expression
 	| Atom        lhs.atoms = S.singleton @name
 	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)
 
-
 {
 
 consMaybe Nothing value = value
 consMaybe (Just x) value = x : value
-
 
 }
 
@@ -131,18 +122,22 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 
 SEM Definition
 	| Definition
-		value.fqnTransformer = transformArgument
+		-- тривиальные атрибуты
 		where.level = @lhs.level + 1
-		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
-		lhs.freeVars = @loc.freeVars
+		lhs.name = @name
+		loc.contextTypeName = @name ++ "_impl"
+		loc.isFunction = not $ null @params
 		loc.cppDefType = cppUncurryType @lhs.inferredType @params
+		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition { functionTemplateArgs = [] }
+		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @lhs.inferredType) @name @value.sem
 
+		-- топ-функция, замкнутые переменные и локальные функции
 		lhs.cppDefinition = @loc.cppDefinition
 		loc.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
 			,	functionName            = @name
 			,	functionRetExpr         = @value.sem
-			,	functionIsStatic        = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
+			,	functionIsStatic        = @loc.isFunctionStatic
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = S.toList @loc.templateArgs
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
@@ -153,50 +148,61 @@ SEM Definition
 				-- переменные контекста - это
 				-- аргументы главной функции, свободные в where-функциях
 				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
-				,   contextVars         = fst @loc.argsAndArgsTv
+				,   contextVars         = @loc.contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
 				}
 		} }
 
-		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition { functionTemplateArgs = [] }
-
-
-		lhs.name = @name
-		loc.isFunction = not $ null @params
-		lhs.cppVarDefinition = constructJust @loc.isFunction $ CppVar (cppType @lhs.inferredType) @name @value.sem
+		-- замкнутые аргументы топ-функции и типовые аргументы шаблона
+		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
+		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
-		loc.isArgContext  = { \a -> S.member a @where.varsFreeInFunctions }
-		loc.argsAndArgsTv = { case @lhs.inferredType of
-			TT funList -> unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> @loc.isArgContext y) $ zip (init funList) @params
+		(loc.contextVars, loc.argsTv) = { case @lhs.inferredType of
+			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
+				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
 		loc.templateArgs = typePolyVars @lhs.inferredType
 		lhs.templateArgs = @loc.templateArgs
+		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 
-		loc.contextTypeName = @name ++ "_impl"
-		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : snd @loc.argsAndArgsTv)
+		-- в выражениях С++ обращение к символу foo выполняется многими способами:
+		-- local::foo - если foo статическая функция в bar_impl
+		-- impl.foo - если foo переменная в bar_impl или (нестатическая функция, и выполняется её вызов)
+		-- hn::bind(impl, &local::foo) - если foo нестатическая функция и выполняется передача её параметром
+		-- &local::foo - если foo статическая функция и выполняется передача её параметром
+		-- foo - если foo локальная переменная функции или параметр функции
+		-- hn::foo - если foo является функцией стандартной библиотеки
+		--
+		-- Способы ниже не реализованы:
+		-- при каррировании необходимо вызывать hn::curry1(&local::foo) или hn::curry1(impl, &local::foo)
+		-- при вложеннности замыканий необходимо вместо local указывать цепочку parent::parent::foo или up.up.foo
+		--
+		-- Для поддержки этих разных обращений сделан слой symTabTranslator, fqn, fqnTransformer
+		-- fqnTransformer показывает, выполняется ли обращение к функции или передача её параметром
+		-- т.е. один и тот же атом транслируется по-разному, в зависимости от того, находится
+		-- он в позиции функции или в позиции аргумента
+		-- изначально из компилятора передается таблица библиотечных символов
+		-- на основе S
 		loc.isFunctionStatic = S.null (@loc.freeVars `subtractSet` M.keysSet @lhs.symTab)
-		loc.classPrefix = CppFqMethod $ @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
-
-		value.fqn = symTabTranslator $ @loc.symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition)
 		lhs.staticFunctionNames = constructJust (not $ @loc.isFunction && @loc.isFunctionStatic) @name
 		lhs.nonStaticFunctionNames = constructJust (not $ @loc.isFunction && not @loc.isFunctionStatic) @name
-
-		loc.symTabWithStatics = M.fromList $ map (\name -> (name, @classPrefix)) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames
+		value.fqnTransformer = transformArgument
+		value.fqn = {
+			symTabTranslator $ symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition) where
+				symTabWithStatics = M.fromList $ map (\name -> (name, classPrefix)) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames where
+					classPrefix = CppFqMethod $ @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
+		}
 
 {
 
-xxt x = case x of
-	CL (CL w (S _)) (K [CTyped t _]) -> w
-	_ -> error $ "xxt: " ++ show x
+deconstructTyped x =  case x of
+	CL (CL w (S _)) (K [CTyped t _]) -> (t, w)
+	_ -> error $ "deconstructTyped: " ++ show x
 
-it x = case x of
-	CL (CL w (S _)) (K [CTyped t _]) -> t
-	_ -> error $ "it: " ++ show x
 }
 
 SEM Program
 	| Cons
-		tl.typed = xxt @lhs.typed
-		hd.inferredType = it @lhs.typed
+		(hd.inferredType, tl.typed) = deconstructTyped @lhs.typed
 
