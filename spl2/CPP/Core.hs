@@ -42,27 +42,46 @@ sem_Definition inh self @ (Definition name args val wh)
 		agInh = AG.Inh_Definition {
 				AG.level_Inh_Definition = diLevel inh
 			, 	AG.typed_Inh_Definition = diTyped inh
-			,	AG.fqn_Inh_Definition = symTabTranslator $ symTabWithStatics `subtractKeysFromMap` (args ++ map (\(CppVar _ name _ ) -> name) flv)
+
+			-- в выражениях С++ обращение к символу foo выполняется многими способами:
+			-- local::foo - если foo статическая функция в bar_impl
+			-- impl.foo - если foo переменная в bar_impl или (нестатическая функция, и выполняется её вызов)
+			-- hn::bind(impl, &local::foo) - если foo нестатическая функция и выполняется передача её параметром
+			-- &local::foo - если foo статическая функция и выполняется передача её параметром
+			-- foo - если foo локальная переменная функции или параметр функции
+			-- hn::foo - если foo является функцией стандартной библиотеки
+			--
+			-- Способы ниже не реализованы:
+			-- при каррировании необходимо вызывать hn::curry1(&local::foo) или hn::curry1(impl, &local::foo)
+			-- при вложеннности замыканий необходимо вместо local указывать цепочку parent::parent::foo или up.up.foo
+			--
+			-- Для поддержки этих разных обращений сделан слой symTabTranslator, fqn, fqnTransformer
+			-- fqnTransformer показывает, выполняется ли обращение к функции или передача её параметром
+			-- т.е. один и тот же атом транслируется по-разному, в зависимости от того, находится
+			-- он в позиции функции или в позиции аргумента
+			-- изначально из компилятора передается таблица библиотечных символов
+			-- на основе S
+			,	AG.fqn2_Inh_Definition = symTabWithStatics
 			,   AG.symTab_Inh_Definition = diSymTab inh
 			,   AG.inferredType_Inh_Definition = diInferredType inh
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
-		flv = functionLocalVars $ AG.cppDefinition_Syn_Definition semDef
-
 		agContext = functionContext $ AG.cppDefinition_Syn_Definition semDef
 
 		semWhere = sem_Where wh WhereInherited {
-					wiSymTabT          = symTabTranslator symTabWithStatics
+					wiSymTabT          = AG.symTabTranslator symTabWithStatics
 				,	wiTypes            = AG.deconstructTyped $ diTyped inh
 				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				}
 
-		symTabWithStatics = lfm (wsMapPrefix semWhere) `M.union` diSymTab inh
+		symTabWithStatics = lfm (wsMapPrefix semWhere)
 
 		lfm mapPrefix = M.fromList $ mapPrefix classPrefix isFunctionStatic ++ mapPrefix CppContextMethod (not . isFunctionStatic) where
+			-- implemented in AG
 			classPrefix = CppFqMethod $ contextTypeName (fromJust agContext) ++ showTemplateArgs (contextTemplateArgs $ fromJust agContext)
 
+		-- implemented in AG
 		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition xsemDef) `subtractSet` M.keysSet (diSymTab inh) where
 			xsemDef = AG.wrap_Definition (AG.sem_Definition def) agInh
 
@@ -92,15 +111,8 @@ sem_WhereMethods inh whereTyped wh = map mf typedMethods where
 	mf (method, (t, ww)) = dsCppDef $ sem_Definition newInh method where
 		newInh = inh { diInferredType = t, diTyped = ww }
 
-traceU x y = y
-
 isFunction (Definition _ args _ _) = not $ null args
 
-symTabTranslator symTab f x = case M.lookup x symTab of
-	Just (CppFqMethod prefix) -> prefix ++ "::" ++ x
-	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")"
-	Nothing -> x
 
-getFromWhere wh mf ff = map mf $ filter ff wh
 
 defName (Definition name _ _ _) = name

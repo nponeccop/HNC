@@ -100,7 +100,7 @@ DATA Definition
 
 ATTR Definition Program
 	[
-		fqn : {Bool -> String -> String}
+		fqn2 : {M.Map String CppAtomType}
 		typed : C
 		symTab : {M.Map String CppAtomType}
 		level : Int
@@ -143,7 +143,10 @@ defType t =  error $ "defType: " ++ show t
 
 typeTemplateArgs = S.toList . typePolyVars
 
-
+symTabTranslator symTab f x = case M.lookup x symTab of
+	Just (CppFqMethod prefix) -> prefix ++ "::" ++ x
+	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")"
+	Nothing -> x
 }
 
 SEM Definition
@@ -164,12 +167,12 @@ SEM Definition
 			,   functionLocalVars       = @where.cppVarDefinition
 			,   functionContext         = constructJust False $ CppContext {
 					contextLevel    = @lhs.level
-				,   contextTypeName = @name ++ "_impl"
+				,   contextTypeName = @loc.contextTypeName
 				-- переменные контекста - это
 				-- аргументы главной функции, свободные в where-функциях
 				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
 				,   contextVars         = fst @loc.argsAndArgsTv
-				,   contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : snd @loc.argsAndArgsTv)
+				,   contextTemplateArgs = @loc.contextTemplateArgs
 				}
 		} }
 		lhs.name = @name
@@ -182,6 +185,14 @@ SEM Definition
 			_ -> ([], []) }
 		loc.templateArgs = typePolyVars @lhs.inferredType
 		lhs.templateArgs = @loc.templateArgs
+
+		loc.contextTypeName = @name ++ "_impl"
+		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : snd @loc.argsAndArgsTv)
+		loc.isFunctionStatic = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
+		loc.classPrefix = CppFqMethod $ @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
+
+		value.fqn = symTabTranslator $ @lhs.fqn2  `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition)
+
 
 {
 
