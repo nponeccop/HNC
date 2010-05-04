@@ -93,6 +93,8 @@ ATTR Program
 			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 			varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
 			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
+			staticFunctionNames USE {`consMaybe`} {[]} : [String]
+			nonStaticFunctionNames USE {`consMaybe`} {[]} : [String]
 	]
 
 DATA Definition
@@ -119,6 +121,8 @@ ATTR Definition
 		cppVarDefinition : {Maybe CppLocalVarDef}
 		varsFreeInFunctions : {S.Set String}
 		templateArgs : {S.Set String}
+		staticFunctionNames : {Maybe String}
+		nonStaticFunctionNames : {Maybe String}
 	]
 
 {
@@ -191,8 +195,11 @@ SEM Definition
 		loc.isFunctionStatic = S.null $ @loc.freeVars `subtractSet` M.keysSet @lhs.symTab
 		loc.classPrefix = CppFqMethod $ @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
 
-		value.fqn = symTabTranslator $ @lhs.fqn2  `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition)
+		value.fqn = symTabTranslator $ @loc.symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition)
+		lhs.staticFunctionNames = constructJust (not (@loc.isFunction and @loc.isStatic)) @name
+		lhs.nonStaticFunctionNames = constructJust (not (@loc.isFunction and not @loc.isStatic)) @name
 
+		loc.symTabWithStatics = M.fromList $ map (\name -> (name, @classPrefix})) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames
 
 {
 

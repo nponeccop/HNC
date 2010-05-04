@@ -59,7 +59,6 @@ sem_Definition inh self @ (Definition name args val wh)
 			-- он в позиции функции или в позиции аргумента
 			-- изначально из компилятора передается таблица библиотечных символов
 			-- на основе S
-			,	AG.fqn2_Inh_Definition = symTabWithStatics
 			,   AG.symTab_Inh_Definition = diSymTab inh
 			,   AG.inferredType_Inh_Definition = diInferredType inh
 			}
