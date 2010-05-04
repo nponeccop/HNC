@@ -67,36 +67,20 @@ sem_Definition inh self @ (Definition name args val wh)
 		agContext = functionContext $ AG.cppDefinition_Syn_Definition semDef
 
 		semWhere = sem_Where wh WhereInherited {
-					wiSymTabT          = AG.symTabTranslator symTabWithStatics
-				,	wiTypes            = AG.deconstructTyped $ diTyped inh
-				,	wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
+					wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 				}
-
-		symTabWithStatics = lfm (wsMapPrefix semWhere)
-
-		lfm mapPrefix = M.fromList $ mapPrefix classPrefix isFunctionStatic ++ mapPrefix CppContextMethod (not . isFunctionStatic) where
-			-- implemented in AG
-			classPrefix = CppFqMethod $ contextTypeName (fromJust agContext) ++ showTemplateArgs (contextTemplateArgs $ fromJust agContext)
-
-		-- implemented in AG
-		isFunctionStatic def  = S.null $ (AG.freeVars_Syn_Definition xsemDef) `subtractSet` M.keysSet (diSymTab inh) where
-			xsemDef = AG.wrap_Definition (AG.sem_Definition def) agInh
 
 data WhereSynthesized d e f = WhereSynthesized {
 	wsMethods :: d
-,   wsMapPrefix :: f
 }
 
 data WhereInherited a d e = WhereInherited {
-	wiSymTabT          :: a
-,	wiTypes            :: d
-,	wiDi               :: e
+	wiDi               :: e
 }
 
 sem_Where self inh
 	= WhereSynthesized {
 		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
-	,   wsMapPrefix = mapPrefix
 	} where
 		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
 		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
