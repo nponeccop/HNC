@@ -15,18 +15,15 @@ import SPL.Visualise
 import System.Environment
 import CPP.TypeProducer
 
-tdi2 t types typed inferredType = DefinitionInherited {
+tdi2 t typed inferredType = DefinitionInherited {
 	diLevel        = 0
 ,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-,	diTraceP       = t
-,	diRootTypes    = types
 ,	diTyped        = typed
 ,   diInferredType = inferredType
 }
 
-compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed x) self where
-	P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
-	types = M.insert name x fv
+compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t typed x) self where
+	P (typed, _, x) = check1 (convertDef self) SPL.Top.get_types
 
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 

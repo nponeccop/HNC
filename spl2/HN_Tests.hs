@@ -25,17 +25,14 @@ simpleParse  = head . fromRight . parseProg
 
 baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 
-tdi2 t types typed = DefinitionInherited {
+tdi2 t typed = DefinitionInherited {
 	diLevel        = 0
 ,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-,	diTraceP       = t
-,	diRootTypes    = types
 ,	diTyped        = trace3 "HN_Tests.tdi2" typed
 }
 
-compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t types typed) self where
+compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t typed) self where
 	P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
-	types = M.insert name x fv
 
 testCodeGen = rt (dsCppDef . compileDefinition False)
 

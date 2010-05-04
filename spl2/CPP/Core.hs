@@ -20,8 +20,6 @@ import qualified Bar as AG
 data DefinitionInherited = DefinitionInherited {
 	diLevel           :: Int
 ,	diSymTab          :: M.Map String CppAtomType
-,	diTraceP          :: Bool
-,	diRootTypes       :: M.Map String T
 ,	diTyped           :: C
 ,   diInferredType    :: T
 }
