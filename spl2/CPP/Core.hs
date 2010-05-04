@@ -33,7 +33,7 @@ data DefinitionSynthesized = DefinitionSynthesized {
 sem_Definition inh self @ (Definition name args val wh)
 	= DefinitionSynthesized {
 		dsCppDef = (AG.cppDefinition_Syn_Definition semDef) {
-			functionContext			=  fmap (\ctt -> ctt { contextMethods = wsMethods semWhere }) agContext
+			functionContext			=  fmap (\ctt -> ctt { contextMethods = semWhere }) $ functionContext $ AG.cppDefinition_Syn_Definition semDef
 		}
 	} where
 
@@ -64,27 +64,8 @@ sem_Definition inh self @ (Definition name args val wh)
 			}
 		semDef = AG.wrap_Definition (AG.sem_Definition self) agInh
 
-		agContext = functionContext $ AG.cppDefinition_Syn_Definition semDef
-
-		semWhere = sem_Where wh WhereInherited {
-					wiDi               = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
-				}
-
-data WhereSynthesized d e f = WhereSynthesized {
-	wsMethods :: d
-}
-
-data WhereInherited a d e = WhereInherited {
-	wiDi               :: e
-}
-
-sem_Where self inh
-	= WhereSynthesized {
-		wsMethods = map (\x -> x { functionTemplateArgs = [] }) wsMethods1
-	} where
-		wsMethods1   = sem_WhereMethods (wiDi inh)      (diTyped $ wiDi inh) self
-		mapPrefix prefix fn = map (\def -> (defName def, prefix)) $ filter (\x -> isFunction x && fn x) self
-
+		semWhere = map (\x -> x { functionTemplateArgs = [] }) $ sem_WhereMethods inh1 (diTyped inh1) wh where
+			inh1 = inh { diLevel = AG.level_Inh_Definition agInh + 1 }
 
 sem_WhereMethods inh whereTyped wh = map mf typedMethods where
 	typedDef = zip wh (AG.unfoldTyped $ diTyped inh)
