@@ -98,14 +98,11 @@ sem_WhereVars wiTypes wh = getFromWhere wh sem_VarDefinition (not . isFunction) 
 	sem_VarDefinition (Definition name [] val _) = AG.typeTemplateArgs $ uncondLookup name wiTypes
 
 
-sem_WhereMethods inh whereTyped wh = getFromWhere wh sem_MethodDefinition isFunction where
-	sem_MethodDefinition = dsCppDef . sem_Definition newInh
-	newInh = inh {
-		diTyped =  case whereTyped of
-			CTyped _ (CL _ (K (y @ (CTyped _ _) : _))) -> y
-			CTyped _ (CL x @ (CTyped _ _) (S _)) -> x
-			x -> const x $ error $ "sem_WhereMethods: " ++ show x
-	}
+sem_WhereMethods inh whereTyped wh = map mf typedMethods where
+	typedDef = zip wh (AG.unfoldTyped $ diTyped inh)
+	typedMethods = filter (isFunction . fst) typedDef
+	mf (method, (t, ww)) = dsCppDef $ sem_Definition newInh method where
+		newInh = inh { diInferredType = t, diTyped = ww }
 
 data ContextInherited a b c = ContextInherited {
 	ciSemWhere :: a
