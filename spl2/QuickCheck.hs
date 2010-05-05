@@ -102,7 +102,7 @@ compileFile inFile
 
 
 main = do
-	compilerTests <- mapM id CompilerTest.iotests
+	compilerTests <- CompilerTest.iotests
 	runTestTT $ TestList $ tests2 ++ tests ++ compilerTests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

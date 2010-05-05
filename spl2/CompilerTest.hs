@@ -1,5 +1,8 @@
 module CompilerTest where
 import Test.HUnit hiding (test)
+import System.Directory
+import Data.String
+import Control.Monad
 
 import HN.Parser2
 import Utils
@@ -10,11 +13,18 @@ compile inFile f = parseFile inFile >>= return . f . head . fromRight
 compileFile inFile
 	= compile inFile $ show . compileDefinition
 
-test testName = do
-	x <- compileFile $ "hn_tests/" ++ testName ++ ".hn"
-	y <- readFile $ "hn_tests/" ++ testName ++ ".cpp"
-	return $ TestCase $ assertEqual testName x y
+comp2 f g x y = f $ g x y
 
-iotests = map test [
-		"00"
-	]
+test testName =	liftM2
+	(comp2 TestCase $ assertEqual testName)
+	(compileFile $ "hn_tests/" ++ testName ++ ".hn")
+	(readFile $ "hn_tests/" ++ testName ++ ".cpp")
+
+
+iotests =
+	getDirectoryContents "hn_tests" >>=
+	return . map fst . filter (\x -> snd x == ".hn") . map (break (== '.')) >>=
+	mapM test
+
+
+
