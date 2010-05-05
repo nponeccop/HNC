@@ -14,6 +14,7 @@ import SPL.Visualise
 import CPP.CompileTools
 import Utils
 import HN.Parser2
+import CompilerTest
 
 instance Arbitrary SPL.Types.C where
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
@@ -101,12 +102,10 @@ compileFile inFile
 
 
 main = do
-	x <- compileFile "hn_tests/00.hn"
-	y <- readFile "hn_tests/00.cpp"
-
-	runTestTT $ TestList $ tests2 ++ tests ++ newTests x y
+	compilerTests <- mapM id CompilerTest.iotests
+	runTestTT $ TestList $ tests2 ++ tests ++ compilerTests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo
 
-newTests a b = [ TestCase $ assertEqual "2" b a ]
+
 
