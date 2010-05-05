@@ -11,6 +11,10 @@ import SPL.Top
 
 import SPL.Visualise
 
+import CPP.CompileTools
+import Utils
+import HN.Parser2
+
 instance Arbitrary SPL.Types.C where
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
 		-- произвольные выражения типа CNum
@@ -90,7 +94,19 @@ tests2 = map ttt2 [
 	]
 
 
+compile inFile f = parseFile inFile >>= return . f . head . fromRight
+
+compileFile inFile
+	= Main.compile inFile $ show . compileDefinition
+
+
 main = do
-	runTestTT $ TestList $ tests2 ++ tests
+	x <- compileFile "hn_tests/00.hn"
+	y <- readFile "hn_tests/00.cpp"
+
+	runTestTT $ TestList $ tests2 ++ tests ++ newTests x y
 	putStrLn "QuickCheck :"
-	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 200}) prop_Foo
+	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo
+
+newTests a b = [ TestCase $ assertEqual "2" b a ]
+
