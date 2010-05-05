@@ -1,37 +1,27 @@
 module Main where
 
 import qualified Data.Map as M
+import System.Environment
 
+import Utils
+
+import CPP.CompileTools
 import HN.Parser2
 import HN.SplExport
 import HN.Intermediate
-import CPP.Core
-import Utils
-import CPP.Intermediate
-import SPL.Top
+
 import SPL.Types
 import SPL.Check3
 import SPL.Visualise
-import System.Environment
-import CPP.TypeProducer
 
-tdi2 t typed inferredType = DefinitionInherited {
-	diLevel        = 0
-,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-,	diTyped        = typed
-,   diInferredType = inferredType
-}
-
-compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t typed x) self where
-	P (typed, _, x) = check1 (convertDef self) SPL.Top.get_types
 
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
-compileFile t inFile
-	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . dsCppDef . compileDefinition t
+compileFile inFile
+	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition
 
-typeCheck inFile = compile inFile f where
-	f self = check1 (convertDef self) SPL.Top.get_types
+typeCheck inFile = compile inFile typecheckDefinition
+
 
 print2 (P (x, _, _)) = do
 	putStrLn $ printFF False x
@@ -39,7 +29,6 @@ print2 (P (x, _, _)) = do
 	putStrLn $ printFF True x
 	putStrLn ""
 	print x
-
 
 makeType (T x) = x
 makeType (TD a b) =  a ++ " " ++ (joinStr " " $ map makeType b)
@@ -67,8 +56,7 @@ compileToSpl inFile = do
 
 main = getArgs >>= f where
 	f [inFile, "--spl"] = compileToSpl inFile >>= putStr
-	f [inFile, "--trace-p"] = compileFile True inFile >>= putStr
 	f [inFile, "--types"] = typeCheck inFile >>= print2
-	f [inFile, outFile] = compileFile False inFile >>= writeFile outFile
-	f [inFile] = compileFile False inFile >>= putStr
+	f [inFile, outFile] = compileFile inFile >>= writeFile outFile
+	f [inFile] = compileFile inFile >>= putStr
 	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --trace-p | --types ]\n"

@@ -1,5 +1,5 @@
 {
-module Bar where
+module Bar (compile, Inh_Definition(..)) where
 
 import CPP.Intermediate
 import CPP.TypeProducer
@@ -13,6 +13,8 @@ import Utils
 import Debug.Trace
 
 type ExpressionList  = [Expression]
+
+compile self inh = cppDefinition_Syn_Definition $ wrap_Definition (sem_Definition self) inh
 
 }
 
@@ -206,3 +208,6 @@ SEM Program
 	| Cons
 		(hd.inferredType, tl.typed) = deconstructTyped @lhs.typed
 
+{
+
+}

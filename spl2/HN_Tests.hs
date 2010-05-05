@@ -12,7 +12,7 @@ import HN.TypeParser
 import HN.Intermediate
 import HN.SplExport
 
-import CPP.Core
+import CPP.CompileTools
 import CPP.Intermediate
 import CPP.TypeProducer
 
@@ -23,18 +23,7 @@ import qualified SPL.Top
 
 simpleParse  = head . fromRight . parseProg
 
-baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-
-tdi2 t typed = DefinitionInherited {
-	diLevel        = 0
-,	diSymTab       = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-,	diTyped        = trace3 "HN_Tests.tdi2" typed
-}
-
-compileDefinition t self @ (Definition name _ _ _) = sem_Definition (tdi2 t typed) self where
-	P (typed, fv, x) = check1 (convertDef self) SPL.Top.get_types
-
-testCodeGen = rt (dsCppDef . compileDefinition False)
+testCodeGen = rt compileDefinition
 
 -- test2 = rt getDefinitionFreeVars
 
