@@ -1,5 +1,5 @@
 Name:           SPL
-Version:	0.0.0.780
+Version:	0.0.0.781
 License:        LGPL
 Copyright:      (c) 
 Author:         <inv2004@gmail.com>
@@ -29,3 +29,6 @@ Main-Is:	SPLI.hs
 
 Executable:     spl-hn-tests
 Main-Is:        HN_Tests.hs
+
+Executable:	spl-tests
+Main-Is:	SPL_Tests.hs
