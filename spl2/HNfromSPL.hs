@@ -1,32 +1,8 @@
-module HNfromSPL where
+module Main where
 
 import SPL.Types
-import SPL.Top
-import SPL.Check3
 import HN.Intermediate
-import HN.SplExport
-import CPP.Core
-import CPP.Intermediate
-
-import Data.Map as M
-
-baseToTdi = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
-
-tdi rt = DefinitionInherited {
-        diLevel        = 3
-,       diSymTab       = baseToTdi
-,       diType         = Nothing
-,       diTraceP       = False
-,       diRootTypes    = rt
-}
-
-compile =
-	(dsCppDef . z)
-		where
-		z self @ (Definition name _ _ _) = sem_Definition (tdi types) self
-			where
-			P (fv, x) = check1 (convertDef self) SPL.Top.get_types
-			types = M.insert name x fv
+import CPP.CompileTools
 
 
 comp (CNum n) =
@@ -45,7 +21,5 @@ comp o =
 
 c = CL (CL (CL (CVal "foldr") (K [CVal "g",CVal "elist",CVal "l"])) (W [("g",CL (CL (CVal "join1") (K [CL (CVal "f") (K [CVal "x"]),CVal "y"])) (S ["x","y"]))])) (S ["f","l"])
 
-res = compile $ Definition "main" [] (comp c) []
+main = print $ compileDefinition $ Definition "main" [] (comp c) []
 res2 = Definition "main" [] (comp c) []
-
-
