@@ -1,11 +1,10 @@
 Name:           SPL
-Version:        0.1
+Version:	0.0.0.780
 License:        LGPL
 Copyright:      (c) 
 Author:         <inv2004@gmail.com>
 Author:         Andy Melnikov <andy.melnikov@gmail.com>
 Maintainer:     Andy Melnikov <andy.melnikov@gmail.com>
-Version:	0.0.0.746
 Build-Type:	Custom
 Homepage:	http://code.google.com/p/inv/
 ---Package-Url:
@@ -27,9 +26,6 @@ Main-Is:	QuickCheck.hs
 
 Executable:	spli
 Main-Is:	SPLI.hs
-
-Executable:	spl-milnerext
-Main-Is:	Milner-ext.hs
 
 Executable:     spl-hn-tests
 Main-Is:        HN_Tests.hs
