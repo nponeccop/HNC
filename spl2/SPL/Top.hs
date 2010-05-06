@@ -20,7 +20,7 @@ observeN s v = v
 
 check0 o = check_with_rename o SPL.Top.get_types False
 check1 o e =
-	case check_with_rename o e True of
+	case check o e True of
 		SPL.Check3.P (a, b, c) -> SPL.Check3.P (opt a, b, c)
 		o -> o
 check2 o =
@@ -115,7 +115,7 @@ base = M.fromList $
 		(TT [ TD "IO" [T "void"], TD "IO" [TU "a"], TD "IO" [TU "a"]]))
 	:("natrec", Fun
 		(CNum 0)
-		(TT [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]))			 	
+		(TT [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]))
 	:("load", Fun
 		(CL (CInFun 1 (InFun "" do_load)) (K []))
 		(TT [T "string", TU "a"]))
@@ -133,7 +133,7 @@ base = M.fromList $
 		(TT [T "num", TD "list" [T "num"]]))
 	:("mul", Fun
 		(CL (CInFun 2 (InFun "" do_mul)) (K []))
-		(TT [T "num", T "num", T "num"]))	
+		(TT [T "num", T "num", T "num"]))
 	:("mod", Fun
 		(CL (CInFun 2 (InFun "" do_mod)) (K []))
 		(TT [T "num", T "num", T "num"]))
@@ -165,7 +165,7 @@ get_type (Lib f) =
 		SPL.Check3.P (_, ur, t)|M.null ur -> t
 		SPL.Check3.P (_, ur, _) -> error "get_type"
 		SPL.Check3.N i e -> error "get_type"
-		
+
 
 get_codes = M.mapWithKey get_code base
 get_types = M.map get_type base
@@ -208,7 +208,7 @@ do_iff o e = error ("do_iff: "++show o)
 do_foldr (f:b:CList []:[]) e = b
 do_foldr (f:b:CList (a:as):[]) e =
 	eval (CL f (K [a, do_foldr (f:b:CList as:[]) e])) e
-	
+
 do_load (CStr f:[]) e =
   unsafePerformIO $
   do
@@ -235,8 +235,8 @@ do_str_concat (CStr s1:CStr s2:[]) e =
 
 do_to (CNum n:[]) e =
 	CList $ Prelude.map CNum $ take n $ enumFrom 0
-	
-binary_int_op op (CNum n1:CNum n2:[]) _ = CNum $ op n1 n2 
+
+binary_int_op op (CNum n1:CNum n2:[]) _ = CNum $ op n1 n2
 
 do_mul = binary_int_op (*)
 
