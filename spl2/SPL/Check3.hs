@@ -185,14 +185,14 @@ check (CL a (S (p:ps))) et sv =
 						(a, TV n) -> TT [a, TU n]
 						(a, b) -> TT [a, b]
 					in
-					observeN ("ok "++p++"|"++show a) $ P ((CL ret (S (p:ps))), observeN "ur" $ M.delete p_n ur, untv p_n w)
+					observeN ("ok "++p++"|"++show a) $ P ((CL ret (S (p{-:ps-}))), observeN "ur" $ M.delete p_n ur, untv p_n w)
 				Nothing ->
 					let w = case r of
 						TT b -> TT ((TU p_n):b)
 						TV n -> TT [TU p_n, TU n]
 						b -> TT [TU p_n, b]
 					in
-					observeN ("no "++p) $ P ((CL ret (S (p:ps))), M.map (untv p_n) ur, w) -- rm ?
+					observeN ("no "++p) $ P ((CL ret (S (p:[]{-:ps-}))), M.map (untv p_n) ur, w) -- rm ?
 		o -> o
 	where p_n = ""++p
 
