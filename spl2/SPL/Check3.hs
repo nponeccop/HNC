@@ -197,7 +197,7 @@ check (CL a (S (p:ps))) et sv =
 				ret2 =
 					case ret of
 						CL r (S ps) -> CL r (S (p:ps))
-						o -> error "z"
+						o -> error "check S did not return CL S"
 		o -> o
 	where p_n = ""++p
 
