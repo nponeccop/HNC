@@ -1,9 +1,9 @@
 #include <hn/lib.hpp>
 
-template <typename _f0, typename a, typename b, typename c, typename x0, typename y0>
+template <typename _f0, typename x0, typename y0>
 struct flip_impl
 {
-	boost::function<c (a, b)> f;
+	boost::function<_f0 (y0, x0)> f;
 
 	_f0 flipped(x0 x, y0 y)
 	{
@@ -11,10 +11,10 @@ struct flip_impl
 	};
 };
 
-template <typename a, typename b, typename c>
-boost::function<c (b, a)> flip(boost::function<c (a, b)> f)
+template <typename _f0, typename x0, typename y0>
+boost::function<_f0 (x0, y0)> flip(boost::function<_f0 (y0, x0)> f)
 {
-	typedef flip_impl<_f0, a, b, c, x0, y0> local;
+	typedef flip_impl<_f0, x0, y0> local;
 	local impl = { f };
 	return hn::bind(impl, &local::flipped);
 };
