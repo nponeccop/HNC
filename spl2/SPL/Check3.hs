@@ -106,8 +106,8 @@ check (CDebug i tt@(CVal n)) et _ =
 check (CVal n) et sv =
 	check (CDebug (-1) (CVal n)) et sv
 
-check tt@(CStruct m) et sv = error "z2"
---	P (tt, M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
+check tt@(CStruct m) et sv =
+	P (tt, M.empty, TS $ M.map (\x -> get_r $ check x et sv) m)
 
 --check (CDot (CStruct m) n) et sv =
 --	case M.lookup n m of
