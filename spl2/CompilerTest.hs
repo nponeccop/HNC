@@ -16,7 +16,7 @@ compileFile inFile
 comp2 f g x y = f $ g x y
 
 test testName =	liftM2
-	(comp2 TestCase $ assertEqual testName)
+	(comp2 (TestLabel testName . TestCase) $ assertEqual testName)
 	(compileFile $ "hn_tests/" ++ testName ++ ".hn")
 	(readFile $ "hn_tests/" ++ testName ++ ".cpp")
 
