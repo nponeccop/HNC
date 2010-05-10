@@ -1,0 +1,5 @@
+main z = {
+	a = incr z
+	y = a
+	a
+}

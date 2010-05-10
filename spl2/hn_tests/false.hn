@@ -1,0 +1,12 @@
+hMain = {
+	f x = {
+		g x = {
+			z x = "5"
+			8
+		}
+		z = 5
+		sum x x
+	}
+	z = 7
+	print (sum 5 z)
+}

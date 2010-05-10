@@ -204,7 +204,7 @@ SEM Definition
 
 deconstructTyped x =  case x of
 	CL (CL w (S _)) (K [CTyped t tw]) -> (t, tw, w)
-	CL (CL _ (K [CTyped t y])) _ -> (t, y, undefined)
+	CL (CL w (K [CTyped t y])) _ -> (t, y, w)
 	_ -> error $ "deconstructTyped: " ++ show x
 
 }
