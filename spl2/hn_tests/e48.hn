@@ -1,0 +1,5 @@
+hnMain = {
+	longMulLo low mp = mod (mul low mp) 100
+	longMulHi hi low mp = sum (mul hi mp) (div (mul low mp) 100)
+	print (longMulHi 55 33 10)
+}

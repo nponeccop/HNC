@@ -90,7 +90,6 @@ explicit
 
 	locals6	   #  65 uncondLookup
 	locals7	   #  67 uncondLookup
-	locals8    # C++ doesn't compile
 	euler5     # 361 sem_WhereMethods
 	test4      #  69 C++ doesn't typecheck
 	test5      #  66 compile-fail test
