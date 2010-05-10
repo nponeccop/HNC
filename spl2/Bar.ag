@@ -143,23 +143,27 @@ SEM Definition
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = S.toList @loc.templateArgs
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
-			,   functionLocalVars       = @where.cppVarDefinition
+			,   functionLocalVars       = localVars
 			,   functionContext         = constructJust (null @where.contextMethods) $ CppContext {
 					contextLevel    = @lhs.level
 				,   contextTypeName = @loc.contextTypeName
 				-- переменные контекста - это
 				-- аргументы главной функции, свободные в where-функциях
-				-- локальные переменные, свободные в where-функциях (пока не поддерживается!)
-				,   contextVars         = @loc.contextVars
+				-- локальные переменные, свободные в where-функциях
+				,   contextVars         = @loc.contextVars ++ contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
 				}
-		} }
+		} where
+			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
+
+		}
 
 		-- замкнутые аргументы топ-функции и типовые аргументы шаблона
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
+
 		(loc.contextVars, loc.argsTv) = { case @lhs.inferredType of
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params

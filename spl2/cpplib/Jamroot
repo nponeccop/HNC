@@ -88,22 +88,15 @@ explicit
 
 	locals1	   # 102 sem_WhereMethods
 
-	euler1	   # sem_WhereMethods
-
 	locals5	   #  65 uncondLookup
 	locals6	   #  65 uncondLookup
 	locals7	   #  67 uncondLookup
 	locals8    # C++ doesn't compile
 	locals9    # uncondLookup 
-	mono1	   # getDefType
-	test_flip  # getDefType
 	euler5     # 361 sem_WhereMethods
-	euler6     # 155 C++ doesn't typecheck
 	test4      #  69 C++ doesn't typecheck
 	test5      #  66 compile-fail test
 	test6      #  27 compile-fail test
-	print15    # 118 non-exhaustive patterns in whereList
-
 
 	io2_intfunc # 90 bug #28c
 ;
