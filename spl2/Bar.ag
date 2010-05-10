@@ -144,7 +144,7 @@ SEM Definition
 			, 	functionTemplateArgs    = S.toList @loc.templateArgs
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = localVars
-			,   functionContext         = constructJust (null @where.contextMethods) $ CppContext {
+			,   functionContext         = constructJust ( not ( not (null @where.contextMethods) && noUnusedTemplateContext)) $ CppContext {
 					contextLevel    = @lhs.level
 				,   contextTypeName = @loc.contextTypeName
 				-- переменные контекста - это
@@ -156,7 +156,7 @@ SEM Definition
 				}
 		} where
 			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
-
+			noUnusedTemplateContext = S.null $ S.fromList @loc.contextTemplateArgs `subtractSet` @loc.templateArgs
 		}
 
 		-- замкнутые аргументы топ-функции и типовые аргументы шаблона
