@@ -16,6 +16,9 @@ import Utils
 import HN.Parser2
 import CompilerTest
 
+import Test.SPL
+import SPL.Interpretator
+
 instance Arbitrary SPL.Types.C where
 	arbitrary = sized $ \sz -> oneof [arb_cnum [] sz, arb_cbool [] sz, arb_sum sz] where
 		-- произвольные выражения типа CNum
@@ -100,10 +103,19 @@ compile inFile f = parseFile inFile >>= return . f . head . fromRight
 compileFile inFile
 	= Main.compile inFile $ show . compileDefinition
 
+splTest (s, r, t) = TestLabel s $ TestCase $ case step s of
+	SPL.Interpretator.P (t2, r2) -> do
+		assertEqual "Types mismatch" t t2
+		assertEqual "Result mismatch" r r2
+	SPL.Interpretator.N (i, r3) ->
+		assertEqual "Result mismatch (error)" r r3
+
+
+splTests = map splTest Test.SPL.tests
 
 main = do
 	compilerTests <- CompilerTest.iotests
-	runTestTT $ TestList $ tests2 ++ tests ++ compilerTests
+	runTestTT $ TestList $ tests2 ++ Main.tests ++ compilerTests ++ splTests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo
 
