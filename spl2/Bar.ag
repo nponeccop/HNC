@@ -10,7 +10,6 @@ import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Utils
-import Debug.Trace
 
 type ExpressionList  = [Expression]
 

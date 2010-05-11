@@ -25,10 +25,10 @@ showAsSource x = ">>>>>>>>>>" ++ show x ++ "<<<<<<<<<<<<<"
 paren f y = if f y then "(" ++ yy ++ ")" else yy where
 	yy = showAsSource y
 
-isLambda (CL l (S x)) = True
+isLambda (CL _ (S _)) = True
 isLambda _ = False
 
-isApp (CL l (K x)) = True
+isApp (CL _ (K _)) = True
 isApp _ = False
 
 isWhere (CL _ (W _)) = True

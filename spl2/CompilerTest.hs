@@ -1,7 +1,6 @@
 module CompilerTest where
 import Test.HUnit hiding (test)
 import System.Directory
-import Data.String
 import Control.Monad
 
 import HN.Parser2

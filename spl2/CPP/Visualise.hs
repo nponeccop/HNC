@@ -41,7 +41,7 @@ instance Show CppContext where
 		]
 
 instance Show CppDefinition where
-	show def @ (CppFunctionDef level templateArgs isStatic context typeName name args localVars retVal)
+	show def @ (CppFunctionDef level templateArgs isStatic context _ _ _ localVars retVal)
 		= maybe [] show context ++ showWithIndent level (concat
 		[
 			getTemplateDecl templateArgs
@@ -59,7 +59,7 @@ instance Show CppDefinition where
 			getContextInit vars
 				= "\tlocal impl = { " ++ initVars ++ " };"
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars
-			showContextInit ctx @ (CppContext _ templateVars tn vars _)
+			showContextInit (CppContext _ templateVars tn vars _)
 				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : ifNotNull vars [getContextInit vars]
 
 instance Show CppLocalVarDef where

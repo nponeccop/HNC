@@ -1,14 +1,13 @@
 module HN.Intermediate where
-import qualified Data.Map as M
 import SPL.Types
 
 type Program = [Definition]
 
 data Const      =   ConstString String
                 |   ConstInt    Int
-                |   ConstReal   Double
-                |   ConstChar   Char
-                |   ConstBool   Bool
+ --               |   ConstReal   Double
+ --               |   ConstChar   Char
+ --               |   ConstBool   Bool
                     deriving(Show, Eq)
 
 data Definition

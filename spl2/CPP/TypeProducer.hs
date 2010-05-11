@@ -1,6 +1,5 @@
 module CPP.TypeProducer where
 
-import Data.List
 import qualified Data.Set as S
 
 import SPL.Types
@@ -19,7 +18,6 @@ cppType (T x) = CppTypePrimitive $ cppPrimitiveType x
 
 cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
 	cppL = map cppType l
-	templateArgs = S.toList $ typePolyVars (TT l)
 
 cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) $ map cppType typeArgs
 
@@ -32,6 +30,7 @@ cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
 uncurryFunctionType [argType] [] = [argType]
 uncurryFunctionType argTypes [] = [TT argTypes]
 uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta
+uncurryFunctionType [] _ = error "CPP.TypeProducer.uncurryFunctionType encountered []"
 
 cppUncurryType (TT argTypes) args = cppType $ TT $ uncurryFunctionType argTypes args
 cppUncurryType splType _ = cppType splType

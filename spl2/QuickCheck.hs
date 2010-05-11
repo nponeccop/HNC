@@ -33,14 +33,12 @@ instance Arbitrary SPL.Types.C where
 		arb_less sz = arb_binaryFunc sz f (arb_cnum []) (arb_cnum []) where
 			f x y = CL (CVal "less") $ K [x, y]
 		arb_fooInt sz = do
-			let x = CVal "foo"
 			ysz <- choose (0, sz)
 			let zsz = sz - ysz
 			y <- arb_cnum [return $ CVal "foo"] (ysz + 1)
 			z <- arb_cnum [] zsz
 			return $ CL y $ W [("foo", z)]
 		arb_fooBool sz = do
-			let x = CVal "foo"
 			y <- arb_cbool [return $ CVal "foo"] (sz + 1)
 			z <- arb_cbool [] sz
 			return $ CL y $ W [("foo", z)]
@@ -70,7 +68,7 @@ ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 	fp = fullParse x
 
 fullParse t = remove_cdebug $
-	case (case (parse t) of SPL.Parser2.P _ _ x _ -> compile0 x) of SPL.Compiler.P xx -> xx ; SPL.Compiler.N _ aa -> error $ show aa
+	case (case (parse t) of SPL.Parser2.P _ _ x _ -> compile0 x ; SPL.Parser2.N _ _ -> error "QuickCheck.fullParse.1: Parsing failed") of SPL.Compiler.P xx -> xx ; SPL.Compiler.N _ aa -> error $ show aa
 
 tests = map ttt [
 		"(less (incr 2*foo:2) 2*foo:less (incr 2*foo:2) 2)*foo:1b"
@@ -107,7 +105,7 @@ splTest (s, r, t) = TestLabel s $ TestCase $ case step s of
 	SPL.Interpretator.P (t2, r2) -> do
 		assertEqual "Types mismatch" t t2
 		assertEqual "Result mismatch" r r2
-	SPL.Interpretator.N (i, r3) ->
+	SPL.Interpretator.N (_, r3) ->
 		assertEqual "Result mismatch (error)" r r3
 
 
@@ -118,6 +116,3 @@ main = do
 	runTestTT $ TestList $ tests2 ++ Main.tests ++ compilerTests ++ splTests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo
-
-
-
