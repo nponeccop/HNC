@@ -81,7 +81,7 @@ unit-test where2 : where2.hn hn-cpplib ;
 unit-test where3 : where3.hn hn-cpplib ; # multiple local vars
 
 explicit
-	test_poly  # bug #11 elist polymorphic constant is not supported
+	elist      # bug #11 elist polymorphic constant is not supported
 	io2        # bug #31 no template args for pointers to polymorphic functions
 	flip4      # C++ doesn't typecheck
 	test_flip3 # bug #29
