@@ -137,8 +137,15 @@ namespace ff
 	template <typename T>
 	T _if(bool cond, T t, T f)
 	{
-		return cond ? t : f	;
+		return cond ? t : f;
 	}
+
+	template <typename F, typename T> 
+	std::list<T> filter(F f, std::list<T> in)
+	{
+		// TODO implement ff::filter - only signature is there
+		return in;
+	}	
 
 };
 
