@@ -9,8 +9,6 @@ import SPL.Types
 import SPL.Code
 import SPL.Check3
 import SPL.Optimizer1
-import qualified SPL.Lib.Str
-import qualified SPL.Lib.Bignum
 import Debug.Trace
 
 data Fun = Fun C T | Lib [Char]
@@ -104,6 +102,12 @@ base = M.fromList $
 	:("print", Fun
 		(CNum 0)
 		(TT [TU "a", TD "IO" [T "void"]] ))
+	:("udp_receive", Fun
+		(error "udp_receive is not implemented")
+		(TT [T "udp_socket", TD "IO" [T "string"]] ))
+	:("udp_connect", Fun
+		(error "udp_connect is not implemented")
+		(TT [T "string", T "num", T "udp_socket"] ))
 	:("bind", Fun
 		(CNum 0)
 		(TT [ TD "IO" [TU "t1"], TT [TU "t1", TD "IO" [TU "t2"]], TD "IO" [TU "t2"]]))

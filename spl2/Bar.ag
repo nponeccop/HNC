@@ -1,4 +1,5 @@
 {
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Bar (compile, Inh_Definition(..)) where
 
 import CPP.Intermediate

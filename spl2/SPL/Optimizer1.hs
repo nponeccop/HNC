@@ -1,7 +1,6 @@
 module SPL.Optimizer1 where
 
 import SPL.Types
-import SPL.Check3 hiding (res)
 import qualified Data.Map as M
 
 _in = CTyped (T "num") (CL (CL (CTyped (TU "a") (CL (CL (CVal "a") (S ["y"])) (K [CTyped (TU "a") (CVal "a")]))) (S ["a"])) (K [CTyped (T "num") (CNum 5)]))

@@ -1,3 +1,5 @@
+#include <winsock.h>
+
 namespace ff
 {
 	int incr(int);
@@ -27,7 +29,7 @@ namespace ff
 		};
 	};
 
-	template <typename T1, typename T2> 
+	template <typename T1, typename T2>
 	struct bind_impl
 	{
 		IO<T1> a1;
@@ -41,7 +43,7 @@ namespace ff
 		}
 	};
 
-	template <typename T2> 
+	template <typename T2>
 	struct voidbind_impl
 	{
 		IO<void> a1;
@@ -53,7 +55,7 @@ namespace ff
 		}
 	};
 
-	template <typename T2> 
+	template <typename T2>
 	IO<T2> voidbind(IO<void> a1, IO<T2> a2)
 	{
 		voidbind_impl<T2> impl = { a1, a2 };
@@ -65,7 +67,7 @@ namespace ff
 	template <typename T>
 	void print_impl(T t)
 	{
-		std::cout << t << std::endl;		
+		std::cout << t << std::endl;
 	}
 
 
@@ -75,7 +77,8 @@ namespace ff
 		return boost::bind(&print_impl<T>, t);
 	}
 
-	template <typename T1, typename T2> 
+
+	template <typename T1, typename T2>
 	typename hn::result<T2>::type bind(IO<T1> a1, T2 a2)
 	{
 		bind_impl<T1, T2> impl = { a1, a2 };
@@ -85,7 +88,7 @@ namespace ff
 
 	extern IO<int> readnum;
 
-	template <typename T> 
+	template <typename T>
 	T read()
 	{
 		T t;
@@ -108,7 +111,7 @@ namespace ff
 	{
 		return a == b;
 	}
-	
+
 	inline int mod(int a, int b)
 	{
 		return a % b;
@@ -140,13 +143,41 @@ namespace ff
 		return cond ? t : f;
 	}
 
-	template <typename F, typename T> 
+	template <typename F, typename T>
 	std::list<T> filter(F f, std::list<T> in)
 	{
 		// TODO implement ff::filter - only signature is there
 		return in;
-	}	
+	}
 
+	struct RaiiSocket
+	{
+		SOCKET s;
+
+		RaiiSocket();
+		~RaiiSocket();
+	};
+
+	struct UdpSocket : public RaiiSocket
+	{
+		UdpSocket(int);
+		UdpSocket(std::string, int);
+		~UdpSocket();
+		std::string Recv();
+		void Send(std::string);
+	};
+
+	inline void SocketTest()
+	{
+		UdpSocket x("localhost", 99);
+		UdpSocket y(99);
+		x.Send("foo");
+		std::string z = x.Recv();
+	}
+
+	UdpSocket udp_connect(std::string, int);
+
+	IO<std::string> udp_receive(UdpSocket &);
 };
 
 ff::IO<void> hnMain();

@@ -28,6 +28,8 @@ dumpInferredTypes (P (x, _, _)) = do
 	putStrLn ""
 	print x
 
+dumpInferredTypes (N _ y) = error y
+
 compileToSpl inFile = do
 	x <- compile inFile convertDef
 	return $ show x ++ "\n" ++ showAsSource x

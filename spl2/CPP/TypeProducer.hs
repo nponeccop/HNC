@@ -12,6 +12,7 @@ cppPrimitiveType x = case x of
 	"list" -> "std::list"
 	"void" -> "void"
 	"IO" -> "ff::IO"
+	"udp_socket" -> "ff::UdpSocket"
 	_ -> "<<<<Type inference error or unknown primitive type: " ++ x ++ ">>>>"
 
 cppType (T x) = CppTypePrimitive $ cppPrimitiveType x

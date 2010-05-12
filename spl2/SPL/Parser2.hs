@@ -1,7 +1,7 @@
 module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
 
 import Data.Map as M hiding (map)
-import System.IO.Unsafe
+-- UNUSED import System.IO.Unsafe
 
 data SynMark =
 	MarkR
@@ -75,6 +75,8 @@ data Token =
 	| Ttype
 	deriving (Eq, Show, Ord)
 
+{- UNUSED
+
 out o =
 	unsafePerformIO $
 	do
@@ -91,6 +93,8 @@ out3 t i o =
 --			Tkeys -> do putStr ("keys:"++show i++",");
 			_ -> do return ()
 		return o
+
+-}
 
 get_i (Sc _ i) = i
 get_i (Sb _ i) = i
@@ -117,7 +121,7 @@ p_and ((t:ts),f) vi vs s i m c =
 
 p_and ([],f) vi vs s i m c =
 	P m vi (f (reverse vs)) c
-	
+
 p_or (o:os) s i m c =
 	case p_and o 0 [] s i m c of
 		P m i s c -> P m i s c

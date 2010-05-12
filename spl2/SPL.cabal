@@ -23,6 +23,7 @@ Other-modules:	Bar
 
 Executable:	spl-quickcheck
 Main-Is:	QuickCheck.hs
+GHC-Options:	-fwarn-unused-imports -fwarn-unused-binds
 
 Executable:	spli
 Main-Is:	SPLI.hs

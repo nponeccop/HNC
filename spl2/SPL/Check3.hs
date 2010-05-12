@@ -6,10 +6,13 @@ import qualified Data.Map as M
 import SPL.Types
 import qualified SPL.Parser2
 import qualified SPL.Compiler hiding (res)
-import Debug.Trace
+-- UNUSED import Debug.Trace
+
 observeN a b = b
 
-observe s v = trace ("{"++s++":"++show v++"}") v
+
+-- UNUSED observe s v = trace ("{"++s++":"++show v++"}") v
+
 --observe s v = v
 
 data P = P (C, M.Map [Char] T, T) | N Int [Char]
@@ -30,12 +33,12 @@ get_url ((N i o):rs) =
 
 union_r a b =
 	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
-	let (r, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
+	let (r, _) = M.mapAccum (\z (a,b,(l,r,_)) -> (union_r z r, merge a b)) M.empty m in
 		M.unionsWith merge [a, b, r]
 
 union a b =
 	let m = M.intersectionWith (\a b -> (a, b, SPL.Check3.compare a b)) a b in
-	let (l, m2) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
+	let (l, _) = M.mapAccum (\z (a,b,(l,r,_)) -> (union z l, merge a b)) M.empty m in
 		M.unionsWith merge [a, b, l]
 
 merge (TT a) (TT b)|length a == length b = TT $ zipWith merge a b
@@ -52,10 +55,12 @@ merge (TUL a) b = TUL (b:a)
 merge a b = TUL [b, a]
 --merge a b = error ("merge: {"++show a++", "++show b++"}")
 
+{- UNUSED
 get_ul n u =
 	case M.lookup n u of
 		Just n -> show n
 		Nothing -> "<nil>"
+-}
 
 setmm a b = M.map (\x -> setm x b) a
 
@@ -316,7 +321,7 @@ compare TL TL = (M.empty, M.empty, True) -- return lazy?
 --compare t1 t2 = error $ (show t1)++"/"++(show t2)
 compare t1 t2 = (M.empty, M.empty, False)
 
-setml l u = Prelude.map (\x -> setm x u) l
+-- UNUSED setml l u = Prelude.map (\x -> setm x u) l
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT []) u = TT []
 setm (TT (t:[])) u =
@@ -334,7 +339,7 @@ setm (TU n) u =
 		Nothing -> TU n
 setm o u = o
 
-setmvl l u = Prelude.map (\x -> setmv x u) l
+-- UNUSED setmvl l u = Prelude.map (\x -> setmv x u) l
 setmv (TD n tt) u = TD n (Prelude.map (\t -> setmv t u) tt)
 setmv (TT tt) u = TT (Prelude.map (\t -> setmv t u) tt)
 setmv (TS m) u = TS $ M.map (\t -> setmv t u) m
@@ -362,11 +367,13 @@ change_tu (TD n tt) p i = TD n $ change_tul tt p i
 change_tu (TU n) p i = TU (n++p++show i)
 change_tu o p i = o
 
+{- UNUSED
 change_tvl tt i = Prelude.map (\t -> change_tv t i) tt
 change_tv (TT tt) i = TT $ change_tvl tt i
 change_tv (TD n tt) i = TD n $ change_tvl tt i
 change_tv (TV n) i = TV (n++show i)
 change_tv o i = o
+-}
 
 ren_tu t = rename_tu t (M.empty, Prelude.map (\x -> x:[]) $ ['a'..'z'])
 
