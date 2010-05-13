@@ -47,7 +47,7 @@ SEM Expression
 
 {
 
-transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) then '&' : aaa else aaa where
+transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) && not (isPrefixOf "ff::" aaa) then '&' : aaa else aaa where
 				aaa = fqn False a
 
 transformFunction fqn name = fqn True name

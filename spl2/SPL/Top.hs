@@ -32,6 +32,12 @@ eval0 c =
 compile0 c =
 	compile c get_types
 
+ff_functi name t = (,) name $ Fun (error $ name ++ " is not implemented") (TT t)
+ff_method thisType name t = ff_functi name $ (T thisType) : t
+ff_constr thisType name t = ff_functi name $ t ++ [T thisType]
+
+tdt td t = TD td [T t]
+
 base = M.fromList $
 	("sum", Fun
 		(CL (CInFun 2 (InFun "" do_sum)) (K []))
@@ -99,27 +105,22 @@ base = M.fromList $
 	:("foldr", Fun
 		(CL (CInFun 3 (InFun "" do_foldr)) (K []))
 		(TT [TT [TU "a", TU "b", TU "b"], TU "b", TD "list" [TU "a"], TU "b"]))
-	:("print", Fun
-		(CNum 0)
-		(TT [TU "a", TD "IO" [T "void"]] ))
-	:("udp_receive", Fun
-		(error "udp_receive is not implemented")
-		(TT [T "udp_socket", TD "IO" [T "string"]] ))
-	:("udp_connect", Fun
-		(error "udp_connect is not implemented")
-		(TT [T "string", T "num", T "udp_socket"] ))
-	:("bind", Fun
-		(CNum 0)
-		(TT [ TD "IO" [TU "t1"], TT [TU "t1", TD "IO" [TU "t2"]], TD "IO" [TU "t2"]]))
+	:ff_functi "print" [TU "a", TD "IO" [T "void"]]
+	:ff_method "udp_socket" "udp_send" [T "string", tdt "IO" "void"]
+	:ff_method "udp_socket" "udp_reply" [T "string", tdt "IO" "void"]
+	:ff_method "udp_socket" "udp_receive" [tdt "IO" "string"]
+	:ff_constr "udp_socket" "udp_connect" [T "string", T "num"]
+	:ff_constr "udp_socket" "udp_listen" [T "num"]
+	:ff_functi "bind" [ TD "IO" [TU "t1"], TT [TU "t1", TD "IO" [TU "t2"]], TD "IO" [TU "t2"]]
+	:ff_functi "forever" [tdt "IO" "void", tdt "IO" "void"]
 	:("readnum", Fun
 		(CNum 0)
 		(TD "IO" [T "num"] ))
-	:("voidbind", Fun
+	:("time_msec", Fun
 		(CNum 0)
-		(TT [ TD "IO" [T "void"], TD "IO" [TU "a"], TD "IO" [TU "a"]]))
-	:("natrec", Fun
-		(CNum 0)
-		(TT [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]))
+		(tdt "IO" "num"))
+	:ff_functi "voidbind" [TD "IO" [T "void"], TD "IO" [TU "a"], TD "IO" [TU "a"]]
+	:ff_functi "natrec" [TT [T "num", TU "a", TU "a"], TU "a", T "num", TU "a"]
 	:("load", Fun
 		(CL (CInFun 1 (InFun "" do_load)) (K []))
 		(TT [T "string", TU "a"]))
