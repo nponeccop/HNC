@@ -1,6 +1,6 @@
 {
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
-module Bar (compile, Inh_Definition(..)) where
+module Bar (compile, Inh_Definition(..), instantiateLibrary) where
 
 import CPP.Intermediate
 import CPP.TypeProducer
@@ -11,12 +11,20 @@ import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Utils
+import SPL.Visualise
+import SPL.Top
+import Test.HUnit
+import Debug.Trace
 
 type ExpressionList  = [Expression]
 
 compile self inh = cppDefinition_Syn_Definition $ wrap_Definition (sem_Definition self) inh
 
+instantiateLibrary m = M.map (\x -> TLib x) m
 }
+
+
+WRAPPER Definition
 
 TYPE ExpressionList = [Expression]
 
@@ -100,7 +108,6 @@ ATTR Definition Program
 
 ATTR Definition
 	[
-		inferredType : T
 	|
 	|
 		name : String
@@ -124,16 +131,16 @@ symTabTranslator symTab f x = case M.lookup x symTab of
 
 SEM Definition
 	| Definition
-		-- òðèâèàëüíûå àòðèáóòû
+		-- Ã²Ã°Ã¨Ã¢Ã¨Ã Ã«Ã¼Ã­Ã»Ã¥ Ã Ã²Ã°Ã¨Ã¡Ã³Ã²Ã»
 		where.level = @lhs.level + 1
 		lhs.name = @name
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
-		loc.cppDefType = cppUncurryType @lhs.inferredType @params
+		loc.cppDefType = cppUncurryType @loc.inferredType @params
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition { functionTemplateArgs = [] }
-		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @lhs.inferredType) @name @value.sem
+		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @loc.inferredType) @name @value.sem
 
-		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
+		-- Ã²Ã®Ã¯-Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿, Ã§Ã Ã¬ÃªÃ­Ã³Ã²Ã»Ã¥ Ã¯Ã¥Ã°Ã¥Ã¬Ã¥Ã­Ã­Ã»Ã¥ Ã¨ Ã«Ã®ÃªÃ Ã«Ã¼Ã­Ã»Ã¥ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨
 		lhs.cppDefinition = @loc.cppDefinition
 		loc.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
@@ -147,49 +154,51 @@ SEM Definition
 			,   functionContext         = constructJust ( not ( not (null @where.contextMethods) && noUnusedTemplateContext)) $ CppContext {
 					contextLevel    = @lhs.level
 				,   contextTypeName = @loc.contextTypeName
-				-- ïåðåìåííûå êîíòåêñòà - ýòî
-				-- àðãóìåíòû ãëàâíîé ôóíêöèè, ñâîáîäíûå â where-ôóíêöèÿõ
-				-- ëîêàëüíûå ïåðåìåííûå, ñâîáîäíûå â where-ôóíêöèÿõ
+				-- Ã¯Ã¥Ã°Ã¥Ã¬Ã¥Ã­Ã­Ã»Ã¥ ÃªÃ®Ã­Ã²Ã¥ÃªÃ±Ã²Ã  - Ã½Ã²Ã®
+				-- Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã» Ã£Ã«Ã Ã¢Ã­Ã®Ã© Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨, Ã±Ã¢Ã®Ã¡Ã®Ã¤Ã­Ã»Ã¥ Ã¢ where-Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿Ãµ
+				-- Ã«Ã®ÃªÃ Ã«Ã¼Ã­Ã»Ã¥ Ã¯Ã¥Ã°Ã¥Ã¬Ã¥Ã­Ã­Ã»Ã¥, Ã±Ã¢Ã®Ã¡Ã®Ã¤Ã­Ã»Ã¥ Ã¢ where-Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿Ãµ
 				,   contextVars         = @loc.contextVars ++ contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
 				}
 		} where
 			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
-			noUnusedTemplateContext = S.null $ S.fromList @loc.contextTemplateArgs `subtractSet` @loc.templateArgs
+			noUnusedTemplateContext = True -- S.null $ S.fromList @loc.contextTemplateArgs `subtractSet` @loc.templateArgs
 		}
 
-		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
+		-- Ã§Ã Ã¬ÃªÃ­Ã³Ã²Ã»Ã¥ Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã» Ã²Ã®Ã¯-Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨ Ã¨ Ã²Ã¨Ã¯Ã®Ã¢Ã»Ã¥ Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã» Ã¸Ã Ã¡Ã«Ã®Ã­Ã 
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-		(loc.contextVars, loc.argsTv) = { case @lhs.inferredType of
+		loc.inferredType = substituteType @loc.s @loc.tau
+
+		(loc.contextVars, loc.argsTv) = { case @loc.inferredType of
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
-		loc.templateArgs = typePolyVars @lhs.inferredType
+		loc.templateArgs = typePolyVars @loc.inferredType
 		lhs.templateArgs = @loc.templateArgs
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 
-		-- â âûðàæåíèÿõ Ñ++ îáðàùåíèå ê ñèìâîëó foo âûïîëíÿåòñÿ ìíîãèìè ñïîñîáàìè:
-		-- local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ â bar_impl
-		-- impl.foo - åñëè foo ïåðåìåííàÿ â bar_impl èëè (íåñòàòè÷åñêàÿ ôóíêöèÿ, è âûïîëíÿåòñÿ å¸ âûçîâ)
-		-- hn::bind(impl, &local::foo) - åñëè foo íåñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- &local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- foo - åñëè foo ëîêàëüíàÿ ïåðåìåííàÿ ôóíêöèè èëè ïàðàìåòð ôóíêöèè
-		-- hn::foo - åñëè foo ÿâëÿåòñÿ ôóíêöèåé ñòàíäàðòíîé áèáëèîòåêè
+		-- Ã¢ Ã¢Ã»Ã°Ã Ã¦Ã¥Ã­Ã¨Ã¿Ãµ Ã‘++ Ã®Ã¡Ã°Ã Ã¹Ã¥Ã­Ã¨Ã¥ Ãª Ã±Ã¨Ã¬Ã¢Ã®Ã«Ã³ foo Ã¢Ã»Ã¯Ã®Ã«Ã­Ã¿Ã¥Ã²Ã±Ã¿ Ã¬Ã­Ã®Ã£Ã¨Ã¬Ã¨ Ã±Ã¯Ã®Ã±Ã®Ã¡Ã Ã¬Ã¨:
+		-- local::foo - Ã¥Ã±Ã«Ã¨ foo Ã±Ã²Ã Ã²Ã¨Ã·Ã¥Ã±ÃªÃ Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ Ã¢ bar_impl
+		-- impl.foo - Ã¥Ã±Ã«Ã¨ foo Ã¯Ã¥Ã°Ã¥Ã¬Ã¥Ã­Ã­Ã Ã¿ Ã¢ bar_impl Ã¨Ã«Ã¨ (Ã­Ã¥Ã±Ã²Ã Ã²Ã¨Ã·Ã¥Ã±ÃªÃ Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿, Ã¨ Ã¢Ã»Ã¯Ã®Ã«Ã­Ã¿Ã¥Ã²Ã±Ã¿ Ã¥Â¸ Ã¢Ã»Ã§Ã®Ã¢)
+		-- hn::bind(impl, &local::foo) - Ã¥Ã±Ã«Ã¨ foo Ã­Ã¥Ã±Ã²Ã Ã²Ã¨Ã·Ã¥Ã±ÃªÃ Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ Ã¨ Ã¢Ã»Ã¯Ã®Ã«Ã­Ã¿Ã¥Ã²Ã±Ã¿ Ã¯Ã¥Ã°Ã¥Ã¤Ã Ã·Ã  Ã¥Â¸ Ã¯Ã Ã°Ã Ã¬Ã¥Ã²Ã°Ã®Ã¬
+		-- &local::foo - Ã¥Ã±Ã«Ã¨ foo Ã±Ã²Ã Ã²Ã¨Ã·Ã¥Ã±ÃªÃ Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ Ã¨ Ã¢Ã»Ã¯Ã®Ã«Ã­Ã¿Ã¥Ã²Ã±Ã¿ Ã¯Ã¥Ã°Ã¥Ã¤Ã Ã·Ã  Ã¥Â¸ Ã¯Ã Ã°Ã Ã¬Ã¥Ã²Ã°Ã®Ã¬
+		-- foo - Ã¥Ã±Ã«Ã¨ foo Ã«Ã®ÃªÃ Ã«Ã¼Ã­Ã Ã¿ Ã¯Ã¥Ã°Ã¥Ã¬Ã¥Ã­Ã­Ã Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨ Ã¨Ã«Ã¨ Ã¯Ã Ã°Ã Ã¬Ã¥Ã²Ã° Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨
+		-- hn::foo - Ã¥Ã±Ã«Ã¨ foo Ã¿Ã¢Ã«Ã¿Ã¥Ã²Ã±Ã¿ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¥Ã© Ã±Ã²Ã Ã­Ã¤Ã Ã°Ã²Ã­Ã®Ã© Ã¡Ã¨Ã¡Ã«Ã¨Ã®Ã²Ã¥ÃªÃ¨
 		--
-		-- Ñïîñîáû íèæå íå ðåàëèçîâàíû:
-		-- ïðè êàððèðîâàíèè íåîáõîäèìî âûçûâàòü hn::curry1(&local::foo) èëè hn::curry1(impl, &local::foo)
-		-- ïðè âëîæåíííîñòè çàìûêàíèé íåîáõîäèìî âìåñòî local óêàçûâàòü öåïî÷êó parent::parent::foo èëè up.up.foo
+		-- Ã‘Ã¯Ã®Ã±Ã®Ã¡Ã» Ã­Ã¨Ã¦Ã¥ Ã­Ã¥ Ã°Ã¥Ã Ã«Ã¨Ã§Ã®Ã¢Ã Ã­Ã»:
+		-- Ã¯Ã°Ã¨ ÃªÃ Ã°Ã°Ã¨Ã°Ã®Ã¢Ã Ã­Ã¨Ã¨ Ã­Ã¥Ã®Ã¡ÃµÃ®Ã¤Ã¨Ã¬Ã® Ã¢Ã»Ã§Ã»Ã¢Ã Ã²Ã¼ hn::curry1(&local::foo) Ã¨Ã«Ã¨ hn::curry1(impl, &local::foo)
+		-- Ã¯Ã°Ã¨ Ã¢Ã«Ã®Ã¦Ã¥Ã­Ã­Ã­Ã®Ã±Ã²Ã¨ Ã§Ã Ã¬Ã»ÃªÃ Ã­Ã¨Ã© Ã­Ã¥Ã®Ã¡ÃµÃ®Ã¤Ã¨Ã¬Ã® Ã¢Ã¬Ã¥Ã±Ã²Ã® local Ã³ÃªÃ Ã§Ã»Ã¢Ã Ã²Ã¼ Ã¶Ã¥Ã¯Ã®Ã·ÃªÃ³ parent::parent::foo Ã¨Ã«Ã¨ up.up.foo
 		--
-		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, fqn, fqnTransformer
-		-- fqnTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- ò.å. îäèí è òîò æå àòîì òðàíñëèðóåòñÿ ïî-ðàçíîìó, â çàâèñèìîñòè îò òîãî, íàõîäèòñÿ
-		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
-		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
-		-- íà îñíîâå S
+		-- Ã„Ã«Ã¿ Ã¯Ã®Ã¤Ã¤Ã¥Ã°Ã¦ÃªÃ¨ Ã½Ã²Ã¨Ãµ Ã°Ã Ã§Ã­Ã»Ãµ Ã®Ã¡Ã°Ã Ã¹Ã¥Ã­Ã¨Ã© Ã±Ã¤Ã¥Ã«Ã Ã­ Ã±Ã«Ã®Ã© symTabTranslator, fqn, fqnTransformer
+		-- fqnTransformer Ã¯Ã®ÃªÃ Ã§Ã»Ã¢Ã Ã¥Ã², Ã¢Ã»Ã¯Ã®Ã«Ã­Ã¿Ã¥Ã²Ã±Ã¿ Ã«Ã¨ Ã®Ã¡Ã°Ã Ã¹Ã¥Ã­Ã¨Ã¥ Ãª Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨ Ã¨Ã«Ã¨ Ã¯Ã¥Ã°Ã¥Ã¤Ã Ã·Ã  Ã¥Â¸ Ã¯Ã Ã°Ã Ã¬Ã¥Ã²Ã°Ã®Ã¬
+		-- Ã².Ã¥. Ã®Ã¤Ã¨Ã­ Ã¨ Ã²Ã®Ã² Ã¦Ã¥ Ã Ã²Ã®Ã¬ Ã²Ã°Ã Ã­Ã±Ã«Ã¨Ã°Ã³Ã¥Ã²Ã±Ã¿ Ã¯Ã®-Ã°Ã Ã§Ã­Ã®Ã¬Ã³, Ã¢ Ã§Ã Ã¢Ã¨Ã±Ã¨Ã¬Ã®Ã±Ã²Ã¨ Ã®Ã² Ã²Ã®Ã£Ã®, Ã­Ã ÃµÃ®Ã¤Ã¨Ã²Ã±Ã¿
+		-- Ã®Ã­ Ã¢ Ã¯Ã®Ã§Ã¨Ã¶Ã¨Ã¨ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¨ Ã¨Ã«Ã¨ Ã¢ Ã¯Ã®Ã§Ã¨Ã¶Ã¨Ã¨ Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã 
+		-- Ã¨Ã§Ã­Ã Ã·Ã Ã«Ã¼Ã­Ã® Ã¨Ã§ ÃªÃ®Ã¬Ã¯Ã¨Ã«Ã¿Ã²Ã®Ã°Ã  Ã¯Ã¥Ã°Ã¥Ã¤Ã Ã¥Ã²Ã±Ã¿ Ã²Ã Ã¡Ã«Ã¨Ã¶Ã  Ã¡Ã¨Ã¡Ã«Ã¨Ã®Ã²Ã¥Ã·Ã­Ã»Ãµ Ã±Ã¨Ã¬Ã¢Ã®Ã«Ã®Ã¢
+		-- Ã­Ã  Ã®Ã±Ã­Ã®Ã¢Ã¥ S
 		loc.isFunctionStatic = S.null (@loc.freeVars `subtractSet` M.keysSet @lhs.symTab)
 		lhs.staticFunctionNames = constructJust (not $ @loc.isFunction && @loc.isFunctionStatic) @name
 		lhs.nonStaticFunctionNames = constructJust (not $ @loc.isFunction && not @loc.isFunctionStatic) @name
@@ -209,10 +218,280 @@ deconstructTyped x =  case x of
 
 }
 
+
+
 SEM Program
 	| Cons
-		(hd.inferredType, hd.typed, tl.typed) = deconstructTyped @lhs.typed
+		(_, hd.typed, tl.typed) = deconstructTyped @lhs.typed
 
+ATTR Definition Expression
+	[
+		visibleAtoms : {M.Map String T}
+	|
+	|
+		s : {[Substitution]}
+		tau : T
+	]
+
+ATTR Definition
+	[
+	|
+	|
+	]
+
+ATTR Program Definition Expression ExpressionList
+	[
+		inhCounter : Int
+	|
+	|
+		synCounter: Int
+	]
+
+ATTR Program
+	[
+		visibleAtoms : {M.Map String T}
+	|
+	|
+		bottomVisibleAtoms : {M.Map String T}
+		bottomS : {[Substitution]}
+	]
+
+
+ATTR ExpressionList
+	[
+		visibleAtoms : {M.Map String T}
+		fnS : {[Substitution]}
+		fnTau : T
+	|
+	|
+		s : {[Substitution]}
+		tau : T
+	]
+
+SEM ExpressionList
+	| Cons
+		hd.inhCounter = @lhs.inhCounter + 1
+		tl.inhCounter = @hd.synCounter
+		lhs.synCounter = @tl.synCounter
+	| Nil
+		lhs.synCounter = @lhs.inhCounter
+
+
+SEM Definition
+	| Definition
+		-- arguments get fresh type variables
+		(where.inhCounter, loc.argAtoms) = freshAtoms @params @lhs.inhCounter
+		value.inhCounter = @where.synCounter
+		lhs.synCounter = @value.synCounter
+
+		loc.s = xtrace "Definition.s" $ @value.s ++ @where.bottomS
+		lhs.tau = xtrace "Definition.tau" @loc.tau
+		lhs.s = @loc.s
+		loc.tau = { if null @params
+			then @value.tau
+			else TT $ map (\(_, beta) -> substituteType @value.s beta) @argAtoms ++ [@value.tau]
+		}
+		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
+		value.visibleAtoms = @where.bottomVisibleAtoms
+
+{-
+
+ÐžÐ±Ð¾Ð±Ñ‰ÐµÐ½Ð¸Ðµ Ð°Ð»Ð³Ð¾Ñ€Ð¸Ñ‚Ð¼Ð° W Ð½Ð° ÑÐ»ÑƒÑ‡Ð°Ð¹ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¹ Ð¼Ð½Ð¾Ð³Ð¸Ñ… Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ñ…
+
+Ð”Ð»Ñ Ð´Ð²ÑƒÑ… Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ñ…
+
+fn arg
+
+tau = substituteType s beta
+beta = freshVar
+s = (v . fn.s) . arg.s
+		2
+arg.visibleAtoms = substitute fn.s visibleAtoms
+
+Ð”Ð»Ñ Ð¼Ð½Ð¾Ð³Ð¸Ñ… Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ñ…
+
+Ð¸Ð´ÐµÑ‚ Ð»ÐµÐ²Ñ‹Ð¹ Ñ„Ð¾Ð»Ð´ args
+
+s(-1) = v . fn.s
+s(i) = s(i-1) . arg(i).s
+
+tau = substituteType s beta
+
+beta = freshVars
+
+fntau(0) = fntau
+
+v(i) = unify (fntau(i) (TT [substituteType arg(i).s arg(i).tau] beta(i)]
+
+
+
+-}
+
+SEM Expression
+	| Constant
+		lhs.s = []
+		lhs.tau = constantType @c
+		lhs.synCounter = @lhs.inhCounter
+	| Atom
+		lhs.s = []
+		(lhs.synCounter, lhs.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
+	| Application
+		fn.inhCounter = @lhs.inhCounter + 1
+		arg.inhCounter = @fn.synCounter
+		lhs.synCounter = @arg.synCounter
+
+		arg.visibleAtoms = xtrace "Application.visibleAtoms" $ substitute @fn.s @lhs.visibleAtoms
+		arg.fnS = @fn.s
+		arg.fnTau = xtrace "Application.fnTau" @fn.tau
+
+		lhs.s = xtrace "Application.s" @arg.s
+		lhs.tau = xtrace "Application.tau" @arg.tau
+
+SEM ExpressionList
+	| Cons
+		loc.v = xtrace "ExpressionList.v" $ unify @lhs.fnTau $ TT [substituteType @hd.s @hd.tau, @loc.beta]
+		loc.beta = tv @lhs.inhCounter
+
+		loc.s = xtrace "ExpressionList.loc.s" $ @loc.v ++ @hd.s ++ @lhs.fnS
+
+		tl.fnS = xtrace "ExpressionList.tl.fnS" @loc.s
+		tl.fnTau = xtrace "ExpressionList.fnTau" $ substituteType @loc.s @loc.beta
+
+		hd.visibleAtoms = xtrace "ExpressionList.visibleAtoms" @lhs.visibleAtoms
+		tl.visibleAtoms = xtrace "ExpressionList.tl.visibleAtoms" $ substitute @loc.s @lhs.visibleAtoms
+
+		lhs.s = @tl.s
+	| Nil
+		lhs.s = xtrace "ExpressionList.s" @lhs.fnS
+		lhs.tau = xtrace "ExpressionList.tau" @lhs.fnTau
+
+SEM Program
+	| Cons
+		loc.s1 = xtrace "Program.Cons.hd.s" @hd.s
+		loc.tau1 = @hd.tau
+		hd.visibleAtoms = xtrace "Program.hd.visibleAtoms" @lhs.visibleAtoms
+		tl.visibleAtoms = substitute @loc.s1 $ (replace @hd.name (closure (substitute @loc.s1 @lhs.visibleAtoms) @loc.tau1)) @lhs.visibleAtoms
+		lhs.bottomVisibleAtoms = @tl.bottomVisibleAtoms
+
+		lhs.bottomS = xtrace "Program.bottomS" $ @loc.s1 ++ @tl.bottomS
+
+		hd.inhCounter = @lhs.inhCounter
+		tl.inhCounter = @hd.synCounter
+		lhs.synCounter = @tl.synCounter
+	| Nil
+		lhs.bottomS = []
+		lhs.bottomVisibleAtoms = xtrace "Program.bottomVisibleAtoms" @lhs.visibleAtoms
+		lhs.synCounter = @lhs.inhCounter
+{
+
+freshAtoms :: [String] -> Int -> (Int, [(String, T)])
+
+freshAtoms [] counter = (counter, [])
+freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, tv i)) a [counter..])
+
+substituteType :: [Substitution] -> T -> T
+substituteType [] b = b
+substituteType a b = result where -- trace ("substituteType:" ++ show a ++ " ===> " ++ show result) result where
+	result = substituteSingle (composeSubstitutions a) b
+
+substituteSingle a b = substituteTypeVars  b a
+
+ztrace m t =  trace (m ++ " = " ++ show t) t
+
+symTrace m t = trace (m ++ " = " ++ show ( M.difference t SPL.Top.get_types)) t
+
+substitute :: [Substitution] -> M.Map String T -> M.Map String T
+substitute [] b = b
+substitute a b = xtrace "substitute.result: " $ M.map (substituteType a) b
+
+unify :: T -> T -> [Substitution]
+unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b ++ " = " ++ show c) c where
+	c = xunify a b
+	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = xunify a b ++ xunify (TT at) (TT bt)
+
+ 	xunify (TT [a]) b = xunify a b
+ 	xunify a (TT [b]) = xunify a b
+
+	xunify (TD a a1) (TD b b1) | a == b = concat $ zipWith xunify a1 b1
+	xunify (T a) (T b) | a == b = []
+	xunify (TU a) b = [M.singleton a b]
+	xunify b (TU a) = [M.singleton a b]
+	xunify a b = error $ "unify: " ++ show a ++ " ~ " ++ show b
+
+closure _ b = TLib b -- temporary! must be implememted properly to support "local" polymorphism
+
+replace k v m = M.insert k v m
+
+-- Program.s.tau:
+-- Program.s: plusX, where where2 locals14 locals4 false false2 print15 euler1 euler6 euler48 euler5
+-- Program.s: locals6-1 locals6 locals7 test4 locals13 test_flip3a locals12 intfunc_simple locals11 test_flip3 io2_intfunc udp_echo_server2 flip4_hn
+-- compose: natrec, polyfunc_pointer
+-- loop: intfunc test2 e48 t2_identifier elist
+
+
+lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
+lookupAndInstantiate name table counter = let t = uncondLookup name table in case t of
+	TLib x -> instantiatedType x counter
+	_ -> (counter, t)
+
+tv x = TU $ "t" ++ show x
+
+constantType x = case x of
+	ConstInt _ -> T "num"
+	ConstString _ -> T "string"
+
+lookupAtom name visibleAtoms freshVar = case M.lookup name visibleAtoms of
+	Nothing -> error "foo" -- $ (freshVar + 1, tv freshVar)
+	Just t -> error "lookupAtom" -- instantiatedType freshVar t
+
+
+xtrace a b = b
+
+typeVars (TU a) = [a]
+typeVars (TT a) = concat $ map typeVars a
+typeVars (TD a b) = concat $ map typeVars b
+typeVars _ = []
+
+instantiatedTypeTest t e = TestLabel "instantiatedTypeTest" $ TestCase $ assertEqual "" e  $ makeType $ snd $ instantiatedType (libType t) 10
+
+instantiatedTypeTests = [
+		instantiatedTypeTest "print" "?t10 -> IO void"
+	,	instantiatedTypeTest "bind" "IO ?t10 -> (?t10 -> IO ?t11) -> IO ?t11"
+	]
+
+
+libType name = uncondLookup name SPL.Top.get_types
+
+instantiatedType :: T -> Int -> (Int, T)
+instantiatedType t counter = (nextCounter, substituteTypeVars t substitutions) where
+	foo = zip (nub $ typeVars t) [counter..]
+   	nextCounter = counter + (length $ nub $ typeVars t)
+	substitutions = M.fromList $ map (\(x,y) -> (x, tv y)) foo
+
+composeSubstitutions a = xtrace ("composeSubstitutions: " ++ show a ++ " ====> " ++ show b) b where
+	b = foldr compose M.empty a
+
+
+compose x y  = M.fromList $ map m1 $ M.toList u where
+	u = M.union x y
+	m1 :: (String, T) -> (String, T)
+	m1 (k, v) = (k, xsubst v u)
+	xsubst :: T -> M.Map String T -> T
+	xsubst v x = substituteTypeVars v x
+
+substituteTypeVars t substitutions = subst t where
+	subst t = case t of
+		TU a -> (case M.lookup a substitutions of
+			Nothing -> TU a
+			Just b -> b)
+		TT a -> TT $ map subst a
+  		TD a b -> TD a (map subst b)
+		_ -> t
+
+type Substitution = M.Map String T
+
+
+}
 {
 
 }

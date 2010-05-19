@@ -180,8 +180,12 @@ namespace ff
 
 	IO<std::string> udp_receive(UdpSocket &);
 	IO<void> udp_send(UdpSocket &, std::string);
+	IO<void> udp_reply(UdpSocket &, std::string);
 
 	extern IO<int> time_msec;
+
+	IO<void> forever(IO<void>);
+
 
 };
 
