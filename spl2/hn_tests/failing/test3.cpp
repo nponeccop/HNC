@@ -16,7 +16,7 @@ struct hnMain_impl
 	{
 		typedef plusX_impl local;
 		local impl = { x };
-		return hn::bind(impl, &local::f);
+		return &hn::bind(impl, &local::f);
 	};
 };
 

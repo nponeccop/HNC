@@ -16,5 +16,5 @@ boost::function<t7 (int)> intfunc(boost::function<t3 (int)> f)
 {
 	typedef intfunc_impl<t3> local;
 	local impl = { f };
-	return hn::bind(impl, &local::g);
+	return &hn::bind(impl, &local::g)<t7>;
 };

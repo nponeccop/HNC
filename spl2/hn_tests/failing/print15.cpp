@@ -1,8 +1,9 @@
 #include <hn/lib.hpp>
 
+template <typename t0, typename t13>
 struct hnMain_impl
 {
-	static ff::IO<void> f(int x, ff::IO<void> y)
+	static ff::IO<t13> f(t0 x, ff::IO<t13> y)
 	{
 		ff::IO<void> g = ff::voidbind(ff::print(5), ff::print("foo"));
 		return ff::voidbind(ff::print(x), y);
@@ -11,6 +12,6 @@ struct hnMain_impl
 
 ff::IO<void> hnMain()
 {
-	typedef hnMain_impl local;
-	return ff::natrec(&hnMain_impl::f, ff::print(""), 15);
+	typedef hnMain_impl<t0, t13> local;
+	return ff::natrec(&hnMain_impl<t0, t13>::f<int, void, void>, ff::print(""), 15);
 };

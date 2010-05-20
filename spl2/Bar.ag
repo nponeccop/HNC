@@ -11,6 +11,7 @@ import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Utils
+import SPL.Visualise
 -- UNUSED import Debug.Trace
 
 import MilnerTools
@@ -31,7 +32,9 @@ DATA Expression
 	| Constant c : Const
 
 ATTR Expression ExpressionList
-	[ fqnTransformer : {(Bool -> String -> String) -> String -> String} fqn : {Bool -> String -> String}
+	[
+		fqnTransformer : {(Bool -> String -> String) -> String -> T -> String -> String}
+		fqn : {Bool -> String -> String}
 	|
 	|
 	]
@@ -44,7 +47,10 @@ SEM Expression
 	| Constant
 		lhs.sem = CppLiteral @c
 	| Atom
-		lhs.sem = CppAtom $ xtrace (show (uncondLookup @name @lhs.visibleAtoms) ++ " ~~~ "  ) $ @lhs.fqnTransformer @lhs.fqn @name
+		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @loc.templateArgs
+		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
+
+		loc.templateArgs = makeArgs $ map (\x -> xsubstitute @lhs.finalSubstitution x)  (typeVars @loc.tau)
 	| Application
 		fn.fqnTransformer = transformFunction
 		arg.fqnTransformer = transformArgument
@@ -52,11 +58,19 @@ SEM Expression
 
 {
 
+xsubstitute m x = case M.lookup x m of
+	Nothing -> x
+	Just t -> show $ cppType t
 
-transformArgument fqn a =  if elem ':' aaa && not (isPrefixOf "hn::" aaa) && not (isPrefixOf "ff::" aaa) then '&' : aaa else aaa where
-				aaa = fqn False a
+makeArgs [] = ""
+makeArgs x = showTemplateArgs x
 
-transformFunction fqn name = fqn True name
+transformArgument fqn a callSiteType templ = let aaa = fqn False a in
+	case callSiteType of
+		TT tt -> ('&' : aaa) ++ templ --  ++  showTemplateArgs (typeVars templateArgs
+		_ -> aaa
+
+transformFunction fqn name _ _ = fqn True name
 
 }
 
@@ -208,6 +222,13 @@ SEM Definition
 		}
 
 
+ATTR Expression ExpressionList
+		[
+			finalSubstitution : {Substitution}
+		|
+		|
+		]
+
 
 
 ATTR Definition Expression
@@ -280,6 +301,9 @@ SEM Definition
 		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
 		value.visibleAtoms = @where.bottomVisibleAtoms
 
+
+		value.finalSubstitution = composeSubstitutions @loc.s
+
 SEM Expression
 	| Constant
 		lhs.s = []
@@ -287,7 +311,8 @@ SEM Expression
 		lhs.synCounter = @lhs.inhCounter
 	| Atom
 		lhs.s = []
-		(lhs.synCounter, lhs.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
+		lhs.tau = @loc.tau
+		(lhs.synCounter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
 	| Application
 		fn.inhCounter = @lhs.inhCounter + 1
 		arg.inhCounter = @fn.synCounter

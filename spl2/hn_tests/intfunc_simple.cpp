@@ -18,7 +18,7 @@ struct hnMain_impl
 	{
 		typedef intfunc_impl<t3> local;
 		local impl = { f };
-		return hn::bind(impl, &local::g);
+		return &hn::bind(impl, &local::g)<t7>;
 	};
 };
 
@@ -26,5 +26,5 @@ template <typename t14>
 t14 hnMain()
 {
 	typedef hnMain_impl<t3, t7> local;
-	return (hnMain_impl<t3, t7>::intfunc(ff::print))(5);
+	return (hnMain_impl<t3, t7>::intfunc(&ff::print<t13>))(5);
 };

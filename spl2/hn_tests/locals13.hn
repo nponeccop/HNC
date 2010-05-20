@@ -1,0 +1,8 @@
+hnMain = {
+	main z = {
+		a = incr z
+		y = a
+		a
+	}
+	print (main 2)
+}
