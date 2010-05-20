@@ -1,20 +1,20 @@
 #include <hn/lib.hpp>
 
-template <typename _f0, typename x0, typename y0>
+template <typename t1, typename t2, typename t5>
 struct flip_impl
 {
-	boost::function<_f0 (y0, x0)> f;
+	boost::function<boost::function<t5 (t1)> (t2)> f;
 
-	_f0 flipped(x0 x, y0 y)
+	t5 flipped(t1 x, t2 y)
 	{
 		return f(y, x);
 	};
 };
 
-template <typename _f0, typename x0, typename y0>
-boost::function<_f0 (x0, y0)> flip(boost::function<_f0 (y0, x0)> f)
+template <typename t1, typename t2, typename t5, typename t6, typename t7, typename t8>
+boost::function<t8 (t6, t7)> flip(boost::function<boost::function<t5 (t1)> (t2)> f)
 {
-	typedef flip_impl<_f0, x0, y0> local;
+	typedef flip_impl<t1, t2, t5> local;
 	local impl = { f };
 	return hn::bind(impl, &local::flipped);
 };
