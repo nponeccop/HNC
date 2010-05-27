@@ -10,7 +10,6 @@ import Debug.Trace
 
 observeN a b = b
 
-
 observe s v = trace ("{"++s++":"++show v++"}") v
 
 --observe s v = v
@@ -74,7 +73,7 @@ ch (r:[]) [] et ul uv i sv ii ret =
 ch r [] et ul uv i sv ii ret =
 	P (ret, uv, setmv (setm (TT r) ul) uv)
 ch (r:rs) (p1:ps) et ul uv i sv ii ret =
-	case observeN ("ch_p "++show r) $ check p1 et sv of
+	case observeN ("ch_p "++show r) $! check p1 et sv of
 		P (ret2, rm, r_p1) ->
 			let r_p2 = change_tu (observeN "r_p1" $! r_p1) "" i in
 			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
@@ -86,8 +85,9 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let lll = setmm ll ll in
 					let ru = observeN "ru" $! setmm rrr lll in
 					let lu = observeN "lu" $! setmm lll rrr in
-						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ merge (setmv (setm r ul) rm2) r_p2) ret2)
---						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ r_p2) ret2)
+					let rett = setmc (join_tree ret $ CTyped (untv_all $ r_p2) (change_tuc ret2 "" i)) lu in
+						ch rs ps et lu ru (i+(1::Int)) sv ii rett
+--						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (observe "ct" $! untv_all $ merge (setmv (setm r ul) rm2) r_p2) ret2)
 				(l2, r2, False) ->
 					let iii = case p1 of
 						CDebug i _ -> i
@@ -322,6 +322,14 @@ compare TL TL = (M.empty, M.empty, True) -- return lazy?
 compare t1 t2 = (M.empty, M.empty, False)
 
 -- UNUSED setml l u = Prelude.map (\x -> setm x u) l
+setmc (CList l) u = CList (Prelude.map (\a -> setmc a u) l)
+setmc (CTyped t c) u = CTyped (setm t u) (setmc c u)
+setmc (CVal v) u = CVal v
+setmc (CL c (S s)) u = CL (setmc c u) (S s)
+setmc (CL c (K k)) u = CL (setmc c u) (K $ Prelude.map (\a -> setmc a u) k)
+setmc o u = error $! show o
+
+
 setm (TD n tt) u = TD n (Prelude.map (\t -> setm t u) tt)
 setm (TT []) u = TT []
 setm (TT (t:[])) u =
@@ -366,6 +374,13 @@ change_tu (TT tt) p i = TT $ change_tul tt p i
 change_tu (TD n tt) p i = TD n $ change_tul tt p i
 change_tu (TU n) p i = TU (n++p++show i)
 change_tu o p i = o
+
+change_tuc (CList l) p i = CList $ Prelude.map (\a -> change_tuc a p i) l
+change_tuc (CTyped t c) p i = CTyped (change_tu t p i) (change_tuc c p i)
+change_tuc (CVal v) p i = CVal v
+change_tuc (CL c (S s)) p i = CL (change_tuc c p i) (S s)
+change_tuc (CL c (K k)) p i = CL (change_tuc c p i) (K $ Prelude.map (\a -> change_tuc a p i) k)
+change_tuc o p i = error $ show o
 
 {- UNUSED
 change_tvl tt i = Prelude.map (\t -> change_tv t i) tt

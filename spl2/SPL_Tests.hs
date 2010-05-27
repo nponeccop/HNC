@@ -13,20 +13,21 @@ is_passed (Ok s) = True
 is_passed (No _) = False
 
 test_last = 0
+ts = tests ++ failingTests
 from_i = 0::Int
 --to_i = 90::Int
-to_i = (-) (length tests) 1
+to_i = (-) (length ts) 1
 
 test_res =
 	zipWith (\x y -> test x y) [0..] $ case test_last of
-		1 -> [tests!!to_i]
-		_ -> take (1 + to_i - from_i) $ drop from_i tests
+		1 -> [ts!!to_i]
+		_ -> take (1 + to_i - from_i) $ drop from_i ts
 
 res1 = foldr1 (++) $ map (\r -> (get_str r)++"\n") test_res
 
 res = res1 ++ ("failed: " ++ show (length $ filter (not . is_passed) test_res))
 
---res = show $ map (\(a,_,_) -> get_type_debug_of_expr a) tests
+--res = show $ map (\(a,_,_) -> get_type_debug_of_expr a) ts
 
 main = putStrLn res
 
