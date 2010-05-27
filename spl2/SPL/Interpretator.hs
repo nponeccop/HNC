@@ -80,7 +80,7 @@ get_type_tree_of_expr str =
 			case compile0 p of
 				SPL.Compiler.P c ->
 					case check0 c of
-						SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (show ret, "")
+						SPL.Check3.P (ret, ur, a) -> SPL.Interpretator.P (show $ SPL.Compiler.remove_cdebug ret, "")
 						SPL.Check3.N i e -> SPL.Interpretator.N $ (i, "type error: " ++ e)
 				SPL.Compiler.N i e -> SPL.Interpretator.N (i, "compile: "++e)
 		SPL.Parser2.N i _ ->

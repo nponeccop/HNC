@@ -6,12 +6,12 @@ import qualified Data.Map as M
 import SPL.Types
 import qualified SPL.Parser2
 import qualified SPL.Compiler hiding (res)
--- UNUSED import Debug.Trace
+import Debug.Trace
 
 observeN a b = b
 
 
--- UNUSED observe s v = trace ("{"++s++":"++show v++"}") v
+observe s v = trace ("{"++s++":"++show v++"}") v
 
 --observe s v = v
 
@@ -76,7 +76,7 @@ ch r [] et ul uv i sv ii ret =
 ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 	case observeN ("ch_p "++show r) $ check p1 et sv of
 		P (ret2, rm, r_p1) ->
-			let r_p2 = change_tu (observeN "r_p1" r_p1) "" i in
+			let r_p2 = change_tu (observeN "r_p1" $! r_p1) "" i in
 			let rm2 = M.map (\x -> change_tu x "" i) (observeN "rm" rm) in
 			case SPL.Check3.compare (observeN "cmp1" (setmv (setm r ul) rm2)) (observeN "cmp2" r_p2) of
 				(l2, r2, True) ->
@@ -84,8 +84,8 @@ ch (r:rs) (p1:ps) et ul uv i sv ii ret =
 					let ll = union l2 ul in
 					let rrr = setmm rr rr in
 					let lll = setmm ll ll in
-					let ru = setmm rrr lll in
-					let lu = setmm lll rrr in
+					let ru = observeN "ru" $! setmm rrr lll in
+					let lu = observeN "lu" $! setmm lll rrr in
 						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ merge (setmv (setm r ul) rm2) r_p2) ret2)
 --						ch rs ps et lu ru (i+(1::Int)) sv ii (join_tree ret $ CTyped (untv_all $ r_p2) ret2)
 				(l2, r2, False) ->
