@@ -12,5 +12,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(hnMain_impl::f(5));
+	return ff::print(local::f(5));
 };

@@ -16,5 +16,5 @@ boost::function<t8 (t6, t7)> flip(boost::function<boost::function<t5 (t1)> (t2)>
 {
 	typedef flip_impl<t1, t2, t5> local;
 	local impl = { f };
-	return &hn::bind(impl, &local::flipped)<t6, t7, t8>;
+	return hn::bind(impl, &local::flipped);
 };

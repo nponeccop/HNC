@@ -15,5 +15,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(hnMain_impl::longMulHi(55, 33, 10));
+	return ff::print(local::longMulHi(55, 33, 10));
 };

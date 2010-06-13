@@ -16,12 +16,12 @@ struct hnMain_impl
 	{
 		typedef plusX_impl local;
 		local impl = { x };
-		return &hn::bind(impl, &local::f);
+		return hn::bind(impl, &local::f);
 	};
 };
 
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print((hnMain_impl::plusX(5))(4));
+	return ff::print((local::plusX(5))(4));
 };

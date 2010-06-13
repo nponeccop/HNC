@@ -15,5 +15,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::sum(hnMain_impl::f(5), hnMain_impl::y(6)));
+	return ff::print(ff::sum(local::f(5), local::y(6)));
 };

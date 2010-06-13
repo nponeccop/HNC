@@ -11,5 +11,5 @@ struct monofunc_impl
 bool monofunc(int xx)
 {
 	typedef monofunc_impl local;
-	return monofunc_impl::divisable(xx, 7);
+	return local::divisable(xx, 7);
 };

@@ -18,7 +18,7 @@ struct main_impl
 	{
 		typedef flip_impl<t1, t2, t5> local;
 		local impl = { f };
-		return &hn::bind(impl, &local::flipped)<t6, t7, t8>;
+		return hn::bind(impl, &local::flipped);
 	};
 };
 
@@ -26,5 +26,5 @@ template <typename t17>
 t17 main()
 {
 	typedef main_impl<t1, t2, t5, t6, t7, t8> local;
-	return (main_impl<t1, t2, t5, t6, t7, t8>::flip(&ff::sum))(3, 2);
+	return (local::flip(&ff::sum))(3, 2);
 };
