@@ -33,5 +33,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl<t1> local;
-	return ff::print(ff::sub(hnMain_impl<t1>::sqr(hnMain_impl<t1>::natr(&hnMain_impl<t1>::id)), hnMain_impl<t1>::natr(&hnMain_impl<t1>::sqr)));
+	return ff::print(ff::sub(local::sqr(local::natr(&local::id)), local::natr(&local::sqr)));
 };

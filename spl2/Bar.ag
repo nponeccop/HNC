@@ -65,11 +65,6 @@ xsubstitute m x = case M.lookup x m of
 makeArgs [] = ""
 makeArgs x = showTemplateArgs x
 
-symTabTranslator symTab f x  = case M.lookup x symTab of
-	Just (CppFqMethod prefix) -> prefix ++ "::" ++ x
-	Just CppContextMethod -> if f then "impl." ++ x else "hn::bind(impl, &local::" ++ x ++ ")"
-	Nothing -> x
-
 transformArgument symTab name callSiteType templ = let
 		funAmpersand = case callSiteType of
 			TT _ -> "&"
@@ -77,6 +72,7 @@ transformArgument symTab name callSiteType templ = let
 	in case M.lookup name symTab of
 		Just (CppFqMethod prefix) -> funAmpersand ++ prefix ++ "::" ++ name ++ templ
 		Just CppContextMethod -> "hn::bind(impl, &local::" ++ name ++ ")"
+		Just CppContextVar -> "impl." ++ name
 		Nothing -> funAmpersand ++ name
 
 transformFunction symTab name _ _ = case M.lookup name symTab of
@@ -143,7 +139,6 @@ ATTR Definition
 		nonStaticFunctionNames : {Maybe String}
 		contextMethods : {Maybe CppDefinition}
 	]
-
 
 SEM Definition
 	| Definition
@@ -220,7 +215,8 @@ SEM Definition
 		lhs.nonStaticFunctionNames = constructJust (not $ @loc.isFunction && not @loc.isFunctionStatic) @name
 		value.fqnTransformer = transformArgument
 		value.fqn = {
-			symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition) where
+			symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition) `M.union` xxx  where
+				xxx = xtrace "value.fqn.xxx" $ M.fromList $ map (\x -> (x, CppContextVar)) $  S.toList @where.varsFreeInFunctions
 				symTabWithStatics = M.fromList $ map (\name -> (name, classPrefix)) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames where
 					classPrefix = CppFqMethod $ "local" -- @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
 		}

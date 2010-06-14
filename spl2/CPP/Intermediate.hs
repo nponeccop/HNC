@@ -31,6 +31,7 @@ data CppAtomType
 	| CppContextMethod			-- a(hn::bind(ctx, &local::a), ctx.x(a)
 	| CppFqConst String			-- a(aaa::bbb::x)
 	| CppFqMethod String		-- a(&aaa::bbb::x), aaa::bbb::x(a)
+		deriving (Show)
 
 data CppLocalVarDef
     =   CppVar CppType String CppExpression

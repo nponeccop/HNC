@@ -35,12 +35,12 @@ struct hnMain_impl
 	{
 		typedef poww_impl<t16> local;
 		local impl = { a };
-		return ff::natrec(hn::bind(impl, &local::f), 1, ff::sub(a, 1));
+		return ff::natrec(hn::bind(impl, &local::f), 1, ff::sub(impl.a, 1));
 	};
 };
 
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl<t2> local;
-	return ff::print(ff::mod(ff::sub(hnMain_impl<t2>::natr(&hnMain_impl<t2>::poww<t43>, 1000), 1), 1000000000));
+	return ff::print(ff::mod(ff::sub(local::natr(&local::poww<t43>, 1000), 1), 1000000000));
 };
