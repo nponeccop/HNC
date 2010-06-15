@@ -2,5 +2,5 @@
 
 int f(int sum)
 {
-	return ff::incr(sum);
+	return sum + 1;
 };

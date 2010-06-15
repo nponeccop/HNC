@@ -4,16 +4,16 @@ struct hnMain_impl
 {
 	static int y(int x)
 	{
-		return ff::incr(x);
+		return x + 1;
 	};
 	static int f(int a)
 	{
-		return ff::incr(a);
+		return a + 1;
 	};
 };
 
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::sum(local::f(5), local::y(6)));
+	return ff::print(local::f(5) + local::y(6));
 };

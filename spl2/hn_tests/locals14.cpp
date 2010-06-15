@@ -2,7 +2,7 @@
 
 int main(int z)
 {
-	int a = ff::incr(z);
+	int a = z + 1;
 	int y = a;
 	return a;
 };

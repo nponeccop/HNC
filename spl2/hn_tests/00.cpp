@@ -2,5 +2,5 @@
 
 int main()
 {
-	return ff::incr(2);
+	return 2 + 1;
 };

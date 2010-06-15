@@ -68,15 +68,32 @@ instance Show CppLocalVarDef where
 instance Show CppVarDecl where
 	show (CppVarDecl typ name) = show typ ++ " " ++ name
 
+showAtomApplication "ff::_if" [cond, branch1, branch2]
+	= show cond ++ " ? " ++ show branch1 ++ " : " ++ show branch2
+
+showAtomApplication "ff::_or" a = infixOp "||" a
+showAtomApplication "ff::eq" a = infixOp "==" a
+showAtomApplication "ff::mod" a = infixOp "%" a
+showAtomApplication "ff::sum" a = infixOp "+" a
+showAtomApplication "ff::mul" a = infixOp "*" a
+showAtomApplication "ff::div" a = infixOp "/" a
+showAtomApplication "ff::incr" [a] = show a ++ " + 1";
+
+showAtomApplication a b = a ++ inParens (showFunctionArgs b)
+
+infixOp op [arg1, arg2] = show arg1 ++  " " ++ op ++ " " ++ show arg2;
+
 instance Show CppExpression where
-    show (CppLiteral l) = case l of
-    		(ConstString s) -> show s
-    		(ConstInt s) -> show s
-    show (CppAtom l) = l
-    show (CppApplication (CppAtom a) b)
-        = a ++ inParens (showFunctionArgs b)
-    show (CppApplication a b)
-        = inParens (show a) ++ inParens (showFunctionArgs b)
+	show (CppLiteral l) = case l of
+		(ConstString s) -> show s
+		(ConstInt s) -> show s
+	show (CppAtom l) = l
+
+	show (CppApplication (CppAtom a) b) =
+		showAtomApplication a b
+
+	show (CppApplication a b)
+		= inParens (show a) ++ inParens (showFunctionArgs b)
 
 instance Show CppType where
 	show (CppTypePrimitive p)

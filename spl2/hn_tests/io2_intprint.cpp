@@ -4,7 +4,7 @@ struct hnMain_impl
 {
 	static ff::IO<void> intprint(int x)
 	{
-		return ff::print(ff::sum(x, 0));
+		return ff::print(x + 0);
 	};
 };
 

@@ -2,5 +2,5 @@
 
 ff::IO<void> hnMain()
 {
-	return ff::print(ff::incr(2));
+	return ff::print(2 + 1);
 };

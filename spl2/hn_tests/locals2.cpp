@@ -4,8 +4,8 @@ struct hnMain_impl
 {
 	static int f(int b)
 	{
-		int a = ff::sum(1, b);
-		return ff::sum(a, b);
+		int a = 1 + b;
+		return a + b;
 	};
 };
 

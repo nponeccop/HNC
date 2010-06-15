@@ -2,5 +2,5 @@
 
 int f(int x, int z)
 {
-	return ff::sum(x, z);
+	return x + z;
 };

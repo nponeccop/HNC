@@ -9,14 +9,14 @@ struct hnMain_impl
 
 		bool y(int z)
 		{
-			return ff::less(ff::sum(x, a), z);
+			return ff::less(x + a, z);
 		};
 	};
 
 	static std::list<int> main(int x, int z, std::list<int> l)
 	{
 		typedef main_impl local;
-		local impl = { x, ff::incr(z) };
+		local impl = { x, z + 1 };
 		return ff::filter(hn::bind(impl, &local::y), l);
 	};
 };

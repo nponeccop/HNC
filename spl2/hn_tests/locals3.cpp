@@ -4,9 +4,9 @@ struct hnMain_impl
 {
 	static int main(int x, int z, int l)
 	{
-		int a = ff::incr(z);
-		int y = ff::sum(x, a);
-		return ff::sum(y, l);
+		int a = z + 1;
+		int y = x + a;
+		return y + l;
 	};
 };
 

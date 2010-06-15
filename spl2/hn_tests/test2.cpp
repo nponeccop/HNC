@@ -4,7 +4,7 @@ struct hnMain_impl
 {
 	static int f(int x)
 	{
-		return ff::incr(x);
+		return x + 1;
 	};
 };
 

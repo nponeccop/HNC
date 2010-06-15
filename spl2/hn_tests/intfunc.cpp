@@ -7,7 +7,7 @@ struct intfunc_impl
 
 	t3 g(int x)
 	{
-		return f(ff::sum(x, 0));
+		return f(x + 0);
 	};
 };
 

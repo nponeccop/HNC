@@ -4,7 +4,7 @@ struct monofunc_impl
 {
 	static bool divisable(int x, int y)
 	{
-		return ff::eq(0, ff::mod(x, y));
+		return 0 == x % y;
 	};
 };
 

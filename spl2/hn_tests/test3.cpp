@@ -8,7 +8,7 @@ struct hnMain_impl
 
 		int f(int y)
 		{
-			return ff::sum(x, y);
+			return x + y;
 		};
 	};
 

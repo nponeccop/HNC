@@ -4,11 +4,11 @@ struct hnMain_impl
 {
 	static int longMulLo(int low, int mp)
 	{
-		return ff::mod(ff::mul(low, mp), 100);
+		return low * mp % 100;
 	};
 	static int longMulHi(int hi, int low, int mp)
 	{
-		return ff::sum(ff::mul(hi, mp), ff::div(ff::mul(low, mp), 100));
+		return hi * mp + low * mp / 100;
 	};
 };
 
