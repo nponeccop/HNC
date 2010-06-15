@@ -89,6 +89,7 @@ tests = [
 	,("map to_string,join1 1,join1 2,elist", "CList [CStr \"CNum 1\",CStr \"CNum 2\"]", "TD \"list\" [T \"string\"]")
 	,("f 2*f:((b*sum a b)*a:100)", "CNum 102", "T \"num\"")
 	,("f 5*f:('a*e*if (less a e) {mul 10,_f incr/a e} {a})/1", "CNum 50000", "T \"num\"")
+  ,("if (less 2 3) {{5}} {{6}}", "CL (CNum 5) L", "TT [TL,T \"num\"]")
 	,("a/1~(a)*a:mk_a 1", "CList [CStr \"a\",CNum 1]", "T \"a1\"")
 	,("a/2~(if_a (a*b*b) {0} a)*a:mk_a 1b 7", "CNum 7", "T \"num\"")
 	,("ab/4~mk_ab 1 1b 'true'", "CL (CInFun 5 InFun \"typ_TT [T \"string\", TU \"ab4_1\", TU \"ab4_2\", TU \"ab4_3\", TU \"ab4_4\", T \"ab4\"]\") (K [CStr \"ab\",CNum 1,CBool True,CStr \"true\"])", "TT [TU \"a\",T \"ab4\"]")

@@ -233,6 +233,8 @@ check (CDebug i tt@(CL a (D n))) et sv =
 check tt@(CL a L) et sv =
 	observeN ("L:"++show a) $
 	case check a et sv of
+		P (_, ur, (TT r)) ->
+			P (tt, ur, TT (TL:r))
 		P (_, ur, r) ->
 			P (tt, ur, TT [TL, r])
 		o -> o
