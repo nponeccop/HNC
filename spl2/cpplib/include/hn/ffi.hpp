@@ -160,20 +160,26 @@ namespace ff
 
 	struct UdpSocket : public RaiiSocket
 	{
+		sockaddr_in lastSender;
+
 		UdpSocket(int);
 		UdpSocket(std::string, int);
 		~UdpSocket();
-		std::string Recv();
+		std::string Receive();
 		void Send(std::string);
-	};
+		void Reply(const std::string &);
 
-	inline void SocketTest()
-	{
-		UdpSocket x("localhost", 99);
-		UdpSocket y(99);
-		x.Send("foo");
-		std::string z = x.Recv();
-	}
+		void printthis()
+		{
+			return;
+			printf("this = %p\n", this);
+		}
+		UdpSocket(const UdpSocket &ss)
+		{
+			puts("UdpSocket::$$CopyConstructor");
+			s = ss.s;
+		};
+	};
 
 	UdpSocket udp_connect(std::string, int);
 	UdpSocket udp_listen(int);
@@ -185,8 +191,6 @@ namespace ff
 	extern IO<int> time_msec;
 
 	IO<void> forever(IO<void>);
-
-
 };
 
 ff::IO<void> hnMain();
