@@ -1,6 +1,5 @@
 #include <hn/lib.hpp>
 
-template <typename t1>
 struct hnMain_impl
 {
 	template <typename t1>
@@ -8,12 +7,14 @@ struct hnMain_impl
 	{
 		boost::function<int (t1)> f;
 
+		template <typename t1>
 		int g(t1 x, int total)
 		{
-			return ff::sum(total, f(x));
+			return total + f(x);
 		};
 	};
 
+	template <typename t1>
 	static int natr(boost::function<int (t1)> f)
 	{
 		typedef natr_impl<t1> local;
@@ -22,16 +23,16 @@ struct hnMain_impl
 	};
 	static int id(int x)
 	{
-		return ff::sum(x, 0);
+		return x + 0;
 	};
 	static int sqr(int x)
 	{
-		return ff::mul(x, x);
+		return x * x;
 	};
 };
 
 ff::IO<void> hnMain()
 {
-	typedef hnMain_impl<t1> local;
+	typedef hnMain_impl local;
 	return ff::print(ff::sub(local::sqr(local::natr(&local::id)), local::natr(&local::sqr)));
 };

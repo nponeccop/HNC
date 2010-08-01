@@ -6,7 +6,7 @@ use Benchmark;
 
 my $r = '173.203.79.183';
 
-my $sock = IO::Socket::INET->new(PeerAddr => '127.0.0.1',
+my $sock = IO::Socket::INET->new(PeerAddr => '94.174.172.167',
                                  PeerPort => '99',
 				 LocalPort => '7777',
                                  Proto    => 'udp',

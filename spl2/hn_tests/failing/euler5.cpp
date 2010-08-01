@@ -1,11 +1,9 @@
 #include <hn/lib.hpp>
 
-template <typename t70>
 struct hnMain_impl
 {
 	struct f_impl
 	{
-		template <typename t5>
 		struct not_divisable_impl
 		{
 			int x;
@@ -15,42 +13,45 @@ struct hnMain_impl
 			{
 				boost::function<bool (t5)> pred;
 
+				template <typename t5>
 				bool ff(t5 nn, bool found)
 				{
-					return ff::_if(found, found, pred(nn));
+					return found ? found : pred(nn);
 				};
 			};
 
+			template <typename t5>
 			static bool natfind(boost::function<bool (t5)> pred, int n)
 			{
 				typedef natfind_impl<t5> local;
 				local impl = { pred };
-				return ff::natrec(hn::bind(impl, &local::ff), ff::eq(0, 1), n);
+				return ff::natrec(hn::bind(impl, &local::ff), 0 == 1, n);
 			};
 			bool g(int divisor)
 			{
-				return ff::_if(ff::eq(0, ff::mod(x, ff::incr(divisor))), ff::eq(0, 1), ff::eq(0, 0));
+				return 0 == x % divisor + 1 ? 0 == 1 : 0 == 0;
 			};
 		};
 
 		static bool not_divisable(int x)
 		{
-			typedef not_divisable_impl<t5> local;
+			typedef not_divisable_impl local;
 			local impl = { x };
 			return local::natfind(hn::bind(impl, &local::g), 20);
 		};
 	};
 
+	template <typename t70>
 	static t70 f(int xx, int rr)
 	{
-		int xxx = ff::mul(60, ff::mul(19, ff::incr(xx)));
+		int xxx = 60 * 19 * xx + 1;
 		typedef f_impl local;
-		return ff::_if(ff::eq(rr, 0), ff::_if(local::not_divisable(xxx), rr, xxx), rr);
+		return rr == 0 ? local::not_divisable(xxx) ? rr : xxx : rr;
 	};
 };
 
 ff::IO<void> hnMain()
 {
-	typedef hnMain_impl<t70> local;
+	typedef hnMain_impl local;
 	return ff::print(ff::natrec(&local::f<int, int>, 0, 1000000));
 };

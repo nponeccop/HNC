@@ -8,7 +8,7 @@ namespace ff
 
 	template <typename T> struct elist
 	{
-		static T value;
+		static std::list<T> value;
 	};
 
 	template <typename T> std::list<T> elist<T>::value = std::list<T>();

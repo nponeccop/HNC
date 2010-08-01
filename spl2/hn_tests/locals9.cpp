@@ -1,10 +1,10 @@
 #include <hn/lib.hpp>
 
-template <typename t2>
 struct hnMain_impl
 {
 	int a;
 
+	template <typename t2>
 	ff::IO<void> tmp(t2 z)
 	{
 		int y = a;
@@ -14,7 +14,7 @@ struct hnMain_impl
 
 ff::IO<void> hnMain()
 {
-	typedef hnMain_impl<t2> local;
-	local impl = { ff::incr(5) };
+	typedef hnMain_impl local;
+	local impl = { 5 + 1 };
 	return impl.tmp(7);
 };

@@ -5,6 +5,7 @@ struct intfunc_impl
 {
 	boost::function<t3 (int)> f;
 
+	template <typename t3>
 	t3 g(int x)
 	{
 		return f(x + 0);

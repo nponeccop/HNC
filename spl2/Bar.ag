@@ -148,7 +148,7 @@ SEM Definition
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
 		loc.cppDefType = cppUncurryType @loc.inferredType @params
-		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition { functionTemplateArgs = [] }
+		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition -- { functionTemplateArgs = [] }
 		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @loc.inferredType) @name @value.sem
 
 		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
@@ -189,7 +189,9 @@ SEM Definition
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
 		loc.templateArgs = typePolyVars @loc.inferredType
-		lhs.templateArgs = @loc.templateArgs
+		-- шаблонные переменные контекста верхнего уровня
+		lhs.templateArgs = if not @loc.isFunction then typePolyVars @loc.inferredType else S.empty
+
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 
 		-- â âûðàæåíèÿõ Ñ++ îáðàùåíèå ê ñèìâîëó foo âûïîëíÿåòñÿ ìíîãèìè ñïîñîáàìè:

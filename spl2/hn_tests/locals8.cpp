@@ -1,8 +1,8 @@
 #include <hn/lib.hpp>
 
-template <typename t0>
 struct hnMain_impl
 {
+	template <typename t0>
 	static int f(t0 b)
 	{
 		int a = 1;
@@ -12,6 +12,6 @@ struct hnMain_impl
 
 ff::IO<void> hnMain()
 {
-	typedef hnMain_impl<t0> local;
+	typedef hnMain_impl local;
 	return ff::print(5);
 };

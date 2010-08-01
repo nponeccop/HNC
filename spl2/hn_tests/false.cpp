@@ -2,21 +2,21 @@
 
 struct hMain_impl
 {
-	template <typename t1>
 	struct f_impl
 	{
-		template <typename t2>
 		struct g_impl
 		{
+			template <typename t2>
 			static std::string z(t2 x)
 			{
 				return "5";
 			};
 		};
 
+		template <typename t1>
 		static int g(t1 x)
 		{
-			typedef g_impl<t2> local;
+			typedef g_impl local;
 			return 8;
 		};
 	};
@@ -24,8 +24,8 @@ struct hMain_impl
 	static int f(int x)
 	{
 		int z = 5;
-		typedef f_impl<t1> local;
-		return ff::sum(x, x);
+		typedef f_impl local;
+		return x + x;
 	};
 };
 
@@ -33,5 +33,5 @@ ff::IO<void> hMain()
 {
 	int z = 7;
 	typedef hMain_impl local;
-	return ff::print(ff::sum(5, z));
+	return ff::print(5 + z);
 };
