@@ -1,0 +1,4 @@
+hnMain = {
+	tmp z = print z
+	tmp 5
+}
