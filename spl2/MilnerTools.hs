@@ -1,5 +1,6 @@
 module MilnerTools where
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.List
 import SPL.Top
 import Utils
@@ -7,7 +8,7 @@ import SPL.Visualise
 import Test.HUnit
 import Debug.Trace
 import HN.Intermediate
-
+import CPP.TypeProducer
 import SPL.Types
 
 
@@ -77,10 +78,6 @@ lookupAtom name visibleAtoms freshVar = case M.lookup name visibleAtoms of
 
 xtrace a b = b
 
-typeVars (TU a) = [a]
-typeVars (TT a) = concat $ map typeVars a
-typeVars (TD a b) = concat $ map typeVars b
-typeVars _ = []
 
 instantiatedTypeTest t e = TestLabel "instantiatedTypeTest" $ TestCase $ assertEqual "" e  $ makeType $ snd $ instantiatedType (libType t) 10
 
@@ -94,8 +91,8 @@ libType name = uncondLookup name SPL.Top.get_types
 
 instantiatedType :: T -> Int -> (Int, T)
 instantiatedType t counter = (nextCounter, substituteTypeVars t substitutions) where
-	foo = zip (nub $ typeVars t) [counter..]
-   	nextCounter = counter + (length $ nub $ typeVars t)
+	foo = zip (S.toList $ typePolyVars t) [counter..]
+   	nextCounter = counter + (length $ S.toList $ typePolyVars t)
 	substitutions = M.fromList $ map (\(x,y) -> (x, tv y)) foo
 
 composeSubstitutions a = xtrace ("composeSubstitutions: " ++ show a ++ " ====> " ++ show b) b where

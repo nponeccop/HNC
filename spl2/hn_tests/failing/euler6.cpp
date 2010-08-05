@@ -7,6 +7,7 @@ struct hnMain_impl
 	{
 		boost::function<int (t1)> f;
 
+		template <typename t1>
 		int g(t1 x, int total)
 		{
 			return total + f(x);
@@ -33,5 +34,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::sub(local::sqr(local::natr<int>(&local::id)), local::natr<int>(&local::sqr)));
+	return ff::print(ff::sub(local::sqr(local::natr(&local::id)), local::natr(&local::sqr)));
 };

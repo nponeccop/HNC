@@ -50,7 +50,7 @@ SEM Expression
 		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @loc.templateArgs
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
 
-		loc.templateArgs = makeArgs $ map (\x -> xsubstitute @lhs.finalSubstitution x)  (typeVars @loc.tau)
+		loc.templateArgs = makeArgs $ map (\x -> xsubstitute @lhs.finalSubstitution x)  $ (S.toList $ typePolyVars @loc.tau)
 	| Application
 		fn.fqnTransformer = transformFunction
 		arg.fqnTransformer = transformArgument
