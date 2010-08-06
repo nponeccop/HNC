@@ -1,0 +1,7 @@
+hnMain = {
+	natr f = {
+		g x total = 1
+		natrec g 0 100
+	}
+	print (natr incr)
+}

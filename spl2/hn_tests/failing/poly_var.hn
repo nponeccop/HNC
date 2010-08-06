@@ -1,0 +1,4 @@
+hnMain = {
+	x = print
+	x 2
+}

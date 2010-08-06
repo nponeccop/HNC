@@ -1,0 +1,4 @@
+hnMain = {
+	x = print
+	voidbind (x 2) (x "aaa")
+}

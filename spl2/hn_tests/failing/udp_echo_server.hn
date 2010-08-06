@@ -1,0 +1,7 @@
+hnMain = {
+	s = udp_listen 99
+	receive = udp_receive s
+	reply msg = udp_reply s msg
+	ping = bind receive reply
+	forever (bind receive reply)
+}
