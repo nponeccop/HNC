@@ -15,12 +15,20 @@ struct hnMain_impl
 	static int natr(t0 f)
 	{
 		typedef natr_impl local;
-		return ff::natrec(&local::g<int, t7>, 0, 100);
+		return ff::natrec(&local::g<int, int>, 0, 100);
+	};
+	static int id(int x)
+	{
+		return x + 0;
+	};
+	static int sqr(int x)
+	{
+		return x * x;
 	};
 };
 
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(local::natr(&ff::incr));
+	return ff::print(ff::sub(local::sqr(local::natr(&local::id)), local::natr(&local::sqr)));
 };

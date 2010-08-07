@@ -41,8 +41,7 @@ struct hnMain_impl
 		};
 	};
 
-	template <typename t70>
-	static t70 f(int xx, int rr)
+	static int f(int xx, int rr)
 	{
 		int xxx = 60 * 19 * xx + 1;
 		typedef f_impl local;
@@ -53,5 +52,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::natrec(&local::f<int, int>, 0, 1000000));
+	return ff::print(ff::natrec(&local::f<int>, 0, 1000000));
 };

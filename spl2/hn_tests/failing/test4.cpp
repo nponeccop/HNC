@@ -22,5 +22,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print<t11>((local::plusX<int, int>(5))(4));
+	return ff::print((local::plusX(5))(4));
 };

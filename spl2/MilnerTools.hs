@@ -35,10 +35,11 @@ substitute :: [Substitution] -> M.Map String T -> M.Map String T
 substitute [] b = b
 substitute a b = xtrace "substitute.result: " $ M.map (substituteType a) b
 
+-- use TRACE, not ZTRACE!
 unify :: T -> T -> [Substitution]
 unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b ++ " = " ++ show c) c where
 	c = xunify a b
-	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = xunify a b ++ xunify (TT at) (TT bt)
+	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = xunify a b `xcompose` xunify (TT at) (TT bt)
 
  	xunify (TT [a]) b = xunify a b
  	xunify a (TT [b]) = xunify a b
@@ -78,6 +79,17 @@ lookupAtom name visibleAtoms freshVar = case M.lookup name visibleAtoms of
 
 xtrace a b = b
 
+xcompose :: [Substitution] -> [Substitution] -> [Substitution]
+xcompose [a] [b] = [M.fromList $ xcompose2 (M.toList a) (M.toList b)]
+xcompose a b = xtrace ("xcompose-old!!!: " ++ show a ++  " o " ++ show b) $ a ++ b
+
+xxunify a b = M.toList $ composeSubstitutions $ unify a b
+
+xcompose2 :: [(String, T)] -> [(String, T)] -> [(String, T)]
+xcompose2 [(name1, val1)] [(name2, val2)] | name1 == name2
+	= [(name1, val1)] ++ xxunify val1 val2
+
+xcompose2 a b = xtrace "xcompose2-old!!!" $ a ++ b
 
 instantiatedTypeTest t e = TestLabel "instantiatedTypeTest" $ TestCase $ assertEqual "" e  $ makeType $ snd $ instantiatedType (libType t) 10
 
@@ -85,7 +97,6 @@ instantiatedTypeTests = [
 		instantiatedTypeTest "print" "?t10 -> IO void"
 	,	instantiatedTypeTest "bind" "IO ?t10 -> (?t10 -> IO ?t11) -> IO ?t11"
 	]
-
 
 libType name = uncondLookup name SPL.Top.get_types
 
