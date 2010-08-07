@@ -1,7 +1,0 @@
-hnMain = {
-	flip f = {
-		flipped x y = f y x
-		flipped
-	}
-	print ((flip sum) 3 2)
-}

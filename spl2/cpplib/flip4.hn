@@ -1,8 +1,0 @@
-foo = {
-	flip f = {
-		flipped x y = f y x
-		flipped
-	}
-	flipped x = sum x 5
-	flipped ((flip sum) 3 2)
-}

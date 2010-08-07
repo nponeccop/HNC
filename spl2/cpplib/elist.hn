@@ -1,4 +1,0 @@
-hnMain = {
-	f l = sum 1 (length l)
-	print (sum (f (join1 1 elist)) (f (join1 "aaa" elist)))
-}
