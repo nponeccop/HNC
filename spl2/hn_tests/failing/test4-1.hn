@@ -1,0 +1,4 @@
+hnMain = {
+	id x = x
+	print (id 4)
+}
