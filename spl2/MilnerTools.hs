@@ -48,9 +48,29 @@ unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b ++ " = 
 	xunify (T a) (T b) | a == b = []
 	xunify (TU a) b = [M.singleton a b]
 	xunify b (TU a) = [M.singleton a b]
+	xunify (TV a) b = xunify (TU a) b
+	xunify b (TV a) = xunify (TU a) b
 	xunify a b = error $ "unify: " ++ show a ++ " ~ " ++ show b
 
-closure _ b = TLib b -- temporary! must be implememted properly to support "local" polymorphism
+-- closure env (TT [TU "t1", TU "t3"]) = TLib $ TT [TV "t1", TV "t3"]
+
+envPolyVars e = M.fold f S.empty e where
+	f el acc = S.union acc $ typePolyVars el
+
+mapTypeTU f t = subst t where
+	subst t = case t of
+		TU a -> f (TU a)
+		TT a -> TT $ map subst a
+  		TD a b -> TD a (map subst b)
+		_ -> t
+
+
+closure env t = TLib tt where
+	tpv = typePolyVars t
+	epv = xtrace "closure.epv" $ envPolyVars env
+	varsToSubst = xtrace "closure.varsToSubst" $ tpv `subtractSet` epv
+	tt = mapTypeTU mapper t
+	mapper (TU a) = if S.member a varsToSubst then TU a else TV a
 
 replace k v m = M.insert k v m
 

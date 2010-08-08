@@ -23,6 +23,7 @@ cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
 cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) $ map cppType typeArgs
 
 cppType (TU x) = CppTypePrimitive x
+cppType (TV x) = cppType (TU x)
 
 cppType (TUL x) = cppType $ head x
 
@@ -38,6 +39,13 @@ cppUncurryType splType _ = cppType splType
 
 typePolyVars x = let union = S.unions . map typePolyVars in case x of
 	TU v -> S.singleton v
+	TT l -> union l
+	TD _ l -> union l
+	_    -> S.empty
+
+typeAllPolyVars x = let union = S.unions . map typePolyVars in case x of
+	TU v -> S.singleton v
+	TV v -> S.singleton v
 	TT l -> union l
 	TD _ l -> union l
 	_    -> S.empty

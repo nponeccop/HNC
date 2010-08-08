@@ -2,10 +2,9 @@
 
 struct hnMain_impl
 {
-	template <typename t2>
 	struct natr_impl
 	{
-		boost::function<int (t2)> ff;
+		boost::function<int (int)> ff;
 
 		template <typename t2>
 		int g(t2 x, int total)
@@ -14,10 +13,9 @@ struct hnMain_impl
 		};
 	};
 
-	template <typename t2>
-	static int natr(boost::function<int (t2)> ff, int l)
+	static int natr(boost::function<int (int)> ff, int l)
 	{
-		typedef natr_impl<t2> local;
+		typedef natr_impl local;
 		local impl = { ff };
 		return ff::natrec(hn::bind(impl, &local::g), 0, l);
 	};
@@ -25,8 +23,8 @@ struct hnMain_impl
 	{
 		int a;
 
-		template <typename t16>
-		int f(t16 zz, int prod)
+		template <typename t15>
+		int f(t15 zz, int prod)
 		{
 			return prod * a % 1000000000;
 		};
@@ -43,5 +41,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::sub(local::natr(&local::poww<t43>, 1000), 1) % 1000000000);
+	return ff::print(ff::sub(local::natr(&local::poww<t42>, 1000), 1) % 1000000000);
 };

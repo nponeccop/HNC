@@ -12,8 +12,8 @@ struct flip_impl
 	};
 };
 
-template <typename t1, typename t2, typename t5, typename t6, typename t7, typename t8>
-boost::function<t8 (t6, t7)> flip(boost::function<boost::function<t5 (t1)> (t2)> f)
+template <typename t1, typename t2, typename t5>
+boost::function<t5 (t1, t2)> flip(boost::function<boost::function<t5 (t1)> (t2)> f)
 {
 	typedef flip_impl<t1, t2, t5> local;
 	local impl = { f };

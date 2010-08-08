@@ -12,8 +12,8 @@ struct intfunc_impl
 	};
 };
 
-template <typename t3, typename t7>
-boost::function<t7 (int)> intfunc(boost::function<t3 (int)> f)
+template <typename t3>
+boost::function<t3 (int)> intfunc(boost::function<t3 (int)> f)
 {
 	typedef intfunc_impl<t3> local;
 	local impl = { f };

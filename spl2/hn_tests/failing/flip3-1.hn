@@ -1,0 +1,7 @@
+hnMain = {
+	flip f = {
+		flipped x = f 3 x
+		flipped
+	}
+	print ((flip sum) 2)
+}

@@ -1,0 +1,7 @@
+hnMain = {
+	flip f = {
+		flipped x = f x
+		flipped
+	}
+	print ((flip incr) 2)
+}
