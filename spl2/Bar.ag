@@ -33,7 +33,7 @@ DATA Expression
 
 ATTR Expression ExpressionList
 	[
-		fqnTransformer : {M.Map String CppAtomType -> String -> T -> String -> String}
+		fqnTransformer : {M.Map String CppAtomType -> String -> T -> M.Map String T -> String -> String}
 		fqn : {M.Map String CppAtomType}
 	|
 	|
@@ -47,10 +47,10 @@ SEM Expression
 	| Constant
 		lhs.sem = CppLiteral @c
 	| Atom
-		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
-
 		loc.templateArgs = let fs = xsubstitute @lhs.finalSubstitution in makeArgs $ map fs  $ S.toList $ typeAllPolyVars @loc.tau
+
 	| Application
 		fn.fqnTransformer = transformFunction
 		arg.fqnTransformer = transformArgument
@@ -65,7 +65,7 @@ xsubstitute m x = case M.lookup x m of
 makeArgs [] = ""
 makeArgs x = showTemplateArgs x
 
-transformArgument symTab name callSiteType templ = let
+transformArgument symTab name callSiteType visibleAtoms templ = let
 		funAmpersand = case callSiteType of
 			TT _ -> "&"
 			_ -> ""
@@ -75,8 +75,13 @@ transformArgument symTab name callSiteType templ = let
 		Just CppContextVar -> "impl." ++ name
 		Nothing -> funAmpersand ++ name
 
-transformFunction symTab name _ templateArgs = case M.lookup name symTab of
-		Just (CppFqMethod prefix) -> prefix ++ "::" ++ name -- ++ templateArgs
+transformFunction symTab name callSiteType visibleAtoms templateArgs = let
+		ta = case atomType of
+			TLib (TT x) | not $ S.null $ subtractSet (xtrace "AG.transformFunction.pv1" $ typeAllPolyVars $ last x) (xtrace "AG.transformFunction.pv2" $ typeAllPolyVars (TT $ init x)) -> templateArgs
+			_ -> ""
+		atomType = xtrace "AG.transformFunction.atomType" $ uncondLookup name visibleAtoms
+	in case M.lookup name symTab of
+		Just (CppFqMethod prefix) -> prefix ++ "::" ++ name ++ ta
 		Just CppContextMethod -> "impl." ++ name
 		Nothing -> name
 }

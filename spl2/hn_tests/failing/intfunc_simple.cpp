@@ -26,5 +26,5 @@ struct hnMain_impl
 t3 hnMain()
 {
 	typedef hnMain_impl local;
-	return (local::intfunc(&ff::print<t11>))(5);
+	return (local::intfunc<t3, boost::function<ff::IO<void> (t11)>>(&ff::print<t11>))(5);
 };

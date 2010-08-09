@@ -43,7 +43,7 @@ typePolyVars x = let union = S.unions . map typePolyVars in case x of
 	TD _ l -> union l
 	_    -> S.empty
 
-typeAllPolyVars x = let union = S.unions . map typePolyVars in case x of
+typeAllPolyVars x = let union = S.unions . map typeAllPolyVars in case x of
 	TU v -> S.singleton v
 	TV v -> S.singleton v
 	TT l -> union l
