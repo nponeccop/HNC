@@ -33,14 +33,20 @@ namespace ff
 	struct bind_impl
 	{
 		IO<T1> a1;
-		T2 a2;
+		boost::function<IO<T2> (T1)> a2;
 
-		typedef typename hn::result<T2>::type::value_type value_type;
 
-		value_type operator()()
+		T2 operator()()
 		{
 			return a2(a1.value()).value();
 		}
+	};
+
+	template <typename T1, typename T2>
+	typename IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
+	{
+		bind_impl<T1, T2> impl = { a1, a2 };
+		return impl;
 	};
 
 	template <typename T2>
@@ -78,13 +84,6 @@ namespace ff
 	}
 
 
-	template <typename T1, typename T2>
-	typename hn::result<T2>::type bind(IO<T1> a1, T2 a2)
-	{
-		bind_impl<T1, T2> impl = { a1, a2 };
-		return impl;
-	};
-
 
 	extern IO<int> readnum;
 
@@ -96,8 +95,8 @@ namespace ff
 		return t;
 	}
 
-	template <typename F, typename A>
-	A natrec(F plus, A unit, int start)
+	template <typename A>
+	A natrec(boost::function <A (int, A)> plus, A unit, int start)
 	{
 		A res = unit;
 		for (int i = 0; i <= start ; i++)
@@ -143,8 +142,8 @@ namespace ff
 		return cond ? t : f;
 	}
 
-	template <typename F, typename T>
-	std::list<T> filter(F f, std::list<T> in)
+	template <typename T>
+	std::list<T> filter(boost::function<bool (T)> f, std::list<T> in)
 	{
 		// TODO implement ff::filter - only signature is there
 		return in;

@@ -1,0 +1,4 @@
+main = {
+	flip f x = f x
+	flip incr 3
+}

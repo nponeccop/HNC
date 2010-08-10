@@ -27,5 +27,5 @@ template <typename t9>
 ff::IO<t9> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::bind(ff::readnum, local::intfunc<boost::function<ff::IO<void> (t15)>, ff::IO<t9>>(&ff::print<t15>));
+	return ff::bind<int, t9>(ff::readnum, local::intfunc<boost::function<ff::IO<void> (t15)>, ff::IO<t9>>(&ff::print<t15>));
 };

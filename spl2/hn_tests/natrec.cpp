@@ -2,5 +2,5 @@
 
 ff::IO<void> hnMain()
 {
-	return ff::print(ff::natrec(&ff::sum, 0, 1));
+	return ff::print(ff::natrec<int>(&ff::sum, 0, 1));
 };

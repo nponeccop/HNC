@@ -15,7 +15,7 @@ struct hnMain_impl
 	static int natr(t0 f)
 	{
 		typedef natr_impl local;
-		return ff::natrec(&local::g<int, int>, 0, 100);
+		return ff::natrec<int>(&local::g<int, int>, 0, 100);
 	};
 	template <typename t10>
 	static t10 id(t10 x)

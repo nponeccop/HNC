@@ -17,7 +17,7 @@ struct hnMain_impl
 	{
 		typedef natr_impl local;
 		local impl = { f };
-		return ff::natrec(hn::bind(impl, &local::g), 0, 100);
+		return ff::natrec<int>(hn::bind(impl, &local::g), 0, 100);
 	};
 	static int id(int x)
 	{

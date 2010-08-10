@@ -12,5 +12,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::bind(ff::readnum, &local::t2<int>);
+	return ff::bind<int, void>(ff::readnum, &local::t2<int>);
 };

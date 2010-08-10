@@ -14,5 +14,5 @@ ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
 	local impl = { ff::udp_listen(99) };
-	return ff::forever(ff::bind(ff::udp_receive(impl.s), hn::bind(impl, &local::reply)));
+	return ff::forever(ff::bind<void, std::string>(ff::udp_receive(impl.s), hn::bind(impl, &local::reply)));
 };

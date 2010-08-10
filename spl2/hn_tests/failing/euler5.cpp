@@ -23,7 +23,7 @@ struct hnMain_impl
 			{
 				typedef natfind_impl local;
 				local impl = { pred };
-				return ff::natrec(hn::bind(impl, &local::ff), 0 == 1, n);
+				return ff::natrec<bool>(hn::bind(impl, &local::ff), 0 == 1, n);
 			};
 			bool g(int divisor)
 			{
@@ -50,5 +50,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::natrec(&local::f<int>, 0, 1000000));
+	return ff::print(ff::natrec<int>(&local::f<int>, 0, 1000000));
 };

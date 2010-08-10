@@ -26,5 +26,5 @@ struct main_impl
 t5 main()
 {
 	typedef main_impl local;
-	return (local::flip<boost::function<int (int, int)>>(&ff::sum))(3, 2);
+	return (local::flip<int, int, t5, boost::function<int (int, int)>>(&ff::sum))(3, 2);
 };

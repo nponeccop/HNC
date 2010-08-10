@@ -2,5 +2,5 @@
 
 ff::IO<void> hnMain()
 {
-	return ff::bind(ff::readnum, &ff::print<int>);
+	return ff::bind<int, void>(ff::readnum, &ff::print<int>);
 };

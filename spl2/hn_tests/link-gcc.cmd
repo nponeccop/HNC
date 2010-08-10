@@ -1,0 +1,1 @@
+"D:\home\progs\MinGW\bin\g++.exe" -Id:\home2\libsrc\boost_1_37_0 -I../cpplib/include udp_echo_server2.cpp

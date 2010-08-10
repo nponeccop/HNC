@@ -17,7 +17,7 @@ struct hnMain_impl
 	{
 		typedef main_impl local;
 		local impl = { x, z + 1 };
-		return ff::filter(hn::bind(impl, &local::y), l);
+		return ff::filter<int>(hn::bind(impl, &local::y), l);
 	};
 };
 

@@ -13,5 +13,5 @@ ff::IO<void> hnMain()
 {
 	ff::UdpSocket x = ff::udp_connect("localhost", 99);
 	typedef hnMain_impl local;
-	return ff::bind(ff::udp_receive(x), &local::f<std::string>);
+	return ff::bind<std::string, void>(ff::udp_receive(x), &local::f<std::string>);
 };
