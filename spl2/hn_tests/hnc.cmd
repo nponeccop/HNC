@@ -3,6 +3,6 @@
 cd ..
 rem @%CONFIG%
 rem @%BUILD% && echo Running!  
-cd hn_tests 
-%BD%\build\spl-hnc\spl-hnc.exe %1 %2
-
+ 
+%BD%\build\spl-hnc\spl-hnc.exe hn_tests\%1 %2
+cd hn_tests

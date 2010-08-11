@@ -4,17 +4,17 @@ module Bar (compile, Inh_Definition(..), instantiateLibrary) where
 
 import CPP.Intermediate
 import CPP.TypeProducer
-import CPP.Visualise
+import CPP.BackendTools
 
 import HN.Intermediate
 import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
-import Data.Maybe
 import Utils
 
--- UNUSED import Debug.Trace
+-- UNUSED import CPP.Visualise
+import Debug.Trace
 -- UNUSED import SPL.Visualise
 
 
@@ -35,63 +35,90 @@ DATA Expression
 	| Atom name : String
 	| Constant c : Const
 
+-- Модуль построения выражений С++ из выражений HN0 и информации о типах,
+-- собранной FFI и модулем вывода типов
+--
+-- В С++ символ имеет разный синтаксис
+-- в зависимости как от вида символа, так и от позиции в выражении (позиция
+-- функции и позиция аргумента)
+--
+-- @fqnTransformer - функция отображения символа, вместо флага позиции +
+-- ветвления по нему используются две функции - CPP.BackendTools.transformFunction и
+-- CPP.BackendTooks.transformArgument
+--
+-- @fqn - для каждого символа указан его вид. Информация о видах собирается
+-- FFI и модулем компиляции замыканий
+--
+-- @inferredTypes - выведенные типы символов
+
+
 ATTR Expression ExpressionList
 	[
 		fqnTransformer : {M.Map String CppAtomType -> String -> T -> M.Map String T -> String -> String}
 		fqn : {M.Map String CppAtomType}
+		inferredTypes : {M.Map String T}
 	|
 	|
 	]
 
-ATTR Expression	[ | | sem : CppExpression ]
+ATTR Expression	[  | | sem : CppExpression ]
 
 ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
 
 SEM Expression
+	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
+ 	-- только на позиции аргумента, поэтому никакой трансляции не
+	-- требуется
 	| Constant
 		lhs.sem = CppLiteral @c
+	-- Атомы транслируются в символы
+	--
 	| Atom
+		-- Конструированием символа С++ из атома HN0 занимаются две функции из
+		-- модуля CPP.BackendTools
+		--
+		-- НЕУКЛЮЖЕСТЬ
+		-- Функции CPP.BackendTools.transformFunction и CPP.BackendTooks.transformArgumentФункции
+		-- непосредственно конструируют строковое представление атома в С++ вместо
+		-- конструирования абстрактного представления и делегации десериализации в строку
+		-- инстансу Show CppExpression из модуля CPP.Visualise
+		--
 		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
 		loc.templateArgs = let fs = xsubstitute @lhs.finalSubstitution in makeArgs $ map fs  $ S.toList $ typeAllPolyVars @loc.tau
 
 	| Application
+		-- аппликация транслируется тоже тривиально
+		-- для функции и аргумента выставляются соответствующие ФВП обработки
 		fn.fqnTransformer = transformFunction
 		arg.fqnTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
-{
+-- унаследованный @inferredTypes - это информация об атомах, видимых в where и value
+-- данного Definition
+-- синтезированный @inferredTypes - это информация о текущем атоме, передаваемая наверх
+-- в узел Program для агрегации и последующей передачи в узел @Definition.where : Expression
 
-xsubstitute m x = case M.lookup x m of
-	Nothing -> x
-	Just t -> show $ cppType t
+ATTR Definition [ inferredTypes : {M.Map String T} | | inferredTypesS : {(String, T)} ]
 
-makeArgs [] = ""
-makeArgs x = showTemplateArgs x
+-- Узел Program просто пересылает эти атрибуты - копирует и агрегирует соответственно
 
-transformArgument symTab name callSiteType visibleAtoms templ = let
-		funAmpersand = case callSiteType of
-			TT _ -> "&"
-			_ -> ""
-	in case M.lookup name symTab of
-		Just (CppFqMethod prefix) -> funAmpersand ++ prefix ++ "::" ++ name ++ templ
-		Just CppContextMethod -> "hn::bind(impl, &local::" ++ name ++ ")"
-		Just CppContextVar -> "impl." ++ name
-		Nothing -> funAmpersand ++ name
+ATTR Program [ inferredTypes : {M.Map String T} | | inferredTypesS USE {:} {[]} : {[(String, T)]} ]
 
-transformFunction symTab name callSiteType visibleAtoms templateArgs = let
-		ta = case atomType of
-			TLib (TT x) | (||) (ttt x) $ not $ S.null $ subtractSet (xtrace "AG.transformFunction.pv1" $ typeAllPolyVars $ last x) (xtrace "AG.transformFunction.pv2" $ typeAllPolyVars (TT $ init x)) -> templateArgs
-			_ -> ""
-		atomType = xtrace "AG.transformFunction.atomType" $ uncondLookup name visibleAtoms
-		ttt x = isJust $ find (\x -> isFunctionType x && (not $ S.null $ typePolyVars x)) x
-		isFunctionType (TT _) = True
-		isFunctionType _ = False
-	in case M.lookup name symTab of
-		Just (CppFqMethod prefix) -> prefix ++ "::" ++ name ++ ta
-		Just CppContextMethod -> "impl." ++ name
-		Nothing -> name
-}
+SEM Definition
+	| Definition
+		-- НЕУКЛЮЖЕСТЬ
+		-- унаследованный @inferredTypes "спускается" Definition -> Program -> Value
+		-- но из-за того, что у нас where, а не let-in, этому спуску соответствуют
+		-- "нырки" в следующих двух строках:
+		where.inferredTypes = trace (show $ uncondLookup "print" @lhs.inferredTypes ) @lhs.inferredTypes
+		value.inferredTypes = @lhs.inferredTypes `M.union` M.fromList @where.inferredTypesS
+
+		--  собрали информацию от выводильщика и отправили всё так же "вниз"
+		--	по пути  Definition -> Program -> Value, но из-за извращенного
+		--	where получается сначала "наверх" в Program, затем транзитом
+		-- через следующий Definition в Value
+		lhs.inferredTypesS = (@name, @loc.inferredType)
 
 ATTR Expression [ | | atoms : {S.Set String} ]
 
@@ -101,13 +128,6 @@ SEM Expression
 	| Constant    lhs.atoms = S.empty
 	| Atom        lhs.atoms = S.singleton @name
 	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)
-
-{
-
-consMaybe Nothing value = value
-consMaybe (Just x) value = x : value
-
-}
 
 TYPE Program = [Definition]
 

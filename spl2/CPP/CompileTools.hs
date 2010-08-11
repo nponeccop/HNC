@@ -14,6 +14,7 @@ compileDefinition self  = AG.compile self inh where
 		,   AG.symTab_Inh_Definition = M.map (const $ CppFqMethod "ff") SPL.Top.get_types
 		, 	AG.inhCounter_Inh_Definition = 0
 		, 	AG.visibleAtoms_Inh_Definition = AG.instantiateLibrary SPL.Top.get_types
+		, 	AG.inferredTypes_Inh_Definition = AG.instantiateLibrary SPL.Top.get_types
 		}
 
 typecheckDefinition self = check1 (convertDef self) SPL.Top.get_types

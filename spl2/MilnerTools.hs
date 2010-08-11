@@ -96,9 +96,6 @@ lookupAtom name visibleAtoms freshVar = case M.lookup name visibleAtoms of
 	Nothing -> error "foo" -- $ (freshVar + 1, tv freshVar)
 	Just t -> error "lookupAtom" -- instantiatedType freshVar t
 
-
-xtrace a b = b
-
 xcompose :: [Substitution] -> [Substitution] -> [Substitution]
 xcompose [a] [b] = [M.fromList $ xcompose2 (M.toList a) (M.toList b)]
 xcompose a b = xtrace ("xcompose-old!!!: " ++ show a ++  " o " ++ show b) $ a ++ b
