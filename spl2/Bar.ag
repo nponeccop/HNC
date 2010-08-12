@@ -65,6 +65,13 @@ ATTR Expression	[  | | sem : CppExpression ]
 
 ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
 
+{
+removeTLib (TLib x) = x
+removeTLib x = x
+}
+
+
+
 SEM Expression
 	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
  	-- только на позиции аргумента, поэтому никакой трансляции не
@@ -84,8 +91,15 @@ SEM Expression
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
 		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
-		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
-		loc.templateArgs = let fs = xsubstitute @lhs.finalSubstitution in makeArgs $ map fs  $ S.toList $ typeAllPolyVars @loc.tau
+	--	loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
+	--	loc.templateArgs = let fs = xsubstitute @lhs.finalSubstitution in makeArgs $ map fs  $ S.toList $ typeAllPolyVars @loc.tau
+
+		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [xtrace "Atom.finalSubstitution" @lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
+		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typeAllPolyVars $ @loc.inferredType
+
+		loc.inferredType = xtrace "Atom.inferredType" $ removeTLib $ uncondLookup @name @lhs.inferredTypes
+		loc.xsubst = xtrace "Atom.xsubst" $ composeSubstitutions $ unify @loc.inferredType @loc.callSiteType
+
 
 	| Application
 		-- аппликация транслируется тоже тривиально
@@ -111,7 +125,7 @@ SEM Definition
 		-- унаследованный @inferredTypes "спускается" Definition -> Program -> Value
 		-- но из-за того, что у нас where, а не let-in, этому спуску соответствуют
 		-- "нырки" в следующих двух строках:
-		where.inferredTypes = trace (show $ uncondLookup "print" @lhs.inferredTypes ) @lhs.inferredTypes
+		where.inferredTypes = @lhs.inferredTypes
 		value.inferredTypes = @lhs.inferredTypes `M.union` M.fromList @where.inferredTypesS
 
 		--  собрали информацию от выводильщика и отправили всё так же "вниз"

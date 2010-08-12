@@ -41,5 +41,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::sub(local::natr(&local::poww<t42>, 1000), 1) % 1000000000);
+	return ff::print(ff::sub(local::natr(&local::poww, 1000), 1) % 1000000000);
 };

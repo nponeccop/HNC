@@ -30,5 +30,5 @@ struct foo_impl
 int foo()
 {
 	typedef foo_impl local;
-	return local::flipped((local::flip<int, boost::function<int (int, int)>, int, int>(&ff::sum))(3, 2));
+	return local::flipped((local::flip<int, int, int>(&ff::sum))(3, 2));
 };

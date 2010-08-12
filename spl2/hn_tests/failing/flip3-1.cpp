@@ -26,5 +26,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print((local::flip<int, boost::function<int (int, int)>, t4>(&ff::sum))(2));
+	return ff::print((local::flip<int, int>(&ff::sum))(2));
 };

@@ -17,6 +17,7 @@ trace3 x y = traceOff ("trace3 " ++ x ++ ": " ++ show y) y
 trace4 x y z = traceOff ("trace4 " ++ x ++ ": " ++ show y) z
 
 xtrace a b = b
+ztrace m t =  trace (m ++ " = " ++ show t) t
 
 consMaybe Nothing value = value
 consMaybe (Just x) value = x : value

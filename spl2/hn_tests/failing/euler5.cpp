@@ -50,5 +50,5 @@ struct hnMain_impl
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(ff::natrec<int>(&local::f<int>, 0, 1000000));
+	return ff::print(ff::natrec<int>(&local::f, 0, 1000000));
 };

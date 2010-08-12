@@ -26,5 +26,5 @@ struct main_impl
 t3 main()
 {
 	typedef main_impl local;
-	return (local::flip<int, t3, boost::function<int (int)>>(&ff::incr))(3);
+	return (local::flip<int, int>(&ff::incr))(3);
 };
