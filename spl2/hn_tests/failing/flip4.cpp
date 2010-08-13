@@ -7,7 +7,6 @@ struct foo_impl
 	{
 		boost::function<boost::function<t5 (t1)> (t2)> f;
 
-		template <typename t1, typename t2, typename t5>
 		t5 flipped(t1 x, t2 y)
 		{
 			return f(y, x);

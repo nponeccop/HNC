@@ -7,7 +7,6 @@ struct hnMain_impl
 	{
 		boost::function<boost::function<t4 (t1)> (int)> f;
 
-		template <typename t1, typename t4>
 		t4 flipped(t1 x)
 		{
 			return f(3, x);

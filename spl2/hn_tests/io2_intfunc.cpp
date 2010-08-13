@@ -7,7 +7,6 @@ struct hnMain_impl
 	{
 		boost::function<t3 (int)> f;
 
-		template <typename t3>
 		t3 g(int x)
 		{
 			return f(x + 0);
@@ -23,9 +22,8 @@ struct hnMain_impl
 	};
 };
 
-template <typename t9>
-ff::IO<t9> hnMain()
+ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::bind<int, t9>(ff::readnum, local::intfunc<ff::IO<void>>(&ff::print<t15>));
+	return ff::bind<int, void>(ff::readnum, local::intfunc<ff::IO<void>>(&ff::print<int>));
 };

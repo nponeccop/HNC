@@ -32,7 +32,7 @@ transformArgument symTab name callSiteType visibleAtoms templ = let
 
 transformFunction symTab name callSiteType visibleAtoms templateArgs = let
 		ta = case atomType of
-			TLib (TT x) | (||) (ttt x) $ not $ S.null $ subtractSet (xtrace "AG.transformFunction.pv1" $ typeAllPolyVars $ last x) (xtrace "AG.transformFunction.pv2" $ typeAllPolyVars (TT $ init x)) -> templateArgs
+			(TT x) | (||) (ttt x) $ not $ S.null $ subtractSet (xtrace "AG.transformFunction.pv1" $ typeAllPolyVars $ last x) (xtrace "AG.transformFunction.pv2" $ typeAllPolyVars (TT $ init x)) -> templateArgs
 			_ -> ""
 		atomType = xtrace "AG.transformFunction.atomType" $ uncondLookup name visibleAtoms
 		ttt x = isJust $ find (\x -> isFunctionType x && (not $ S.null $ typePolyVars x)) x

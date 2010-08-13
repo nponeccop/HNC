@@ -7,7 +7,6 @@ struct hnMain_impl
 	{
 		boost::function<t3 (int)> f;
 
-		template <typename t3>
 		t3 g(int x)
 		{
 			return f(x + 0);
@@ -23,8 +22,8 @@ struct hnMain_impl
 	};
 };
 
-t3 hnMain()
+ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return (local::intfunc<ff::IO<void>>(&ff::print<t11>))(5);
+	return (local::intfunc<ff::IO<void>>(&ff::print<int>))(5);
 };

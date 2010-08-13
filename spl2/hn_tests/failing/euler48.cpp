@@ -2,11 +2,11 @@
 
 struct hnMain_impl
 {
+	template <typename t2>
 	struct natr_impl
 	{
 		boost::function<int (int)> ff;
 
-		template <typename t2>
 		int g(t2 x, int total)
 		{
 			return total + ff(x);
@@ -15,7 +15,7 @@ struct hnMain_impl
 
 	static int natr(boost::function<int (int)> ff, int l)
 	{
-		typedef natr_impl local;
+		typedef natr_impl<t2> local;
 		local impl = { ff };
 		return ff::natrec<int>(hn::bind(impl, &local::g), 0, l);
 	};

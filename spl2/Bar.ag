@@ -1,6 +1,6 @@
 {
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
-module Bar (compile, Inh_Definition(..), instantiateLibrary) where
+module Bar (compile, Inh_Definition(..)) where
 
 import CPP.Intermediate
 import CPP.TypeProducer
@@ -65,13 +65,6 @@ ATTR Expression	[  | | sem : CppExpression ]
 
 ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
 
-{
-removeTLib (TLib x) = x
-removeTLib x = x
-}
-
-
-
 SEM Expression
 	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
  	-- только на позиции аргумента, поэтому никакой трансляции не
@@ -97,7 +90,7 @@ SEM Expression
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [xtrace "Atom.finalSubstitution" @lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
 		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typeAllPolyVars $ @loc.inferredType
 
-		loc.inferredType = xtrace "Atom.inferredType" $ removeTLib $ uncondLookup @name @lhs.inferredTypes
+		loc.inferredType = xtrace "Atom.inferredType" $ uncondLookup @name @lhs.inferredTypes
 		loc.xsubst = xtrace "Atom.xsubst" $ composeSubstitutions $ unify @loc.inferredType @loc.callSiteType
 
 
@@ -228,15 +221,13 @@ SEM Definition
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-		loc.inferredType = substituteType @loc.s @loc.tau
-
 		(loc.contextVars, loc.argsTv) = { case @loc.inferredType of
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
 		loc.templateArgs = typePolyVars @loc.inferredType
 		-- шаблонные переменные контекста верхнего уровня
-		lhs.templateArgs = if not @loc.isFunction then typePolyVars @loc.inferredType else S.empty
+		lhs.templateArgs = if not @loc.isFunction then xtrace "Definition.typeTv2" $ typeAllPolyVars @loc.inferredType else xtrace "Definition.typeTv" $ typeTv @loc.inferredType
 
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 
@@ -284,6 +275,7 @@ ATTR Definition Expression
 		visibleAtoms : {M.Map String T}
 	|
 	|
+		inferredType : T
 		s : {[Substitution]}
 		tau : T
 	]
@@ -349,7 +341,8 @@ SEM Definition
 		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
 		value.visibleAtoms = @where.bottomVisibleAtoms
 
-
+		loc.inferredType = xtrace "Definition.@loc.inferredType" $ closure (substitute @loc.s @lhs.visibleAtoms) (xtrace "Definition.itB4closure" $ substituteType @loc.s @loc.tau)
+		lhs.inferredType = @loc.inferredType
 		value.finalSubstitution = composeSubstitutions @loc.s
 
 SEM Expression
@@ -394,9 +387,8 @@ SEM ExpressionList
 SEM Program
 	| Cons
 		loc.s1 = xtrace "Program.Cons.hd.s" @hd.s
-		loc.tau1 = @hd.tau
 		hd.visibleAtoms = xtrace "Program.hd.visibleAtoms" @lhs.visibleAtoms
-		tl.visibleAtoms = substitute @loc.s1 $ (replace @hd.name (closure (substitute @loc.s1 @lhs.visibleAtoms) @loc.tau1)) @lhs.visibleAtoms
+		tl.visibleAtoms = substitute @loc.s1 $ M.insert @hd.name @hd.inferredType @lhs.visibleAtoms
 		lhs.bottomVisibleAtoms = @tl.bottomVisibleAtoms
 
 		lhs.bottomS = xtrace "Program.bottomS" $ @loc.s1 ++ @tl.bottomS

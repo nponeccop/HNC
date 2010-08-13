@@ -11,8 +11,6 @@ import CPP.TypeProducer
 import SPL.Types
 
 
-instantiateLibrary m = M.map (\x -> TLib x) m
-
 freshAtoms :: [String] -> Int -> (Int, [(String, T)])
 
 freshAtoms [] counter = (counter, [])
@@ -21,10 +19,7 @@ freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, tv i)) a [count
 substituteType :: [Substitution] -> T -> T
 substituteType [] b = b
 substituteType a b = result where -- trace ("substituteType:" ++ show a ++ " ===> " ++ show result) result where
-	result = substituteSingle (composeSubstitutions a) b
-
-substituteSingle a b = substituteTypeVars  b a
-
+	result = substituteTypeVars b $ composeSubstitutions a
 
 symTrace m t = trace (m ++ " = " ++ show ( M.difference t SPL.Top.get_types)) t
 
@@ -52,31 +47,27 @@ unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) c wher
 	xunify a b = error $ "cannot unify: " ++ show a ++ " ~ " ++ show b
 
 envPolyVars e = M.fold f S.empty e where
-	f el acc = S.union acc $ typePolyVars el
+	f el acc = S.union acc $ typeAllPolyVars el
 
 mapTypeTU f t = subst t where
 	subst t = case t of
 		TU a -> f (TU a)
+		TV a -> f (TU a)
 		TT a -> TT $ map subst a
   		TD a b -> TD a (map subst b)
 		_ -> t
 
 
-closure env t = TLib tt where
-	tpv = typePolyVars t
+closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
+	tpv = typeAllPolyVars t
 	epv = xtrace "closure.epv" $ envPolyVars env
 	varsToSubst = xtrace "closure.varsToSubst" $ tpv `subtractSet` epv
-	tt = mapTypeTU mapper t
-	mapper (TU a) = if S.member a varsToSubst then TU a else TV a
-
-replace k v m = M.insert k v m
+	mapper (TU a) = xtrace "closure.mapper!" $ if S.member a varsToSubst then xtrace "Closure.TU" (TU a) else TV a
 
 lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
-lookupAndInstantiate name table counter = let t = uncondLookup name table in case t of
-	TLib x -> instantiatedType x counter
-	_ -> (counter, t)
+lookupAndInstantiate name table counter = let t = uncondLookup name table in instantiatedType t counter
 
-tv x = TU $ "t" ++ show x
+tv x = TV $ "t" ++ show x
 
 constantType x = case x of
 	ConstInt _ -> T "num"
@@ -109,15 +100,29 @@ instantiatedTypeTests = [
 libType name = uncondLookup name SPL.Top.get_types
 
 instantiatedType :: T -> Int -> (Int, T)
-instantiatedType t counter = (nextCounter, substituteTypeVars t substitutions) where
+instantiatedType t counter = (nextCounter, substituteTypeVarsNoTv t substitutions) where
 	foo = zip (S.toList $ typePolyVars t) [counter..]
    	nextCounter = counter + (length $ S.toList $ typePolyVars t)
 	substitutions = M.fromList $ map (\(x,y) -> (x, tv y)) foo
 
-substituteTypeVars t substitutions = subst t where
+
+substituteTypeVarsNoTv t substitutions | M.null substitutions = t
+substituteTypeVarsNoTv t substitutions = xtrace "stvnoTv" $ subst t where
 	subst t = case t of
 		TU a -> (case M.lookup a substitutions of
 			Nothing -> TU a
+			Just b -> b)
+		TT a -> TT $ map subst a
+  		TD a b -> TD a (map subst b)
+		_ -> t
+
+substituteTypeVars t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
+	subst t = case t of
+		TU a -> (case M.lookup a substitutions of
+			Nothing -> TU a
+			Just b -> b)
+		TV a -> (case M.lookup a substitutions of
+			Nothing -> TV a
 			Just b -> b)
 		TT a -> TT $ map subst a
   		TD a b -> TD a (map subst b)

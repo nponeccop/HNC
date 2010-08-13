@@ -111,7 +111,7 @@ base = M.fromList $
 	:ff_method "udp_socket" "udp_receive" [tdt "IO" "string"]
 	:ff_constr "udp_socket" "udp_connect" [T "string", T "num"]
 	:ff_constr "udp_socket" "udp_listen" [T "num"]
-	:ff_functi "bind" [ TD "IO" [TU "t1"], TT [TU "t1", TD "IO" [TU "t2"]], TD "IO" [TU "t2"]]
+	:ff_functi "bind" [ TD "IO" [TU "a"], TT [TU "a", TD "IO" [TU "b"]], TD "IO" [TU "b"]]
 	:ff_functi "forever" [tdt "IO" "void", tdt "IO" "void"]
 	:("readnum", Fun
 		(CNum 0)
