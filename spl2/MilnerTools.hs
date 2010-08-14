@@ -128,4 +128,17 @@ substituteTypeVars t substitutions = xtrace ("stv : " ++ show substitutions ++ "
   		TD a b -> TD a (map subst b)
 		_ -> t
 
+uncurryAll (TT t) = xtrace ("UncurryAll:" ++ show t) $ case last t of
+	TT xx -> uncurryAll (TT (init t ++ xx))
+ 	_ -> TT t
+uncurryAll x = x
+
+uncurryType p (TT x) = TT $ map uncurryAll $ uncurryFunctionType x $ xtrace "uncurryType.p" p where
+	uncurryFunctionType [argType] [] = [uncurryAll argType]
+	uncurryFunctionType argTypes [] = [TT $ map uncurryAll argTypes]
+	uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta
+	uncurryFunctionType [] _ = error "MilnerTools.uncurryFunctionType encountered []"
+
+uncurryType _ t = t
+
 type Substitution = M.Map String T

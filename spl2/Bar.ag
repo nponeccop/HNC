@@ -186,7 +186,7 @@ SEM Definition
 		lhs.name = @name
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
-		loc.cppDefType = cppUncurryType @loc.inferredType @params
+		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppUncurryType @loc.inferredType @params
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition -- { functionTemplateArgs = [] }
 		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @loc.inferredType) @name @value.sem
 
@@ -341,7 +341,7 @@ SEM Definition
 		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
 		value.visibleAtoms = @where.bottomVisibleAtoms
 
-		loc.inferredType = xtrace "Definition.@loc.inferredType" $ closure (substitute @loc.s @lhs.visibleAtoms) (xtrace "Definition.itB4closure" $ substituteType @loc.s @loc.tau)
+		loc.inferredType = xtrace "Definition.@loc.inferredType" $ uncurryType @params $ closure (substitute @loc.s @lhs.visibleAtoms) (xtrace "Definition.itB4closure" $ substituteType @loc.s @loc.tau)
 		lhs.inferredType = @loc.inferredType
 		value.finalSubstitution = composeSubstitutions @loc.s
 
