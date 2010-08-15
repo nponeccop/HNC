@@ -42,11 +42,11 @@ DATA Expression
 -- в зависимости как от вида символа, так и от позиции в выражении (позиция
 -- функции и позиция аргумента)
 --
--- @fqnTransformer - функция отображения символа, вместо флага позиции +
+-- @atomTransformer - функция отображения символа, вместо флага позиции +
 -- ветвления по нему используются две функции - CPP.BackendTools.transformFunction и
 -- CPP.BackendTooks.transformArgument
 --
--- @fqn - для каждого символа указан его вид. Информация о видах собирается
+-- @inferredQualifiers - для каждого символа указан его вид. Информация о видах собирается
 -- FFI и модулем компиляции замыканий
 --
 -- @inferredTypes - выведенные типы символов
@@ -54,8 +54,8 @@ DATA Expression
 
 ATTR Expression ExpressionList
 	[
-		fqnTransformer : {M.Map String CppAtomType -> String -> T -> M.Map String T -> String -> String}
-		fqn : {M.Map String CppAtomType}
+		atomTransformer : {M.Map String CppAtomType -> String -> T -> M.Map String T -> String -> String}
+		inferredQualifiers : {M.Map String CppAtomType}
 		inferredTypes : {M.Map String T}
 	|
 	|
@@ -83,7 +83,7 @@ SEM Expression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.fqnTransformer @lhs.fqn @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.inferredQualifiers @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
 	--	loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType [@lhs.finalSubstitution] $ xtrace "Atom.tau" @loc.tau
 	--	loc.templateArgs = let fs = xsubstitute @lhs.finalSubstitution in makeArgs $ map fs  $ S.toList $ typeAllPolyVars @loc.tau
 
@@ -97,8 +97,8 @@ SEM Expression
 	| Application
 		-- аппликация транслируется тоже тривиально
 		-- для функции и аргумента выставляются соответствующие ФВП обработки
-		fn.fqnTransformer = transformFunction
-		arg.fqnTransformer = transformArgument
+		fn.atomTransformer = transformFunction
+		arg.atomTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
 -- унаследованный @inferredTypes - это информация об атомах, видимых в where и value
@@ -147,9 +147,8 @@ ATTR Program
 			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 			varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
 			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
-			staticFunctionNames USE {`consMaybe`} {[]} : {[String]}
-			nonStaticFunctionNames USE {`consMaybe`} {[]} : {[String]}
 			contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
+			inferredQualifiersS USE {`M.union`} {M.empty} : {M.Map String CppAtomType}
 	]
 
 DATA Definition
@@ -157,8 +156,7 @@ DATA Definition
 
 ATTR Definition Program
 	[
-		typed : C
-		symTab : {M.Map String CppAtomType}
+		inferredQualifiers : {M.Map String CppAtomType}
 		level : Int
 	|
 	|
@@ -174,9 +172,8 @@ ATTR Definition
 		cppVarDefinition : {Maybe CppLocalVarDef}
 		varsFreeInFunctions : {S.Set String}
 		templateArgs : {S.Set String}
-		staticFunctionNames : {Maybe String}
-		nonStaticFunctionNames : {Maybe String}
 		contextMethods : {Maybe CppDefinition}
+		inferredQualifiersS : {M.Map String CppAtomType}
 	]
 
 SEM Definition
@@ -187,7 +184,7 @@ SEM Definition
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
 		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppUncurryType @loc.inferredType @params
-		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition -- { functionTemplateArgs = [] }
+		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
 		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @loc.inferredType) @name @value.sem
 
 		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
@@ -201,19 +198,18 @@ SEM Definition
 			, 	functionTemplateArgs    = S.toList @loc.templateArgs
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = localVars
-			,   functionContext         = constructJust ( not ( not (null @where.contextMethods) && noUnusedTemplateContext)) $ CppContext {
+			,   functionContext         = constructJust (null @where.contextMethods) $ CppContext {
 					contextLevel    = @lhs.level
 				,   contextTypeName = @loc.contextTypeName
 				-- ïåðåìåííûå êîíòåêñòà - ýòî
 				-- àðãóìåíòû ãëàâíîé ôóíêöèè, ñâîáîäíûå â where-ôóíêöèÿõ
 				-- ëîêàëüíûå ïåðåìåííûå, ñâîáîäíûå â where-ôóíêöèÿõ
-				,   contextVars         = @loc.contextVars ++ contextVars
+				,   contextVars         = @loc.contextArgs ++ contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
 				}
 		} where
 			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
-			noUnusedTemplateContext = True -- S.null $ S.fromList @loc.contextTemplateArgs `subtractSet` @loc.templateArgs
 		}
 
 		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
@@ -221,7 +217,7 @@ SEM Definition
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-		(loc.contextVars, loc.argsTv) = { case @loc.inferredType of
+		(loc.contextArgs, loc.argsTv) = { case @loc.inferredType of
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
@@ -243,21 +239,22 @@ SEM Definition
 		-- ïðè êàððèðîâàíèè íåîáõîäèìî âûçûâàòü hn::curry1(&local::foo) èëè hn::curry1(impl, &local::foo)
 		-- ïðè âëîæåíííîñòè çàìûêàíèé íåîáõîäèìî âìåñòî local óêàçûâàòü öåïî÷êó parent::parent::foo èëè up.up.foo
 		--
-		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, fqn, fqnTransformer
-		-- fqnTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, inferredQualifiers, atomTransformer
+		-- atomTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
 		-- ò.å. îäèí è òîò æå àòîì òðàíñëèðóåòñÿ ïî-ðàçíîìó, â çàâèñèìîñòè îò òîãî, íàõîäèòñÿ
 		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
 		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
 		-- íà îñíîâå S
-		loc.isFunctionStatic = S.null (@loc.freeVars `subtractSet` M.keysSet @lhs.symTab)
-		lhs.staticFunctionNames = constructJust (not $ @loc.isFunction && @loc.isFunctionStatic) @name
-		lhs.nonStaticFunctionNames = constructJust (not $ @loc.isFunction && not @loc.isFunctionStatic) @name
-		value.fqnTransformer = transformArgument
-		value.fqn = {
-			symTabWithStatics `M.union` @lhs.symTab `subtractKeysFromMap` (@params ++ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition) `M.union` xxx  where
-				xxx = xtrace "value.fqn.xxx" $ M.fromList $ map (\x -> (x, CppContextVar)) $  S.toList @where.varsFreeInFunctions
-				symTabWithStatics = M.fromList $ map (\name -> (name, classPrefix)) @where.staticFunctionNames ++ map (\name -> (name, CppContextMethod)) @where.nonStaticFunctionNames where
-					classPrefix = CppFqMethod $ "local" -- @loc.contextTypeName ++ showTemplateArgs @loc.contextTemplateArgs
+		loc.isFunctionStatic = S.null (@loc.freeVars `subtractSet` M.keysSet @lhs.inferredQualifiers)
+
+		loc.qualifier = { if (@loc.isFunction) then (if @loc.isFunctionStatic then CppFqMethod "local" else CppContextMethod) else CppContextVar }
+
+		lhs.inferredQualifiersS = M.singleton @name @loc.
+		value.atomTransformer = transformArgument
+		value.inferredQualifiers = {
+			@where.inferredQualifiersS `M.union` @lhs.inferredQualifiers `subtractKeysFromMap` (@params ++ localVars)  where
+				allWhereVars = map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+				localVars = filter (\x -> not $ S.member x @where.varsFreeInFunctions) allWhereVars
 		}
 
 
@@ -271,7 +268,7 @@ ATTR Expression ExpressionList
 
 
 ATTR Definition Expression
-	[
+	[ss
 		visibleAtoms : {M.Map String T}
 	|
 	|
