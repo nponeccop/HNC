@@ -28,6 +28,11 @@ transformArgument symTab name callSiteType visibleAtoms templ = let
 		Just (CppFqMethod prefix) -> funAmpersand ++ prefix ++ "::" ++ name ++ xtrace "TransformArg" templ
 		Just CppContextMethod -> "hn::bind(impl, &local::" ++ name ++ ")"
 		Just CppContextVar -> "impl." ++ name
+		Just CppArgument -> name
+		Just CppUpperArgument -> "impl." ++ name
+		Just CppCurrentClassVar -> name
+		Just CppCurrentClassMethod -> name
+		Just CppLocal -> name
 		Nothing -> xtrace "transformArgument.Nothing" $ funAmpersand ++ name
 
 transformFunction symTab name callSiteType visibleAtoms templateArgs = let
@@ -41,6 +46,8 @@ transformFunction symTab name callSiteType visibleAtoms templateArgs = let
 	in case M.lookup name symTab of
 		Just (CppFqMethod prefix) -> prefix ++ "::" ++ name ++ ta
 		Just CppContextMethod -> "impl." ++ name
+		Just CppArgument -> name
+		Just CppLocal -> name
+		Just CppCurrentClassVar -> name
+		Just CppCurrentClassMethod -> name
 		Nothing -> name
-
-

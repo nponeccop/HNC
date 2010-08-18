@@ -11,6 +11,7 @@ import SPL.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
+import Data.Maybe
 import Utils
 
 -- UNUSED import CPP.Visualise
@@ -71,6 +72,7 @@ SEM Expression
 	-- требуется
 	| Constant
 		lhs.sem = CppLiteral @c
+		loc.inferredType = undefined
 	-- Атомы транслируются в символы
 	--
 	| Atom
@@ -157,6 +159,7 @@ DATA Definition
 ATTR Definition Program
 	[
 		inferredQualifiers : {M.Map String CppAtomType}
+		neighborQualifiers : {M.Map String CppAtomType}
 		level : Int
 	|
 	|
@@ -245,18 +248,48 @@ SEM Definition
 		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
 		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
 		-- íà îñíîâå S
-		loc.isFunctionStatic = S.null (@loc.freeVars `subtractSet` M.keysSet @lhs.inferredQualifiers)
+		loc.isFunctionStatic = { (M.null (@loc.freeVarsMap M.\\ @lhs.inferredQualifiers)) && (isNothing $ find f $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) @lhs.inferredQualifiers $ xtrace "fvm" @loc.freeVarsMap) where
+				f (_, CppUpperArgument) = True
+				f (_, CppContextVar) = True
+				f (_, CppContextMethod) = True
+				f (_, CppCurrentClassVar) = True
+				f (_, CppCurrentClassMethod) = True
+				f _ = False
+			}
+
+		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
 
 		loc.qualifier = { if (@loc.isFunction) then (if @loc.isFunctionStatic then CppFqMethod "local" else CppContextMethod) else CppContextVar }
 
-		lhs.inferredQualifiersS = M.singleton @name @loc.
+		lhs.inferredQualifiersS = M.singleton @name @loc.qualifier
 		value.atomTransformer = transformArgument
 		value.inferredQualifiers = {
-			@where.inferredQualifiersS `M.union` @lhs.inferredQualifiers `subtractKeysFromMap` (@params ++ localVars)  where
-				allWhereVars = map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
-				localVars = filter (\x -> not $ S.member x @where.varsFreeInFunctions) allWhereVars
+			if (@loc.isFunction)
+				then xxx
+				else xxx
+				where
+					xxx = xtrace "value.inferredQualifiers" $ M.unions [
+						@loc.localVars,
+						M.fromList $ zip @params $ repeat CppArgument,
+						xtrace "iq" @where.inferredQualifiersS,
+						M.map yyy $ xtrace "nq" @lhs.neighborQualifiers
+						]
+					yyy x = if @loc.isFunction then zzz x else x
+					zzz CppContextVar = CppCurrentClassVar
+					zzz CppContextMethod = CppCurrentClassMethod
+
+					zzz x = x
 		}
 
+		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
+		loc.argumentQualifiers = M.fromList $ zip @params $ repeat CppUpperArgument
+		where.inferredQualifiers = xtrace "where.inferredQualifiers" $ M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
+		where.neighborQualifiers = xtrace "where.neighborQualifiers" $ M.unions [@loc.localVars, @where.inferredQualifiersS, @lhs.inferredQualifiers]
+
+{
+mtrace x y = trace (x ++ " = " ++ show (M.lookup "flipped" y)) y
+}
 
 ATTR Expression ExpressionList
 		[
@@ -268,7 +301,7 @@ ATTR Expression ExpressionList
 
 
 ATTR Definition Expression
-	[ss
+	[
 		visibleAtoms : {M.Map String T}
 	|
 	|

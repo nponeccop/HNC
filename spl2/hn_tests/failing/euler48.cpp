@@ -34,7 +34,7 @@ struct hnMain_impl
 	{
 		typedef poww_impl local;
 		local impl = { a };
-		return ff::natrec<int>(hn::bind(impl, &local::f), 1, ff::sub(impl.a, 1));
+		return ff::natrec<int>(hn::bind(impl, &local::f), 1, ff::sub(a, 1));
 	};
 };
 

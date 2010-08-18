@@ -73,10 +73,6 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-lookupAtom name visibleAtoms freshVar = case M.lookup name visibleAtoms of
-	Nothing -> error "foo" -- $ (freshVar + 1, tv freshVar)
-	Just t -> error "lookupAtom" -- instantiatedType freshVar t
-
 xcompose :: [Substitution] -> [Substitution] -> Substitution
 xcompose a b = composeSubstitutions (a ++ b)
 

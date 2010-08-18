@@ -15,7 +15,7 @@ struct hnMain_impl
 		template <typename t20>
 		ff::IO<void> t3(t20 reply)
 		{
-			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), &t4);
+			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), t4);
 		};
 	};
 
