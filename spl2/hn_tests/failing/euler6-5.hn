@@ -1,0 +1,5 @@
+hnMain = {
+	natr f = 6
+	id x = 5
+	print (natr id)
+}

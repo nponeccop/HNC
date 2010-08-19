@@ -1,0 +1,4 @@
+hnMain = {
+	natr f = 6
+	print (natr natr)
+}

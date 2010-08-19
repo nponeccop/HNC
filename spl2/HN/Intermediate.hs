@@ -14,6 +14,9 @@ data Definition
     =   Definition String [String] Expression [Definition]
     deriving(Eq,Show)
 
+data Root
+	=	Root Definition deriving(Eq,Show)
+
 data TypedDefinition = TypedDefinition T String [String] Expression [TypedDefinition]
 
 data Expression

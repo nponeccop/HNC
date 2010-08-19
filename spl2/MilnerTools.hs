@@ -16,21 +16,15 @@ freshAtoms :: [String] -> Int -> (Int, [(String, T)])
 freshAtoms [] counter = (counter, [])
 freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, tv i)) a [counter..])
 
-substituteType :: [Substitution] -> T -> T
-substituteType [] b = b
-substituteType a b = result where -- trace ("substituteType:" ++ show a ++ " ===> " ++ show result) result where
-	result = substituteTypeVars b $ composeSubstitutions a
-
 symTrace m t = trace (m ++ " = " ++ show ( M.difference t SPL.Top.get_types)) t
 
-substitute :: [Substitution] -> M.Map String T -> M.Map String T
-substitute [] b = b
-substitute a b = xtrace "substitute.result: " $ M.map (substituteType a) b
+substitute :: Substitution -> M.Map String T -> M.Map String T
+substitute a b = xtrace "substitute.result: " $ M.map (\x -> substituteTypeVars x a) b
 
 unify :: T -> T -> [Substitution]
 unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) c where
 	c = xunify a b
-	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = [xunify a b `xcompose` unify (TT at) (TT bt)]
+	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = [xunify a b `xcompose` xunify (TT at) (TT bt)]
 
  	xunify (TT [a]) b = xunify a b
  	xunify a (TT [b]) = xunify a b
@@ -80,8 +74,13 @@ xcompose2 :: Substitution -> Substitution -> Substitution
 xcompose2 a b | M.null a = b
 xcompose2 a b | M.null b = a
 
+
 xcompose2 a b = xtrace ("MilnerTools.xcompose2: " ++ show a ++ " # " ++ show b) $ M.fold xcompose2 (M.union a b') $ M.intersectionWith (\a b -> composeSubstitutions $ unify a b) a b' where
 	b' = M.map (\x -> substituteTypeVars x a) b
+
+substituteType :: [Substitution] -> T -> T
+substituteType a b = substituteTypeVars b $ composeSubstitutions a
+
 
 composeSubstitutions a = xtrace ("composeSubstitutions: " ++ show a ++ " ====> " ++ show b) b where
 	b = foldr xcompose2 M.empty a

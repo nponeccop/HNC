@@ -8,12 +8,11 @@ struct hnMain_impl
 		{
 			int x;
 
-			template <typename t5>
 			struct natfind_impl
 			{
 				boost::function<bool (int)> pred;
 
-				bool ff(t5 nn, bool found)
+				bool ff(int nn, bool found)
 				{
 					return found ? found : pred(nn);
 				};
@@ -21,7 +20,7 @@ struct hnMain_impl
 
 			static bool natfind(boost::function<bool (int)> pred, int n)
 			{
-				typedef natfind_impl<t5> local;
+				typedef natfind_impl local;
 				local impl = { pred };
 				return ff::natrec<bool>(hn::bind(impl, &local::ff), 0 == 1, n);
 			};
