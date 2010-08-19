@@ -40,7 +40,8 @@ isComposed _  = False
 makeType (T x) = x
 makeType (TD a b) =  a ++ " " ++ (joinStr " " $ map makeType b)
 makeType (TT x) = joinStr " -> " $ map makeType2 x
-makeType (TU x) = '?' : x
+makeType (TU x) = "??" ++ x
+makeType (TV x) = '?' : x
 makeType x = show x
 
 makeType2 (x @ (TT _)) = "(" ++ makeType x ++ ")"
