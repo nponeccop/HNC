@@ -21,21 +21,22 @@ symTrace m t = trace (m ++ " = " ++ show ( M.difference t SPL.Top.get_types)) t
 substitute :: Substitution -> M.Map String T -> M.Map String T
 substitute a b = xtrace "substitute.result: " $ M.map (\x -> substituteTypeVars x a) b
 
-unify :: T -> T -> [Substitution]
+unify :: T -> T -> Substitution
 unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) c where
 	c = xunify a b
-	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = [xunify a b `xcompose` xunify (TT at) (TT bt)]
+	xunify :: T -> T -> Substitution
+	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = xunify a b `xcompose2` xunify (TT at) (TT bt)
 
  	xunify (TT [a]) b = xunify a b
  	xunify a (TT [b]) = xunify a b
 
-	xunify (TD a a1) (TD b b1) | a == b = [composeSubstitutions $ concat $ zipWith xunify a1 b1]
-	xunify (T a) (T b) | a == b = []
-	xunify (TU a) (TU b) | a == b = []
-	xunify (TU a) (TV b) | a == b = []
+	xunify (TD a a1) (TD b b1) | a == b = composeSubstitutions $ zipWith xunify a1 b1
+	xunify (T a) (T b) | a == b = M.empty
+	xunify (TU a) (TU b) | a == b = M.empty
+	xunify (TU a) (TV b) | a == b = M.empty
 
-	xunify (TU a) b = [M.singleton a b]
-	xunify b (TU a) = [M.singleton a b]
+	xunify (TU a) b = M.singleton a b
+	xunify b (TU a) = M.singleton a b
 	xunify (TV a) b = xunify (TU a) b
 	xunify b (TV a) = xunify (TU a) b
 	xunify a b = error $ "cannot unify: " ++ show a ++ " ~ " ++ show b
@@ -55,7 +56,7 @@ mapTypeTU f t = subst t where
 closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
 	tpv = typeAllPolyVars t
 	epv = xtrace "closure.epv" $ envPolyVars env
-	varsToSubst = xtrace "closure.varsToSubst" $ tpv `subtractSet` epv
+	varsToSubst = xtrace "closure.varsToSubst" $ tpv S.\\ epv
 	mapper (TU a) = xtrace "closure.mapper!" $ if S.member a varsToSubst then xtrace "Closure.TU" (TU a) else TV a
 
 lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
@@ -67,20 +68,12 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-xcompose :: [Substitution] -> [Substitution] -> Substitution
-xcompose a b = composeSubstitutions (a ++ b)
-
 xcompose2 :: Substitution -> Substitution -> Substitution
 xcompose2 a b | M.null a = b
 xcompose2 a b | M.null b = a
 
-
-xcompose2 a b = xtrace ("MilnerTools.xcompose2: " ++ show a ++ " # " ++ show b) $ M.fold xcompose2 (M.union a b') $ M.intersectionWith (\a b -> composeSubstitutions $ unify a b) a b' where
+xcompose2 a b = xtrace ("MilnerTools.xcompose2: " ++ show a ++ " # " ++ show b) $ M.fold xcompose2 (M.union a b') $ M.intersectionWith unify a b' where
 	b' = M.map (\x -> substituteTypeVars x a) b
-
-substituteType :: [Substitution] -> T -> T
-substituteType a b = substituteTypeVars b $ composeSubstitutions a
-
 
 composeSubstitutions a = xtrace ("composeSubstitutions: " ++ show a ++ " ====> " ++ show b) b where
 	b = foldr xcompose2 M.empty a
