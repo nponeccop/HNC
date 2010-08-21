@@ -109,7 +109,7 @@ SEM Expression
 		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.inferredQualifiers @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
 
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteTypeVars (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
-		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typeAllPolyVars $ @loc.inferredType
+		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typePolyVars $ @loc.inferredType
 
 		loc.inferredType = xtrace "Atom.inferredType" $ uncondLookup @name @lhs.inferredTypes
 		loc.xsubst = xtrace "Atom.xsubst" $ unify @loc.inferredType @loc.callSiteType
