@@ -49,8 +49,8 @@ instance Show CppDefinition where
 				(if isStatic && level > 0 then "static " else "") ++ showFunctionPrototype def
 			,	"{"
 			]
-		,	map ((++) "\t" . show) localVars
 		,	maybe [] showContextInit context
+		,	map ((++) "\t" . show) localVars
 		,	[
 				inStrings "\treturn " ";" $ show retVal
 			,	"};"

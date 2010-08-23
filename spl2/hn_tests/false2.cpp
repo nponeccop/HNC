@@ -23,15 +23,15 @@ struct hMain_impl
 
 	static int f(int x)
 	{
-		std::string z = "5";
 		typedef f_impl local;
+		std::string z = "5";
 		return x + x;
 	};
 };
 
 ff::IO<void> hMain()
 {
-	int z = 7;
 	typedef hMain_impl local;
+	int z = 7;
 	return ff::print(5 + z);
 };

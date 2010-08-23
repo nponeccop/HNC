@@ -50,4 +50,5 @@ transformFunction symTab name callSiteType visibleAtoms templateArgs = let
 		Just CppLocal -> name
 		Just CppCurrentClassVar -> name
 		Just CppCurrentClassMethod -> name
+		Just CppUpperArgument -> name
 		Nothing -> name

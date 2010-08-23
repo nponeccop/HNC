@@ -40,8 +40,8 @@ struct hnMain_impl
 
 	static int f(int xx, int rr)
 	{
-		int xxx = 60 * 19 * xx + 1;
 		typedef f_impl local;
+		int xxx = 60 * 19 * xx + 1;
 		return rr == 0 ? local::not_divisable(xxx) ? rr : xxx : rr;
 	};
 };

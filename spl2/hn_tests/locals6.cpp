@@ -12,7 +12,7 @@ struct hnMain_impl
 
 ff::IO<void> hnMain()
 {
-	int a = 5;
 	typedef hnMain_impl local;
+	int a = 5;
 	return local::tmp(a);
 };

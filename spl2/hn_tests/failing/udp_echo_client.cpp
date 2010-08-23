@@ -21,9 +21,9 @@ struct hnMain_impl
 
 	ff::IO<void> tb(int start_time)
 	{
-		ff::IO<std::string> ping = ff::voidbind(ff::udp_send(c, "foo"), ff::udp_receive(c));
 		typedef tb_impl local;
 		local impl = { start_time };
+		ff::IO<std::string> ping = ff::voidbind(ff::udp_send(c, "foo"), ff::udp_receive(c));
 		return ff::bind<std::string, void>(ping, hn::bind(impl, &local::t3<std::string>));
 	};
 };
