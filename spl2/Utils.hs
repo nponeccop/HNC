@@ -51,4 +51,6 @@ showJoinedList separator = joinStr separator . map show
 
 showJoinedList2 separator = mapAndJoinStr (\x -> show x ++ separator)
 
-uncondLookup k m = maybe (error $ "Utils.uncondLookup: cannot find " ++ show k ++ " in " ++ show m) id $ M.lookup k m
+uncondLookup k m = tracedUncondLookup "No trace" k m
+
+tracedUncondLookup msg k m = maybe (error $ msg ++ ": uncondLookup cannot find " ++ show k ++ " in " ++ show m) id $ M.lookup k m
