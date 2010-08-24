@@ -41,15 +41,12 @@ subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList
 joinStr _ [] = ""
 joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
 
-mapAndJoinStr _ [] = []
-mapAndJoinStr x l = foldl1 (++) $ map x l
-
 inStrings l r x = l ++ x ++ r
 
 -- TODO refactor Utils.showJoinedList and Utils.showJoinedList2 to extract
 showJoinedList separator = joinStr separator . map show
 
-showJoinedList2 separator = mapAndJoinStr (\x -> show x ++ separator)
+showJoinedList2 separator = concatMap (\x -> show x ++ separator)
 
 uncondLookup k m = tracedUncondLookup "No trace" k m
 

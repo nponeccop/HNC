@@ -184,6 +184,7 @@ ATTR Program
 			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
 			contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
 			inferredQualifiersS USE {`M.union`} {M.empty} : {M.Map String CppAtomType}
+			declareSelf USE {||} {False} : Bool
 	]
 
 DATA Definition
@@ -210,6 +211,7 @@ ATTR Definition
 		templateArgs : {S.Set String}
 		contextMethods : {Maybe CppDefinition}
 		inferredQualifiersS : {M.Map String CppAtomType}
+		declareSelf : Bool
 	]
 
 SEM Definition
@@ -243,10 +245,13 @@ SEM Definition
 				,   contextVars         = @loc.contextArgs ++ contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
+				,   contextDeclareSelf  = xtrace "contextDeclareSelf" @where.declareSelf
 				}
 		} where
 			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
 		}
+
+		lhs.declareSelf = xtrace "Definition.declareSelf" $ isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueInferredQualifiers of CppCurrentClassMethod -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @lhs.neighborQualifiers `S.intersection`  @loc.freeVars
 
 		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
@@ -298,7 +303,7 @@ SEM Definition
 
 		lhs.inferredQualifiersS = M.singleton @name @loc.qualifier
 		value.atomTransformer = transformArgument
-		value.inferredQualifiers = {
+		loc.valueInferredQualifiers = {
 			if (@loc.isFunction)
 				then xxx
 				else xxx
@@ -312,9 +317,10 @@ SEM Definition
 					yyy x = if @loc.isFunction then zzz x else x
 					zzz CppContextVar = CppCurrentClassVar
 					zzz CppContextMethod = CppCurrentClassMethod
-
+					zzz (CppFqMethod "local") = CppCurrentClassMethod
 					zzz x = x
 		}
+		value.inferredQualifiers = @loc.valueInferredQualifiers
 
 		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
 		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions

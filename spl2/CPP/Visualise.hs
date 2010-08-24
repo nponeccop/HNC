@@ -26,19 +26,22 @@ getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
 	templateDecl = "template "  ++ showTemplateArgs (map ("typename " ++) templateArgs)
 
 instance Show CppContext where
-	show (CppContext level templateArgs name vars methods)
+	show (CppContext level templateArgs name vars methods declareSelf)
 		= let sil = showWithIndent level in concat
 		[
 			sil $ concat [
 					getTemplateDecl templateArgs
 				,  	["struct " ++ name, "{"]
-				,	map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars
+				,  	ds
+				,  	map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars
 			]
 		,	ifNotNull vars "\n"
-		,	mapAndJoinStr show methods
+		,	concatMap show methods
 		,	sil ["};"]
 		, 	"\n"
-		]
+		] where
+			ds :: [String]
+			ds = if declareSelf then [ "\ttypedef " ++ name ++ " self;"  ] else []
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context _ _ _ localVars retVal)
@@ -59,7 +62,7 @@ instance Show CppDefinition where
 			getContextInit vars
 				= "\tlocal impl = { " ++ initVars ++ " };"
 				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars
-			showContextInit (CppContext _ templateVars tn vars _)
+			showContextInit (CppContext _ templateVars tn vars _ _)
 				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : ifNotNull vars [getContextInit vars]
 
 instance Show CppLocalVarDef where

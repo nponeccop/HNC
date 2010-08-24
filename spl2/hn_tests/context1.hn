@@ -1,0 +1,6 @@
+foo y = {
+	ap foo bar = sum y (foo bar)
+	t4 x = sum x y
+	t3 x = ap t4 x
+	t3 5
+}

@@ -31,7 +31,7 @@ transformArgument symTab name callSiteType visibleAtoms templ = let
 		Just CppArgument -> name
 		Just CppUpperArgument -> "impl." ++ name
 		Just CppCurrentClassVar -> name
-		Just CppCurrentClassMethod -> name
+		Just CppCurrentClassMethod -> "hn::bind(*this, &self::" ++ name ++ templ ++ ")"
 		Just CppLocal -> name
 		Nothing -> xtrace "transformArgument.Nothing" $ funAmpersand ++ name
 

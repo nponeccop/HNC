@@ -50,6 +50,7 @@ data CppContext
 		,	contextTypeName		:: String
 		,	contextVars			:: [CppLocalVarDef]
 		,	contextMethods		:: CppProgram
+		,	contextDeclareSelf	:: Bool
 		}
 
 data CppVarDecl

@@ -6,6 +6,7 @@ struct hnMain_impl
 
 	struct tb_impl
 	{
+		typedef tb_impl self;
 		int start_time;
 
 		ff::IO<void> t4(int end_time)
@@ -15,7 +16,7 @@ struct hnMain_impl
 		template <typename t20>
 		ff::IO<void> t3(t20 reply)
 		{
-			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), t4);
+			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), hn::bind(*this, &self::t4));
 		};
 	};
 

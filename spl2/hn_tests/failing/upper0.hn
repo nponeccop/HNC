@@ -1,0 +1,7 @@
+foo x = {
+	bar y = {
+		baz z = sum x z
+		baz y
+	}
+	bar 5
+}
