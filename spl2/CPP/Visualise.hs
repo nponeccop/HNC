@@ -3,6 +3,7 @@ module CPP.Visualise where
 import CPP.Intermediate
 import HN.Intermediate
 import Utils
+import Data.Maybe
 
 showWithIndent indentationLevel y
 	= concat $ map (inStrings indent "\n") $ filter (not . null) y where
@@ -26,13 +27,14 @@ getTemplateDecl templateArgs = ifNotNull templateArgs [templateDecl] where
 	templateDecl = "template "  ++ showTemplateArgs (map ("typename " ++) templateArgs)
 
 instance Show CppContext where
-	show (CppContext level templateArgs name vars methods declareSelf)
+	show (CppContext level templateArgs name vars methods declareSelf parent)
 		= let sil = showWithIndent level in concat
 		[
 			sil $ concat [
 					getTemplateDecl templateArgs
 				,  	["struct " ++ name, "{"]
-				,  	ds
+				,  	selfDecl
+				,   parentDecl
 				,  	map (\(CppVar t n _) -> inStrings "\t" ";" $ show $ CppVarDecl t n) vars
 			]
 		,	ifNotNull vars "\n"
@@ -40,8 +42,11 @@ instance Show CppContext where
 		,	sil ["};"]
 		, 	"\n"
 		] where
-			ds :: [String]
-			ds = if declareSelf then [ "\ttypedef " ++ name ++ " self;"  ] else []
+			selfDecl = if declareSelf then [ "\ttypedef " ++ name ++ " self;"  ] else []
+
+			parentDecl = case parent of
+				Just parentName -> [ "\t" ++ parentName ++ " *parent;"  ]
+				Nothing -> []
 
 instance Show CppDefinition where
 	show def @ (CppFunctionDef level templateArgs isStatic context _ _ _ localVars retVal)
@@ -59,11 +64,13 @@ instance Show CppDefinition where
 			,	"};"
 			]
 		]) where
-			getContextInit vars
+			getContextInit vars parentName
 				= "\tlocal impl = { " ++ initVars ++ " };"
-				where initVars = joinComma $ map (\(CppVar _ _ v) -> show v) vars
-			showContextInit (CppContext _ templateVars tn vars _ _)
-				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : ifNotNull vars [getContextInit vars]
+				where
+					initVars =  joinComma $ fmap (const "this") parentName `consMaybe` map (\(CppVar _ _ v) -> show v) vars
+
+			showContextInit (CppContext _ templateVars tn vars _ _ parentName)
+				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : if null vars && isNothing parentName then [] else [getContextInit vars parentName]
 
 instance Show CppLocalVarDef where
     show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"

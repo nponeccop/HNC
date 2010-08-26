@@ -6,15 +6,17 @@ struct foo_impl
 
 	struct bar_impl
 	{
+		foo_impl *parent;
 		int baz(int z)
 		{
-			return impl.x + z;
+			return parent->x + z;
 		};
 	};
 
 	int bar(int y)
 	{
 		typedef bar_impl local;
+		local impl = { this };
 		return impl.baz(y);
 	};
 };

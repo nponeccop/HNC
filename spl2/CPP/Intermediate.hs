@@ -36,6 +36,7 @@ data CppAtomType
 	| CppArgument
 	| CppUpperArgument
 	| CppLocal
+	| CppParentVar
 		deriving (Show)
 
 data CppLocalVarDef
@@ -51,6 +52,7 @@ data CppContext
 		,	contextVars			:: [CppLocalVarDef]
 		,	contextMethods		:: CppProgram
 		,	contextDeclareSelf	:: Bool
+		,	contextParent		:: Maybe String
 		}
 
 data CppVarDecl

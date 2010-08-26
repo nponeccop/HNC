@@ -33,6 +33,8 @@ transformArgument symTab name callSiteType visibleAtoms templ = let
 		Just CppCurrentClassVar -> name
 		Just CppCurrentClassMethod -> "hn::bind(*this, &self::" ++ name ++ templ ++ ")"
 		Just CppLocal -> name
+		Just CppParentVar -> "parent->" ++ name
+		Just foo -> error $ show foo
 		Nothing -> xtrace "transformArgument.Nothing" $ funAmpersand ++ name
 
 transformFunction symTab name callSiteType visibleAtoms templateArgs = let
