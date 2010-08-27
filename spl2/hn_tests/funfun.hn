@@ -1,0 +1,5 @@
+hnMain = {
+	b x = incr x
+	a x = sum x (b x)
+	print (a 5)
+}

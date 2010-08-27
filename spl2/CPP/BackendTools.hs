@@ -73,7 +73,7 @@ transformFunction symTab name callSiteType visibleAtoms templateArgs = let
 		Just CppLocal -> name
 		Just CppCurrentClassVar -> name
 		Just CppCurrentClassMethod -> name
-		Just CppCurrentClassMethodStatic -> "self::" ++ name ++ ta
+		Just CppCurrentClassMethodStatic -> name ++ ta
 		Just CppUpperArgument -> name
 		Just foo -> error $ "transformFunction:" ++ show foo
 		Nothing -> name

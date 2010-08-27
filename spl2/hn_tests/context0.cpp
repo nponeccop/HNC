@@ -16,7 +16,7 @@ struct foo_impl
 	};
 	int t3(int x)
 	{
-		return ap(hn::bind(*this, &self::t4), x);
+		return ap<int, int>(hn::bind(*this, &self::t4), x);
 	};
 };
 
