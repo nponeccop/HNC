@@ -15,7 +15,7 @@ Description:    SPL is a strictly, statically and implicitly typed functional un
 License-File:   COPYING.LESSER
 Build-Depends:  base == 4.*, containers, bytestring, parsec >= 3.1, HUnit, QuickCheck >= 2, haskell98, mtl, uuagc, directory == 1.0.*
 HS-Source-dirs:	.
-cabal-version:  >= 1.6
+cabal-version:  >= 1.8.0.6
 
 Executable:     spl-hnc
 Main-Is:        HNC.hs

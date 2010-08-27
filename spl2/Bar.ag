@@ -23,16 +23,47 @@ import MilnerTools
 
 type ExpressionList  = [Expression]
 
+-- фронтэнд к API атрибутной грамматики.
 compile2 def inh = cppDefinition_Syn_Root $ wrap_Root (sem_Root (Root def)) inh
 }
 
+-- Типы узлов атрибутной грамматики:
+-- Root - корневой узел.
+-- Необходим для задания атрибутов по умолчанию для корневого узла Definition
+
+-- Узел Root - единственный узел, к атрибутам которого нужен доступ "снаружи".
+-- Поэтому генерируется "обертка" вокруг кортежей атрибутов -
+-- структуры Syn_Root, Inh_Root и функция wrap_Root, позволяющие
+-- работать с атрибутами как с именованными полями.
 
 WRAPPER Root
 
+-- ExpressionList - вспомогательный узел, используемый в выражениях
+-- для списка фактических аргументов функций
+-- TYPE позволяет сгенерировать две фиктивные продукции - Cons и Nil
+-- и не определять data ExpressionList = ELCons a b | ELNil
 TYPE ExpressionList = [Expression]
+
+-- Единственным дочерним узлом Root является корневое определение. Поэтому
+-- программа на HN0, по-крайней мере, пока, представляет собой одну корневую
+-- функцию. В будущем дочерним узлом у корневого будет Program, что более
+-- соответствует общепринятому представлению о программах как о последовательностях
+-- корневых определений.
+--
+-- Несмотря на то, что UUAG может сам генерировать объявления АТД для узлов, эта
+-- возможность не используется. Поэтому каждый узел нашего дерева абстрактного синтаксиса
+-- (AST) описан дважды - один раз для Хаскеля (для парсера) в HN.Intermediate, второй
+-- раз - для UUAG здесь.
+--
+-- В перспективе, возможно, прийдется отказаться от парсека и парсить исходники
+-- с помощью парсера UU, если при этом облегчится генерация сообщений об ошибках
 
 DATA Root
 	| Root def : Definition
+
+-- атрибутный интерфейс компилятора: компилятор получает "библиотеку" - набор типов
+-- библиотечных символов. Возвращается программа на Си++ в виде АТД, определенного в
+-- CPP.Intermediate, которая потом преобразуется в текст с помощью CPP.Visualise
 
 ATTR Root
 	[
@@ -48,8 +79,7 @@ SEM Root
 		def.inhCounter = 0
 		def.visibleAtoms = @lhs.library
 		def.inferredTypes = @lhs.library
-		def.inferredQualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		def.neighborQualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
+		def.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
 		def.finalSubstitution = xtrace "Root.finalSubstitution" $ composeSubstitutions @def.s
 		def.parent = "OH,PARENT (ASSERTION)"
 
@@ -62,8 +92,8 @@ DATA Expression
 -- собранной FFI и модулем вывода типов
 --
 -- В С++ символ имеет разный синтаксис
--- в зависимости как от вида символа, так и от позиции в выражении (позиция
--- функции и позиция аргумента)
+-- в зависимости как от вида символа ("квалификатора"), так и от
+-- позиции в выражении (позиция функции и позиция аргумента)
 --
 -- @atomTransformer - функция отображения символа, вместо флага позиции +
 -- ветвления по нему используются две функции - CPP.BackendTools.transformFunction и
@@ -77,8 +107,8 @@ DATA Expression
 
 ATTR Expression ExpressionList
 	[
-		atomTransformer : {M.Map String CppAtomType -> String -> T -> M.Map String T -> String -> String}
-		inferredQualifiers : {M.Map String CppAtomType}
+		atomTransformer : {M.Map String CppQualifier -> String -> T -> M.Map String T -> String -> String}
+		qualifiers : {M.Map String CppQualifier}
 		inferredTypes : {M.Map String T}
 	|
 	|
@@ -107,7 +137,7 @@ SEM Expression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.inferredQualifiers @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.qualifiers @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
 
 		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteTypeVars (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
 		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typePolyVars $ @loc.inferredType
@@ -115,10 +145,9 @@ SEM Expression
 		loc.inferredType = xtrace "Atom.inferredType" $ tracedUncondLookup "Atom.inferredType" @name @lhs.inferredTypes
 		loc.xsubst = xtrace "Atom.xsubst" $ unify @loc.inferredType @loc.callSiteType
 
-
+	-- аппликация транслируется тоже тривиально
+	-- для функции и аргумента выставляются соответствующие ФВП обработки
 	| Application
-		-- аппликация транслируется тоже тривиально
-		-- для функции и аргумента выставляются соответствующие ФВП обработки
 		fn.atomTransformer = transformFunction
 		arg.atomTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
@@ -141,6 +170,7 @@ ATTR Definition [  | | inferredTypesS : {(String, T)} ]
 -- Узел Program просто пересылает эти атрибуты - копирует и агрегирует соответственно
 
 ATTR Program [ | | inferredTypesS : {M.Map String T} ]
+
 
 SEM Program
 	| Cons
@@ -174,19 +204,144 @@ SEM Expression
 
 TYPE Program = [Definition]
 
+-- Модуль вывода квалификаторов
+--
+--
+ATTR Definition
+	[
+	|
+	|
+		-- квалификатор определения вычисляется на основе квалификаторов
+		-- свободных переменных определения
+		-- квалификатор атома - это "путь" к атому. Соответственно, относительные
+		-- пути к одному и тому же атому из разных мест различны.
+
+		-- квалификатор в последующих определениях в программе
+		qualifier : CppQualifier
+
+		-- квалификатор в выражении в конце программы
+		valueWhereQualifiers : {(String, CppQualifier)}
+	]
+
 ATTR Program
 	[
- 		|
-		|
-		    name USE {:} {[]} : {[String]}
-			freeVars USE {`S.union`} {S.empty} : {S.Set String}
-			cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
-			varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
-			templateArgs USE {`S.union`} {S.empty} : {S.Set String}
-			contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
-			inferredQualifiersS USE {`M.union`} {M.empty} : {M.Map String CppAtomType}
-			declareSelf USE {||} {False} : Bool
-			declareParent USE {||} {False} : Bool
+	|
+	|
+		valueWhereQualifiers USE {:} {[]} : {[(String, CppQualifier)]}
+	]
+
+ATTR Definition Program
+	[
+		-- qualifiers - "окончательный" набор квалификаторов.
+		-- Для определения - это квалификаторы атомов, видимых из определения
+		-- Для программы - это квалификаторы атомов, видимых из данного
+		-- места определения. Программы имеют семантику let..in - то есть,
+		-- в последующих определениях из программы можно использовать
+ 		-- предыдущие. Соответственно, при проходе программы qualifiers
+ 		-- нужно непрерывно пополнять
+		qualifiers : {M.Map String CppQualifier}
+	|
+	|
+	]
+
+-- Из программы в выражение надо передавать другой набор квалификаторов.
+--
+
+SEM Program
+	| Cons
+		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
+
+SEM Definition
+	| Definition
+		-- â âûðàæåíèÿõ Ñ++ îáðàùåíèå ê ñèìâîëó foo âûïîëíÿåòñÿ ìíîãèìè ñïîñîáàìè:
+		-- local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ â bar_impl
+		-- impl.foo - åñëè foo ïåðåìåííàÿ â bar_impl èëè (íåñòàòè÷åñêàÿ ôóíêöèÿ, è âûïîëíÿåòñÿ å¸ âûçîâ)
+		-- hn::bind(impl, &local::foo) - åñëè foo íåñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- &local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- foo - åñëè foo ëîêàëüíàÿ ïåðåìåííàÿ ôóíêöèè èëè ïàðàìåòð ôóíêöèè
+		-- hn::foo - åñëè foo ÿâëÿåòñÿ ôóíêöèåé ñòàíäàðòíîé áèáëèîòåêè
+		--
+		-- Ñïîñîáû íèæå íå ðåàëèçîâàíû:
+		-- ïðè êàððèðîâàíèè íåîáõîäèìî âûçûâàòü hn::curry1(&local::foo) èëè hn::curry1(impl, &local::foo)
+		-- ïðè âëîæåíííîñòè çàìûêàíèé íåîáõîäèìî âìåñòî local óêàçûâàòü öåïî÷êó parent::parent::foo èëè up.up.foo
+		--
+		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, qualifiers, atomTransformer
+		-- atomTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- ò.å. îäèí è òîò æå àòîì òðàíñëèðóåòñÿ ïî-ðàçíîìó, â çàâèñèìîñòè îò òîãî, íàõîäèòñÿ
+		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
+		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
+		-- íà îñíîâå S
+		loc.isFunctionStatic = { (isNothing $ find f $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) (xtrace (@name ++ ".ifs.iq") @lhs.qualifiers) $ xtrace "ifs.fvm" @loc.freeVarsMap) where
+				f (_, CppUpperArgument) = True
+				f (_, CppContextVar) = True
+				f (_, CppContextMethod) = True
+				f (_, CppCurrentClassVar) = True
+				f (_, CppCurrentClassMethod) = True
+				f _ = False
+			}
+
+		loc.qualifier = if (@loc.isFunction) then (if @loc.isFunctionStatic then CppCurrentClassMethodStatic else CppCurrentClassMethod) else CppCurrentClassVar
+		lhs.valueWhereQualifiers = (@name, if (@loc.isFunction) then (if @loc.isFunctionStatic then CppContextMethodStatic else CppContextMethod) else CppContextVar)
+
+		lhs.qualifier = @loc.qualifier
+
+		-- В локальных определениях параметры "верхнего" определения видны как CppUpperArgument:
+		loc.whereParameterQualifiers = M.fromList $ zip @params $ repeat CppUpperArgument
+
+		-- В значении определения параметры определения видны как CppArgument:
+		loc.valueParameterQualifiers = M.fromList $ zip @params $ repeat CppArgument
+
+		-- В локальных определениях дополнительно видны параметры определения. Вдобавок, вложенные
+		-- функции находятся "ниже" текущей, поэтому квалификаторы надо
+		-- "спустить вниз" (удлиннить относительные пути):
+		where.qualifiers = xtrace (@name ++ ".where.qualifiers") $ M.unions [xtrace "lvv" @loc.localVars, @loc.whereParameterQualifiers, M.map moveQualifierDown @lhs.qualifiers]
+
+		-- В значении определения локальные определения видны по-другому, чем в локальных
+		-- определениях:
+		loc.valueWhereQualifiers = M.fromList @where.valueWhereQualifiers
+
+		-- в значении определения видны как параметры определения (но уже
+		-- в виде CppArgument!), так и where-определения
+		loc.valueQualifiers = M.unions [@loc.localVars, @loc.valueParameterQualifiers, @loc.valueWhereQualifiers, @lhs.qualifiers]
+		value.qualifiers = xtrace (@name ++ ".value.qualifiers")  @loc.valueQualifiers
+
+		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
+		{-
+
+		loc.valueInferredQualifiers = M.unions [xtrace "lv" @loc.localVars, M.fromList $ zip @params $ repeat CppArgument, @where.chainedQualifiers]
+		loc.oldValueInferredQualifiers = { xtrace "value.inferredQualifiers" $ M.unions [
+						@loc.localVars,
+						M.fromList $ zip @params $ repeat CppArgument,
+						xtrace "iq" @where.chainedQualifiers,
+						M.map yyy $ xtrace "nq" @lhs.neighborQualifiers
+						] where
+					yyy x = if @loc.isFunction then moveQualifierDown x else x
+		}
+		value.inferredQualifiers = @loc.valueInferredQualifiers
+
+		where.inferredQualifiers = xtrace "where.inferredQualifiers" $ M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
+		where.neighborQualifiers = xtrace "where.neighborQualifiers" $ M.unions [@loc.localVars, @where.chainedQualifiers, mapParent @lhs.inferredQualifiers]
+		where.chainedQualifiers =  M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
+		-}
+
+		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
+
+		lhs.declareSelf = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppCurrentClassMethod -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+		lhs.declareParent = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppParentVar -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+
+ATTR Program
+	[
+	|
+	|
+	    name USE {:} {[]} : {[String]}
+		freeVars USE {`S.union`} {S.empty} : {S.Set String}
+		cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
+		varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
+		templateArgs USE {`S.union`} {S.empty} : {S.Set String}
+		contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
+		declareSelf USE {||} {False} : Bool
+		declareParent USE {||} {False} : Bool
 	]
 
 DATA Definition
@@ -194,12 +349,11 @@ DATA Definition
 
 ATTR Definition Program
 	[
-		inferredQualifiers : {M.Map String CppAtomType}
-		neighborQualifiers : {M.Map String CppAtomType}
 		level : Int
 		parent : String
 	|
 	|
+
 	]
 
 ATTR Definition
@@ -213,7 +367,6 @@ ATTR Definition
 		varsFreeInFunctions : {S.Set String}
 		templateArgs : {S.Set String}
 		contextMethods : {Maybe CppDefinition}
-		inferredQualifiersS : {M.Map String CppAtomType}
 		declareSelf : Bool
 		declareParent : Bool
 	]
@@ -256,8 +409,6 @@ SEM Definition
 			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
 		}
 
-		lhs.declareSelf = xtrace "Definition.declareSelf" $ isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueInferredQualifiers of CppCurrentClassMethod -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @lhs.neighborQualifiers `S.intersection`  @loc.freeVars
-		lhs.declareParent = xtrace "Definition.declareParent" $ isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueInferredQualifiers of CppParentVar -> True ; _ -> False) $ S.toList $ xtrace "declareParent" $ M.keysSet @lhs.neighborQualifiers `S.intersection`  @loc.freeVars
 		where.parent = @name
 
 		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
@@ -277,72 +428,10 @@ SEM Definition
 
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 
-		-- â âûðàæåíèÿõ Ñ++ îáðàùåíèå ê ñèìâîëó foo âûïîëíÿåòñÿ ìíîãèìè ñïîñîáàìè:
-		-- local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ â bar_impl
-		-- impl.foo - åñëè foo ïåðåìåííàÿ â bar_impl èëè (íåñòàòè÷åñêàÿ ôóíêöèÿ, è âûïîëíÿåòñÿ å¸ âûçîâ)
-		-- hn::bind(impl, &local::foo) - åñëè foo íåñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- &local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- foo - åñëè foo ëîêàëüíàÿ ïåðåìåííàÿ ôóíêöèè èëè ïàðàìåòð ôóíêöèè
-		-- hn::foo - åñëè foo ÿâëÿåòñÿ ôóíêöèåé ñòàíäàðòíîé áèáëèîòåêè
-		--
-		-- Ñïîñîáû íèæå íå ðåàëèçîâàíû:
-		-- ïðè êàððèðîâàíèè íåîáõîäèìî âûçûâàòü hn::curry1(&local::foo) èëè hn::curry1(impl, &local::foo)
-		-- ïðè âëîæåíííîñòè çàìûêàíèé íåîáõîäèìî âìåñòî local óêàçûâàòü öåïî÷êó parent::parent::foo èëè up.up.foo
-		--
-		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, inferredQualifiers, atomTransformer
-		-- atomTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
-		-- ò.å. îäèí è òîò æå àòîì òðàíñëèðóåòñÿ ïî-ðàçíîìó, â çàâèñèìîñòè îò òîãî, íàõîäèòñÿ
-		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
-		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
-		-- íà îñíîâå S
-		loc.isFunctionStatic = { (M.null (@loc.freeVarsMap M.\\ @lhs.inferredQualifiers)) && (isNothing $ find f $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) @lhs.inferredQualifiers $ xtrace "fvm" @loc.freeVarsMap) where
-				f (_, CppUpperArgument) = True
-				f (_, CppContextVar) = True
-				f (_, CppContextMethod) = True
-				f (_, CppCurrentClassVar) = True
-				f (_, CppCurrentClassMethod) = True
-				f _ = False
-			}
-
-		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
-
-		loc.qualifier = { if (@loc.isFunction) then (if @loc.isFunctionStatic then CppFqMethod "local" else CppContextMethod) else CppContextVar }
-
-		lhs.inferredQualifiersS = M.singleton @name @loc.qualifier
 		value.atomTransformer = transformArgument
-		loc.valueInferredQualifiers = {
-			if (@loc.isFunction)
-				then xxx
-				else xxx
-				where
-					xxx = xtrace "value.inferredQualifiers" $ M.unions [
-						@loc.localVars,
-						M.fromList $ zip @params $ repeat CppArgument,
-						xtrace "iq" @where.inferredQualifiersS,
-						M.map yyy $ xtrace "nq" @lhs.neighborQualifiers
-						]
-					yyy x = if @loc.isFunction then zzz x else x
-					zzz CppContextVar = CppCurrentClassVar
-					zzz CppContextMethod = CppCurrentClassMethod
-					zzz (CppFqMethod "local") = CppCurrentClassMethod
-					zzz x = x
-		}
-		value.inferredQualifiers = @loc.valueInferredQualifiers
 
-		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
-		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
-		loc.argumentQualifiers = M.fromList $ zip @params $ repeat CppUpperArgument
-		where.inferredQualifiers = xtrace "where.inferredQualifiers" $ M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
-		where.neighborQualifiers = xtrace "where.neighborQualifiers" $ M.unions [@loc.localVars, @where.inferredQualifiersS, mapParent @lhs.inferredQualifiers]
-{
 
-mapParent x = M.map f x where
-	f x = case x of
-		CppContextVar -> CppParentVar
-		CppUpperArgument -> CppParentVar
-		y -> y
-
-}
+-- Модуль вывода типов
 
 ATTR Expression ExpressionList
 		[

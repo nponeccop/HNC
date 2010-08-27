@@ -25,7 +25,7 @@ data CppExpression
 --    |	CppPtr CppExpression
 --    |	CppField CppExpression String
 
-data CppAtomType
+data CppQualifier
 	= CppAtomVar				-- a(x), x(a)
 	| CppContextVar				-- a(ctx.x), ctx.x(a)
 	| CppContextMethod			-- a(hn::bind(ctx, &local::a), ctx.x(a)
@@ -37,6 +37,8 @@ data CppAtomType
 	| CppUpperArgument
 	| CppLocal
 	| CppParentVar
+	| CppContextMethodStatic
+	| CppCurrentClassMethodStatic
 		deriving (Show)
 
 data CppLocalVarDef
