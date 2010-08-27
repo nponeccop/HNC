@@ -271,14 +271,7 @@ SEM Definition
 		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
 		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
 		-- íà îñíîâå S
-		loc.isFunctionStatic = { (isNothing $ find f $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) (xtrace (@name ++ ".ifs.iq") @lhs.qualifiers) $ xtrace "ifs.fvm" @loc.freeVarsMap) where
-				f (_, CppUpperArgument) = True
-				f (_, CppContextVar) = True
-				f (_, CppContextMethod) = True
-				f (_, CppCurrentClassVar) = True
-				f (_, CppCurrentClassMethod) = True
-				f _ = False
-			}
+		loc.isFunctionStatic = (isNothing $ find nonStaticReference $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) (xtrace (@name ++ ".ifs.iq") @lhs.qualifiers) $ xtrace "ifs.fvm" @loc.freeVarsMap)
 
 		loc.qualifier = if (@loc.isFunction) then (if @loc.isFunctionStatic then CppCurrentClassMethodStatic else CppCurrentClassMethod) else CppCurrentClassVar
 		lhs.valueWhereQualifiers = (@name, if (@loc.isFunction) then (if @loc.isFunctionStatic then CppContextMethodStatic else CppContextMethod) else CppContextVar)
@@ -294,7 +287,7 @@ SEM Definition
 		-- В локальных определениях дополнительно видны параметры определения. Вдобавок, вложенные
 		-- функции находятся "ниже" текущей, поэтому квалификаторы надо
 		-- "спустить вниз" (удлиннить относительные пути):
-		where.qualifiers = xtrace (@name ++ ".where.qualifiers") $ M.unions [xtrace "lvv" @loc.localVars, @loc.whereParameterQualifiers, M.map moveQualifierDown @lhs.qualifiers]
+		where.qualifiers = xtrace (@name ++ ".where.qualifiers") $ M.unions [xtrace "lvv" @loc.localVars, @loc.whereParameterQualifiers, mapParent $ M.map moveQualifierDown @lhs.qualifiers]
 
 		-- В значении определения локальные определения видны по-другому, чем в локальных
 		-- определениях:
@@ -328,7 +321,7 @@ SEM Definition
 		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
 
 		lhs.declareSelf = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppCurrentClassMethod -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
-		lhs.declareParent = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppParentVar -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+		lhs.declareParent = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppParentVar -> True ; _ -> False) $ S.toList $ xtrace "declareParent" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
 
 ATTR Program
 	[

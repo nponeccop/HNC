@@ -24,13 +24,19 @@ moveQualifierDown x = case x of
 	CppContextVar -> CppCurrentClassVar
 	CppContextMethod -> CppCurrentClassMethod
 	CppContextMethodStatic -> CppCurrentClassMethodStatic
+	CppUpperArgument -> CppParentVar
 	_ -> x
 
-mapParent x = M.map f x where
-	f x = case x of
-		CppContextVar -> CppParentVar
-		CppUpperArgument -> CppParentVar
-		y -> y
+mapParent x = x
+
+nonStaticReference (_, x) = case x of
+	CppUpperArgument -> True
+	CppContextVar -> True
+	CppContextMethod ->  True
+	CppCurrentClassVar -> True
+	CppCurrentClassMethod -> True
+	CppParentVar -> True
+	_ -> False
 
 transformArgument symTab name callSiteType visibleAtoms templ = let
 		funAmpersand = case callSiteType of
