@@ -2,6 +2,7 @@
 
 struct hnMain_impl
 {
+	typedef hnMain_impl self;
 	static int b(int x)
 	{
 		return x + 1;

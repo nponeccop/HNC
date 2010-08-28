@@ -299,29 +299,14 @@ SEM Definition
 		value.qualifiers = xtrace (@name ++ ".value.qualifiers")  @loc.valueQualifiers
 
 		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
-		{-
-
-		loc.valueInferredQualifiers = M.unions [xtrace "lv" @loc.localVars, M.fromList $ zip @params $ repeat CppArgument, @where.chainedQualifiers]
-		loc.oldValueInferredQualifiers = { xtrace "value.inferredQualifiers" $ M.unions [
-						@loc.localVars,
-						M.fromList $ zip @params $ repeat CppArgument,
-						xtrace "iq" @where.chainedQualifiers,
-						M.map yyy $ xtrace "nq" @lhs.neighborQualifiers
-						] where
-					yyy x = if @loc.isFunction then moveQualifierDown x else x
-		}
-		value.inferredQualifiers = @loc.valueInferredQualifiers
-
-		where.inferredQualifiers = xtrace "where.inferredQualifiers" $ M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
-		where.neighborQualifiers = xtrace "where.neighborQualifiers" $ M.unions [@loc.localVars, @where.chainedQualifiers, mapParent @lhs.inferredQualifiers]
-		where.chainedQualifiers =  M.unions [@loc.localVars, @loc.argumentQualifiers, @lhs.inferredQualifiers]
-		-}
 
 		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
 		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
 
-		lhs.declareSelf = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppCurrentClassMethod -> True ; _ -> False) $ S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
-		lhs.declareParent = isJust $ find (\x -> case xtrace ("foo " ++ x) $ uncondLookup x @loc.valueQualifiers of CppParentVar -> True ; _ -> False) $ S.toList $ xtrace "declareParent" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+		loc.qualifiedFreeVars =  S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+		loc.foo = \f -> isJust $ find (\x -> f $ uncondLookup x @loc.valueQualifiers) @loc.qualifiedFreeVars
+		lhs.declareSelf = @loc.foo  $ \x -> case x of CppCurrentClassMethod -> True ; CppCurrentClassMethodStatic -> True ; _ -> False
+		lhs.declareParent = @loc.foo $ \x -> case x of CppParentVar -> True ; _ -> False
 
 ATTR Program
 	[

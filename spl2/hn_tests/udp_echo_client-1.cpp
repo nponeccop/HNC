@@ -6,6 +6,7 @@ struct hnMain_impl
 
 	struct tb_impl
 	{
+		typedef tb_impl self;
 		template <typename t6>
 		static ff::IO<void> t4(t6 end_time)
 		{
