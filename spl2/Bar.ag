@@ -2,24 +2,20 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Bar (compile2, Inh_Root(..)) where
 
+import qualified Data.Set as S
+import qualified Data.Map as M
+import Data.List
+import Data.Maybe
+
 import CPP.Intermediate
 import CPP.TypeProducer
 import CPP.BackendTools
 
 import HN.Intermediate
 import SPL.Types
-import qualified Data.Set as S
-import qualified Data.Map as M
-import Data.List
-import Data.Maybe
-import Utils
-
--- UNUSED import CPP.Visualise
-import Debug.Trace
--- UNUSED import SPL.Visualise
-
 
 import MilnerTools
+import Utils
 
 type ExpressionList  = [Expression]
 
@@ -80,7 +76,7 @@ SEM Root
 		def.visibleAtoms = @lhs.library
 		def.inferredTypes = @lhs.library
 		def.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		def.finalSubstitution = xtrace "Root.finalSubstitution" $ composeSubstitutions @def.s
+		def.finalSubstitution = xtrace "Root.finalSubstitution" @def.s
 		def.parent = "OH,PARENT (ASSERTION)"
 
 DATA Expression
@@ -137,13 +133,11 @@ SEM Expression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.qualifiers @name @loc.callSiteType @lhs.visibleAtoms @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.qualifiers @name @loc.callSiteType @lhs.visibleAtoms $ fixTA @loc.templateArgs
 
-		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteTypeVars (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
-		loc.templateArgs = let fs = xsubstitute @loc.xsubst in makeArgs $ map fs  $ S.toList $ typePolyVars $ @loc.inferredType
+		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
 
 		loc.inferredType = xtrace "Atom.inferredType" $ tracedUncondLookup "Atom.inferredType" @name @lhs.inferredTypes
-		loc.xsubst = xtrace "Atom.xsubst" $ unify @loc.inferredType @loc.callSiteType
 
 	-- аппликация транслируется тоже тривиально
 	-- для функции и аргумента выставляются соответствующие ФВП обработки
@@ -151,6 +145,13 @@ SEM Expression
 		fn.atomTransformer = transformFunction
 		arg.atomTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
+
+SEM Definition
+	-- ФВП обработки по умолчанию
+	-- умолчание нужно, например, для вырожденных значений, содержащих одиночный атом,
+	-- таких, как, foo = bar
+	| Definition
+		value.atomTransformer = transformArgument
 
 -- унаследованный @inferredTypes - это информация об атомах, видимых в where и value
 -- данного Definition
@@ -244,11 +245,9 @@ ATTR Definition Program
 	|
 	]
 
--- Из программы в выражение надо передавать другой набор квалификаторов.
---
-
 SEM Program
 	| Cons
+		-- .. и пополняем!
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
 
 SEM Definition
@@ -300,8 +299,9 @@ SEM Definition
 
 		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
 
-		loc.allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
-		loc.localVars = M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ @loc.allWhereVars S.\\ @where.varsFreeInFunctions
+		loc.localVars = { M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ allWhereVars S.\\ @where.varsFreeInFunctions where
+			allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+		}
 
 		loc.qualifiedFreeVars =  S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
 		loc.foo = \f -> isJust $ find (\x -> f $ uncondLookup x @loc.valueQualifiers) @loc.qualifiedFreeVars
@@ -316,7 +316,6 @@ ATTR Program
 		freeVars USE {`S.union`} {S.empty} : {S.Set String}
 		cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 		varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
-		templateArgs USE {`S.union`} {S.empty} : {S.Set String}
 		contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
 		declareSelf USE {||} {False} : Bool
 		declareParent USE {||} {False} : Bool
@@ -343,7 +342,6 @@ ATTR Definition
 		freeVars : {S.Set String}
 		cppVarDefinition : {Maybe CppLocalVarDef}
 		varsFreeInFunctions : {S.Set String}
-		templateArgs : {S.Set String}
 		contextMethods : {Maybe CppDefinition}
 		declareSelf : Bool
 		declareParent : Bool
@@ -356,9 +354,9 @@ SEM Definition
 		lhs.name = @name
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
-		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppUncurryType @loc.finalType @params
+		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppType @loc.finalType
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
-		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar (cppType @loc.finalType) @name @value.sem
+		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @value.sem
 
 		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
 		lhs.cppDefinition = @loc.cppDefinition
@@ -390,7 +388,7 @@ SEM Definition
 		where.parent = @name
 
 		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
-		loc.freeVars = (@value.atoms `S.union` @where.freeVars) `subtractSet` S.fromList @params `subtractSet` S.fromList @where.name
+		loc.freeVars = (@value.atoms `S.union` @where.freeVars) S.\\ S.fromList @params S.\\ S.fromList @where.name
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
@@ -398,15 +396,40 @@ SEM Definition
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
+
+
+-- Модуль полиморфизма
+-- На основе информации, собранной модулем вывода типов, вычисляет формальные (в объявлениях контекстов и
+-- функций) и фактические (в типах переменных, типах аргументов функции, типах возврата функций и в выражениях)
+-- шаблонные аргументы
+--
+ATTR Program
+	[
+	|
+	|
+		templateArgs USE {`S.union`} {S.empty} : {S.Set String}
+	]
+
+ATTR Definition
+	[
+	|
+	|
+		templateArgs : {S.Set String}
+	]
+
+SEM Definition
+	| Definition
+		-- шаблонные переменные контекста верхнего уровня
+		lhs.templateArgs = typeTv @loc.finalType
+		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
 		loc.templateArgs = typePolyVars @loc.finalType
 
-		loc.finalType = xtrace ("Definition." ++ @name ++ ".finalType") $ substituteTypeVars @loc.inferredType @lhs.finalSubstitution
-		-- шаблонные переменные контекста верхнего уровня
-		lhs.templateArgs = if not @loc.isFunction then xtrace "Definition.typeTv2" $ typeAllPolyVars @loc.finalType else xtrace "Definition.typeTv" $ typeTv @loc.finalType
-
-		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
-
-		value.atomTransformer = transformArgument
+SEM Expression
+	| Atom
+		loc.templateArgs = { map fs $ S.toList $ typePolyVars $ @loc.inferredType where
+			fs x = uncondLookup x xsubst
+			xsubst = xtrace "Atom.xsubst" $ unify @loc.inferredType @loc.callSiteType
+		}
 
 
 -- Модуль вывода типов
@@ -426,7 +449,7 @@ ATTR Definition Expression
 	|
 	|
 		inferredType : T
-		s : {[Substitution]}
+		s : {Substitution}
 		tau : T
 	]
 
@@ -450,18 +473,18 @@ ATTR Program
 	|
 	|
 		bottomVisibleAtoms : {M.Map String T}
-		bottomS : {[Substitution]}
+		bottomS : {Substitution}
 	]
 
 
 ATTR ExpressionList
 	[
 		visibleAtoms : {M.Map String T}
-		fnS : {[Substitution]}
+		fnS : {Substitution}
 		fnTau : T
 	|
 	|
-		s : {[Substitution]}
+		s : {Substitution}
 		tau : T
 	]
 
@@ -481,26 +504,52 @@ SEM Definition
 		value.inhCounter = @where.synCounter
 		lhs.synCounter = @value.synCounter
 
-		loc.s = xtrace "Definition.s" $ composeSubstitutions (@value.s) `xcompose2` (composeSubstitutions @where.bottomS)
+		loc.s = xtrace "Definition.s" $ @value.s `composeSubstitutions` @where.bottomS
 		lhs.tau = xtrace "Definition.tau" @loc.tau
-		lhs.s = [@loc.s]
+		lhs.s = @loc.s
 		loc.tau = { if null @params
 			then @value.tau
-			else TT $ map (\(_, beta) -> substituteTypeVars beta $ composeSubstitutions @value.s)  @argAtoms ++ [@value.tau]
+			else TT $ map (\(_, beta) -> substituteType beta @value.s)  @argAtoms ++ [@value.tau]
 		}
 		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
 		value.visibleAtoms = @where.bottomVisibleAtoms
 
-		loc.inferredType = xtrace "Definition.@loc.inferredType" $ uncurryType @params $ closure (substitute @loc.s @lhs.visibleAtoms) (xtrace "Definition.itB4closure" $ substituteTypeVars  (xtrace "Definition.@loc.tau" @loc.tau) (xtrace ("Definition.loc.s name " ++ @name ++ ":") @loc.s ))
+		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
+		loc.inferredType = xtrace "Definition.@loc.inferredType" $ uncurryType @params $ closure (substituteEnv @loc.s @lhs.visibleAtoms) (xtrace "Definition.itB4closure" $ substituteType  (xtrace "Definition.@loc.tau" @loc.tau) (xtrace ("Definition.loc.s name " ++ @name ++ ":") @loc.s ))
 		lhs.inferredType =  @loc.inferredType
+
+		-- finalType используется для "исправления" типов, содержащих
+		-- non-generic type variables (термин Карделли)
+		-- такие "необобщенные типовые переменные" возникают, если в результате
+		-- анализа тела определения получается, что свободная переменная может
+		-- иметь любой тип:
+		-- let x = 2 in y = i
+		-- для терма "i" алгоритм W выводит _МОНОТИП_ вида t324, где t324 - свободная
+		-- типовая переменная. В противоположность политипу вида forall t324 . t324,
+		-- в котором t324 - связанная типовая переменная
+		--
+		-- связывание типовых переменных с помощью квантификатора выполняет функция
+		-- closure (термин Милнера), принимающая тип и типовое окружение и
+		-- возвращающая тип, в котором некоторые типовые переменные квантифицированы
+		--
+		-- По историческим причинам вместо явных кванторов forall используются два вида
+		-- типовых переменных - TV для неквантифицированных и TU для квантифицированных
+		-- (описано в SPL.Types.T). Благо из-за shallow types квантор может находиться
+		-- только в одном месте - в начале политипа
+		--
+		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
+		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
+
+		loc.finalType = xtrace ("Definition." ++ @name ++ ".finalType") $ substituteType @loc.inferredType @lhs.finalSubstitution
+
 
 SEM Expression
 	| Constant
-		lhs.s = []
+		lhs.s = M.empty
 		lhs.tau = constantType @c
 		lhs.synCounter = @lhs.inhCounter
 	| Atom
-		lhs.s = []
+		lhs.s = M.empty
 		lhs.tau = @loc.tau
 		(lhs.synCounter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
 	| Application
@@ -508,7 +557,7 @@ SEM Expression
 		arg.inhCounter = @fn.synCounter
 		lhs.synCounter = @arg.synCounter
 
-		arg.visibleAtoms = xtrace "Application.visibleAtoms" $ substitute (composeSubstitutions @fn.s) @lhs.visibleAtoms
+		arg.visibleAtoms = xtrace "Application.visibleAtoms" $ substituteEnv @fn.s @lhs.visibleAtoms
 		arg.fnS = @fn.s
 		arg.fnTau = xtrace "Application.fnTau" @fn.tau
 
@@ -517,15 +566,15 @@ SEM Expression
 
 SEM ExpressionList
 	| Cons
-		loc.v = xtrace "ExpressionList.v" $ [unify @lhs.fnTau $ TT [substituteTypeVars @hd.tau (composeSubstitutions @hd.s), @loc.beta]]
+		loc.v = xtrace "ExpressionList.v" $ unify @lhs.fnTau $ TT [substituteType @hd.tau @hd.s, @loc.beta]
 		loc.beta = tv @lhs.inhCounter
 
-		loc.s = xtrace "ExpressionList.loc.s" $ @loc.v ++ @hd.s ++ @lhs.fnS
+		loc.s = xtrace "ExpressionList.loc.s" $ @loc.v `composeSubstitutions` @hd.s `composeSubstitutions` @lhs.fnS
 
 		tl.fnS = xtrace "ExpressionList.tl.fnS" @loc.s
-		tl.fnTau = xtrace "ExpressionList.fnTau" $ substituteTypeVars @loc.beta $ composeSubstitutions @loc.s
+		tl.fnTau = xtrace "ExpressionList.fnTau" $ substituteType @loc.beta @loc.s
 
-		tl.visibleAtoms = xtrace "ExpressionList.tl.visibleAtoms" $ substitute (composeSubstitutions @loc.v) $ xtrace "ExpressionList.visibleAtoms" @lhs.visibleAtoms
+		tl.visibleAtoms = xtrace "ExpressionList.tl.visibleAtoms" $ substituteEnv @loc.v $ xtrace "ExpressionList.visibleAtoms" @lhs.visibleAtoms
 
 		lhs.s = @tl.s
 	| Nil
@@ -535,15 +584,15 @@ SEM ExpressionList
 SEM Program
 	| Cons
 		hd.visibleAtoms = xtrace "Program.hd.visibleAtoms" @lhs.visibleAtoms
-		tl.visibleAtoms = substitute (composeSubstitutions @hd.s) $ M.insert @hd.name @hd.inferredType @lhs.visibleAtoms
+		tl.visibleAtoms = substituteEnv @hd.s $ M.insert @hd.name @hd.inferredType @lhs.visibleAtoms
 		lhs.bottomVisibleAtoms = @tl.bottomVisibleAtoms
 
-		lhs.bottomS = xtrace "Program.bottomS" $ @hd.s ++ @tl.bottomS
+		lhs.bottomS = xtrace "Program.bottomS" $ @hd.s `composeSubstitutions` @tl.bottomS
 
 		hd.inhCounter = @lhs.inhCounter
 		tl.inhCounter = @hd.synCounter
 		lhs.synCounter = @tl.synCounter
 	| Nil
-		lhs.bottomS = []
+		lhs.bottomS = M.empty
 		lhs.bottomVisibleAtoms = xtrace "Program.bottomVisibleAtoms" @lhs.visibleAtoms
 		lhs.synCounter = @lhs.inhCounter

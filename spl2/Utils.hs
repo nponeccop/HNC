@@ -1,20 +1,9 @@
-
 module Utils where
 
 import qualified Data.ByteString
 import Data.Char
-import qualified Data.Set as S
 import qualified Data.Map as M
 import Debug.Trace
-
-ll l = [last l]
-ff (l :_) = [l]
-
-traceOff x y = y
-
-trace2 x = trace (show x) x
-trace3 x y = traceOff ("trace3 " ++ x ++ ": " ++ show y) y
-trace4 x y z = traceOff ("trace4 " ++ x ++ ": " ++ show y) z
 
 xtrace a b = b
 ztrace m t =  trace (m ++ " = " ++ show t) t
@@ -33,9 +22,6 @@ deconstructJust Nothing val = val
 
 packL = Data.ByteString.pack . map (fromIntegral . ord)
 
-subtractSet x y = S.difference x (S.intersection x y)
-
-subtractMap x y = M.difference x (M.intersection x y)
 subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList
 
 joinStr _ [] = ""
