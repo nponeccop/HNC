@@ -149,6 +149,13 @@ namespace ff
 		return in;
 	}
 
+	template <typename T>
+	std::list<T> join1(T a, std::list<T> l)
+	{
+		// TODO implement ff::join1 - only signature is there
+		return l;
+	}
+
 	struct RaiiSocket
 	{
 		SOCKET s;

@@ -1,0 +1,6 @@
+hnMain = {
+	s = 5
+	reply msg = print s
+	ping = reply 6
+	ping
+}

@@ -26,8 +26,6 @@ moveQualifierDown x = case x of
 	CppUpperArgument -> CppParentVar
 	_ -> x
 
-mapParent x = x
-
 nonStaticReference (_, x) = case x of
 	CppUpperArgument -> True
 	CppContextVar -> True

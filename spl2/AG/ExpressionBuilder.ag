@@ -1,0 +1,69 @@
+-- Модуль построения выражений С++ из выражений HN0 и информации о типах,
+-- собранной FFI и модулем вывода типов
+--
+-- В С++ символ имеет разный синтаксис
+-- в зависимости как от вида символа ("квалификатора"), так и от
+-- позиции в выражении (позиция функции и позиция аргумента)
+--
+-- @atomTransformer - функция отображения символа, вместо флага позиции +
+-- ветвления по нему используются две функции - CPP.BackendTools.transformFunction и
+-- CPP.BackendTooks.transformArgument
+--
+-- @inferredQualifiers - для каждого символа указан его вид. Информация о видах собирается
+-- FFI и модулем компиляции замыканий
+--
+-- @inferredTypes - выведенные типы символов
+
+
+ATTR Expression ExpressionList
+	[
+		atomTransformer : {M.Map String CppQualifier -> String -> T -> M.Map String T -> String -> String}
+		qualifiers : {M.Map String CppQualifier}
+		inferredTypes : {M.Map String T}
+	|
+	|
+	]
+
+ATTR Expression	[  | | sem : CppExpression ]
+
+ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
+
+SEM Expression
+	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
+ 	-- только на позиции аргумента, поэтому никакой трансляции не
+	-- требуется
+	| Constant
+		lhs.sem = CppLiteral @c
+		loc.inferredType = undefined
+	-- Атомы транслируются в символы
+	--
+	| Atom
+		-- Конструированием символа С++ из атома HN0 занимаются две функции из
+		-- модуля CPP.BackendTools
+		--
+		-- НЕУКЛЮЖЕСТЬ
+		-- Функции CPP.BackendTools.transformFunction и CPP.BackendTooks.transformArgumentФункции
+		-- непосредственно конструируют строковое представление атома в С++ вместо
+		-- конструирования абстрактного представления и делегации десериализации в строку
+		-- инстансу Show CppExpression из модуля CPP.Visualise
+		--
+		lhs.sem = CppAtom $  @lhs.atomTransformer @lhs.qualifiers @name @loc.callSiteType @lhs.visibleAtoms $ fixTA @loc.templateArgs
+
+		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
+
+		loc.inferredType = xtrace "Atom.inferredType" $ tracedUncondLookup "Atom.inferredType" @name @lhs.inferredTypes
+
+	-- аппликация транслируется тоже тривиально
+	-- для функции и аргумента выставляются соответствующие ФВП обработки
+	| Application
+		fn.atomTransformer = transformFunction
+		arg.atomTransformer = transformArgument
+		lhs.sem = CppApplication @fn.sem @arg.sem
+
+SEM Definition
+	-- ФВП обработки по умолчанию
+	-- умолчание нужно, например, для вырожденных значений, содержащих одиночный атом,
+	-- таких, как, foo = bar
+	| Definition
+		value.atomTransformer = transformArgument
+

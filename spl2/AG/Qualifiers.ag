@@ -1,0 +1,102 @@
+-- Модуль вывода квалификаторов
+--
+--
+ATTR Definition
+	[
+	|
+	|
+		-- квалификатор определения вычисляется на основе квалификаторов
+		-- свободных переменных определения
+		-- квалификатор атома - это "путь" к атому. Соответственно, относительные
+		-- пути к одному и тому же атому из разных мест различны.
+
+		-- квалификатор в последующих определениях в программе
+		qualifier : CppQualifier
+
+		-- квалификатор в выражении в конце программы
+		valueWhereQualifiers : {(String, CppQualifier)}
+	]
+
+ATTR Program
+	[
+	|
+	|
+		valueWhereQualifiers USE {:} {[]} : {[(String, CppQualifier)]}
+	]
+
+ATTR Definition Program
+	[
+		-- qualifiers - "окончательный" набор квалификаторов.
+		-- Для определения - это квалификаторы атомов, видимых из определения
+		-- Для программы - это квалификаторы атомов, видимых из данного
+		-- места определения. Программы имеют семантику let..in - то есть,
+		-- в последующих определениях из программы можно использовать
+ 		-- предыдущие. Соответственно, при проходе программы qualifiers
+ 		-- нужно непрерывно пополнять
+		qualifiers : {M.Map String CppQualifier}
+	|
+	|
+	]
+
+SEM Program
+	| Cons
+		-- .. и пополняем!
+		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
+
+SEM Definition
+	| Definition
+		-- â âûðàæåíèÿõ Ñ++ îáðàùåíèå ê ñèìâîëó foo âûïîëíÿåòñÿ ìíîãèìè ñïîñîáàìè:
+		-- local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ â bar_impl
+		-- impl.foo - åñëè foo ïåðåìåííàÿ â bar_impl èëè (íåñòàòè÷åñêàÿ ôóíêöèÿ, è âûïîëíÿåòñÿ å¸ âûçîâ)
+		-- hn::bind(impl, &local::foo) - åñëè foo íåñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- &local::foo - åñëè foo ñòàòè÷åñêàÿ ôóíêöèÿ è âûïîëíÿåòñÿ ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- foo - åñëè foo ëîêàëüíàÿ ïåðåìåííàÿ ôóíêöèè èëè ïàðàìåòð ôóíêöèè
+		-- hn::foo - åñëè foo ÿâëÿåòñÿ ôóíêöèåé ñòàíäàðòíîé áèáëèîòåêè
+		--
+		-- Ñïîñîáû íèæå íå ðåàëèçîâàíû:
+		-- ïðè êàððèðîâàíèè íåîáõîäèìî âûçûâàòü hn::curry1(&local::foo) èëè hn::curry1(impl, &local::foo)
+		-- ïðè âëîæåíííîñòè çàìûêàíèé íåîáõîäèìî âìåñòî local óêàçûâàòü öåïî÷êó parent::parent::foo èëè up.up.foo
+		--
+		-- Äëÿ ïîääåðæêè ýòèõ ðàçíûõ îáðàùåíèé ñäåëàí ñëîé symTabTranslator, qualifiers, atomTransformer
+		-- atomTransformer ïîêàçûâàåò, âûïîëíÿåòñÿ ëè îáðàùåíèå ê ôóíêöèè èëè ïåðåäà÷à å¸ ïàðàìåòðîì
+		-- ò.å. îäèí è òîò æå àòîì òðàíñëèðóåòñÿ ïî-ðàçíîìó, â çàâèñèìîñòè îò òîãî, íàõîäèòñÿ
+		-- îí â ïîçèöèè ôóíêöèè èëè â ïîçèöèè àðãóìåíòà
+		-- èçíà÷àëüíî èç êîìïèëÿòîðà ïåðåäàåòñÿ òàáëèöà áèáëèîòå÷íûõ ñèìâîëîâ
+		-- íà îñíîâå S
+		loc.isFunctionStatic = (isNothing $ find nonStaticReference $ M.toList $ xtrace "ifs" $ M.intersectionWith (\a b -> a) (xtrace (@name ++ ".ifs.iq") @lhs.qualifiers) $ xtrace "ifs.fvm" @loc.freeVarsMap)
+
+		loc.qualifier = if (@loc.isFunction) then (if @loc.isFunctionStatic then CppCurrentClassMethodStatic else CppCurrentClassMethod) else CppCurrentClassVar
+		lhs.valueWhereQualifiers = (@name, if (@loc.isFunction) then (if @loc.isFunctionStatic then CppContextMethodStatic else CppContextMethod) else CppContextVar)
+
+		lhs.qualifier = @loc.qualifier
+
+		-- В локальных определениях параметры "верхнего" определения видны как CppUpperArgument:
+		loc.whereParameterQualifiers = M.fromList $ zip @params $ repeat CppUpperArgument
+
+		-- В значении определения параметры определения видны как CppArgument:
+		loc.valueParameterQualifiers = M.fromList $ zip @params $ repeat CppArgument
+
+		-- В локальных определениях дополнительно видны параметры определения. Вдобавок, вложенные
+		-- функции находятся "ниже" текущей, поэтому квалификаторы надо
+		-- "спустить вниз" (удлиннить относительные пути):
+		where.qualifiers = xtrace (@name ++ ".where.qualifiers") $ M.unions [xtrace "lvv" @loc.localVars, @loc.whereParameterQualifiers, M.map moveQualifierDown @lhs.qualifiers]
+
+		-- В значении определения локальные определения видны по-другому, чем в локальных
+		-- определениях:
+		loc.valueWhereQualifiers = M.fromList @where.valueWhereQualifiers
+
+		-- в значении определения видны как параметры определения (но уже
+		-- в виде CppArgument!), так и where-определения
+		loc.valueQualifiers = M.unions [@loc.localVars, @loc.valueParameterQualifiers, @loc.valueWhereQualifiers, @lhs.qualifiers]
+		value.qualifiers = xtrace (@name ++ ".value.qualifiers")  @loc.valueQualifiers
+
+		loc.freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
+
+		loc.localVars = { M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ allWhereVars S.\\ @where.varsFreeInFunctions where
+			allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+		}
+
+		loc.qualifiedFreeVars =  S.toList $ xtrace "declareSelf" $ M.keysSet @loc.valueQualifiers `S.intersection`  @loc.freeVars
+		loc.foo = \f -> isJust $ find (\x -> f $ uncondLookup x @loc.valueQualifiers) @loc.qualifiedFreeVars
+		lhs.declareSelf = @loc.foo  $ \x -> case x of CppCurrentClassMethod -> True ; CppCurrentClassMethodStatic -> True ; _ -> False
+		lhs.declareParent = @loc.foo $ \x -> case x of CppParentVar -> True ; _ -> False

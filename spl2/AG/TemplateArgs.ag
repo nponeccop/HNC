@@ -1,0 +1,32 @@
+-- Модуль полиморфизма
+-- На основе информации, собранной модулем вывода типов, вычисляет формальные (в объявлениях контекстов и
+-- функций) и фактические (в типах переменных, типах аргументов функции, типах возврата функций и в выражениях)
+-- шаблонные аргументы
+--
+ATTR Program
+	[
+	|
+	|
+		templateArgs USE {`S.union`} {S.empty} : {S.Set String}
+	]
+
+ATTR Definition
+	[
+	|
+	|
+		templateArgs : {S.Set String}
+	]
+
+SEM Definition
+	| Definition
+		-- шаблонные переменные контекста верхнего уровня
+		lhs.templateArgs = typeTv @loc.finalType
+		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
+		loc.templateArgs = typePolyVars @loc.finalType
+
+SEM Expression
+	| Atom
+		loc.templateArgs = { map fs $ S.toList $ typePolyVars $ @loc.inferredType where
+			fs x = uncondLookup x xsubst
+			xsubst = xtrace "Atom.xsubst" $ unify @loc.inferredType @loc.callSiteType
+		}
