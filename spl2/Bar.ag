@@ -42,14 +42,14 @@ TYPE ExpressionList = [Expression]
 
 
 
--- унаследованный @inferredTypes - это информация об атомах, видимых в where и value
+-- унаследованный @definitionTypes - это информация об атомах, видимых в where и value
 -- данного Definition
--- синтезированный @inferredTypes - это информация о текущем атоме, передаваемая наверх
+-- синтезированный @definitionTypes - это информация о текущем атоме, передаваемая наверх
 -- в узел Program для агрегации и последующей передачи в узел @Definition.where : Expression
 --
 ATTR Definition Program
 	[
-		inferredTypes : {M.Map String T}
+		definitionTypes : {M.Map String T}
 		finalSubstitution : {Substitution}
 	|
 	|
@@ -64,18 +64,18 @@ ATTR Program [ | | inferredTypesS : {M.Map String T} ]
 
 SEM Program
 	| Cons
-		tl.inferredTypes = M.insert (fst @hd.inferredTypesS) (snd @hd.inferredTypesS)  @lhs.inferredTypes
+		tl.definitionTypes = M.insert (fst @hd.inferredTypesS) (snd @hd.inferredTypesS)  @lhs.definitionTypes
 	| Nil
-		lhs.inferredTypesS = @lhs.inferredTypes
+		lhs.inferredTypesS = @lhs.definitionTypes
 
 SEM Definition
 	| Definition
 		-- НЕУКЛЮЖЕСТЬ
-		-- унаследованный @inferredTypes "спускается" Definition -> Program -> Value
+		-- унаследованный @definitionTypes "спускается" Definition -> Program -> Value
 		-- но из-за того, что у нас where, а не let-in, этому спуску соответствуют
 		-- "нырки" в следующих двух строках:
-		where.inferredTypes = @lhs.inferredTypes
-		value.inferredTypes = @where.inferredTypesS
+		where.definitionTypes = @lhs.definitionTypes
+		value.definitionTypes = @where.inferredTypesS
 
 		--  собрали информацию от выводильщика и отправили всё так же "вниз"
 		--	по пути  Definition -> Program -> Value, но из-за извращенного
@@ -182,5 +182,5 @@ SEM Definition
 
 		(loc.contextArgs, loc.argsTv) = { case @loc.finalType of
 			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
-				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typePolyVars typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
+				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typeTu typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }

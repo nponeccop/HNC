@@ -1,12 +1,10 @@
 -- Модуль вывода типов
-
 ATTR Expression ExpressionList
-		[
-			finalSubstitution : {Substitution}
-		|
-		|
-		]
-
+	[
+		finalSubstitution : {Substitution}
+	|
+	|
+	]
 
 
 ATTR Definition Expression
@@ -14,9 +12,15 @@ ATTR Definition Expression
 		visibleAtoms : {M.Map String T}
 	|
 	|
-		inferredType : T
 		s : {Substitution}
 		tau : T
+	]
+
+ATTR Definition
+	[
+	|
+	|
+		inferredType : T
 	]
 
 ATTR Program Definition Expression ExpressionList
@@ -112,6 +116,28 @@ SEM Expression
 		lhs.s = M.empty
 		lhs.tau = @loc.tau
 		(lhs.synCounter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
+
+		-- дополнительно к Милнеровским s и tau, вычисляются
+		-- * definitionType - тип атома в месте определения
+		-- * callSiteType - тип атома в месте использования
+		-- Унификацией этих типов можно найти фактические шаблонные
+		-- аргументы
+		-- Например:
+		-- print имеет в месте определения   inferredType =   a -> IO void,
+ 		-- а в некотором месте использования callSiteType = int -> IO void.
+ 		--
+		-- Унификацией этих типов можно найти значение a в месте использования,
+ 		-- и явно указать его шаблонным аргументом: print<int>(2 + x), если
+		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
+		--
+
+		loc.callSiteType = xtrace "Atom.callSiteType" $ substituteType (xtrace "Atom.tau" @loc.tau) @lhs.finalSubstitution
+
+		loc.templateArgs = { map fs $ S.toList $ typeTu definitionType where
+			fs x = uncondLookup x $ unify definitionType @loc.callSiteType
+			definitionType = xtrace "Atom.definitionType" $ tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
+		}
+
 	| Application
 		fn.inhCounter = @lhs.inhCounter + 1
 		arg.inhCounter = @fn.synCounter

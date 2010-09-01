@@ -78,8 +78,8 @@ composeSubstitutions a b = xtrace ("MilnerTools.composeSubstitutions: " ++ show 
 
 instantiatedType :: T -> Int -> (Int, T)
 instantiatedType t counter = (nextCounter, substituteType t substitutions) where
-	foo = zip (S.toList $ typePolyVars t) [counter..]
-   	nextCounter = counter + (length $ S.toList $ typePolyVars t)
+	foo = zip (S.toList $ typeTu t) [counter..]
+   	nextCounter = counter + (length $ S.toList $ typeTu t)
 	substitutions = M.fromList $ map (\(x,y) -> (x, tv y)) foo
 
 substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
@@ -96,7 +96,7 @@ substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # "
 ---
 --
 
-typePolyVars x = let union = S.unions . map typePolyVars in case x of
+typeTu x = let union = S.unions . map typeTu in case x of
 	TU v -> S.singleton v
 	TT l -> union l
 	TD _ l -> union l

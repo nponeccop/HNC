@@ -2,7 +2,6 @@ module CPP.BackendTools where
 
 import Data.List
 import Data.Maybe
-import qualified Data.Map as M
 import qualified Data.Set as S
 
 import Utils
@@ -35,42 +34,45 @@ nonStaticReference (_, x) = case x of
 	CppParentVar -> True
 	_ -> False
 
-transformArgument symTab name callSiteType visibleAtoms templ = let
-		funAmpersand = case callSiteType of
-			TT _ -> "&"
-			_ -> ""
-	in case M.lookup name symTab of
-		Just (CppFqMethod prefix) -> funAmpersand ++ prefix ++ "::" ++ name ++ xtrace "TransformArg" templ
-		Just CppContextMethodStatic -> funAmpersand ++ "local::" ++ name ++ templ
-		Just CppContextMethod -> "hn::bind(impl, &local::" ++ name ++ templ ++ ")"
-		Just CppContextVar -> "impl." ++ name
-		Just CppArgument -> name
-		Just CppUpperArgument -> name
-		Just CppCurrentClassVar -> name
-		Just CppCurrentClassMethod -> "hn::bind(*this, &self::" ++ name ++ templ ++ ")"
-		Just CppLocal -> name
-		Just CppParentVar -> "parent->" ++ name
-		Just CppCurrentClassMethodStatic -> "&self::" ++ name ++ templ
-		Just foo -> error $ "transformArgument:" ++ show foo
-		Nothing -> xtrace "transformArgument.Nothing" $ funAmpersand ++ name
+isFunctionType (TT _) = True
+isFunctionType _ = False
 
-transformFunction symTab name callSiteType visibleAtoms templateArgs = let
+isPolymorphicFunctionType x = isFunctionType x && not (S.null $ typeTu x)
+
+hasFunctionalType x = isJust $ find isFunctionType $ init x
+
+transformArgument atomQualifier name atomType templ = let
+		funAmpersand = if isFunctionType atomType then "&" else ""
+	in case atomQualifier of
+		CppFqMethod prefix -> funAmpersand ++ prefix ++ "::" ++ name ++ xtrace "TransformArg" templ
+		CppContextMethodStatic -> funAmpersand ++ "local::" ++ name ++ templ
+		CppContextMethod -> "hn::bind(impl, &local::" ++ name ++ templ ++ ")"
+		CppContextVar -> "impl." ++ name
+		CppArgument -> name
+		CppUpperArgument -> name
+		CppCurrentClassVar -> name
+		CppCurrentClassMethod -> "hn::bind(*this, &self::" ++ name ++ templ ++ ")"
+		CppLocal -> name
+		CppParentVar -> "parent->" ++ name
+		CppCurrentClassMethodStatic -> "&self::" ++ name ++ templ
+		foo -> error $ "transformArgument:" ++ show foo
+
+cppCannotInferReturnType x = not $ S.null $ (typeTu $ last x) S.\\ (typeTu $ TT $ init x)
+
+transformFunction atomQualifier name atomType templateArgs = let
 		ta = case atomType of
-			(TT x) | (||) (ttt x) $ not $ S.null $ (S.\\) (xtrace "AG.transformFunction.pv1" $ typeAllPolyVars $ last x) (xtrace "AG.transformFunction.pv2" $ typeAllPolyVars (TT $ init x)) -> templateArgs
-			_ -> ""
-		atomType = xtrace "AG.transformFunction.atomType" $ uncondLookup name visibleAtoms
-		ttt x = isJust $ find (\x -> isFunctionType x && (not $ S.null $ typePolyVars x)) x
-		isFunctionType (TT _) = True
-		isFunctionType _ = False
-	in case M.lookup name symTab of
-		Just (CppFqMethod prefix) -> prefix ++ "::" ++ name ++ ta
-		Just CppContextMethod -> "impl." ++ name
-		Just CppContextMethodStatic -> "local::" ++ name ++ ta
-		Just CppArgument -> name
-		Just CppLocal -> name
-		Just CppCurrentClassVar -> name
-		Just CppCurrentClassMethod -> name
-		Just CppCurrentClassMethodStatic -> name ++ ta
-		Just CppUpperArgument -> name
-		Just foo -> error $ "transformFunction:" ++ show foo
-		Nothing -> name
+			TT x -> if hasFunctionalType x || cppCannotInferReturnType x
+				then templateArgs
+				else ""
+			_ -> error "Typechecker is wrong - only function type can be at function position"
+
+	in case atomQualifier of
+		CppFqMethod prefix -> prefix ++ "::" ++ name ++ ta
+		CppContextMethod -> "impl." ++ name
+		CppContextMethodStatic -> "local::" ++ name ++ ta
+		CppArgument -> name
+		CppLocal -> name
+		CppCurrentClassMethod -> name
+		CppCurrentClassMethodStatic -> name ++ ta
+		CppUpperArgument -> name
+		foo -> error $ "transformFunction:" ++ show foo
