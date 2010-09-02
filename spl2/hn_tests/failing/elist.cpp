@@ -2,8 +2,8 @@
 
 struct hnMain_impl
 {
-	template <typename t5>
-	static int f(std::list<t5> l)
+	template <typename t3>
+	static int f(std::list<t3> l)
 	{
 		return 1 + ff::length(l);
 	};

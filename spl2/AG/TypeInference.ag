@@ -1,12 +1,11 @@
 -- Модуль вывода типов
 ATTR Expression ExpressionList Definition Program
 	[
-		visibleAtoms : {M.Map String T}
+		inferredTypes : {M.Map String T}
 		finalSubstitution : {Substitution}
-		inhCounter : Int
 	|
+		counter : Int
 	|
-		synCounter: Int
 	]
 
 ATTR Definition Expression ExpressionList
@@ -21,48 +20,23 @@ ATTR Program
 	[
 	|
 	|
+		inferredTypes : {M.Map String T}
 		s USE {`composeSubstitutions`} {M.empty} : Substitution
 	]
 
 ATTR Definition
-	[
-	|
-	|
-		inferredType : T
-	]
-
-
-
-ATTR Program
-	[
-	|
-	|
-		bottomVisibleAtoms : {M.Map String T}
-	]
+	[ | | inferredType : T ]
 
 
 ATTR ExpressionList
-	[
-		fnTau : T
-	|
-	|
-	]
-
-SEM ExpressionList
-	| Cons
-		hd.inhCounter = @lhs.inhCounter + 1
-		tl.inhCounter = @hd.synCounter
-		lhs.synCounter = @tl.synCounter
-	| Nil
-		lhs.synCounter = @lhs.inhCounter
-
+	[ tau : T | | ]
 
 SEM Definition
 	| Definition
 		-- arguments get fresh type variables
-		(where.inhCounter, loc.argAtoms) = freshAtoms @params @lhs.inhCounter
-		value.inhCounter = @where.synCounter
-		lhs.synCounter = @value.synCounter
+		(where.counter, loc.argAtoms) = freshAtoms @params @lhs.counter
+		value.counter = @where.counter
+		lhs.counter = @value.counter
 
 		loc.s = xtrace "Definition.s" $ @value.s `composeSubstitutions` @where.s
 		lhs.tau = xtrace "Definition.tau" @loc.tau
@@ -71,11 +45,11 @@ SEM Definition
 			then @value.tau
 			else TT $ map snd  @argAtoms ++ [@value.tau]
 		}
-		where.visibleAtoms = M.union (M.fromList @loc.argAtoms) @lhs.visibleAtoms
-		value.visibleAtoms = @where.bottomVisibleAtoms
+		where.inferredTypes = M.union (M.fromList @loc.argAtoms) @lhs.inferredTypes
+		value.inferredTypes = @where.inferredTypes
 
 		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
-		loc.inferredType = uncurryType @params $ closure (substituteEnv @loc.s @lhs.visibleAtoms) $ substituteType @loc.tau @loc.s
+		loc.inferredType = uncurryType @params $ closure (substituteEnv @loc.s @lhs.inferredTypes) $ substituteType @loc.tau @loc.s
 		lhs.inferredType =  @loc.inferredType
 
 		-- definitionType - "исправленные" типы, содержащих
@@ -107,11 +81,10 @@ SEM Expression
 	| Constant
 		lhs.s = M.empty
 		lhs.tau = constantType @c
-		lhs.synCounter = @lhs.inhCounter
 	| Atom
 		lhs.s = M.empty
 		lhs.tau = @loc.tau
-		(lhs.synCounter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.visibleAtoms" @lhs.visibleAtoms) @lhs.inhCounter
+		(lhs.counter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.inferredTypes" @lhs.inferredTypes) @lhs.counter
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения
@@ -135,33 +108,19 @@ SEM Expression
 		}
 
 	| Application
-		fn.inhCounter = @lhs.inhCounter
-		arg.inhCounter = @fn.synCounter
-		lhs.synCounter = @arg.synCounter
-
-		arg.fnTau = xtrace "Application.fnTau" @fn.tau
-
 		lhs.s = xtrace "Application.s" @arg.s `composeSubstitutions` @fn.s
-		lhs.tau = xtrace "Application.tau" @arg.tau
 
 SEM ExpressionList
 	| Cons
-		loc.beta = tv @lhs.inhCounter
+		hd.counter = @lhs.counter + 1
+		loc.beta = tv @lhs.counter
 
-		lhs.s = @tl.s `composeSubstitutions` (unify @lhs.fnTau $ TT [substituteType @hd.tau @hd.s, @loc.beta]) `composeSubstitutions` @hd.s
-		tl.fnTau = @loc.beta
+		lhs.s = @tl.s `composeSubstitutions` (unify @lhs.tau $ TT [substituteType @hd.tau @hd.s, @loc.beta]) `composeSubstitutions` @hd.s
+		tl.tau = @loc.beta
 
 	| Nil
 		lhs.s = M.empty
-		lhs.tau = @lhs.fnTau
 
 SEM Program
 	| Cons
-		tl.visibleAtoms = M.insert @hd.name @hd.inferredType @lhs.visibleAtoms
-
-		hd.inhCounter = @lhs.inhCounter
-		tl.inhCounter = @hd.synCounter
-		lhs.synCounter = @tl.synCounter
-	| Nil
-		lhs.bottomVisibleAtoms = xtrace "Program.bottomVisibleAtoms" @lhs.visibleAtoms
-		lhs.synCounter = @lhs.inhCounter
+		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes

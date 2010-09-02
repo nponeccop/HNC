@@ -40,8 +40,8 @@ ATTR Root
 SEM Root
 	| Root
 		def.level = 0
-		def.inhCounter = 0
-		def.visibleAtoms = @lhs.library
+		def.counter = 0
+		def.inferredTypes = @lhs.library
 		def.definitionTypes = @lhs.library
 		def.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
 		def.finalSubstitution = xtrace "Root.finalSubstitution" @def.s

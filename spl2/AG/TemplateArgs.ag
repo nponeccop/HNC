@@ -4,18 +4,10 @@
 -- шаблонные аргументы
 --
 ATTR Program
-	[
-	|
-	|
-		definitionTv USE {`S.union`} {S.empty} : {S.Set String}
-	]
+	[ | | definitionTv USE {`S.union`} {S.empty} : {S.Set String} ]
 
 ATTR Definition
-	[
-	|
-	|
-		definitionTv : {S.Set String}
-	]
+	[ | | definitionTv : {S.Set String} ]
 
 SEM Definition
 	| Definition
@@ -23,4 +15,3 @@ SEM Definition
 		lhs.definitionTv = typeTv @loc.definitionType
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
 		loc.templateArgs = typeTu @loc.definitionType
-

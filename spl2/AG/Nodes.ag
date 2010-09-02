@@ -1,0 +1,17 @@
+DATA Expression
+	| Application fn : Expression arg : ExpressionList
+	| Atom name : String
+	| Constant c : Const
+
+-- ExpressionList - вспомогательный узел, используемый в выражениях
+-- для списка фактических аргументов функций
+-- TYPE позволяет сгенерировать две фиктивные продукции - Cons и Nil
+-- и не определять data ExpressionList = ELCons a b | ELNil
+TYPE ExpressionList = [Expression]
+
+
+TYPE Program = [Definition]
+
+
+DATA Definition
+	| Definition name : String params : {[String]} value : Expression where : Program

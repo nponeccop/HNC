@@ -1,46 +1,34 @@
 -- Модуль вывода квалификаторов
---
---
+
+-- квалификатор определения вычисляется на основе квалификаторов
+-- свободных переменных определения
+-- квалификатор атома - это "путь" к атому. Соответственно, относительные
+-- пути к одному и тому же атому из разных мест различны.
+
+
 ATTR Definition
-	[
-	|
-	|
-		-- квалификатор определения вычисляется на основе квалификаторов
-		-- свободных переменных определения
-		-- квалификатор атома - это "путь" к атому. Соответственно, относительные
-		-- пути к одному и тому же атому из разных мест различны.
+	[ | | qualifier : CppQualifier ]
 
-		-- квалификатор в выражении в конце программы
-		qualifier : CppQualifier
-	]
-
+-- квалификатор в выражении в конце программы
 ATTR Program
-	[
-	|
-	|
-		valueWhereQualifiersS : {M.Map String CppQualifier}
-	]
+	[ | | qualifiers : {M.Map String CppQualifier} ]
 
-ATTR Definition Program
-	[
-		-- qualifiers - "окончательный" набор квалификаторов.
-		-- Для определения - это квалификаторы атомов, видимых из определения
-		-- Для программы - это квалификаторы атомов, видимых из данного
-		-- места определения. Программы имеют семантику let..in - то есть,
-		-- в последующих определениях из программы можно использовать
- 		-- предыдущие. Соответственно, при проходе программы qualifiers
- 		-- нужно непрерывно пополнять
-		qualifiers : {M.Map String CppQualifier}
-	|
-	|
-	]
+
+-- qualifiers - "окончательный" набор квалификаторов.
+-- Для определения - это квалификаторы атомов, видимых из определения
+-- Для программы - это квалификаторы атомов, видимых из данного
+-- места определения. Программы имеют семантику let..in - то есть,
+-- в последующих определениях из программы можно использовать
+-- предыдущие. Соответственно, при проходе программы qualifiers
+-- нужно непрерывно пополнять
+
+ATTR Definition Program Expression ExpressionList
+	[ qualifiers : {M.Map String CppQualifier} | | ]
 
 SEM Program
 	| Cons
 		-- .. и пополняем! Сначала для where-определений
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
-	| Nil
-		lhs.valueWhereQualifiersS = @lhs.qualifiers
 
 SEM Definition
 	| Definition
@@ -57,7 +45,7 @@ SEM Definition
 
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения
-		loc.valueQualifiers = M.union @loc.localVars @where.valueWhereQualifiersS
+		loc.valueQualifiers = M.union @loc.localVars @where.qualifiers
 		value.qualifiers = @loc.valueQualifiers
 
 		loc.localVars = { M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ allWhereVars S.\\ @where.varsFreeInFunctions where
