@@ -2,8 +2,8 @@
 
 struct hnMain_impl
 {
-	template <typename t3>
-	static ff::IO<void> f(t3 x)
+	template <typename t2>
+	static ff::IO<void> f(t2 x)
 	{
 		return ff::print(x);
 	};

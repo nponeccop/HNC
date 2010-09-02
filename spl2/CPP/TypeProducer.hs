@@ -24,4 +24,3 @@ cppType (TU x) = CppTypePrimitive x
 cppType (TV x) = cppType (TU x)
 
 cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
-

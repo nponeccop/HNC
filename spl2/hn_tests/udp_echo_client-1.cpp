@@ -7,20 +7,20 @@ struct hnMain_impl
 	struct tb_impl
 	{
 		typedef tb_impl self;
-		template <typename t6>
-		static ff::IO<void> t4(t6 end_time)
+		template <typename t4>
+		static ff::IO<void> t4(t4 end_time)
 		{
 			return ff::print(0);
 		};
-		template <typename t10>
-		static ff::IO<void> t3(t10 reply)
+		template <typename t7>
+		static ff::IO<void> t3(t7 reply)
 		{
 			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), &self::t4<int>);
 		};
 	};
 
-	template <typename t3>
-	ff::IO<void> tb(t3 start_time)
+	template <typename t2>
+	ff::IO<void> tb(t2 start_time)
 	{
 		typedef tb_impl local;
 		ff::IO<std::string> ping = ff::udp_receive(c);

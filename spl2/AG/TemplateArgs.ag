@@ -7,19 +7,20 @@ ATTR Program
 	[
 	|
 	|
-		templateArgs USE {`S.union`} {S.empty} : {S.Set String}
+		definitionTv USE {`S.union`} {S.empty} : {S.Set String}
 	]
 
 ATTR Definition
 	[
 	|
 	|
-		templateArgs : {S.Set String}
+		definitionTv : {S.Set String}
 	]
 
 SEM Definition
 	| Definition
 		-- шаблонные переменные контекста верхнего уровня
-		lhs.templateArgs = typeTv @loc.finalType
-		loc.contextTemplateArgs = S.toList $ S.unions (@where.templateArgs : @loc.argsTv)
-		loc.templateArgs = typeTu @loc.finalType
+		lhs.definitionTv = typeTv @loc.definitionType
+		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
+		loc.templateArgs = typeTu @loc.definitionType
+

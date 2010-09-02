@@ -2,8 +2,8 @@
 
 struct main_impl
 {
-	template <typename t1, typename t3>
-	static t3 flip(boost::function<t3 (t1)> f, t1 x)
+	template <typename t1, typename t2>
+	static t2 flip(boost::function<t2 (t1)> f, t1 x)
 	{
 		return f(x);
 	};

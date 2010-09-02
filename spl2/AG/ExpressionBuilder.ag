@@ -34,11 +34,8 @@ SEM Expression
 	-- требуется
 	| Constant
 		lhs.sem = CppLiteral @c
-		loc.inferredType = undefined
-	-- Атомы транслируются в символы
-	--
 	| Atom
-		-- Конструированием символа С++ из атома HN0 занимаются две функции из
+		-- Конструированием атома С++ из атома HN0 занимаются две функции из
 		-- модуля CPP.BackendTools
 		--
 		-- НЕУКЛЮЖЕСТЬ
@@ -47,7 +44,7 @@ SEM Expression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.atomTransformer (uncondLookup @name @lhs.qualifiers) @name (uncondLookup @name @lhs.visibleAtoms) $ fixTA @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.atomTransformer (uncondLookup @name @lhs.qualifiers) @name (uncondLookup @name @lhs.definitionTypes) $ fixTA @loc.templateArgs
 
 	-- аппликация транслируется тоже тривиально
 	-- для функции и аргумента выставляются соответствующие ФВП обработки

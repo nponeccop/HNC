@@ -2,9 +2,10 @@ module MilnerTools where
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Utils
-import SPL.Visualise
 import HN.Intermediate
+import HN.TypeTools
 import SPL.Types
+import SPL.Visualise
 
 lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
 lookupAndInstantiate name table counter = let t = uncondLookup name table in instantiatedType t counter
@@ -90,35 +91,6 @@ substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # "
 		TV a -> (case M.lookup a substitutions of
 			Nothing -> TV a
 			Just b -> b)
-		TT a -> TT $ map subst a
-  		TD a b -> TD a (map subst b)
-		_ -> t
----
---
-
-typeTu x = let union = S.unions . map typeTu in case x of
-	TU v -> S.singleton v
-	TT l -> union l
-	TD _ l -> union l
-	_    -> S.empty
-
-typeAllPolyVars x = let union = S.unions . map typeAllPolyVars in case x of
-	TU v -> S.singleton v
-	TV v -> S.singleton v
-	TT l -> union l
-	TD _ l -> union l
-	_    -> S.empty
-
-typeTv x = let union = S.unions . map typeTv in case x of
-		TV v -> S.singleton v
-		TT l -> union l
-		TD _ l -> union l
-		_    -> S.empty
-
-mapTypeTU f t = subst t where
-	subst t = case t of
-		TU a -> f (TU a)
-		TV a -> f (TU a)
 		TT a -> TT $ map subst a
   		TD a b -> TD a (map subst b)
 		_ -> t

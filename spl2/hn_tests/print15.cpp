@@ -2,8 +2,8 @@
 
 struct hnMain_impl
 {
-	template <typename t0, typename t13>
-	static ff::IO<t13> f(t0 x, ff::IO<t13> y)
+	template <typename t0, typename t9>
+	static ff::IO<t9> f(t0 x, ff::IO<t9> y)
 	{
 		ff::IO<void> g = ff::voidbind(ff::print(5), ff::print("foo"));
 		return ff::voidbind(ff::print(x), y);

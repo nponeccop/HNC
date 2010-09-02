@@ -12,6 +12,7 @@ import CPP.TypeProducer
 import CPP.BackendTools
 
 import HN.Intermediate
+import HN.TypeTools
 import SPL.Types
 
 import MilnerTools
@@ -19,82 +20,19 @@ import Utils
 
 type ExpressionList  = [Expression]
 
--- фронтэнд к API атрибутной грамматики.
-compile2 def inh = cppDefinition_Syn_Root $ wrap_Root (sem_Root (Root def)) inh
 }
 
+INCLUDE "AG/Nodes.ag"
 INCLUDE "AG/Root.ag"
 INCLUDE "AG/ExpressionBuilder.ag"
 INCLUDE "AG/Qualifiers.ag"
 INCLUDE "AG/TemplateArgs.ag"
 INCLUDE "AG/TypeInference.ag"
-
-DATA Expression
-	| Application fn : Expression arg : ExpressionList
-	| Atom name : String
-	| Constant c : Const
-
--- ExpressionList - вспомогательный узел, используемый в выражениях
--- для списка фактических аргументов функций
--- TYPE позволяет сгенерировать две фиктивные продукции - Cons и Nil
--- и не определять data ExpressionList = ELCons a b | ELNil
-TYPE ExpressionList = [Expression]
-
-
-
--- унаследованный @definitionTypes - это информация об атомах, видимых в where и value
--- данного Definition
--- синтезированный @definitionTypes - это информация о текущем атоме, передаваемая наверх
--- в узел Program для агрегации и последующей передачи в узел @Definition.where : Expression
---
-ATTR Definition Program
-	[
-		definitionTypes : {M.Map String T}
-		finalSubstitution : {Substitution}
-	|
-	|
-	]
-
-ATTR Definition [  | | inferredTypesS : {(String, T)} ]
-
--- Узел Program просто пересылает эти атрибуты - копирует и агрегирует соответственно
-
-ATTR Program [ | | inferredTypesS : {M.Map String T} ]
-
-
-SEM Program
-	| Cons
-		tl.definitionTypes = M.insert (fst @hd.inferredTypesS) (snd @hd.inferredTypesS)  @lhs.definitionTypes
-	| Nil
-		lhs.inferredTypesS = @lhs.definitionTypes
-
-SEM Definition
-	| Definition
-		-- НЕУКЛЮЖЕСТЬ
-		-- унаследованный @definitionTypes "спускается" Definition -> Program -> Value
-		-- но из-за того, что у нас where, а не let-in, этому спуску соответствуют
-		-- "нырки" в следующих двух строках:
-		where.definitionTypes = @lhs.definitionTypes
-		value.definitionTypes = @where.inferredTypesS
-
-		--  собрали информацию от выводильщика и отправили всё так же "вниз"
-		--	по пути  Definition -> Program -> Value, но из-за извращенного
-		--	where получается сначала "наверх" в Program, затем транзитом
-		-- через следующий Definition в Value
-		lhs.inferredTypesS = (@name, @loc.finalType)
+INCLUDE "AG/DefinitionTypes.ag"
 
 ATTR Expression [ | | atoms : {S.Set String} ]
 
 ATTR ExpressionList [ | | atoms USE {:} {[]} : {[S.Set String]} ]
-
-SEM Expression
-	| Constant    lhs.atoms = S.empty
-	| Atom        lhs.atoms = S.singleton @name
-	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)
-
-TYPE Program = [Definition]
-
-
 
 ATTR Program
 	[
@@ -108,9 +46,6 @@ ATTR Program
 		declareSelf USE {||} {False} : Bool
 		declareParent USE {||} {False} : Bool
 	]
-
-DATA Definition
-	| Definition name : String params : {[String]} value : Expression where : Program
 
 ATTR Definition Program
 	[
@@ -142,7 +77,7 @@ SEM Definition
 		lhs.name = @name
 		loc.contextTypeName = @name ++ "_impl"
 		loc.isFunction = not $ null @params
-		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppType @loc.finalType
+		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppType @loc.definitionType
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
 		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @value.sem
 
@@ -158,11 +93,8 @@ SEM Definition
 			,	functionReturnType      = case @loc.cppDefType of CppTypeFunction returnType _ -> returnType ; _ -> @loc.cppDefType
 			,   functionLocalVars       = localVars
 			,   functionContext         = constructJust (null @where.contextMethods) $ CppContext {
-					contextLevel    = @lhs.level
-				,   contextTypeName = @loc.contextTypeName
-				-- ïåðåìåííûå êîíòåêñòà - ýòî
-				-- àðãóìåíòû ãëàâíîé ôóíêöèè, ñâîáîäíûå â where-ôóíêöèÿõ
-				-- ëîêàëüíûå ïåðåìåííûå, ñâîáîäíûå â where-ôóíêöèÿõ
+					contextLevel    	= @lhs.level
+				,   contextTypeName 	= @loc.contextTypeName
 				,   contextVars         = @loc.contextArgs ++ contextVars
 				,   contextTemplateArgs = @loc.contextTemplateArgs
 				,   contextMethods      = @where.contextMethods
@@ -175,12 +107,17 @@ SEM Definition
 
 		where.parent = @name
 
-		-- çàìêíóòûå àðãóìåíòû òîï-ôóíêöèè è òèïîâûå àðãóìåíòû øàáëîíà
+		(loc.contextArgs, loc.argsTv) = { case @loc.definitionType of
+			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
+				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typeTu typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
+			_ -> ([], []) }
+
 		loc.freeVars = (@value.atoms `S.union` @where.freeVars) S.\\ S.fromList (@params ++ @where.name)
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-		(loc.contextArgs, loc.argsTv) = { case @loc.finalType of
-			TT funList -> let isArgContext a =  S.member a @where.varsFreeInFunctions in
-				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typeTu typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
-			_ -> ([], []) }
+
+SEM Expression
+	| Constant    lhs.atoms = S.empty
+	| Atom        lhs.atoms = S.singleton @name
+	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)

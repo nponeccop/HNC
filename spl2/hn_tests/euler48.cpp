@@ -22,8 +22,8 @@ struct hnMain_impl
 	{
 		int a;
 
-		template <typename t15>
-		int f(t15 zz, int prod)
+		template <typename t12>
+		int f(t12 zz, int prod)
 		{
 			return prod * a % 1000000000;
 		};

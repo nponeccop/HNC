@@ -4,8 +4,8 @@ struct hnMain_impl
 {
 	int a;
 
-	template <typename t2>
-	ff::IO<void> tmp(t2 z)
+	template <typename t1>
+	ff::IO<void> tmp(t1 z)
 	{
 		int y = a;
 		return ff::print(y);
