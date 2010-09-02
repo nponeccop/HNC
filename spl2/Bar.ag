@@ -34,7 +34,7 @@ ATTR Expression [ | | atoms : {S.Set String} ]
 
 ATTR ExpressionList [ | | atoms USE {:} {[]} : {[S.Set String]} ]
 
-ATTR Program
+ATTR LetIn
 	[
 	|
 	|
@@ -45,9 +45,10 @@ ATTR Program
 		contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
 		declareSelf USE {||} {False} : Bool
 		declareParent USE {||} {False} : Bool
+		sem : CppExpression
 	]
 
-ATTR Definition Program
+ATTR Definition LetIn
 	[
 		level : Int
 		parent : String
@@ -79,14 +80,14 @@ SEM Definition
 		loc.isFunction = not $ null @params
 		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppType @loc.definitionType
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
-		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @value.sem
+		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @where.sem
 
 		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
 		lhs.cppDefinition = @loc.cppDefinition
 		loc.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
 			,	functionName            = @name
-			,	functionRetExpr         = @value.sem
+			,	functionRetExpr         = @where.sem
 			,	functionIsStatic        = @loc.isFunctionStatic
 			,	functionArgs            = zipWith CppVarDecl (case @loc.cppDefType of CppTypeFunction _ argTypes -> argTypes ; _ -> []) @params
 			, 	functionTemplateArgs    = S.toList @loc.templateArgs
@@ -112,10 +113,16 @@ SEM Definition
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typeTu typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
 
-		loc.freeVars = (@value.atoms `S.union` @where.freeVars) S.\\ S.fromList (@params ++ @where.name)
+		loc.freeVars = (@where.atoms `S.union` @where.freeVars) S.\\ S.fromList (@params ++ @where.name)
 		lhs.freeVars = @loc.freeVars
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
+ATTR LetIn
+	[
+	|
+	|
+		atoms : {S.Set String}
+	]
 
 SEM Expression
 	| Constant    lhs.atoms = S.empty

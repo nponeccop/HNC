@@ -1,3 +1,2 @@
 file : "Bar.ag"
-options : catas, semfuns, signatures, pretty, cycle, visit, seq, unbox, bangpats
-
+options : catas, semfuns, signatures, pretty

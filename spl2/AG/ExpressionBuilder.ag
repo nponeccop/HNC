@@ -47,9 +47,9 @@ SEM Expression
 		arg.atomTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
-SEM Definition
+SEM LetIn
 	-- ФВП обработки по умолчанию
 	-- умолчание нужно, например, для вырожденных значений, содержащих одиночный атом,
 	-- таких, как, foo = bar
-	| Definition
+	| In
 		value.atomTransformer = transformArgument

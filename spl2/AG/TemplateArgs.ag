@@ -3,7 +3,7 @@
 -- функций) и фактические (в типах переменных, типах аргументов функции, типах возврата функций и в выражениях)
 -- шаблонные аргументы
 --
-ATTR Program
+ATTR LetIn
 	[ | | definitionTv USE {`S.union`} {S.empty} : {S.Set String} ]
 
 ATTR Definition

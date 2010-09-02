@@ -10,8 +10,8 @@ ATTR Definition
 	[ | | qualifier : CppQualifier ]
 
 -- квалификатор в выражении в конце программы
-ATTR Program
-	[ | | qualifiers : {M.Map String CppQualifier} ]
+ATTR LetIn
+	[ localVars : {M.Map String CppQualifier} | | qualifiers : {M.Map String CppQualifier} ]
 
 
 -- qualifiers - "окончательный" набор квалификаторов.
@@ -22,13 +22,18 @@ ATTR Program
 -- предыдущие. Соответственно, при проходе программы qualifiers
 -- нужно непрерывно пополнять
 
-ATTR Definition Program Expression ExpressionList
+ATTR Definition LetIn Expression ExpressionList
 	[ qualifiers : {M.Map String CppQualifier} | | ]
 
-SEM Program
-	| Cons
+SEM LetIn
+	| Let
 		-- .. и пополняем! Сначала для where-определений
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
+	| In
+		-- в значении определения видны как параметры определения (но уже
+		-- в виде CppArgument!), так и where-определения
+		value.qualifiers = xtrace "LetIn.In.qualifiers" $ M.union @lhs.localVars @lhs.qualifiers
+		lhs.qualifiers = @lhs.qualifiers
 
 SEM Definition
 	| Definition
@@ -46,11 +51,12 @@ SEM Definition
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения
 		loc.valueQualifiers = M.union @loc.localVars @where.qualifiers
-		value.qualifiers = @loc.valueQualifiers
 
 		loc.localVars = { M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ allWhereVars S.\\ @where.varsFreeInFunctions where
 			allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
 		}
+
+		where.localVars = @loc.localVars
 
 		loc.foo = \f -> isJust $ find (\x -> f $ uncondLookup x @loc.valueQualifiers) $ S.toList $ @loc.freeVars
 		lhs.declareSelf = @loc.foo  $ \x -> case x of CppCurrentClassMethod -> True ; CppCurrentClassMethodStatic -> True ; _ -> False

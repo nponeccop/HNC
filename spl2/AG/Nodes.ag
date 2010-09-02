@@ -9,9 +9,9 @@ DATA Expression
 -- и не определять data ExpressionList = ELCons a b | ELNil
 TYPE ExpressionList = [Expression]
 
-
-TYPE Program = [Definition]
-
+DATA LetIn
+	| Let hd : Definition tl : LetIn
+	| In value : Expression
 
 DATA Definition
-	| Definition name : String params : {[String]} value : Expression where : Program
+	| Definition name : String params : {[String]} where : LetIn

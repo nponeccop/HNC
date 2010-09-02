@@ -1,4 +1,4 @@
------------------------------------------------------------------------------------------
+﻿-----------------------------------------------------------------------------------------
 {-| Module      : Main
     Copyright   :
     License     : All Rights Reserved
@@ -135,13 +135,13 @@ simpleDefinition = 	do
 	many $ char '\t'
 	parms <- mySepBy identifier (char ' ')
 	string " = "
-	let def = Definition (head parms) (tail parms)
+	let def v w = Definition (head parms) (tail parms) $ makeLet v w
 	(
 		newExpression def
 		<|>
 		(do
 			b <- expression
-			return $ def b []))
+			return $ def  b []))
 
 nlIndent = do
 	many1 nl
@@ -161,7 +161,7 @@ simple =
 	do
 		a <- simpleDefinition
 		w <- option [] whereClause
-		return $ case a of Definition a p b x -> Definition a p b (x ++ w)
+		return $ case a of Definition a p l -> Definition a p $ makeLet (letValue l) (w ++ letWhere l)
 
 
 program = sepBy simple $ many1 nl

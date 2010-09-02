@@ -10,10 +10,21 @@ data Const      =   ConstString String
                     deriving(Show, Eq)
 --
 data LetIn = Let Definition LetIn | In Expression
+	deriving (Eq,Show)
+
+letValue (Let _ l) = letValue l
+letValue (In v) = v
+
+letWhere (Let d l) = d : letWhere l
+letWhere (In _) = []
+
+makeLet :: Expression -> Program -> LetIn
+makeLet v w = ml w where
+	ml [] = In v
+	ml (d : ww) = Let d $ ml ww
 
 data Definition
---	=   Definition String [String] LetIn
-    =   Definition String [String] Expression [Definition]
+	=   Definition String [String] LetIn
     deriving(Eq,Show)
 
 data Root
