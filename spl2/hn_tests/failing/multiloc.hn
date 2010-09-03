@@ -1,0 +1,7 @@
+hnMain = {
+	a = {
+		b = 2
+		incr b
+	}
+	print a
+}

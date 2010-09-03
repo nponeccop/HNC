@@ -25,17 +25,24 @@ ATTR LetIn
 ATTR Definition LetIn Expression ExpressionList
 	[ qualifiers : {M.Map String CppQualifier} | | ]
 
+ATTR Definition
+	[ isLocalVar : Bool | | ]
+
+ATTR LetIn [ | |  name USE {`S.insert`} {S.empty} : {S.Set String} ]
+
 SEM LetIn
 	| Let
-		-- .. и пополняем! Сначала для where-определений
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
+		loc.isLocalVar = not $ S.member @hd.name @tl.varsFreeInFunctions
+		hd.isLocalVar = @loc.isLocalVar
+		lhs.varsFreeInFunctions = @hd.varsFreeInFunctions `S.union` @tl.varsFreeInFunctions
 	| In
-		-- в значении определения видны как параметры определения (но уже
-		-- в виде CppArgument!), так и where-определения
+		lhs.varsFreeInFunctions = S.empty
 		value.qualifiers = M.union @lhs.localVars @lhs.qualifiers
 
 SEM Definition
 	| Definition
+
 		-- В локальных определениях дополнительно видны параметры определения. Вдобавок, вложенные
 		-- функции находятся "ниже" текущей, поэтому квалификаторы надо
 		-- "спустить вниз" (удлиннить относительные пути):
@@ -44,7 +51,7 @@ SEM Definition
 		-- В значении определения локальные определения видны по-другому, чем в локальных
 		-- определениях:
 
-		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) $ M.map moveQualifierDown @lhs.qualifiers
+		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) $ (if @lhs.isLocalVar && not @loc.isFunction then id else M.map moveQualifierDown) @lhs.qualifiers
 
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения
@@ -67,5 +74,7 @@ SEM Definition
 			then (if @loc.isFunctionStatic
 				then CppContextMethodStatic
 				else CppContextMethod)
-			else CppContextVar
+			else if @lhs.isLocalVar
+				then CppLocal
+				else CppContextVar
 		}
