@@ -28,8 +28,6 @@ ATTR Definition LetIn Expression ExpressionList
 ATTR Definition
 	[ isLocalVar : Bool | | ]
 
-ATTR LetIn [ | |  name USE {`S.insert`} {S.empty} : {S.Set String} ]
-
 SEM LetIn
 	| Let
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers

@@ -6,7 +6,7 @@ use Benchmark;
 
 my $r = '173.203.79.183';
 
-my $sock = IO::Socket::INET->new(PeerAddr => '94.174.172.167',
+my $sock = IO::Socket::INET->new(PeerAddr => 'localhost',
                                  PeerPort => '99',
 				 LocalPort => '7777',
                                  Proto    => 'udp',
@@ -19,4 +19,8 @@ sub {
 	$sock->send($x);
 	my $y = 'foo';
 	$sock->recv($y, 2000);
+	if ($x ne $y)
+	{
+		print "Wrong!"
+	}
 };
