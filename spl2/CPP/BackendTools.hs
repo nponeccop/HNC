@@ -27,9 +27,8 @@ nonStaticReference x = case x of
 	_ -> False
 
 
-transformArgument atomQualifier name atomType ta = let
+transformArgument atomQualifier name atomType nta = let
 		funAmpersand = if isFunctionType atomType then "&" else ""
-		nta = name ++ ta
 	in case atomQualifier of
 		CppFqMethod prefix -> funAmpersand ++ prefix ++ "::" ++ nta
 		CppContextMethodStatic -> funAmpersand ++ "local::" ++ nta
@@ -45,13 +44,12 @@ transformArgument atomQualifier name atomType ta = let
 		foo -> error $ "transformArgument:" ++ show foo
 
 
-transformFunction atomQualifier name atomType templateArgs = let
-		ta = case atomType of
+transformFunction atomQualifier name atomType xnta = let
+		nta = case atomType of
 			TT x -> if hasFunctionalType x || cppCannotInferReturnType x
-				then templateArgs
-				else ""
+				then xnta
+				else name
 			_ -> error "Typechecker is wrong - only function type can be at function position"
-		nta = name ++ ta
 	in case atomQualifier of
 		CppFqMethod prefix -> prefix ++ "::" ++ nta
 		CppContextMethod -> "impl." ++ name

@@ -32,8 +32,7 @@ SEM LetIn
 	| In
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения
-		value.qualifiers = xtrace "LetIn.In.qualifiers" $ M.union @lhs.localVars @lhs.qualifiers
-		lhs.qualifiers = @lhs.qualifiers
+		value.qualifiers = M.union @lhs.localVars @lhs.qualifiers
 
 SEM Definition
 	| Definition
@@ -44,9 +43,8 @@ SEM Definition
 		-- В значении определения параметры определения видны как CppArgument:
 		-- В значении определения локальные определения видны по-другому, чем в локальных
 		-- определениях:
-		loc.xqualifiers = M.map moveQualifierDown @lhs.qualifiers
 
-		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) @loc.xqualifiers
+		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) $ M.map moveQualifierDown @lhs.qualifiers
 
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения

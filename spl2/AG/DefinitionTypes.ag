@@ -5,22 +5,10 @@
 -- в узел Program для агрегации и последующей передачи в узел @Definition.where : Expression
 --
 
-ATTR Definition [ definitionTypes : {M.Map String T} | | definitionType : T ]
+ATTR Definition [ | | definitionType : T ]
 
--- Узел Program просто пересылает эти атрибуты - копирует и агрегирует соответственно
-
-ATTR LetIn [ definitionType : T | definitionTypes : {M.Map String T} | ]
-
-ATTR Expression ExpressionList [ definitionTypes : {M.Map String T} | | ]
+ATTR Definition LetIn Expression ExpressionList [ definitionTypes : {M.Map String T} | | ]
 
 SEM LetIn
 	| Let
 		tl.definitionTypes = M.insert @hd.name @hd.definitionType @lhs.definitionTypes
-
-SEM Definition
-	| Definition
-		--  собрали информацию от выводильщика и отправили всё так же "вниз"
-		--	по пути  Definition -> Program -> Value, но из-за извращенного
-		--	where получается сначала "наверх" в Program, затем транзитом
-		-- через следующий Definition в Value
-		lhs.definitionType = @loc.definitionType

@@ -30,16 +30,15 @@ INCLUDE "AG/TemplateArgs.ag"
 INCLUDE "AG/TypeInference.ag"
 INCLUDE "AG/DefinitionTypes.ag"
 
-ATTR Expression [ | | atoms : {S.Set String} ]
+ATTR Expression [ | | freeVars : {S.Set String} ]
 
-ATTR ExpressionList [ | | atoms USE {:} {[]} : {[S.Set String]} ]
+ATTR ExpressionList [ | | freeVars USE {:} {[]} : {[S.Set String]} ]
 
 ATTR LetIn
 	[
 	|
 	|
-	    name USE {:} {[]} : {[String]}
-		freeVars USE {`S.union`} {S.empty} : {S.Set String}
+		freeVars : {S.Set String}
 		cppVarDefinition USE {`consMaybe`} {[]} : {[CppLocalVarDef]}
 		varsFreeInFunctions USE {`S.union`} {S.empty} : {S.Set String}
 		contextMethods USE {`consMaybe`} {[]} : {[CppDefinition]}
@@ -113,18 +112,14 @@ SEM Definition
 				unzip $ map (\(typ, x) -> (CppVar (cppType typ) x $ CppAtom x, typeTu typ)) $ filter (\(_, y) -> isArgContext y) $ zip (init funList) @params
 			_ -> ([], []) }
 
-		loc.freeVars = (@where.atoms `S.union` @where.freeVars) S.\\ S.fromList (@params ++ @where.name)
-		lhs.freeVars = @loc.freeVars
+		loc.freeVars = @where.freeVars S.\\ S.fromList @params
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-ATTR LetIn
-	[
-	|
-	|
-		atoms : {S.Set String}
-	]
-
 SEM Expression
-	| Constant    lhs.atoms = S.empty
-	| Atom        lhs.atoms = S.singleton @name
-	| Application lhs.atoms = S.unions (@fn.atoms : @arg.atoms)
+	| Constant    lhs.freeVars = S.empty
+	| Atom        lhs.freeVars = S.singleton @name
+	| Application lhs.freeVars = S.unions (@fn.freeVars : @arg.freeVars)
+
+SEM LetIn
+	| Let
+		lhs.freeVars = @tl.freeVars `S.union` @hd.freeVars S.\\ S.singleton @hd.name
