@@ -26,3 +26,10 @@ tests = [
 	,	t1 "natrec"
 	,   t1 "bind"
 	]
+
+iotests = do
+	a <- readFile "lib/lib.hni"
+	return $ map process $ lines a
+
+process l = st "lib.hni" l (name ++ " = " ++ showType tt) where
+	(name, tt) = sp3 decl l

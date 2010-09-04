@@ -40,9 +40,9 @@ fun = do
 paramType = do
 	a <- identifier
 	string "<"
-	b <- parseType
+	b <- sepBy parseType $ string " "
 	string ">"
-	return $ TD a [b]
+	return $ TD a b
 
 parseType2 = parens <|> try paramType <|> simpleType <|> try typeVar <|> typePolyVar
 
@@ -54,4 +54,4 @@ parens = do
 
 simpleType = pf T $ identifier
 
-parseType = try fun <|> simpleType <|> try typeVar <|> typePolyVar
+parseType = try fun <|> try paramType <|> simpleType <|> try typeVar <|> typePolyVar
