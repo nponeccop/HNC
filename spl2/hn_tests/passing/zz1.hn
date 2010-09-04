@@ -1,0 +1,5 @@
+x = {
+	id x = x
+	f z = z z
+	f id 5
+}

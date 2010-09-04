@@ -11,9 +11,6 @@ showWithIndent indentationLevel y
 
 showFunctionPrototype def = show (functionReturnType def) ++ " " ++ functionName def ++ inParens (showFunctionArgs $ functionArgs def)
 
-inParens x = inStrings "(" ")" x
-inAngular x = inStrings "<" ">" x
-
 showFunctionArgs l = showJoinedList ", " l
 
 joinComma = joinStr ", "

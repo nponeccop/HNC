@@ -33,6 +33,8 @@ inStrings l r x = l ++ x ++ r
 showJoinedList separator = joinStr separator . map show
 
 showJoinedList2 separator = concatMap (\x -> show x ++ separator)
+inParens x = inStrings "(" ")" x
+inAngular x = inStrings "<" ">" x
 
 uncondLookup k m = tracedUncondLookup "No trace" k m
 

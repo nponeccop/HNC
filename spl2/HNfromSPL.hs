@@ -21,5 +21,5 @@ comp o =
 
 c = CL (CL (CL (CVal "foldr") (K [CVal "g",CVal "elist",CVal "l"])) (W [("g",CL (CL (CVal "join1") (K [CL (CVal "f") (K [CVal "x"]),CVal "y"])) (S ["x","y"]))])) (S ["f","l"])
 
-main = print $ compileDefinition $ Definition "main" [] (comp c) []
-res2 = Definition "main" [] (comp c) []
+main = print $ compileDefinition $ Definition "main" [] $ In (comp c)
+res2 = Definition "main" [] $ In (comp c)
