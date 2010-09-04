@@ -4,6 +4,10 @@ import qualified Data.ByteString
 import Data.Char
 import qualified Data.Map as M
 import Debug.Trace
+import Test.HUnit
+
+st testName expected actual = TestLabel testName $ TestCase $ assertEqual "" expected actual
+simpleTests x = runTestTT $ TestList x
 
 xtrace a b = b
 ztrace m t =  trace (m ++ " = " ++ show t) t

@@ -12,7 +12,6 @@ data T =
 	| TS (Map [Char] T)
 	| TL
 	| TUL [T]
---	| TLib T
 	deriving (Eq, Show, Read)
 
 -- code

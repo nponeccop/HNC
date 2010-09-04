@@ -7,7 +7,6 @@ import qualified Data.Map as M
 
 import HN.Parser2
 import HN.ParserTest
-import HN.MyTypeCheck
 import HN.TypeParser
 import HN.Intermediate
 import HN.SplExport
@@ -73,12 +72,12 @@ testSet =
 		-- parameter name conflicts with inferred type variable name
 	,	"main a f = filter f a"
 	]
-
+	{-
 defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
 		("head",  "(List 1) -> 1" )
 	,	("plus1", "Int -> Int" )
 	]
-
+-}
 testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 		Constant (ConstInt 123),
 		Atom "a",
@@ -89,11 +88,11 @@ testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 main = do
 --	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
 --	print defaultEnv
-	mapM_ (print . snd . typeCheck defaultEnv) [
+--	mapM_ (print . snd . typeCheck defaultEnv) [
 --			Atom "l"
 --		,	Atom "head"
 --		,	Application (Atom "head") [Atom "l"]
-		]
+--		]
 	runTests
 
 	testCheck3

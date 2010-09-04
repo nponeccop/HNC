@@ -11,7 +11,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,
-	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile) where
+	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile, identifier) where
 import Text.Parsec.Prim
 import Text.Parsec.ByteString
 import Text.Parsec.Combinator

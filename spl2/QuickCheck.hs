@@ -19,6 +19,8 @@ import CompilerTest
 import Test.SPL
 import Test.MilnerTools
 import Test.FFI
+import Test.TypeParser
+
 import SPL.Interpretator
 
 instance Arbitrary SPL.Types.C where
@@ -115,6 +117,6 @@ splTests = map splTest Test.SPL.tests
 
 main = do
 	compilerTests <- CompilerTest.iotests
-	runTestTT $ TestList $ tests2 ++ Main.tests ++ compilerTests ++ splTests ++ instantiatedTypeTests ++ Test.FFI.tests
+	simpleTests $ tests2 ++ Main.tests ++ compilerTests ++ splTests ++ instantiatedTypeTests ++ Test.FFI.tests ++ Test.TypeParser.tests
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo
