@@ -16,5 +16,6 @@ showTypeP x = case x of
 	TT _ -> inParens (showType x)
 	_ -> showType x
 
+
 showAsFFI typeEnv = concatMap f $ M.toList typeEnv where
 	f (name, t) = name ++ " = " ++ showType t ++ "\n"

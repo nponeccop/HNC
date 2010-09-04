@@ -37,7 +37,14 @@ fun = do
 	b <- parseType2
 	return $ TT $ a ++ [b]
 
-parseType2 = simpleType
+paramType = do
+	a <- identifier
+	string "<"
+	b <- parseType
+	string ">"
+	return $ TD a [b]
+
+parseType2 = parens <|> try paramType <|> simpleType <|> try typeVar <|> typePolyVar
 
 parens = do
 	char '('
@@ -46,7 +53,5 @@ parens = do
 	return a
 
 simpleType = pf T $ identifier
-
-parseSimpleType = typeVar <|> simpleType <|> parens
 
 parseType = try fun <|> simpleType <|> try typeVar <|> typePolyVar
