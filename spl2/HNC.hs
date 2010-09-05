@@ -9,6 +9,7 @@ import CPP.CompileTools
 
 import HN.Parser2
 import HN.SplExport
+import HN.TypeParser
 
 import SPL.Check3
 import SPL.Visualise
@@ -16,8 +17,9 @@ import SPL.Visualise
 
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
-compileFile inFile
-	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition
+compileFile inFile = do
+	a <- readFile "lib/lib.hni"
+	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 (M.fromList $ map (sp3 decl) $ lines a)
 
 typeCheck inFile = compile inFile typecheckDefinition
 
