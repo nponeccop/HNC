@@ -18,8 +18,8 @@ import SPL.Visualise
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
 compileFile inFile = do
-	a <- readFile "lib/lib.hni"
-	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 (M.fromList $ map (sp3 decl) $ lines a)
+	a <- readFile "lib/lib.hni" >>= return . M.fromList . map (sp3 decl) . lines
+	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 a
 
 typeCheck inFile = compile inFile typecheckDefinition
 

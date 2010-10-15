@@ -28,8 +28,8 @@ GHC-Options:	-fwarn-unused-imports -fwarn-unused-binds
 Executable:	spli
 Main-Is:	SPLI.hs
 
--- Executable:     spl-hn-tests
--- Main-Is:        HN_Tests.hs
+Executable:     spl-hn-tests
+Main-Is:        HN_Tests.hs
 
--- Executable:	spl-tests
--- Main-Is:	SPL_Tests.hs
+Executable:	spl-tests
+Main-Is:	SPL_Tests.hs
