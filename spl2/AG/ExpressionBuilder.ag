@@ -15,14 +15,14 @@
 -- @definitionTypes - выведенные типы символов
 
 
-ATTR Expression ExpressionList
+ATTR ASTExpression ExpressionList
 	[ atomTransformer : {CppQualifier -> String -> T ->  String -> String} | | ]
 
-ATTR Expression	[  | | sem : CppExpression ]
+ATTR ASTExpression	[  | | sem : CppExpression ]
 
 ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
 
-SEM Expression
+SEM ASTExpression
 	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
  	-- только на позиции аргумента, поэтому никакой трансляции не
 	-- требуется

@@ -5,7 +5,7 @@ import Compiler.Hoopl
 import HN.Optimizer.Visualise ()
 import qualified Data.Map as M
 import HN.Optimizer.Node
-import HN.Optimizer.Intermediate
+import HN.Intermediate
 import HN.Optimizer.Dominator
 
 firstLabel = runSimpleUniqueMonad freshLabel

@@ -1,5 +1,5 @@
 -- Модуль вывода типов
-ATTR Expression ExpressionList Definition LetIn
+ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		inferredTypes : {M.Map String T}
 		finalSubstitution : {T -> T}
@@ -66,11 +66,11 @@ SEM LetIn
 	| Let
 		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes
 
-SEM Expression
+SEM ASTExpression
 	| Constant
 		lhs.tau = constantType @c
 	| Atom
-		(lhs.counter, loc.tau) = lookupAndInstantiate @name (xtrace "Expression.Atom.inferredTypes" @lhs.inferredTypes) @lhs.counter
+		(lhs.counter, loc.tau) = lookupAndInstantiate @name (xtrace "ASTExpression.Atom.inferredTypes" @lhs.inferredTypes) @lhs.counter
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения

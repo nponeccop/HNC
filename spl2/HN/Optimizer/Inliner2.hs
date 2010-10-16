@@ -8,7 +8,7 @@
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
-import HN.Optimizer.Intermediate
+import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 {-

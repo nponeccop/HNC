@@ -1,6 +1,6 @@
 module HN.Optimizer.Utils where
 import Test.HUnit
-import HN.Optimizer.Intermediate
+import HN.Intermediate
 import Debug.Trace
 
 xtrace a b = trace (a ++ " = " ++ show b) b

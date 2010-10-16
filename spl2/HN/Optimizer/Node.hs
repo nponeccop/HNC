@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors) where
 
-import HN.Optimizer.Intermediate
+import HN.Intermediate
 import Compiler.Hoopl
 
 data Node e x where

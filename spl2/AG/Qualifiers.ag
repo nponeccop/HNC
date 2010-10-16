@@ -22,7 +22,7 @@ ATTR LetIn
 -- предыдущие. Соответственно, при проходе программы qualifiers
 -- нужно непрерывно пополнять
 
-ATTR Definition LetIn Expression ExpressionList
+ATTR Definition LetIn ASTExpression ExpressionList
 	[ qualifiers : {M.Map String CppQualifier} | | ]
 
 ATTR Definition

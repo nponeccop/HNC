@@ -2,12 +2,12 @@
 -- унаследованный @definitionTypes - это информация об атомах, видимых в where и value
 -- данного Definition
 -- синтезированный @definitionTypes - это информация о текущем атоме, передаваемая наверх
--- в узел Program для агрегации и последующей передачи в узел @Definition.where : Expression
+-- в узел Program для агрегации и последующей передачи в узел @Definition.where : ASTExpression
 --
 
 ATTR Definition [ | | definitionType : T ]
 
-ATTR Definition LetIn Expression ExpressionList [ definitionTypes : {M.Map String T} | | ]
+ATTR Definition LetIn ASTExpression ExpressionList [ definitionTypes : {M.Map String T} | | ]
 
 SEM LetIn
 	| Let

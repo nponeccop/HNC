@@ -18,7 +18,7 @@ import SPL.Types
 import MilnerTools
 import Utils
 
-type ExpressionList  = [Expression]
+type ExpressionList  = [ASTExpression]
 
 }
 
@@ -30,7 +30,7 @@ INCLUDE "AG/TemplateArgs.ag"
 INCLUDE "AG/TypeInference.ag"
 INCLUDE "AG/DefinitionTypes.ag"
 
-ATTR Expression [ | | freeVars : {S.Set String} ]
+ATTR ASTExpression [ | | freeVars : {S.Set String} ]
 
 ATTR ExpressionList [ | | freeVars USE {:} {[]} : {[S.Set String]} ]
 
@@ -115,7 +115,7 @@ SEM Definition
 		loc.freeVars = @where.freeVars S.\\ S.fromList @params
 		lhs.varsFreeInFunctions = if @loc.isFunction then @loc.freeVars else S.empty
 
-SEM Expression
+SEM ASTExpression
 	| Constant    lhs.freeVars = S.empty
 	| Atom        lhs.freeVars = S.singleton @name
 	| Application lhs.freeVars = S.unions (@fn.freeVars : @arg.freeVars)

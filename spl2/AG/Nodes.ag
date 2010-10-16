@@ -1,5 +1,5 @@
-DATA Expression
-	| Application fn : Expression arg : ExpressionList
+DATA ASTExpression
+	| Application fn : ASTExpression arg : ExpressionList
 	| Atom name : String
 	| Constant c : Const
 
@@ -7,11 +7,11 @@ DATA Expression
 -- для списка фактических аргументов функций
 -- TYPE позволяет сгенерировать две фиктивные продукции - Cons и Nil
 -- и не определять data ExpressionList = ELCons a b | ELNil
-TYPE ExpressionList = [Expression]
+TYPE ExpressionList = [ASTExpression]
 
 DATA LetIn
 	| Let hd : Definition tl : LetIn
-	| In value : Expression
+	| In value : ASTExpression
 
 DATA Definition
 	| Definition name : String params : {[String]} where : LetIn
