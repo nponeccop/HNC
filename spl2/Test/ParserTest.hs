@@ -1,4 +1,4 @@
-module HN.ParserTest (runTests, runTest2) where
+module Test.ParserTest (runTests, runTest2) where
 
 import HN.Parser2
 import Text.Parsec.Prim

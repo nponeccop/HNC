@@ -11,7 +11,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,
-	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile, identifier) where
+	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile, identifier, parseAndProcessFile) where
 import Text.Parsec.Prim
 import Text.Parsec.ByteString
 import Text.Parsec.Combinator
@@ -169,3 +169,5 @@ program = sepBy simple $ many1 nl
 parseProg = parseString program
 
 parseFile = parseFromFile program
+
+parseAndProcessFile inFile f = parseFile inFile >>= return . f . head . fromRight

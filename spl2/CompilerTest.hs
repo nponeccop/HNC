@@ -4,18 +4,14 @@ import System.Directory
 import Control.Monad
 
 import HN.Parser2
-import Utils
 import CPP.CompileTools
 
-compile inFile f = parseFile inFile >>= return . f . head . fromRight
-
 compileFile inFile
-	= compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition
+	= parseAndProcessFile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition
 
 comp2 f g x y = f $ g x y
 
-test testName =	liftM2
-	(comp2 (TestLabel testName . TestCase) $ assertEqual testName)
+test testName =	liftM2 (comp2 (testName ~:) (~=?))
 	(compileFile $ "hn_tests/" ++ testName ++ ".hn")
 	(readFile $ "hn_tests/" ++ testName ++ ".cpp")
 

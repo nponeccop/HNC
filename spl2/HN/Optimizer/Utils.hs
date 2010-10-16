@@ -8,10 +8,6 @@ xtrace a b = trace (a ++ " = " ++ show b) b
 ci int = Constant $ ConstInt int
 sv name int = Definition name [] $ In $ ci int
 
+st testName expected actual = testName ~: expected ~=? actual
 
-st testName expected actual = TestLabel testName $ TestCase $ assertEqual "" expected actual
-simpleTests x = runTestTT $ TestList x
-
-data T n e def = T n e def
-
-stt t2f = map $ \(T n e def) -> st n e $ t2f def
+stt t2f = map (\(n, e, def) -> n ~: e ~=? t2f def)

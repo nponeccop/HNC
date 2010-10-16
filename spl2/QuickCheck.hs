@@ -20,6 +20,7 @@ import Test.SPL
 import Test.MilnerTools
 import Test.FFI
 import Test.TypeParser
+import Test.Tests
 
 import SPL.Interpretator
 
@@ -118,6 +119,6 @@ splTests = map splTest Test.SPL.tests
 main = do
 	compilerTests <- CompilerTest.iotests
 	ioTests <- Test.TypeParser.iotests
-	simpleTests $ tests2 ++ Main.tests ++ compilerTests ++ splTests ++ instantiatedTypeTests ++ Test.FFI.tests ++ Test.TypeParser.tests ++ ioTests
+	simpleTests $ tests2 ++ Main.tests ++ compilerTests ++ splTests ++  Test.FFI.tests ++ Test.TypeParser.tests ++ ioTests ++ (Test.MilnerTools.tests : Test.Tests.tests : [])
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

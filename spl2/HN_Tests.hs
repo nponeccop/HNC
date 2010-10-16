@@ -6,7 +6,7 @@ import Utils
 import qualified Data.Map as M
 
 import HN.Parser2
-import HN.ParserTest
+import Test.ParserTest
 import HN.TypeParser
 import HN.Intermediate
 import HN.SplExport
