@@ -1,4 +1,4 @@
-module HN.Optimizer.TestFixtures (test1, test2, test3, test4, compilerTest, decompilerTest) where
+module Test.TestFixtures (test1, test2, test3, test4, compilerTest, decompilerTest) where
 import Compiler.Hoopl
 import Control.Monad
 import HN.Optimizer.GraphCompiler
