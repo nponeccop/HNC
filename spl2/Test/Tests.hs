@@ -1,6 +1,6 @@
 module Test.Tests (tests) where
 import HN.Intermediate
-import HN.Optimizer.Utils
+import Test.Utils
 import Test.TestFixtures
 import Test.HUnit
 

@@ -7,6 +7,7 @@ import Utils
 
 import CPP.CompileTools
 
+import HN.Optimizer.Frontend
 import HN.Parser2
 import HN.SplExport
 import HN.TypeParser
@@ -20,6 +21,10 @@ compile inFile f = parseFile inFile >>= return . f . head . fromRight
 compileFile inFile = do
 	a <- readFile "lib/lib.hni" >>= return . M.fromList . map (sp3 decl) . lines
 	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 a
+
+compileWithOpt inFile = do
+	a <- readFile "lib/lib.hni" >>= return . M.fromList . map (sp3 decl) . lines
+	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 a . optimize
 
 typeCheck inFile = compile inFile typecheckDefinition
 
@@ -39,6 +44,7 @@ compileToSpl inFile = do
 main = getArgs >>= f where
 	f [inFile, "--spl"] = compileToSpl inFile >>= putStr
 	f [inFile, "--types"] = typeCheck inFile >>= dumpInferredTypes
+	f [inFile, "-O"] = compileWithOpt inFile >>= putStr
 	f [inFile, outFile] = compileFile inFile >>= writeFile outFile
 	f [inFile] = compileFile inFile >>= putStr
-	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --types ]\n"
+	f _ = putStrLn "Usage: hnc <infile> [<outfile> | --spl | --types | -O ]\n"
