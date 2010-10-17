@@ -1,21 +1,18 @@
 module HN.Optimizer.Frontend (optimize) where
-import HN.Optimizer.GraphCompiler
-import HN.Optimizer.GraphDecompiler
 import HN.Intermediate
 import Compiler.Hoopl
 import Control.Monad
 import HN.Optimizer.Inbound
 import HN.Optimizer.Inliner2
-
+import HN.Optimizer.WithGraph
 
 runFB = runF >=> runB
 
+xxx = ["incr", "print", "sum", "filter", "bind", "readnum", "natrec", "_if", "eq", "mod", "mul", "forever", "voidbind", "udp_receive", "time_msec", "udp_send", "udp_connect", "sub", "div", "_or"]
 
-test3 = transform $ runFB >=> runFB
-
-transform tf = fromTuple . runSimpleUniqueMonad . runWithFuel 1000 . tf . toTuple . compileGraph where
+transform tf = withGraph (fromTuple . runSimpleUniqueMonad . runWithFuel 1000 . tf . toTuple) xxx  where
 	toTuple agraph = (agraph, undefined, undefined)
 	fromTuple (agraph, _, _) = agraph
 
 optimize :: Definition -> Definition
-optimize = decompileGraph . test3
+optimize = transform $ runFB >=> runFB

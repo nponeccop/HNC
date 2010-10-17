@@ -79,10 +79,11 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 	Just x -> rewriteAtomApplication x where
 		rewriteAtomApplication :: ListFact -> Maybe (Expression Label)
 		rewriteAtomApplication x = case x of
-			Top -> error "rapp.top"
+			Top -> Nothing
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
 				LetNode args expr -> rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b
+				LibNode -> Nothing
 				_ -> error "rapp.pelem._"
 
 

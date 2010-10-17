@@ -12,8 +12,8 @@ instance NonLocal Node where
 	entryLabel (Entry l) = l
  	successors (Exit dn) = dnSuccessors dn
 
-dnSuccessors ArgNode = []
 dnSuccessors (LetNode args e) = args ++ exprSuccessors e
+dnSuccessors _ = []
 
 exprSuccessors x = case x of
 	Application a b -> exprSuccessors a ++ concatMap exprSuccessors b

@@ -2,14 +2,14 @@ module Test.TestFixtures (test1, test2, test3, test4, compilerTest, decompilerTe
 import Compiler.Hoopl
 import Control.Monad
 import HN.Optimizer.GraphCompiler
-import HN.Optimizer.GraphDecompiler
 import HN.Optimizer.Inliner2
 import HN.Optimizer.Inbound
 import HN.Optimizer.Visualise (foo)
 import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
+import HN.Optimizer.WithGraph
 
-compilerTest = foo . compileGraph
+compilerTest = foo . compileGraph []
 
 runFB = runF >=> runB
 
@@ -28,7 +28,7 @@ test4 = testFacts immediateDominators runDominatorF
 testFacts f r = show . f . (\(_, oFacts, _ ) -> oFacts) . bar r
 
 
-bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . compileGraph where
+bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . compileGraph [] where
 	toTuple agraph = (agraph, undefined, undefined)
 
-decompilerTest = decompileGraph . compileGraph
+decompilerTest = withGraph id []
