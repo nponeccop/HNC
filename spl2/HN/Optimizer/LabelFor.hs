@@ -3,7 +3,6 @@ module HN.Optimizer.LabelFor where
 import Compiler.Hoopl
 import Control.Monad.State
 import qualified Data.Map as M
-import Data.Maybe
 
 run foo = runSimpleUniqueMonad $ runStateT foo (M.empty, M.empty)
 

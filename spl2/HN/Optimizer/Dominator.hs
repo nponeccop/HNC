@@ -20,4 +20,4 @@ immediatePostdominators l = xx where
 	ll = mapToList l
 	xx :: M.Map Label [Label]
 	xx = foldr f M.empty ll
-	f (k, v) vv =  M.insertWith (\o _ -> k : o) v [k] vv
+	f (k, v) vv =  M.insertWith (\_ o -> k : o) v [k] vv

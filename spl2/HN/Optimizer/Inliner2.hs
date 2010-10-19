@@ -69,10 +69,10 @@ rewriteBL = mkBRewrite cp where
 	cp (Entry _) _ = return Nothing
 	cp (Exit xll) f = return $ rewriteExitL xll f
 
-rewriteExitL dn f = fmap (nodeToG . Exit) $ case dn of
+rewriteExitL dn f = case dn of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> fmap (LetNode l) $ rewriteExpression expr f
+	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression expr f
 
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
@@ -83,7 +83,7 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
 				LetNode args expr -> rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b
-				LibNode -> Nothing
+				LibNode -> fmap (Application $ Atom a) $ rewriteArgs b f
 				_ -> error "rapp.pelem._"
 
 
@@ -113,7 +113,7 @@ processAtom x = case x of
 		ArgNode -> error "processFact.ArgNode"
 		LetNode [] e -> Just e
 		LetNode _ _ -> Nothing
-		_ -> error "processAtom._"
+		LibNode -> Nothing
 
 passBL = BwdPass
 	{ bp_lattice = listLattice

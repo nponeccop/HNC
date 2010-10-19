@@ -8,7 +8,7 @@ import SPL.Types
 import SPL.Visualise
 
 lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
-lookupAndInstantiate name table counter = let t = uncondLookup name table in instantiatedType t counter
+lookupAndInstantiate name table counter = let t = tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table in instantiatedType t counter
 
 tv x = TV $ "t" ++ show x
 

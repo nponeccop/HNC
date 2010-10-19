@@ -29,7 +29,7 @@ compilerTests = "graphCompiler" ~: stt compilerTest
 		Definition "L1" ["L2"] $ In $ Application (Atom "L2") [ci 5]
 	]
 
-tests = "HN.Optimizer" ~: compilerTests : tt1 : tt2 : tt3 : tt4 : decompilerTests : []
+tests = "HN.Optimizer" ~: compilerTests : tt1 : tt2 : tt3 : tt4 : decompilerTests : tt5 : []
 
 tt1 = "test1" ~: stt test1
 	[ t "aaa" "LM (UM (fromList [(1,2)]))" $ Definition "a" [] $ In $ ci 2
@@ -48,14 +48,19 @@ tt3 = "test3" ~: stt test3
 	[ t "L1 = 2" "L1 = 2\n" $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" "L1 = 2\n" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" "L1 = 4\n" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
-	, t "plusX x = let f y = y in f" "" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	, t "plusX x = let f y = y in f" "L1 L2 = L3\nL2 :: @\nL3 L4 = L4\nL4 :: @\n" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
 	]
 
-tt4 = "test4" ~: stt test4
+tt4 = "Dominators" ~: stt testDominators
 	[ t "L1 = 2"  "LM (UM (fromList []))" $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" "LM (UM (fromList [(2,L1)]))" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" "LM (UM (fromList [(2,L1),(3,L2)]))" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
 	, t "L1 = let L2 = 3 in 4" "LM (UM (fromList []))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ ci 4
+	, t "plusX x = let f y = y in f" "LM (UM (fromList [(2,L1),(3,L1),(4,L3)]))" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	]
+
+tt5 = "Postdominators" ~: stt testPostdominators
+	[ t "plusX x = let f y = y in f" "fromList [(L1,[L2,L3]),(L3,[L4])]" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
 	]
 
 xd = undefined
@@ -66,4 +71,5 @@ decompilerTests = "graphDecompiler" ~: stt decompilerTest $ map ee
 	[ t "L1 = 2" xd $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" xd $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" xd $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
+	, t "plusX x = let f y = y in f" xd $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
 	]
