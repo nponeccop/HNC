@@ -9,7 +9,7 @@ import Test.HUnit
 st testName expected actual = TestLabel testName $ TestCase $ assertEqual "" expected actual
 simpleTests x = runTestTT $ TestList x
 
-xtrace a b = b
+xtrace _ b = b
 ztrace m t =  trace (m ++ " = " ++ show t) t
 
 consMaybe Nothing value = value

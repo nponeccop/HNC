@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs #-}
-module HN.Optimizer.GraphDecompiler (decompileGraph2) where
+module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
 import Compiler.Hoopl
 import HN.Optimizer.Visualise ()
@@ -11,7 +11,7 @@ import Data.Maybe
 
 firstLabel = runSimpleUniqueMonad freshLabel
 
-decompileGraph2 labelNames g @ (GMany _ l _) = (insertLet foo $ fromJust $ decompiledNode2 l2n firstLabel $ decompiledBlock $ case mapLookup firstLabel l of
+decompileGraph labelNames g @ (GMany _ l _) = (insertLet foo $ fromJust $ decompiledNode2 l2n firstLabel $ decompiledBlock $ case mapLookup firstLabel l of
 	Just entry -> entry) where
 		pd = graphPostdominators g
 		foo = mapMaybe (\l -> decompiledNode2 l2n l $ bar l) $ M.findWithDefault [] firstLabel pd

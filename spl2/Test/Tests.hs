@@ -2,6 +2,7 @@ module Test.Tests (tests) where
 import HN.Intermediate
 import Test.Utils
 import Test.TestFixtures
+import qualified Test.Optimizer.WithParsing
 import Test.HUnit
 
 t a b c = (,,) a b c
@@ -29,7 +30,7 @@ compilerTests = "graphCompiler" ~: stt compilerTest
 		Definition "L1" ["L2"] $ In $ Application (Atom "L2") [ci 5]
 	]
 
-tests = "HN.Optimizer" ~: compilerTests : tt1 : tt2 : tt3 : tt4 : decompilerTests : tt5 : []
+tests = "HN.Optimizer" ~: compilerTests : tt1 : tt2 : tt3 : tt4 : decompilerTests : tt5 : Test.Optimizer.WithParsing.tests : []
 
 tt1 = "test1" ~: stt test1
 	[ t "aaa" "LM (UM (fromList [(1,2)]))" $ Definition "a" [] $ In $ ci 2
@@ -61,6 +62,7 @@ tt4 = "Dominators" ~: stt testDominators
 
 tt5 = "Postdominators" ~: stt testPostdominators
 	[ t "plusX x = let f y = y in f" "fromList [(L1,[L2,L3]),(L3,[L4])]" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	, t "locals14.hn" "" $ Definition "main" ["z"] (Let (Definition "a" [] (In (Application (Atom "incr") [Atom "z"]))) (Let (Definition "y" [] (In (Atom "a"))) (In (Atom "a"))))
 	]
 
 xd = undefined

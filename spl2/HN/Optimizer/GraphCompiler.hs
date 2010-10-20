@@ -1,4 +1,4 @@
-module HN.Optimizer.GraphCompiler (compileGraph, compileGraph2) where
+module HN.Optimizer.GraphCompiler (compileGraph) where
 
 import Compiler.Hoopl
 
@@ -7,10 +7,7 @@ import Control.Monad.State
 import HN.Optimizer.Node
 import HN.Optimizer.LabelFor as LabelFor
 
-compileGraph :: [String] -> Definition -> Graph Node C C
-compileGraph a def = fst $ compileGraph2 a def
-
-compileGraph2 a def @ (Definition name _ _) = LabelFor.run $ do
+compileGraph a def @ (Definition name _ _) = LabelFor.run $ do
 	x <- freshLabelFor name
 	libLabels <- mapM freshLabelFor a
 	gg <- compileGraph5 def x

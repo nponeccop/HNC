@@ -17,3 +17,4 @@ instance Show DefinitionNode where
 		 	[] -> " = " ++ show e
 			_ -> " " ++ concatMap (\l -> show l ++ " ") l ++ "= " ++ show e
 		ArgNode -> " :: @"
+		LibNode -> " :: #"

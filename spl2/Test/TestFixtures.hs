@@ -9,7 +9,10 @@ import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
 import HN.Optimizer.WithGraph
 
-compilerTest = foo . compileGraph []
+
+cg = fst . compileGraph ["incr"]
+
+compilerTest = foo . cg
 
 runFB = runF >=> runB
 
@@ -29,7 +32,7 @@ testFacts f r = show . f . (\(_, oFacts, _ ) -> oFacts) . bar r
 
 testPostdominators = testFacts (immediatePostdominators . immediateDominators) runDominatorF
 
-bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . compileGraph [] where
+bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . cg where
 	toTuple agraph = (agraph, undefined, undefined)
 
 decompilerTest = withGraph id []
