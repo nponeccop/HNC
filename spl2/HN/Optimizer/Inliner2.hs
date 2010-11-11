@@ -74,12 +74,13 @@ rewriteExitL dn f = case dn of
 	ArgNode -> Nothing
 	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression expr f
 
+
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
 	Just x -> rewriteAtomApplication x where
 		rewriteAtomApplication :: ListFact -> Maybe (Expression Label)
 		rewriteAtomApplication x = case x of
-			Top -> Nothing
+			Top -> fmap (Application $ Atom a) $ rewriteArgs b f
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
 				LetNode args expr -> rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b
@@ -148,9 +149,6 @@ nodeToG (Entry el) = mkFirst (Entry el)
 nodeToG (Exit xll) = mkLast (Exit xll)
 
 
--- TODO компилятор из графов обратно в AST
---
-
 {-
 foo x = {
 	bar x = incr x
@@ -168,4 +166,4 @@ foo x = {
 Top `join` [...] = Top
 Bottom `join` [...] = [...]
 
-	-}
+-}

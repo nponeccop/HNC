@@ -15,6 +15,7 @@ showE e = case e of
 	Atom a -> a
 	Constant a -> show a
 	Application (Atom a) b -> a ++ concatMap (\x -> " " ++ showFunctionArg x) b
+	Application a b -> inParens (showE a) ++ concatMap (\x -> " " ++ showFunctionArg x) b
 
 
 showFunctionArg e = case e of
