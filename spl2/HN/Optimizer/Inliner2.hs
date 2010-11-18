@@ -85,8 +85,7 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 			PElem x -> case x of
 				LetNode args expr -> rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b
 				LibNode -> fmap (Application $ Atom a) $ rewriteArgs b f
-				_ -> error "rapp.pelem._"
-
+				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs b f
 
 rewriteApplication a b f = case rewriteExpression a f of
 	Nothing -> fmap (Application a) $ rewriteArgs b f
