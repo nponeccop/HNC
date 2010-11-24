@@ -1,4 +1,4 @@
-module QuickCheck where
+module Test.Main where
 
 import Test.QuickCheck
 import Test.HUnit
@@ -104,7 +104,7 @@ tests2 = map ttt2 [
 compile inFile f = parseFile inFile >>= return . f . head . fromRight
 
 compileFile inFile
-	= QuickCheck.compile inFile $ show . compileDefinition
+	= Test.Main.compile inFile $ show . compileDefinition
 
 splTest (s, r, t) = TestLabel s $ TestCase $ case step s of
 	SPL.Interpretator.P (t2, r2) -> do
@@ -119,6 +119,6 @@ splTests = map splTest Test.SPL.tests
 main = do
 	compilerTests <- Test.Compiler.iotests
 	ioTests <- Test.TypeParser.iotests
-	simpleTests $ tests2 ++ QuickCheck.tests ++ compilerTests ++ splTests ++  Test.FFI.tests ++ Test.TypeParser.tests ++ ioTests ++ (Test.MilnerTools.tests : Test.Tests.tests : [])
+	simpleTests $ tests2 ++ Test.Main.tests ++ compilerTests ++ splTests ++  Test.FFI.tests ++ Test.TypeParser.tests ++ ioTests ++ (Test.MilnerTools.tests : Test.Tests.tests : [])
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

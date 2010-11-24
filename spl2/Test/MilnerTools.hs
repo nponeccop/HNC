@@ -1,5 +1,5 @@
 module Test.MilnerTools (tests) where
-import MilnerTools
+import HN.MilnerTools
 import Test.HUnit
 import SPL.Visualise
 import SPL.Top
