@@ -95,7 +95,7 @@ main = do
 --		]
 	runTests
 
-	testCheck3
+--	testCheck3
 	rt convertDef
 	rt $ SPL.Top.check0 . convertDef
 --	test2

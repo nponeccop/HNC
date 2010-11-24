@@ -26,9 +26,11 @@ makeLet v w = ml w where
 
 insertLet prg (Definition name args (In value)) = Definition name args $ makeLet value prg
 
-
 data Definition
 	=   Definition String [String] LetIn
+--	|	Assign String LetIn
+--	|	While Expression LetIn
+--	|	If Expression LetIn LetIn
     deriving(Eq,Show)
 
 data Root
@@ -39,8 +41,8 @@ type ASTExpression = Expression String
 data Expression a
     =   Application (Expression a) [Expression a]
     |   Atom a
-    |   Lambda [a] (Expression a)
     |   Constant Const
+    |   Lambda [a] (Expression a)
     deriving Eq
 
 instance Functor Expression where

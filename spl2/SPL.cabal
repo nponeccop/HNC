@@ -13,17 +13,13 @@ Stability:      Experimental
 Synopsis:       A functional language with a compiler into C++ language.
 Description:    SPL is a strictly, statically and implicitly typed functional universal language with translator into C++ language.
 License-File:   COPYING.LESSER
-Build-Depends:  base == 4.*, containers, bytestring, parsec >= 3.1, HUnit, QuickCheck >= 2, haskell98, mtl, uuagc >= 0.9.29.1, directory == 1.0.*, hoopl >= 3.8.6.1
+Build-Depends:  base == 4.*, containers, bytestring, parsec >= 3.1, HUnit, QuickCheck >= 2, haskell98, mtl, uuagc >= 0.9.32, directory == 1.0.*, hoopl >= 3.8.6.1
 HS-Source-dirs:	.
 cabal-version:  >= 1.8.0.6
 Other-modules:	Bar
 
 Executable:     spl-hnc
 Main-Is:        HNC.hs
-
-Executable:	spl-quickcheck
-Main-Is:	QuickCheck.hs
-GHC-Options:	-fwarn-unused-imports -fwarn-unused-binds
 
 Executable:	spli
 Main-Is:	SPLI.hs

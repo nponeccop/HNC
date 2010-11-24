@@ -15,7 +15,7 @@ import HN.Intermediate
 import HN.TypeTools
 import SPL.Types
 
-import MilnerTools
+import HN.MilnerTools
 import Utils
 
 type ExpressionList  = [ASTExpression]

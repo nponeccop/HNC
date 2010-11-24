@@ -1,4 +1,4 @@
-module CompilerTest where
+module Test.Compiler where
 import Test.HUnit hiding (test)
 import System.Directory
 import Control.Monad

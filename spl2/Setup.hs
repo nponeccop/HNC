@@ -2,5 +2,7 @@ module Main where
 
 import Distribution.Simple
 import Distribution.Simple.UUAGC
+import qualified QuickCheck
+main = defaultMainWithHooks uuagcUserHook { runTests = foo }
 
-main = defaultMainWithHooks uuagcUserHook
+foo _ _ _ _ = QuickCheck.main
