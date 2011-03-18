@@ -1,4 +1,4 @@
-﻿-----------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------
 {-| Module      : Main
     Copyright   :
     License     : All Rights Reserved
@@ -131,8 +131,17 @@ newExpression def = do
 	char '}'
 	return $ def xx x
 
+indent = many $ char '\t'
+
+assignment = do
+	indent
+	i <- identifier
+	string " := "
+	expression >>= return . Assign i . In
+
+
 simpleDefinition = 	do
-	many $ char '\t'
+	indent
 	parms <- mySepBy identifier (char ' ')
 	string " = "
 	let def v w = Definition (head parms) (tail parms) $ makeLet v w

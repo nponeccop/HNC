@@ -16,13 +16,11 @@ compileGraph a def @ (Definition name _ _) = LabelFor.run $ do
 compileGraph4 def @ (Definition name _ _) = do
 	freshLabelFor name >>=	compileGraph5 def
 
-compileGraph5 (Definition _ args letIn) x = do
-	innerScope $ do
+compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		al <- mapM freshLabelFor args
 		y <- compileLet letIn
 		e <- compileExpr $ letValue letIn
 		return $ node x (LetNode al e) |*><*| y |*><*| foldr (\x y -> argNode x |*><*| y) emptyClosedGraph al
-
 
 compileLet (Let def letIn) = do
 	y <- compileGraph4 def
@@ -36,8 +34,6 @@ compileLet (In _) = return emptyClosedGraph
 -- compileLet (In e) = compileExpr e
 -- compileLet (Let def inner) = compileGraph def >> compileLet inner
 
-compileExpr (Constant x) = return $ Constant x
-compileExpr (Atom a) = fmap  Atom $ labelFor a
-compileExpr (Application a b) = liftM2 Application (compileExpr a) (mapM compileExpr b)
-
-
+compileExpr x = do
+	aa <- labelFor ()
+	return $ fmap aa x

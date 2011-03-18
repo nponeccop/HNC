@@ -11,14 +11,14 @@ freshLabelFor name = do
 	modify $ \(n2l, l2n) -> (M.insert name l n2l, M.insert l name l2n)
 	return l
 
-tracedUncondLookup k m = case M.lookup k m of
+tracedUncondLookup m k = case M.lookup k m of
 	Just a -> a
 	Nothing -> error $ "LabelFor.tracedUncondLookup: " ++ show k ++ " not found"
 
-labelFor name = fmap (tracedUncondLookup name . fst) get
+labelFor () = liftM (tracedUncondLookup . fst) get
 
 innerScope f = do
-	a <- fmap fst get
+	a <- liftM fst get
 	b <- f
 	modify $ \(_, l2n) -> (a, l2n)
 	return b

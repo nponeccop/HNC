@@ -1,4 +1,4 @@
-﻿module HN.SplExport where
+module HN.SplExport where
 import HN.Intermediate
 import SPL.Types
 

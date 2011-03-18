@@ -1,4 +1,4 @@
-﻿module HN.Intermediate where
+module HN.Intermediate where
 import Data.Functor
 
 type Program = [Definition]
@@ -28,7 +28,7 @@ insertLet prg (Definition name args (In value)) = Definition name args $ makeLet
 
 data Definition
 	=   Definition String [String] LetIn
---	|	Assign String LetIn
+	|	Assign String LetIn
 --	|	While Expression LetIn
 --	|	If Expression LetIn LetIn
     deriving(Eq,Show)
