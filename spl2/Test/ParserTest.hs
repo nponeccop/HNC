@@ -1,10 +1,32 @@
-module Test.ParserTest (runTests, runTest2) where
+module Test.ParserTest (runTests, runTest2, tests) where
 
 import HN.Parser2
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
 import HN.Intermediate
+
+import Test.HUnit
+import Test.Utils
+
+---------------------------------------------------
+-- New test suite
+---------------------------------------------------
+
+t a b c = (,,) a b c
+
+parserTest s _in = case parseString s _in of
+	Right x -> x
+	Left x -> error $ show x
+
+rtt name parser _in out = name ~: out ~=? parserTest parser _in
+
+rttp name _in out = rtt name program _in out
+
+
+---------------------------------------------------
+-- Old adhoc tests
+---------------------------------------------------
 
 xx = mySepBy simpleDefinition (string "\n")
 
@@ -43,16 +65,36 @@ testNewExpression = do
 	runTest xx "c = d\ne = f\nb }" [simpleEq "c" "d" [], simpleEq "e" "f" []]
 	rtp "a b c = d" [Definition "a" ["b", "c"]  $ makeLet (Atom "d") []]
 
+tests = "Parser" ~:
+	[ rtt "semicolon" semicolon " ; " " ; "
+	, rtt "ppp" ppp " ; " [" ; "]
+	, rtt "pppp" pppp "1 ; 2" ["1", "2"]
+	, rttp "eq" "c = e" [simpleEq "c" "e" []]
+	, rttp "eq-eq" "a = b\nc = d" [simpleEq "a" "b" [],simpleEq "c" "d" []]
+	, rtt "where" whereClause " where\nc = d;" [simpleEq "c" "d" []]
+	, rttp "fundef" "a b c = d" [Definition "a" ["b", "c"] $ makeLet (Atom "d") []]
+	, rttp "vardef" "a = b c" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "c"]) []]
+	, rttp "paren" "a = b (c d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Application (Atom "c") [Atom "d"]]) []]
+	, rttp "atomBody" "a b = c" [Definition "a" ["b"] $ makeLet (Atom "c") []]
+	, rttp "" "a = \\ b -> c" [Definition "a" [] $ makeLet (Lambda ["b"] (Atom "c")) []]
+	, rttp "" "a = b (\\ c -> d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Lambda ["c"] (Atom "d")]) []]
+	, rttp "" "a = { f c = d\nb f }" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "f"]) [Definition "f" ["c"] $ makeLet (Atom "d") []]]
+	, rttp "" "a = b ((c f) d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Application (Application (Atom "c") [Atom "f"]) [Atom "d"]]) []]
+	, rttp "" "a = (b c) d" [Definition "a" [] $ makeLet (Application (Application (Atom "b") [Atom "c"]) [Atom "d"]) []]
+	, rttp "" "a = b c d" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "c",Atom "d"]) []]
+	, rttp "" "f = \"a\"" [Definition "f" [] $ makeLet (Constant (ConstString "a")) []]
+	, rttp "" "f = \\ z -> 1" [Definition "f" [] $ makeLet (Lambda ["z"] (Constant (ConstInt 1))) []]
+	, rttp "" "f z = 1" [Definition "f" ["z"] $ makeLet (Constant (ConstInt 1)) []]
+	, rttp "" "f = u 6" [Definition "f" [] $ makeLet (Application (Atom "u") [Constant (ConstInt 6)]) []]
+	, rttp "" "plusx = \\ i -> plus x i" [Definition "plusx" [] $ makeLet (Lambda ["i"] (Application (Atom "plus") [Atom "x",Atom "i"])) []]
+	, rttp "" "plusx i = plus x i" [Definition "plusx" ["i"] $ makeLet (Application (Atom "plus") [Atom "x",Atom "i"]) []]
+	, rttp "" "main = { y z = g z\nf y y }" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
+	, rttp "" "main f = { y z = g z\nf y y }" [Definition "main" ["f"]  $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
+	, rttp "" "main x = { y = g x\nf y y }" [Definition "main" ["x"] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition  "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
+	]
+
 runTests = do
 	testNewExpression
-
-	runTest semicolon " ; " " ; "
-	runTest ppp " ; " [" ; "]
-	runTest pppp "1 ; 2" ["1", "2"]
-
-	rtp "c = e" [simpleEq "c" "e" []]
-	rtp "a = b\nc = d" [simpleEq "a" "b" [],simpleEq "c" "d" []]
-	runTest whereClause " where\nc = d;" [simpleEq "c" "d" []]
 
 	rtp2 "a = { c = d\nb }\ne = f" "a = b where\nc = d;\ne = f" [simpleEq "a" "b" [simpleEq "c" "d" []],simpleEq "e" "f" []]
 	rtp2 "a = { c = d\ne = f\nb }\ng = h" "a = b where\nc = d\ne = f;\ng = h" [simpleEq "a" "b" [simpleEq "c" "d" [],simpleEq "e" "f" []],simpleEq "g" "h" []]
@@ -62,38 +104,15 @@ runTests = do
 	runTest expression "\\ b -> c" $ Lambda ["b"] (Atom "c")
 
 	runTest expression "\\ b c -> c" $ Lambda ["b","c"] (Atom "c")
-	rtp "a b c = d" [Definition "a" ["b", "c"] $ makeLet (Atom "d") []]
 
 	rtp2 "a = { c = \\ d -> ef\ne = f\nb }\ng = { i = jj\nh }" "a = b where\nc = \\ d -> ef\ne = f;\ng = h where\ni = jj;" [simpleEq "a" "b" [Definition "c" [] $ makeLet (Lambda ["d"] (Atom "ef")) [],simpleEq "e" "f" []],simpleEq "g" "h" [simpleEq "i" "jj" []]]
 
-	rtp "a = b c" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "c"]) []]
-	rtp "a = b (c d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Application (Atom "c") [Atom "d"]]) []]
-
-	rtp "a b = c" [Definition "a" ["b"] $ makeLet (Atom "c") []]
-	rtp "a = \\ b -> c" [Definition "a" [] $ makeLet (Lambda ["b"] (Atom "c")) []]
-
-	rtp "a = b (\\ c -> d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Lambda ["c"] (Atom "d")]) []]
-	rtp "a = { f c = d\nb f }" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "f"]) [Definition "f" ["c"] $ makeLet (Atom "d") []]]
-
-	rtp "a = b ((c f) d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Application (Application (Atom "c") [Atom "f"]) [Atom "d"]]) []]
 	runTest application "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
 	runTest expression "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
-	rtp "a = (b c) d" [Definition "a" [] $ makeLet (Application (Application (Atom "b") [Atom "c"]) [Atom "d"]) []]
 	runTest application "b c d" $ Application (Atom "b") [Atom "c",Atom "d"]
 
-	rtp "a = b c d" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "c",Atom "d"]) []]
-
-	-- тесты ¬ага
-	rtp "f = \"a\"" [Definition "f" [] $ makeLet (Constant (ConstString "a")) []]
-
-	rtp "f = \\ z -> 1" [Definition "f" [] $ makeLet (Lambda ["z"] (Constant (ConstInt 1))) []]
-	rtp "f z = 1" [Definition "f" ["z"] $ makeLet (Constant (ConstInt 1)) []]
 
 	runTest application "u 6" $ Application (Atom "u") [Constant (ConstInt 6)]
-	rtp "f = u 6" [Definition "f" [] $ makeLet (Application (Atom "u") [Constant (ConstInt 6)]) []]
-	-- тесты из Tests.hs
-	rtp "plusx = \\ i -> plus x i" [Definition "plusx" [] $ makeLet (Lambda ["i"] (Application (Atom "plus") [Atom "x",Atom "i"])) []]
-	rtp "plusx i = plus x i" [Definition "plusx" ["i"] $ makeLet (Application (Atom "plus") [Atom "x",Atom "i"]) []]
 
 	runTest application "mul (plusx y) (plusx z)" $ Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]]
 	runTest expression "\\ x y z -> mul (plusx y) (plusx z)" $ Lambda ["x","y","z"] (Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]])
@@ -111,13 +130,10 @@ runTests = do
 	rtp2 "main = { y = g x\nf y }" "main = f y where\ny = g x;" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y"]) [Definition "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
 
 	rtp2 "main = { y = \\ z -> g z\nf y y }" "main = f y y where\ny = \\ z -> g z;" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" [] $ makeLet (Lambda ["z"] (Application (Atom "g") [Atom "z"])) []]]
-	rtp "main = { y z = g z\nf y y }" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
 
 	rtp2 "main = { y = \\ z -> g z\n\\ x -> f y y }" "main = \\ x -> f y y where\ny = \\ z -> g z;" [Definition "main" [] $ makeLet (Lambda ["x"] (Application (Atom "f") [Atom "y",Atom "y"])) [Definition "y" [] $ makeLet (Lambda ["z"] (Application (Atom "g") [Atom "z"])) []]]
-	rtp "main f = { y z = g z\nf y y }" [Definition "main" ["f"]  $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
 
 	rtp2 "main = { y = g x\n\\ x -> f y y }" "main = \\ x -> f y y where\ny = g x;" [Definition "main" []  $ makeLet (Lambda ["x"] (Application (Atom "f") [Atom "y",Atom "y"])) [Definition "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
-	rtp "main x = { y = g x\nf y y }" [Definition "main" ["x"] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition  "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
 
 	-- to flush line-buffered stdout
 	putStrLn "";

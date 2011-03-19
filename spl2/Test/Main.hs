@@ -21,6 +21,7 @@ import Test.MilnerTools
 import Test.FFI
 import Test.TypeParser
 import Test.Tests
+import Test.ParserTest
 
 import SPL.Interpretator
 
@@ -127,6 +128,6 @@ main = do
 		++ Test.FFI.tests
 		++ Test.TypeParser.tests
 		++ ioTests
-		++ (Test.MilnerTools.tests : Test.Tests.tests : [])
+		++ (Test.MilnerTools.tests : Test.Tests.tests : Test.ParserTest.tests : [])
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

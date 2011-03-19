@@ -86,21 +86,14 @@ testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 	]
 
 main = do
---	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
---	print defaultEnv
---	mapM_ (print . snd . typeCheck defaultEnv) [
---			Atom "l"
---		,	Atom "head"
---		,	Application (Atom "head") [Atom "l"]
---		]
 	runTests
 
 --	testCheck3
-	rt convertDef
-	rt $ SPL.Top.check0 . convertDef
---	test2
+--	rt convertDef
+--	rt $ SPL.Top.check0 . convertDef
 	print $ cppType $ T "num"
 
-	testCodeGen
- 	getLine
+--	testCodeGen
 	return ()
+
+--	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
