@@ -72,6 +72,19 @@ tests = "Parser" ~:
 	, rttp "eq" "c = e" [simpleEq "c" "e" []]
 	, rttp "eq-eq" "a = b\nc = d" [simpleEq "a" "b" [],simpleEq "c" "d" []]
 	, rtt "where" whereClause " where\nc = d;" [simpleEq "c" "d" []]
+	, rtt "" expression "\\ b -> c" $ Lambda ["b"] (Atom "c")
+	, rtt "" expression "\\ b c -> c" $ Lambda ["b","c"] (Atom "c")
+	, rtt "" application "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
+	, rtt "" expression "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
+	, rtt "" application "b c d" $ Application (Atom "b") [Atom "c",Atom "d"]
+	, rtt "" application "u 6" $ Application (Atom "u") [Constant (ConstInt 6)]
+	, rtt "" application "mul (plusx y) (plusx z)" $ Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]]
+	, rtt "" expression "\\ x y z -> mul (plusx y) (plusx z)" $ Lambda ["x","y","z"] (Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]])
+	, rtt "" (mySepBy atom2 (string " ")) "a b" [Atom "a", Atom "b"]
+	, rtt "" (mySepBy atom2 (string " ")) "a b !" [Atom "a", Atom "b"]
+	, rtt "" (mySepBy atom2 (string " ")) "a b where" [Atom "a", Atom "b"]
+	, rtt "" application "f y where" $ Application (Atom "f") [Atom "y"]
+	, rtt "" expression "f y where" $ Application (Atom "f") [Atom "y"]
 	, rttp "fundef" "a b c = d" [Definition "a" ["b", "c"] $ makeLet (Atom "d") []]
 	, rttp "vardef" "a = b c" [Definition "a" [] $ makeLet (Application (Atom "b") [Atom "c"]) []]
 	, rttp "paren" "a = b (c d)" [Definition "a" [] $ makeLet (Application (Atom "b") [Application (Atom "c") [Atom "d"]]) []]
@@ -101,31 +114,12 @@ runTests = do
 	rtp2 "a = { c = { e = f\nd }\nb }" "a = b where\nc = d where\ne = f;;" [simpleEq "a" "b" [simpleEq "c" "d" [simpleEq "e" "f" []]]]
 	rtp2 "a = { c = d\ne = f\nb }\ng = { i = jj\nh }" "a = b where\nc = d\ne = f;\ng = h where\ni = jj;"   [simpleEq "a" "b" [simpleEq "c" "d" [],simpleEq "e" "f" []],simpleEq "g" "h" [simpleEq "i" "jj" []]]
 
-	runTest expression "\\ b -> c" $ Lambda ["b"] (Atom "c")
-
-	runTest expression "\\ b c -> c" $ Lambda ["b","c"] (Atom "c")
 
 	rtp2 "a = { c = \\ d -> ef\ne = f\nb }\ng = { i = jj\nh }" "a = b where\nc = \\ d -> ef\ne = f;\ng = h where\ni = jj;" [simpleEq "a" "b" [Definition "c" [] $ makeLet (Lambda ["d"] (Atom "ef")) [],simpleEq "e" "f" []],simpleEq "g" "h" [simpleEq "i" "jj" []]]
-
-	runTest application "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
-	runTest expression "(b c) d" $ Application (Application (Atom "b") [Atom "c"]) [Atom "d"]
-	runTest application "b c d" $ Application (Atom "b") [Atom "c",Atom "d"]
-
-
-	runTest application "u 6" $ Application (Atom "u") [Constant (ConstInt 6)]
-
-	runTest application "mul (plusx y) (plusx z)" $ Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]]
-	runTest expression "\\ x y z -> mul (plusx y) (plusx z)" $ Lambda ["x","y","z"] (Application (Atom "mul") [Application (Atom "plusx") [Atom "y"],Application (Atom "plusx") [Atom "z"]])
 
 	rtp2 "main = { y = g\nf }" "main = f where\ny = g;" [simpleEq "main" "f" [simpleEq "y" "g" []]]
 
 	-- тесты mySepBy и связанного бага с распознаванием where
-	runTest (mySepBy atom2 (string " ")) "a b" [Atom "a", Atom "b"]
-	runTest (mySepBy atom2 (string " ")) "a b !" [Atom "a", Atom "b"]
-	runTest (mySepBy atom2 (string " ")) "a b where" [Atom "a", Atom "b"]
-
-	runTest application "f y where" $ Application (Atom "f") [Atom "y"]
-	runTest expression "f y where" $ Application (Atom "f") [Atom "y"]
 
 	rtp2 "main = { y = g x\nf y }" "main = f y where\ny = g x;" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y"]) [Definition "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
 
