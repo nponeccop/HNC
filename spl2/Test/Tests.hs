@@ -1,4 +1,4 @@
-module Test.Tests (tests) where
+﻿module Test.Tests (tests) where
 import HN.Intermediate
 import Test.Utils
 import Test.TestFixtures
@@ -18,15 +18,15 @@ compilerTests = "graphCompiler" ~: stt compilerTest
 		Definition "L1" [] $ Let (sv "L2" 3) $ Let (sv "L3" 4) $ In $ Atom "L2"
 	, t
 		"L1 = let b = 3 in let L3 = (let b = 4 in b) in b"
-	 	"L1 = L2\nL2 = 3\nL3 = L4\nL4 = 4\n" $
+	 	"L1 = L3\nL2 :: #\nL3 = 3\nL4 = L5\nL5 = 4\n" $
 		Definition "L1" [] $ Let (sv "b" 3) $ Let (Definition "L3" [] $ Let (sv "b" 4) $ In $ Atom "b") $ In $ Atom "b"
 	, t
 		"L1 L2 = 2"
-		"L1 L2 = 2\nL2 :: @\n" $
+		"L1 L3 = 2\nL2 :: #\nL3 :: @\n" $
 		Definition "L1" ["L2"] $ In $ ci 2
 	, t
 		"L1 L2 = L2 5"
-		"L1 L2 = L2 5\nL2 :: @\n" $
+		"L1 L3 = L3 5\nL2 :: #\nL3 :: @\n" $
 		Definition "L1" ["L2"] $ In $ Application (Atom "L2") [ci 5]
 	]
 
