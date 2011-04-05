@@ -1,0 +1,1 @@
+loopCond loopState = incr (deref loopState)

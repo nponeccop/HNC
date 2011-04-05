@@ -38,13 +38,14 @@ isComposed (CL _ _) = True
 isComposed _  = False
 
 makeType (T x) = x
-makeType (TD a b) =  a ++ " " ++ (joinStr " " $ map makeType b)
+makeType (TD a b) =  a ++ " " ++ (joinStr " " $ map makeType2 b)
 makeType (TT x) = joinStr " -> " $ map makeType2 x
 makeType (TU x) = "??" ++ x
 makeType (TV x) = '?' : x
 makeType x = show x
 
 makeType2 (x @ (TT _)) = "(" ++ makeType x ++ ")"
+makeType2 (x @ (TD _ _)) = "(" ++ makeType x ++ ")"
 makeType2 x = makeType x
 
 printFF a (CTyped x y) = (if a then "[" ++ makeType x ++ "] " else "" ) ++  printFF a y

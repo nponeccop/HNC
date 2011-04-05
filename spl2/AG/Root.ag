@@ -47,6 +47,7 @@ SEM Root
 		def.finalSubstitution = \x -> substituteType x @def.s
 		def.parent = "OH,PARENT (ASSERTION)"
 		def.isLocalVar = False
+
 {
 -- фронтэнд к API атрибутной грамматики.
 compile2 def inh = cppDefinition_Syn_Root $ wrap_Root (sem_Root (Root def)) inh

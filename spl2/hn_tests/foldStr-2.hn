@@ -1,0 +1,8 @@
+foldStr f e s = {
+	neq a b = not (eq a b)
+	loopCond loopState = {
+		s = snd loopState
+		neq (deref s) 0
+	}
+	s
+}

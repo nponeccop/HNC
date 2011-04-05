@@ -6,8 +6,11 @@ import CPP.Visualise
 
 import SPL.Types
 import HN.TypeTools
+import qualified Data.Set as S
 
-fixTA x = showTemplateArgs $ map (show . cppType) x
+fixTA x atv = showTemplateArgs $ map (show .  f) x where
+	f x @ (TV v) = if S.member v atv then cppType x else CppTypePrimitive "hn::unused"
+	f x = cppType x
 
 moveQualifierDown x = case x of
 	CppContextVar -> CppCurrentClassVar

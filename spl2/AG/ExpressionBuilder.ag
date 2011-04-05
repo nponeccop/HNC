@@ -38,7 +38,7 @@ SEM ASTExpression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.atomTransformer (uncondLookup @name @lhs.qualifiers) @name (uncondLookup @name @lhs.definitionTypes) $ @name ++ fixTA @loc.templateArgs
+		lhs.sem = CppAtom $  @lhs.atomTransformer (uncondLookup @name @lhs.qualifiers) @name (uncondLookup @name @lhs.definitionTypes) $ @name ++ xtrace "fixTA" (fixTA @loc.templateArgs @lhs.abstractedTv)
 
 	-- аппликация транслируется тоже тривиально
 	-- для функции и аргумента выставляются соответствующие ФВП обработки

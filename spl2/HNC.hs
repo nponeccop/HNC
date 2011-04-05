@@ -15,16 +15,9 @@ import HN.TypeParser
 import SPL.Check3
 import SPL.Visualise
 
-
-compile inFile f = parseFile inFile >>= return . f . head . fromRight
-
 compileFile = compile2 id
 
 compileWithOpt = compile2 optimize
-
-compile2 f inFile = do
-	a <- readFile "lib/lib.hni" >>= return . M.fromList . map (sp3 decl) . lines
-	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition2 a . f
 
 typeCheck inFile = compile inFile typecheckDefinition
 

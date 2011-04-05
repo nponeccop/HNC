@@ -1,0 +1,13 @@
+foldStr f e s = {
+	neq a b = not (eq a b)
+	loopCond loopState = {
+		s = snd loopState
+		neq (deref s) 0
+	}
+	loopTrans loopState = {
+		s = snd loopState
+		e = fst loopState
+		pair (f e (deref s)) (next s)
+	}
+	s
+}

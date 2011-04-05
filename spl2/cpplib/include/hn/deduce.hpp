@@ -9,6 +9,8 @@
 namespace hn
 {
 
+typedef int unused;
+
 template <typename F, bool isBuiltin = boost::function_types::is_callable_builtin<F>::value>
 struct deduce
 {

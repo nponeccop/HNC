@@ -197,6 +197,24 @@ namespace ff
 	extern IO<int> time_msec;
 
 	IO<void> forever(IO<void>);
+
+	template <typename T>
+	struct ptr
+	{
+		T* p;
+	};
+
+	template <typename T>
+	T deref(ptr<T> t)
+	{
+		return *(t.p);
+	}
+
+	bool not(bool x)
+	{
+		return !x;
+	}
+
 };
 
 ff::IO<void> hnMain();

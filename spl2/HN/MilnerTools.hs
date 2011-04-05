@@ -70,11 +70,13 @@ closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
 	envPolyVars e = M.fold f S.empty e where
 		f el acc = S.union acc $ typeAllPolyVars el
 
-composeSubstitutions :: Substitution -> Substitution -> Substitution
-composeSubstitutions a b | M.null a = b
-composeSubstitutions a b | M.null b = a
+composeSubstitutions a b = a `composeSubstitutions2` b `composeSubstitutions2` a
 
-composeSubstitutions a b = xtrace ("MilnerTools.composeSubstitutions: " ++ show a ++ " # " ++ show b) $ M.fold composeSubstitutions (M.union a b') $ M.intersectionWith unify a b' where
+composeSubstitutions2 :: Substitution -> Substitution -> Substitution
+composeSubstitutions2 a b | M.null a = b
+composeSubstitutions2 a b | M.null b = a
+
+composeSubstitutions2 b a = xtrace ("MilnerTools.composeSubstitutions: " ++ show a ++ " # " ++ show b) $ M.fold composeSubstitutions (M.union a b') $ M.intersectionWith unify a b' where
 	b' = M.map (\x -> substituteType x a) b
 
 instantiatedType :: T -> Int -> (Int, T)

@@ -1,0 +1,7 @@
+foldStr f e s = {
+	loopCond loopState = {
+		s = snd loopState
+		eq (deref s) 0
+	}
+	s
+}

@@ -7,15 +7,10 @@ struct hnMain_impl
 	{
 		return 6;
 	};
-	template <typename t1>
-	static int id(t1 x)
-	{
-		return 5;
-	};
 };
 
 ff::IO<void> hnMain()
 {
 	typedef hnMain_impl local;
-	return ff::print(local::natr(&local::id<t6>));
+	return ff::print(local::natr(&local::natr<hn::unused>));
 };

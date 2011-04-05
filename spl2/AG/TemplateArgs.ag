@@ -15,3 +15,14 @@ SEM Definition
 		lhs.definitionTv = typeTv @loc.definitionType
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
 		loc.templateArgs = typeTu @loc.definitionType
+
+ATTR ASTExpression LetIn Definition ExpressionList
+	[ abstractedTv : {S.Set String} | | ]
+
+SEM Root
+	| Root
+		def.abstractedTv = S.empty
+
+SEM Definition
+	| Definition
+		where.abstractedTv = S.union @lhs.abstractedTv @loc.templateArgs

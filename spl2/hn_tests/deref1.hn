@@ -1,0 +1,1 @@
+f s = eq (deref s) 0
