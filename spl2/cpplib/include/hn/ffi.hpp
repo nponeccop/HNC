@@ -210,10 +210,27 @@ namespace ff
 		return *(t.p);
 	}
 
+	template <typename T> ptr<T> next(ptr<T> t)
+	{
+		t.p++;
+		return t;
+	}
+
 	bool not(bool x)
 	{
 		return !x;
 	}
+
+	template <typename S>
+	S whileF(boost::function<bool (S)> c, boost::function<S (S)> b, S s)
+	{
+		while (c(s))
+		{
+			s = b(s);
+		}
+		return s;
+	}
+
 
 };
 

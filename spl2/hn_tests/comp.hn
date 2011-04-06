@@ -1,0 +1,7 @@
+ii x = {
+	comp f g = {
+		h x = f (g x)
+		h
+	}
+	(comp incr incr) x
+}

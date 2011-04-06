@@ -2,6 +2,6 @@
 
 ff::IO<void> hnMain()
 {
-	boost::function<boost::function<ff::IO<void> (t0)> ()> x = &ff::print<t0>;
+	boost::function<ff::IO<void> (t0)> x = &ff::print<t0>;
 	return x(2);
 };

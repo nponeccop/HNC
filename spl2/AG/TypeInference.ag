@@ -52,7 +52,7 @@ SEM Definition
 		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
 
-		loc.definitionType = @lhs.finalSubstitution @loc.inferredType
+		loc.definitionType = xtrace "DefinitionType" $ @lhs.finalSubstitution $ xtrace "InferredType" @loc.inferredType
 
 SEM ExpressionList
 	| Cons

@@ -23,9 +23,9 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-uncurryType p (TT x) = TT $ map uncurryAll $ uncurryFunctionType x $ xtrace "uncurryType.p" p where
+uncurryType p (TT x) = xtrace "unc" $ TT $ map uncurryAll $ uncurryFunctionType x $ xtrace "uncurryType.p" p where
 	uncurryFunctionType [argType] [] = [uncurryAll argType]
-	uncurryFunctionType argTypes [] = [TT $ map uncurryAll argTypes]
+	uncurryFunctionType argTypes [] = xtrace "xxx" $ map uncurryAll argTypes
 	uncurryFunctionType (ht : tt) (_ : ta) = ht : uncurryFunctionType tt ta
 	uncurryFunctionType [] _ = error "MilnerTools.uncurryFunctionType encountered []"
 
@@ -51,7 +51,7 @@ unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) c wher
  	xunify a (TT [b]) = xunify a b
 
 	xunify (TD a a1) (TD b b1) | a == b = foldr unifyAndCompose M.empty $ zip a1 b1 where
-		unifyAndCompose (a, b) m = composeSubstitutions m $ unify a b
+		unifyAndCompose (a, b) m = composeSubstitutions m $ xunify a b
 	xunify (T a) (T b) | a == b = M.empty
 	xunify (TU a) (TU b) | a == b = M.empty
 	xunify (TU a) (TV b) | a == b = M.empty
