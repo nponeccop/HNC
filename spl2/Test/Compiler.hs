@@ -1,13 +1,9 @@
-module Test.Compiler where
+module Test.Compiler (iotests) where
 import Test.HUnit hiding (test)
 import System.Directory
 import Control.Monad
 
-import HN.Parser2
 import CPP.CompileTools
-
-compileFile inFile
-	= parseAndProcessFile inFile $ (++) "#include <hn/lib.hpp>\n\n" . show . compileDefinition
 
 comp2 f g x y = f $ g x y
 

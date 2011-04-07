@@ -1,0 +1,10 @@
+foo x = {
+	bar y = {
+		baz y = {
+			kaka y = incr x
+			kaka 7
+		}
+		baz 5
+	}
+	bar x
+}

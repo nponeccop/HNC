@@ -1,54 +1,28 @@
--- Root - �������� ����.
--- ��������� ��� ������� ��������� �� ��������� ��� ��������� ���� Definition
-
--- ���� Root - ������������ ����, � ��������� �������� ����� ������ "�������".
--- ������� ������������ "�������" ������ �������� ��������� -
--- ��������� Syn_Root, Inh_Root � ������� wrap_Root, �����������
--- �������� � ���������� ��� � ������������ ������.
-
 WRAPPER Root
 
--- ������������ �������� ����� Root �������� �������� �����������. �������
--- ��������� �� HN0, ��-������� ����, ����, ������������ ����� ���� ��������
--- �������. � ������� �������� ����� � ��������� ����� Program, ��� �����
--- ������������� ������������� ������������� � ���������� ��� � �������������������
--- �������� �����������.
---
--- �������� �� ��, ��� UUAG ����� ��� ������������ ���������� ��� ��� �����, ���
--- ����������� �� ������������. ������� ������ ���� ������ ������ ������������ ����������
--- (AST) ������ ������ - ���� ��� ��� ������� (��� �������) � HN.Intermediate, ������
--- ��� - ��� UUAG �����.
---
--- � �����������, ��������, ��������� ���������� �� ������� � ������� ���������
--- � ������� ������� UU, ���� ��� ���� ���������� ��������� ��������� �� �������
-
-DATA Root
-	| Root def : Definition
-
--- ���������� ��������� �����������: ���������� �������� "����������" - ����� �����
--- ������������ ��������. ������������ ��������� �� ��++ � ���� ���, ������������� �
--- CPP.Intermediate, ������� ����� ������������� � ����� � ������� CPP.Visualise
+TYPE Root = [Definition]
 
 ATTR Root
 	[
 		library : {M.Map String T}
 	|
 	|
-		cppDefinition : CppDefinition
+		cppDefinition USE {:} {[]} : {[CppDefinition]}
 	]
 
 SEM Root
-	| Root
-		def.level = 0
-		def.counter = 0
-		def.inferredTypes = @lhs.library
-		def.definitionTypes = @lhs.library
-		def.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		def.finalSubstitution = \x -> substituteType x @def.s
-		def.parent = "OH,PARENT (ASSERTION)"
-		def.isLocalVar = False
+	| Cons
+		hd.level = 0
+		hd.counter = 0
+		hd.inferredTypes = @lhs.library
+		hd.definitionTypes = @lhs.library
+		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
+		hd.finalSubstitution = \x -> substituteType x @hd.s
+		hd.parent = "OH,PARENT (ASSERTION)"
+		hd.isLocalVar = False
+		tl.library = M.insert @hd.name @hd.definitionType @lhs.library
 
 {
 -- фронтэнд к API атрибутной грамматики.
-compile2 def inh = cppDefinition_Syn_Root $ wrap_Root (sem_Root (Root def)) inh
+compile2 def inh = cppDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
 }

@@ -1,4 +1,4 @@
-module Test.Main where
+module Test.Main (main) where
 
 import Test.QuickCheck
 import Test.HUnit
@@ -11,9 +11,7 @@ import SPL.Top
 
 import SPL.Visualise
 
-import CPP.CompileTools
 import Utils
-import HN.Parser2
 import Test.Compiler
 
 import Test.SPL
@@ -101,11 +99,6 @@ tests2 = map ttt2 [
 	,	"foo*bar*(foo bar*foo:incr)*bar:incr"
 	]
 
-
-compile inFile f = parseFile inFile >>= return . f . head . fromRight
-
-compileFile inFile
-	= Test.Main.compile inFile $ show . compileDefinition
 
 splTest (s, r, t) = TestLabel s $ TestCase $ case step s of
 	SPL.Interpretator.P (t2, r2) -> do

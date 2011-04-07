@@ -20,8 +20,8 @@ ATTR ASTExpression LetIn Definition ExpressionList
 	[ abstractedTv : {S.Set String} | | ]
 
 SEM Root
-	| Root
-		def.abstractedTv = S.empty
+	| Cons
+		hd.abstractedTv = S.empty
 
 SEM Definition
 	| Definition

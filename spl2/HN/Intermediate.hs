@@ -33,10 +33,9 @@ data Definition
 --	|	If Expression LetIn LetIn
     deriving(Eq,Show)
 
-data Root
-	=	Root Definition deriving(Eq,Show)
-
 type ASTExpression = Expression String
+
+type Root = Program
 
 data Expression a
     =   Application (Expression a) [Expression a]

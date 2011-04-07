@@ -57,4 +57,5 @@ main = getArgs >>= compilerOpts >>= g where
 	g ([Types], [inFile]) = typeCheck inFile >>= dumpInferredTypes
 	g ([Optimize], [inFile]) = compileWithOpt inFile >>= putStr
 	g ([Help], _) = putStrLn help
+	g ([], []) = putStrLn help
 	g (_, _) = error "Unrecognized command line"
