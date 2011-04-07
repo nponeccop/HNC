@@ -1,0 +1,17 @@
+hoand a b = {
+	comp f g = {
+		h x = f (g x)
+		h
+	}
+	papp f x = {
+		g y = f x y
+		g
+	}
+	flip f = {
+		g x y = f y x
+		g
+	}
+	g = comp (papp papp _or) not
+	f = comp (papp (flip comp) not) g
+	(f a) b
+}
