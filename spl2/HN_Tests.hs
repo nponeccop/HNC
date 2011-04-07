@@ -3,26 +3,21 @@ module Main where
 
 -- import Visualise
 import Utils
-import qualified Data.Map as M
 
 import HN.Parser2
 import Test.ParserTest
-import HN.TypeParser
 import HN.Intermediate
 import HN.SplExport
 
-import CPP.CompileTools
-import CPP.Intermediate
+import CPP.Visualise ()
 import CPP.TypeProducer
 
-import SPL.Top
 import SPL.Types
-import SPL.Check3
 import qualified SPL.Top
 
 simpleParse  = head . fromRight . parseProg
 
-testCodeGen = rt compileDefinition
+-- testCodeGen = rt compileDefinition
 
 -- test2 = rt getDefinitionFreeVars
 

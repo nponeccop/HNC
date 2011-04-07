@@ -1,26 +1,23 @@
 module Main where
 
-import qualified Data.Map as M
 import System.Environment
 import System.Console.GetOpt
-
-import Utils
 
 import CPP.CompileTools
 
 import HN.Optimizer.Frontend
-import HN.Parser2
 import HN.SplExport
-import HN.TypeParser
 
 import SPL.Check3
 import SPL.Visualise
+import SPL.Top
 
 compileFile = compile2 id
 
 compileWithOpt = compile2 optimize
 
-typeCheck inFile = compile inFile typecheckDefinition
+typeCheck inFile = compile inFile typecheckDefinition where
+	typecheckDefinition self = check1 (convertDef self) SPL.Top.get_types
 
 dumpInferredTypes (P (x, _, _)) = do
 	putStrLn $ showTypedTreeWithoutTypes x
@@ -60,4 +57,4 @@ main = getArgs >>= compilerOpts >>= g where
 	g ([Types], [inFile]) = typeCheck inFile >>= dumpInferredTypes
 	g ([Optimize], [inFile]) = compileWithOpt inFile >>= putStr
 	g ([Help], _) = putStrLn help
-	g (o, n) = error "Unrecognized command line"
+	g (_, _) = error "Unrecognized command line"

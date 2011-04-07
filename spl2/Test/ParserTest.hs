@@ -7,13 +7,10 @@ import Text.Parsec.Char
 import HN.Intermediate
 
 import Test.HUnit
-import Test.Utils
 
 ---------------------------------------------------
 -- New test suite
 ---------------------------------------------------
-
-t a b c = (,,) a b c
 
 parserTest s _in = case parseString s _in of
 	Right x -> x

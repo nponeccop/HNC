@@ -3,7 +3,6 @@ module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
 
 import HN.Intermediate
-import Control.Monad.State
 import HN.Optimizer.Node
 import HN.Optimizer.LabelFor as LabelFor
 

@@ -231,6 +231,12 @@ namespace ff
 		return s;
 	}
 
+	template <typename A, typename B>
+	std::pair<A, B> pair(A a, B b)
+	{
+		return std::make_pair(a, b);
+	}
+
 
 };
 
