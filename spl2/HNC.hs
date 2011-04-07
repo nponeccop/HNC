@@ -14,9 +14,9 @@ import SPL.Top
 
 compileFile = compile2 id
 
-compileWithOpt = compile2 optimize
+compileWithOpt = error "compileWithOpt" -- compile2 optimize
 
-typeCheck inFile = compile inFile typecheckDefinition where
+typeCheck inFile = error "typeCheck" where -- compile inFile typecheckDefinition where
 	typecheckDefinition self = check1 (convertDef self) SPL.Top.get_types
 
 dumpInferredTypes (P (x, _, _)) = do
@@ -29,7 +29,7 @@ dumpInferredTypes (P (x, _, _)) = do
 dumpInferredTypes (N _ y) = error y
 
 compileToSpl inFile = do
-	x <- compile inFile convertDef
+	x <- error "compileToSpl" -- compile inFile convertDef
 	return $ show x ++ "\n" ++ showAsSource x
 
 data Flag = Spl | Types | Optimize | Help
