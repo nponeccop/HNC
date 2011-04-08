@@ -1,6 +1,3 @@
 #include <hn/lib.hpp>
 
-std::string foo()
-{
-	return "bar";
-};
+std::string foo = "bar";

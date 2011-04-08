@@ -46,6 +46,9 @@ instance Show CppContext where
 				Nothing -> []
 
 instance Show CppDefinition where
+	-- monomorphic top-level variables without local variables and context (closure env)
+	show def @ (CppFunctionDef level [] True Nothing retType name [] [] retVal) | not (name == "hnMain") =
+		showWithIndent level $ [show $ CppVar retType name retVal]
 	show def @ (CppFunctionDef level templateArgs isStatic context _ _ _ localVars retVal)
 		= maybe [] show context ++ showWithIndent level (concat
 		[

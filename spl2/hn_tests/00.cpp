@@ -1,6 +1,3 @@
 #include <hn/lib.hpp>
 
-int main()
-{
-	return 2 + 1;
-};
+int main = 2 + 1;
