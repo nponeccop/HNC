@@ -4,7 +4,7 @@
 а не только "императивной лапши с Goto", как описано в статье
 
 -}
-{-# LANGUAGE GADTs, ScopedTypeVariables, TypeFamilies #-}
+{-# LANGUAGE GADTs, ScopedTypeVariables, TypeFamilies, NoMonomorphismRestriction #-}
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
@@ -134,7 +134,7 @@ runB
            FactBase (Pointed C C DefinitionNode),
            MaybeO C (Pointed C C DefinitionNode))
 
-runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
+runB = error "Inliner2.runB" where -- runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
 

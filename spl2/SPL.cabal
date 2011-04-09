@@ -1,31 +1,51 @@
-Name:           SPL
-Version:	0.0.0.868
+Name:		SPL
+Version:        0.0.0.913
+Cabal-Version:  >= 1.10
 License:        LGPL
-Copyright:      (c) 
-Author:         <inv2004@gmail.com>
+Author:		<inv2004@gmail.com>
 Author:         Andy Melnikov <andy.melnikov@gmail.com>
-Maintainer:     Andy Melnikov <andy.melnikov@gmail.com>
-Build-Type:	Custom
-Homepage:	http://code.google.com/p/inv/
----Package-Url:
-Category:       Compiler
-Stability:      Experimental
-Synopsis:       A functional language with a compiler into C++ language.
-Description:    SPL is a strictly, statically and implicitly typed functional universal language with translator into C++ language.
+Synopsis:       A source-to-source translator of a variant of ML core into C++.
 License-File:   COPYING.LESSER
-Build-Depends:  base == 4.*, containers, bytestring, parsec >= 3.1, HUnit, QuickCheck >= 2, haskell98, mtl, uuagc >= 0.9.32, directory == 1.0.*, hoopl >= 3.8.6.1
-HS-Source-dirs:	.
-cabal-version:  >= 1.8.0.6
-Other-modules:	Bar
+Bug-Reports:	http://code.google.com/p/inv/issues
+Tested-With:	GHC == 7.0.2
+Build-Type:	Custom
+-- , , , , , haskell98 == 1.*, directory == 1.*, QuickCheck == 2.*
 
-Executable:     spl-hnc
-Main-Is:        HNC.hs
 
-Executable:	spli
-Main-Is:	SPLI.hs
+Executable spl-hnc
+  Main-Is:         HNC.hs
+  Other-Modules:   Bar
+  Default-Language: Haskell2010
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1
 
-Executable:     spl-hn-tests
-Main-Is:        HN_Tests.hs
+Executable spl-test-hunit-exe
+  Main-Is: Test/Main.hs
+  Default-Language: Haskell2010
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
+  Other-Modules:  Bar
 
-Executable:	spl-tests
-Main-Is:	SPL_Tests.hs
+Test-Suite spl-test-hunit
+  Main-Is: Test/Main.hs
+  Type: exitcode-stdio-1.0
+  Default-Language: Haskell2010
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
+  Other-Modules:   Bar
+
+Executable spli
+  Main-Is:	SPLI.hs
+  default-language: Haskell2010
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, haskell98 == 1.*
+  Other-Modules:   Bar
+
+Executable     spl-test-adhoc-hn
+  Main-Is:        HN_Tests.hs
+  default-language: Haskell98
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
+  Other-Modules:  Bar
+
+Executable	spl-test-adhoc-spl
+  Main-Is:	SPL_Tests.hs
+  default-language: Haskell98
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
+  Other-Modules:   Bar
+

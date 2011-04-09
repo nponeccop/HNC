@@ -1,4 +1,4 @@
-module Test.Main (main) where
+module Main (main) where
 
 import Test.QuickCheck
 import Test.HUnit
@@ -115,7 +115,7 @@ main = do
 	ioTests <- Test.TypeParser.iotests
 	simpleTests $
 		tests2 ++
-		Test.Main.tests ++
+		Main.tests ++
 		compilerTests ++
 		splTests
 		++ Test.FFI.tests
