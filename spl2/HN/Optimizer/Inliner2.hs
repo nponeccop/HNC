@@ -4,7 +4,7 @@
 а не только "императивной лапши с Goto", как описано в статье
 
 -}
-{-# LANGUAGE GADTs, ScopedTypeVariables, TypeFamilies, NoMonomorphismRestriction #-}
+{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction #-}
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
@@ -121,20 +121,8 @@ passBL = BwdPass
 	, bp_rewrite = rewriteBL
 	}
 
-runB
-  :: (map (Pointed C C a1) ~ Fact x (Pointed C C DefinitionNode),
-      Num a,
-      IsMap map) =>
-     (Graph Node C x,
-         map a,
-         t2)
-     -> CheckingFuelMonad
-          SimpleUniqueMonad
-          (Graph Node C x,
-           FactBase (Pointed C C DefinitionNode),
-           MaybeO C (Pointed C C DefinitionNode))
 
-runB = error "Inliner2.runB" where -- runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
+runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
 

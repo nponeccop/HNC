@@ -1,5 +1,5 @@
 Name:		SPL
-Version:        0.0.0.913
+Version:        0.0.0.920
 Cabal-Version:  >= 1.10
 License:        LGPL
 Author:		<inv2004@gmail.com>
@@ -9,8 +9,6 @@ License-File:   COPYING.LESSER
 Bug-Reports:	http://code.google.com/p/inv/issues
 Tested-With:	GHC == 7.0.2
 Build-Type:	Custom
--- , , , , , haskell98 == 1.*, directory == 1.*, QuickCheck == 2.*
-
 
 Executable spl-hnc
   Main-Is:         HNC.hs
