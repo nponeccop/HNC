@@ -1,4 +1,4 @@
-module HN.TypeTools where
+module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTU, typeAllPolyVars) where
 import SPL.Types
 import qualified Data.Set as S
 import Data.List
@@ -7,8 +7,6 @@ import Data.Maybe
 --
 isFunctionType (TT _) = True
 isFunctionType _ = False
-
-isPolymorphicFunctionType x = isFunctionType x && not (S.null $ typeTu x)
 
 hasFunctionalType x = isJust $ find isFunctionType $ init x
 

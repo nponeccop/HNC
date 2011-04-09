@@ -1,4 +1,4 @@
-module HN.SplExport where
+module HN.SplExport (convertDef, convertExpr) where
 import HN.Intermediate
 import SPL.Types
 

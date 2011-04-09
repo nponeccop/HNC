@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
-module HN.TypeParser where
+module HN.TypeParser (parseDecl, sp3, decl, fun, parseType, typePolyVar, typeVar) where
 
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
@@ -10,11 +10,10 @@ import qualified HN.Parser2 as P
 import SPL.Types
 import HN.Parser2
 
-pair a b = (a, b)
+
+parseDecl = sp3 decl
 
 pf x y =  y >>= (return . x)
-
-simpleParse2 = fromRight . P.parseString parseType
 
 sp3 x = fromRight . P.parseString x
 
