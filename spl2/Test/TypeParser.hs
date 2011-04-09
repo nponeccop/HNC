@@ -1,6 +1,6 @@
 module Test.TypeParser where
 
-import HN.TypeParser
+import FFI.TypeParser
 import Utils
 import SPL.Types
 import FFI.Visualise

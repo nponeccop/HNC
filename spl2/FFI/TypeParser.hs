@@ -1,6 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
-module HN.TypeParser (parseDecl, sp3, decl, fun, parseType, typePolyVar, typeVar) where
+module FFI.TypeParser (parseDecl, sp3, decl, fun, parseType, typePolyVar, typeVar) where
 
 import Text.Parsec.Prim
 import Text.Parsec.Combinator

@@ -2,7 +2,7 @@ module CPP.CompileTools (compileDefinition2, compile2, compile) where
 
 import qualified Bar as AG
 import HN.Parser2
-import HN.TypeParser
+import FFI.TypeParser
 import Utils
 
 import qualified Data.Map as M
