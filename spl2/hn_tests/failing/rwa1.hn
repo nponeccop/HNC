@@ -1,0 +1,28 @@
+LoadColumnFromCsvFile columnIdx fileName = {
+	skipToSeparator sep line = {
+		ff line _ = _if (eq sep (head line)) (Break (tail line)) (Continue void)
+		foldTailUntil ff void line
+	}
+	skipToColumnByIdx line = {
+		ff _ line = skipToSeparator "," line
+		fold ff line (range 0 columnIdx)
+	}
+	sizeAndCount = {
+		getSizeUntilSeparator sep line = {
+			ff hd acc = _if (eq sep hd) (Break acc) (Continue (sum acc 1))
+			foldUntil ff 0 line
+		}
+		getSize line = getSizeUntilSeparator "," (skipToColumnByIdx columnIdx line)
+		ff curLineSize s = Pair (sum (fst s)) (sum (sum (snd s) curLineSize) 1)
+		fold ff (Pair 0 0) (map getSize (ForEachLine fileName))
+	}
+	getColumnByIdx idx line = {
+		ff hd acc = if (eq sep hd) (Break acc) (Continue (cons hd acc))
+		foldUntil ff nil (skipToColumnByIdx idx line)
+	}
+	ff col bufAndArr = {
+		bufAndBufCol = addToBuf (fst bufAndArr) col
+		Pair (fst bufAndBufCol) (addToArr (snd bufAndArr) (snd BufAndBufCol))
+	}
+	CKeywordFilterOld (fold ff (Pair (allocateBuf (fst sizeAndCount)) (allocateArr (snd sizeAndCount)) (map getColumnByIdx (ForEachLine fileName))))
+}
