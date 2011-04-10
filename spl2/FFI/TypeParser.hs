@@ -1,15 +1,19 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
-module FFI.TypeParser (parseDecl, sp3, decl, fun, parseType, typePolyVar, typeVar) where
+module FFI.TypeParser (sp3, decl, fun, parseType, typePolyVar, typeVar, importHni) where
 
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
+import qualified Data.Map as M
+import Control.Monad ((>=>))
+
 import Utils
 import qualified HN.Parser2 as P
 import SPL.Types
 import HN.Parser2
 
+importHni = readFile >=> return . M.fromList . map parseDecl . lines
 
 parseDecl = sp3 decl
 

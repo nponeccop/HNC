@@ -1,4 +1,4 @@
-module Main where
+module Main (main) where
 
 import System.Environment
 import System.Console.GetOpt
@@ -32,12 +32,13 @@ compileToSpl inFile = do
 	x <- error "compileToSpl" -- compile inFile convertDef
 	return $ show x ++ "\n" ++ showAsSource x
 
-data Flag = Spl | Types | Optimize | Help
+data Flag = Spl | Types | Optimize | Help | Import String
 
 options	=
 	[ Option ['O'] [] (NoArg Optimize) "optimize using HOOPL"
 	, Option [] ["spl"] (NoArg Spl) "output SPL.Types.C and SPL sources to stdout"
 	, Option [] ["types"] (NoArg Types) "typecheck using older SPL typechecker"
+	, Option "i" ["hni"] (ReqArg Import "FILE.hni") "import FILE.hni instead of default lib.hni"
 	, Option "h?" ["help"] (NoArg Help)  "show this help"
 	]
 
@@ -51,6 +52,7 @@ help = usageInfo header options where
 	header = "Usage: hnc <infile> [<outfile> | --spl | --types | -O ]\n"
 
 main = getArgs >>= compilerOpts >>= g where
+	g ([Import i], [inFile]) = compile3 i id inFile >>= putStr
 	g ([], [inFile]) = compileFile inFile >>= putStr
 	g ([], [inFile, outFile]) = compileFile inFile >>= writeFile outFile
 	g ([Spl], [inFile]) = compileToSpl inFile >>= putStr
