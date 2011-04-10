@@ -4,7 +4,7 @@ LoadColumnFromCsvFile columnIdx fileName = {
 		foldTailUntil ff void line
 	}
 	skipToColumnByIdx line = {
-		ff _ line = skipToSeparator "," line
+		ff _ line = skipToSeparator (head ",") line
 		fold ff line (range 0 columnIdx)
 	}
 	sizeAndCount = {
