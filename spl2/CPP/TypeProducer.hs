@@ -13,7 +13,7 @@ cppPrimitiveType x = case x of
 	"udp_socket" -> "ff::UdpSocket"
 	"pair" -> "std::pair"
 	"ptr" -> "ff::ptr"
-	_ -> "<<<<Type inference error or unknown primitive type: " ++ x ++ ">>>>"
+	_ -> x
 
 cppType (T x) = CppTypePrimitive $ cppPrimitiveType x
 
