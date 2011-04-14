@@ -1,4 +1,4 @@
-module CPP.CompileTools (compileDefinition2, compile2, compile, compile3) where
+module CPP.CompileTools (compile2, compile, compile3) where
 
 import qualified Bar as AG
 import HN.Parser2
