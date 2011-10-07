@@ -34,7 +34,7 @@ What is not done
 
 The bottom line
 ===============
-Your contributions are welcomed here. :)
+Your contributions are welcomed! 
 
 Licence
 =======
