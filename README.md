@@ -1,16 +1,14 @@
 # Quick Start
 
 ## Build
-<code>
+
 cabal configure
 
 cabal build
-</code>
 
 ## Try
-<code>
+
 ./dist/build/spl-hnc/spl-hnc ./hn_tests/euler6.hn
-</code>
 
 # Under the hood
 
