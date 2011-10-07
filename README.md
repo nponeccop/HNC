@@ -1,5 +1,13 @@
-Under the hood
-==============
+# Quick Start
+
+## Build
+cabal configure
+cabal build
+
+## Try
+./dist/build/spl-hnc/spl-hnc ./hn_tests/euler6.hn
+
+# Under the hood
 
 HNC is an open-source cross-platform compiler based on modern technologies: Glasgow Haskell Platform, UUAGC attribute grammar preprocessor, Parsec parsing library, HOOPL graph optimization library. The codebase is tiny: less than 4 KLOC, in the spirit of VPRI Ometa.
 
@@ -7,8 +15,7 @@ State of affairs
 Many HN programs can already be compiled into an ugly functional subset of C++ and then into executables and run (see hn_tests folder for .hn sources and .cpp targets). 
 A UDP echo server and a few Project Euler problems are the only useful programs so far, but mostly because we are too lazy to write more examples.
 
-What is done
-============
+## What is done
 
 - Parser
 - Type inference using UUAG, including injection of explicit template parameters when C++ doesn’t infer them
@@ -18,8 +25,7 @@ What is done
 - C++ pretty printer (almost)
 - A Boost.Build plugin to integrate .hn files into C++ projects
 
-What is not done
-================
+## What is not done
 
 - Proper error reporting
 - Loops and assignments
@@ -32,12 +38,10 @@ What is not done
 - SPL support is almost missing
 - Polymorphic constants like “empty list” are not supported
 
-The bottom line
-===============
+## The bottom line
 Your contributions are welcomed! 
 
-Licence
-=======
+## Licence
 Copyrigth (C) 2011 Andy Melnikov.
 
 Distributed under GNU Lesser General Public Licence Version 3.
