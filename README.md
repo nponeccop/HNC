@@ -3,6 +3,7 @@
 ## Build
 <code>
 cabal configure
+
 cabal build
 </code>
 
