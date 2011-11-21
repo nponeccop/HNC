@@ -3,8 +3,8 @@ module Main where
 import SPL.Interpretator
 import SPL.Top
 import Data.Map as M hiding (map)
-import System
-import IO
+import System.Environment
+import System.IO
 
 data Cmd =
 	Quit | Help | Examples | Type | TypeDef | TypeTree | Code | Expr | Syntax

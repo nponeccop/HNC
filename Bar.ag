@@ -72,7 +72,7 @@ ATTR Definition
 
 SEM Definition
 	| Definition
-		-- òðèâèàëüíûå àòðèáóòû
+		-- тривиальные атрибуты
 		where.level = @lhs.level + 1
 		lhs.name = @name
 		loc.contextTypeName = @name ++ "_impl"
@@ -81,7 +81,7 @@ SEM Definition
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
 		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @where.sem
 
-		-- òîï-ôóíêöèÿ, çàìêíóòûå ïåðåìåííûå è ëîêàëüíûå ôóíêöèè
+		-- топ-функция, замкнутые переменные и локальные функции
 		lhs.cppDefinition = @loc.cppDefinition
 		loc.cppDefinition = { CppFunctionDef {
 				functionLevel           = @lhs.level
