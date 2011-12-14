@@ -14,12 +14,12 @@ Executable spl-hnc
   Main-Is:         HNC.hs
   Other-Modules:   Bar
   Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, unification-fd
 
 Executable spl-test-hunit-exe
   Main-Is: Test/Main.hs
   Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, unification-fd
   Other-Modules:  Bar
 
 Test-Suite spl-test-hunit

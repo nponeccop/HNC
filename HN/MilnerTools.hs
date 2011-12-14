@@ -4,8 +4,10 @@ import qualified Data.Set as S
 import Utils
 import HN.Intermediate
 import HN.TypeTools
+import HN.Unification
 import SPL.Types
 import SPL.Visualise
+
 
 lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
 lookupAndInstantiate name table counter = let t = tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table in instantiatedType t counter
@@ -42,25 +44,14 @@ substituteEnv :: Substitution -> M.Map String T -> M.Map String T
 substituteEnv a b = xtrace "substitute.result: " $ M.map (\x -> substituteType x a) b
 
 unify :: T -> T -> Substitution
-unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) c where
-	c = xunify a b
-	xunify :: T -> T -> Substitution
-	xunify (TT (a:at @ (_:_))) (TT (b:bt @ (_:_))) = xunify a b `composeSubstitutions` xunify (TT at) (TT bt)
+unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) d where
+	c = myUnify a b
+	d = composeSubstitutions c c
 
- 	xunify (TT [a]) b = xunify a b
- 	xunify a (TT [b]) = xunify a b
-
-	xunify (TD a a1) (TD b b1) | a == b = foldr unifyAndCompose M.empty $ zip a1 b1 where
-		unifyAndCompose (a, b) m = composeSubstitutions m $ xunify a b
-	xunify (T a) (T b) | a == b = M.empty
-	xunify (TU a) (TU b) | a == b = M.empty
-	xunify (TU a) (TV b) | a == b = M.empty
-
-	xunify (TU a) b = M.singleton a b
-	xunify b (TU a) = M.singleton a b
-	xunify (TV a) b = xunify (TU a) b
-	xunify b (TV a) = xunify (TU a) b
-	xunify a b = error $ "cannot unify: " ++ show a ++ " ~ " ++ show b
+subsumes :: T -> T -> Substitution
+subsumes a b = xtrace ("subsumes-trace: " ++ makeType a ++ " <:= " ++ makeType b) d where
+	c = mySubsumes a b
+	d = composeSubstitutions c c
 
 closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
 	tpv = typeAllPolyVars t
