@@ -7,7 +7,7 @@ Author:         Andy Melnikov <andy.melnikov@gmail.com>
 Synopsis:       A source-to-source translator of a variant of ML core into C++.
 License-File:   COPYING.LESSER
 Bug-Reports:	http://code.google.com/p/inv/issues
-Tested-With:	GHC == 7.0.2
+Tested-With:	GHC == 7.0.2, GHC == 7.2.2
 Build-Type:	Custom
 
 Executable spl-hnc

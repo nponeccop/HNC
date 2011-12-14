@@ -214,8 +214,8 @@ call Tkeys =
 		]
 call Tval_dot =
 	p_or [
-		([Tkeys], \(Sl l i:[]) -> foldl (\v (Ss k i) -> Sdot v k i) (Sroot i) l)
-		,([Tval_simple,Tkeys], \(v:Sl l _:[]) -> foldl (\v (Ss k i) -> Sdot v k i) v l)
+		([Tkeys], \(Sl l i:[]) -> Prelude.foldl (\v (Ss k i) -> Sdot v k i) (Sroot i) l)
+		,([Tval_simple,Tkeys], \(v:Sl l _:[]) -> Prelude.foldl (\v (Ss k i) -> Sdot v k i) v l)
 		,([Tval_simple], \(v:[]) -> v)
 		]
 call Tparams_add =
