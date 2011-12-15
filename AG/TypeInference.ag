@@ -1,4 +1,4 @@
--- Модуль вывода типов
+ -- Модуль вывода типов
 ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		inferredTypes : {M.Map String T}
@@ -18,7 +18,7 @@ ATTR ExpressionList
 		tau : T
 	|
 	|
-		ty : {[T]}
+		ty USE {(:)} {[]} : {[T]}
 		sy : {Substitution}
 	]
 
@@ -68,13 +68,12 @@ SEM ExpressionList
 --		lhs.s = @tl.s `composeSubstitutions` (unify @lhs.tau $ TT [substituteType @hd.tau @hd.s, @loc.beta]) `composeSubstitutions` @hd.s
 		lhs.s = normalizeSubstitution $ unifyIn @loc.sy @lhs.tau $ TT $ @loc.ty ++ [@tl.tau]
 		lhs.ty = @loc.ty
-		loc.ty = substituteType @hd.tau @hd.s : @tl.ty
+		loc.ty = @hd.tau : @tl.ty
 		lhs.sy = @loc.sy
 		loc.sy = xtrace "sy" $ @hd.s `composeSubstitutions` @tl.sy
 --		lhs.tau = @loc.beta
 		tl.tau = @loc.beta
 	| Nil
-		lhs.ty = []
 		lhs.sy = M.empty
 
 SEM LetIn
