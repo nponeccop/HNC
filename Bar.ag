@@ -12,10 +12,11 @@ import CPP.TypeProducer
 import CPP.BackendTools
 
 import HN.Intermediate
+import HN.MilnerTools
 import HN.TypeTools
+import HN.Unification (unifyIn)
 import SPL.Types
 
-import HN.MilnerTools
 import Utils
 
 type ExpressionList  = [ASTExpression]

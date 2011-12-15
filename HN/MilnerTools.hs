@@ -63,6 +63,8 @@ closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
 	envPolyVars = M.fold f S.empty where
 		f el acc = S.union acc $ typeAllPolyVars el
 
+normalizeSubstitution a = composeSubstitutions2 a a
+
 composeSubstitutions a b = a `composeSubstitutions2` b `composeSubstitutions2` a
 
 composeSubstitutions2 :: Substitution -> Substitution -> Substitution

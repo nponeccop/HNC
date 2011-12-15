@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (myUnify, mySubsumes) where
+module HN.Unification (myUnify, mySubsumes, unifyIn) where
 
 import Control.Unification
 import Control.Unification.IntVar
 import Data.Traversable (Traversable)
 import Data.Foldable
+import Control.Monad
 import Control.Monad.State
 import Control.Monad.Identity
 import Control.Monad.Error
@@ -58,13 +59,19 @@ convert (Old.TV a) = do
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
-myUnify x y = a  where
+-- unifies two terms using non-empty bindings
+unifyIn bindingMap x y = a  where
 	((a, _), _) = u x y
 	u x y = foo $ do
+		importBindings bindingMap
 		a <- convert x
 		b <- convert y
 		xunify a b
-		fixBindings
+		exportBindings
+
+
+-- myUnify should be identical to unifyIn M.empty
+myUnify = unifyIn M.empty
 
 mySubsumes x y = a  where
 	((a, _), _) = u x y
@@ -72,7 +79,7 @@ mySubsumes x y = a  where
 		a <- convert $ f x
 		b <- convert y
 		xsubsumes a b
-		fixBindings
+		exportBindings
 	f (Old.TU x) = Old.TV x
 	f (Old.TT x) = Old.TT $ map f x
 	f (Old.TD a x) = Old.TD a $ map f x
@@ -81,7 +88,16 @@ mySubsumes x y = a  where
 
 fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert x o))) $ lookupVar $ IntVar iv
 
-fixBindings = do
+removeT ('t' : x) = read x
+
+importBindings :: M.Map String Old.T -> MyStack ()
+importBindings = Control.Monad.mapM_ importOne . M.toList where
+	importOne (oldName, oldTerm) = do
+ 		newTerm <- convert oldTerm
+ 		newVar <- convert $ Old.TV oldName
+		bindVar (case newVar of MutVar x -> x) newTerm
+
+exportBindings = do
 	x <- fmap reverseMap xget
 	xget >>= fmap (M.fromList . catMaybes) . mapM (fff x) . M.toList
 
