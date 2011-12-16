@@ -6,8 +6,14 @@ ATTR ASTExpression ExpressionList Definition LetIn
 	|
 		counter : Int
 	|
-		s USE {`composeSubstitutions`} {M.empty} : {Substitution}
 		sM USE {>>} {return ()} : {MyStack ()}
+	]
+
+ATTR Definition LetIn
+	[
+	|
+	|
+		s USE {`composeSubstitutions`} {M.empty} : {Substitution}
 	]
 
 ATTR ASTExpression Definition LetIn
@@ -70,6 +76,8 @@ SEM Definition
 SEM LetIn
 	| Let
 		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes
+	| In
+		lhs.s = xxbindings @value.sM
 
 SEM ASTExpression
 	| Constant
@@ -100,6 +108,4 @@ SEM ASTExpression
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
-		lhs.sM = @loc.sM
-		loc.sM = @fn.sM >> @arg.sM >> xxunify @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
-		lhs.s = xxbindings @loc.sM
+		lhs.sM = @fn.sM >> @arg.sM >> xxunify @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
