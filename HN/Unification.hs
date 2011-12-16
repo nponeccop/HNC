@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (myUnify, mySubsumes, unifyIn) where
+module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -64,10 +64,15 @@ unifyIn bindingMap x y = a  where
 	((a, _), _) = u x y
 	u x y = foo $ do
 		importBindings bindingMap
-		a <- convert x
-		b <- convert y
-		xunify a b
+		xxunify x y
 		exportBindings
+
+xxbindings m = fst $ fst $ foo $ m >> exportBindings
+
+xxunify x y = do
+	a <- convert x
+	b <- convert y
+	xunify a b
 
 
 -- myUnify should be identical to unifyIn M.empty

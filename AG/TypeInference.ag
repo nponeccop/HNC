@@ -7,6 +7,7 @@ ATTR ASTExpression ExpressionList Definition LetIn
 		counter : Int
 	|
 		s USE {`composeSubstitutions`} {M.empty} : {Substitution}
+		sM USE {>>} {return ()} : {MyStack ()}
 	]
 
 ATTR ASTExpression Definition LetIn
@@ -22,7 +23,6 @@ ATTR Definition
 
 ATTR ExpressionList
 	[
-		tau : T
 	|
 	|
 		tau USE {:} {[]} : {[T]}
@@ -99,4 +99,6 @@ SEM ASTExpression
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
-		lhs.s = normalizeSubstitution $ composeSubstitutions @fn.s $ unifyIn @arg.s @fn.tau $ TT $ @arg.tau ++ [@loc.beta]
+		lhs.sM = @loc.sM
+		loc.sM = @fn.sM >> @arg.sM >> (xxunify @fn.tau $ TT $ @arg.tau ++ [@loc.beta]) >> return ()
+		lhs.s = normalizeSubstitution $ xxbindings @loc.sM
