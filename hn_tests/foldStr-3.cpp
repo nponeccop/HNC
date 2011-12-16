@@ -1,10 +1,10 @@
 #include <hn/lib.hpp>
 
-template <typename t17, typename t27, typename t29>
+template <typename t16, typename t24, typename t25>
 struct foldStr_impl
 {
 	typedef foldStr_impl self;
-	boost::function<t27 (t17, t29)> f;
+	boost::function<t24 (t16, t25)> f;
 
 	static bool neq(int a, int b)
 	{
@@ -16,18 +16,18 @@ struct foldStr_impl
 		ff::ptr<int> s = ff::snd(loopState);
 		return neq(ff::deref(s), 0);
 	};
-	std::pair<t27, ff::ptr<t29>> loopTrans(std::pair<t17, ff::ptr<t29>> loopState)
+	std::pair<t24, ff::ptr<t25>> loopTrans(std::pair<t16, ff::ptr<t25>> loopState)
 	{
-		ff::ptr<t29> s = ff::snd(loopState);
-		t17 e = ff::fst(loopState);
+		ff::ptr<t25> s = ff::snd(loopState);
+		t16 e = ff::fst(loopState);
 		return ff::pair(f(e, ff::deref(s)), ff::next(s));
 	};
 };
 
-template <typename t1, typename t17, typename t2, typename t27, typename t29>
-t2 foldStr(boost::function<t27 (t17, t29)> f, t1 e, t2 s)
+template <typename t1, typename t16, typename t2, typename t24, typename t25>
+t2 foldStr(boost::function<t24 (t16, t25)> f, t1 e, t2 s)
 {
-	typedef foldStr_impl<t17, t27, t29> local;
+	typedef foldStr_impl<t16, t24, t25> local;
 	local impl = { f };
 	return s;
 };

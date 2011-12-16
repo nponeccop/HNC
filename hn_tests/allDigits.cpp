@@ -35,8 +35,8 @@ struct allDigits_impl
 	{
 		return isDigit(ff::deref(s));
 	};
-	template <typename t48>
-	static ff::ptr<t48> loopBody(ff::ptr<t48> s)
+	template <typename t37>
+	static ff::ptr<t37> loopBody(ff::ptr<t37> s)
 	{
 		return ff::next(s);
 	};

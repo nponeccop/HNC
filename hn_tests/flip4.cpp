@@ -2,21 +2,21 @@
 
 struct foo_impl
 {
-	template <typename t1, typename t2, typename t4>
+	template <typename t1, typename t2, typename t3>
 	struct flip_impl
 	{
-		boost::function<t4 (t2, t1)> f;
+		boost::function<t3 (t2, t1)> f;
 
-		t4 flipped(t1 x, t2 y)
+		t3 flipped(t1 x, t2 y)
 		{
 			return f(y, x);
 		};
 	};
 
-	template <typename t1, typename t2, typename t4>
-	static boost::function<t4 (t1, t2)> flip(boost::function<t4 (t2, t1)> f)
+	template <typename t1, typename t2, typename t3>
+	static boost::function<t3 (t1, t2)> flip(boost::function<t3 (t2, t1)> f)
 	{
-		typedef flip_impl<t1, t2, t4> local;
+		typedef flip_impl<t1, t2, t3> local;
 		local impl = { f };
 		return hn::bind(impl, &local::flipped);
 	};

@@ -6,8 +6,8 @@ struct hnMain_impl
 	{
 		return ff::natrec<int>(f, 6, 5);
 	};
-	template <typename t5, typename t6>
-	static int id(t5 x, t6 y)
+	template <typename t3, typename t4>
+	static int id(t3 x, t4 y)
 	{
 		return 5;
 	};

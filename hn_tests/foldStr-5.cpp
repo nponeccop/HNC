@@ -2,8 +2,8 @@
 
 struct foldStr_impl
 {
-	template <typename t4>
-	static bool loopCond(std::pair<t4, ff::ptr<int>> loopState)
+	template <typename t5>
+	static bool loopCond(std::pair<t5, ff::ptr<int>> loopState)
 	{
 		ff::ptr<int> s = ff::snd(loopState);
 		return ff::deref(s) == 0;

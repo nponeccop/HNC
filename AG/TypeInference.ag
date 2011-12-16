@@ -68,10 +68,7 @@ ATTR ASTExpression LetIn
 
 SEM ExpressionList
 	| Cons
-		hd.counter = @lhs.counter + 1
-		loc.beta = tv @lhs.counter
 		lhs.ty = @hd.tau : @tl.ty
-		tl.tau = @loc.beta
 
 SEM LetIn
 	| Let
@@ -103,5 +100,7 @@ SEM ASTExpression
 			definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
 		}
 	| Application
-		lhs.tau = @arg.tau
-		lhs.s = normalizeSubstitution $ composeSubstitutions @fn.s $ unifyIn @arg.s @fn.tau $ TT $ @arg.ty ++ [@arg.tau]
+		fn.counter = @lhs.counter + 1
+		loc.beta = tv @lhs.counter
+		lhs.tau = @loc.beta
+		lhs.s = normalizeSubstitution $ composeSubstitutions @fn.s $ unifyIn @arg.s @fn.tau $ TT $ @arg.ty ++ [@loc.beta]

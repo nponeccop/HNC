@@ -13,8 +13,8 @@ struct hnMain_impl
 		{
 			return ff::print(ff::sub(end_time, start_time));
 		};
-		template <typename t14>
-		ff::IO<void> t3(t14 reply)
+		template <typename t10>
+		ff::IO<void> t3(t10 reply)
 		{
 			return ff::bind<int, void>(ff::voidbind(ff::print(reply), ff::time_msec), hn::bind(*this, &self::t4));
 		};

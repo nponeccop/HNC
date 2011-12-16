@@ -1,7 +1,7 @@
 #include <hn/lib.hpp>
 
-template <typename t2>
-std::list<t2> g(std::list<t2> l, boost::function<bool (t2)> f)
+template <typename t3>
+std::list<t3> g(std::list<t3> l, boost::function<bool (t3)> f)
 {
-	return ff::filter<t2>(f, l);
+	return ff::filter<t3>(f, l);
 };

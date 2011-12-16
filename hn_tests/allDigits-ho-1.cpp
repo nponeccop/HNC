@@ -31,22 +31,22 @@ struct allDigits_impl
 	{
 		return between(48, c, 58);
 	};
-	template <typename t45, typename t46, typename t47>
+	template <typename t33, typename t34, typename t35>
 	struct comp_impl
 	{
-		boost::function<t46 (t47)> f;
-		boost::function<t47 (t45)> g;
+		boost::function<t34 (t35)> f;
+		boost::function<t35 (t33)> g;
 
-		t46 h(t45 x)
+		t34 h(t33 x)
 		{
 			return f(g(x));
 		};
 	};
 
-	template <typename t45, typename t46, typename t47>
-	static boost::function<t46 (t45)> comp(boost::function<t46 (t47)> f, boost::function<t47 (t45)> g)
+	template <typename t33, typename t34, typename t35>
+	static boost::function<t34 (t33)> comp(boost::function<t34 (t35)> f, boost::function<t35 (t33)> g)
 	{
-		typedef comp_impl<t45, t46, t47> local;
+		typedef comp_impl<t33, t34, t35> local;
 		local impl = { f, g };
 		return hn::bind(impl, &local::h);
 	};

@@ -21,40 +21,40 @@ struct hoand_impl
 		local impl = { f, g };
 		return hn::bind(impl, &local::h);
 	};
-	template <typename t11, typename t8, typename t9>
+	template <typename t10, typename t8, typename t9>
 	struct papp_impl
 	{
-		boost::function<t11 (t8, t9)> f;
+		boost::function<t10 (t8, t9)> f;
 		t8 x;
 
-		t11 g(t9 y)
+		t10 g(t9 y)
 		{
 			return f(x, y);
 		};
 	};
 
-	template <typename t11, typename t8, typename t9>
-	static boost::function<t11 (t9)> papp(boost::function<t11 (t8, t9)> f, t8 x)
+	template <typename t10, typename t8, typename t9>
+	static boost::function<t10 (t9)> papp(boost::function<t10 (t8, t9)> f, t8 x)
 	{
-		typedef papp_impl<t11, t8, t9> local;
+		typedef papp_impl<t10, t8, t9> local;
 		local impl = { f, x };
 		return hn::bind(impl, &local::g);
 	};
-	template <typename t13, typename t14, typename t16>
+	template <typename t12, typename t13, typename t14>
 	struct flip_impl
 	{
-		boost::function<t16 (t14, t13)> f;
+		boost::function<t14 (t13, t12)> f;
 
-		t16 g(t13 x, t14 y)
+		t14 g(t12 x, t13 y)
 		{
 			return f(y, x);
 		};
 	};
 
-	template <typename t13, typename t14, typename t16>
-	static boost::function<t16 (t13, t14)> flip(boost::function<t16 (t14, t13)> f)
+	template <typename t12, typename t13, typename t14>
+	static boost::function<t14 (t12, t13)> flip(boost::function<t14 (t13, t12)> f)
 	{
-		typedef flip_impl<t13, t14, t16> local;
+		typedef flip_impl<t12, t13, t14> local;
 		local impl = { f };
 		return hn::bind(impl, &local::g);
 	};

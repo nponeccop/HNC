@@ -2,21 +2,21 @@
 
 struct hnMain_impl
 {
-	template <typename t1, typename t3>
+	template <typename t1, typename t2>
 	struct flip_impl
 	{
-		boost::function<t3 (int, t1)> f;
+		boost::function<t2 (int, t1)> f;
 
-		t3 flipped(t1 x)
+		t2 flipped(t1 x)
 		{
 			return f(3, x);
 		};
 	};
 
-	template <typename t1, typename t3>
-	static boost::function<t3 (t1)> flip(boost::function<t3 (int, t1)> f)
+	template <typename t1, typename t2>
+	static boost::function<t2 (t1)> flip(boost::function<t2 (int, t1)> f)
 	{
-		typedef flip_impl<t1, t3> local;
+		typedef flip_impl<t1, t2> local;
 		local impl = { f };
 		return hn::bind(impl, &local::flipped);
 	};
