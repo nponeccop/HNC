@@ -7,8 +7,15 @@ ATTR ASTExpression ExpressionList Definition LetIn
 		counter : Int
 	|
 		s USE {`composeSubstitutions`} {M.empty} : {Substitution}
+	]
+
+ATTR ASTExpression Definition LetIn
+	[
+	|
+	|
 		tau : T
 	]
+
 
 ATTR Definition
 	[ | | inferredType : T ]
@@ -18,7 +25,7 @@ ATTR ExpressionList
 		tau : T
 	|
 	|
-		ty USE {(:)} {[]} : {[T]}
+		tau USE {:} {[]} : {[T]}
 	]
 
 SEM Definition
@@ -59,17 +66,6 @@ SEM Definition
 
 		loc.definitionType = xtrace "DefinitionType" $ @lhs.finalSubstitution $ xtrace "InferredType" @loc.inferredType
 
-ATTR ASTExpression LetIn
-	[
-		tau : T
-	|
-	|
-	]
-
-SEM ExpressionList
-	| Cons
-		lhs.ty = @hd.tau : @tl.ty
-
 SEM LetIn
 	| Let
 		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes
@@ -103,4 +99,4 @@ SEM ASTExpression
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
-		lhs.s = normalizeSubstitution $ composeSubstitutions @fn.s $ unifyIn @arg.s @fn.tau $ TT $ @arg.ty ++ [@loc.beta]
+		lhs.s = normalizeSubstitution $ composeSubstitutions @fn.s $ unifyIn @arg.s @fn.tau $ TT $ @arg.tau ++ [@loc.beta]
