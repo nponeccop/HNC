@@ -40,7 +40,8 @@ SEM Definition
 		where.inferredTypes = M.union (M.fromList @loc.argAtoms) @lhs.inferredTypes
 
 		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
-		loc.inferredType = xtrace "def.inferredType" $ closure (substituteEnv @where.s @lhs.inferredTypes) $ substituteType @loc.tau @where.s
+		loc.normWs = normalizeSubstitution @where.s
+		loc.inferredType = xtrace "def.inferredType" $ closure (substituteEnv @loc.normWs @lhs.inferredTypes) $ substituteType @loc.tau @loc.normWs
 
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)
@@ -100,5 +101,5 @@ SEM ASTExpression
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
 		lhs.sM = @loc.sM
-		loc.sM = @fn.sM >> @arg.sM >> (xxunify @fn.tau $ TT $ @arg.tau ++ [@loc.beta]) >> return ()
-		lhs.s = normalizeSubstitution $ xxbindings @loc.sM
+		loc.sM = @fn.sM >> @arg.sM >> xxunify @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
+		lhs.s = xxbindings @loc.sM
