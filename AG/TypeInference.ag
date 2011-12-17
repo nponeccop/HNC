@@ -91,7 +91,7 @@ SEM ASTExpression
 
 		loc.templateArgs = { map fs $ S.toList $ typeTu definitionType where
 			fs x = tracedUncondLookup "AG.TypeInference.fs" x subst
- 			subst = subsumes definitionType callSiteType
+ 			subst = mySubsumes definitionType callSiteType
 			callSiteType = @lhs.finalSubstitution @loc.tau
 			definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
 		}

@@ -50,11 +50,6 @@ unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) d wher
 	c = myUnify a b
 	d = composeSubstitutions c c
 
-subsumes :: T -> T -> Substitution
-subsumes a b = xtrace ("subsumes-trace: " ++ makeType a ++ " <:= " ++ makeType b) d where
-	c = mySubsumes a b
-	d = composeSubstitutions c c
-
 closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
 	tpv = typeAllPolyVars t
 	epv = xtrace "closure.epv" $ envPolyVars env
