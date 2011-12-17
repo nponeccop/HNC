@@ -69,8 +69,6 @@ SEM Definition
 SEM LetIn
 	| Let
 		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes
-	| In
-		-- lhs.s = xxbindings @value.sM
 
 SEM ASTExpression
 	| Constant

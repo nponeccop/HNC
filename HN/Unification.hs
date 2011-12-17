@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings) where
+module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings, xxsubst) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -113,3 +113,13 @@ revert m x = mrevert x where
 	f (TU x) = Old.TU x
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
+
+revert2 newTerm = do
+	x <- fmap reverseMap xget
+	return $ revert x newTerm
+
+xxsubst m x = fst $ fst $ foo $ do
+	m
+	newTerm <- convert x
+ 	(fmap fromRight $ runErrorT (applyBindings newTerm)) >>= revert2
+
