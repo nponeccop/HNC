@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings, xxsubst) where
+module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings, xxsubst, substituteEnv) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -122,4 +122,8 @@ xxsubst m x = fst $ fst $ foo $ do
 	m
 	newTerm <- convert x
  	(fmap fromRight $ runErrorT (applyBindings newTerm)) >>= revert2
+
+substituteEnv m inferredTypes = M.map substituteType inferredTypes where
+	substituteType = xxsubst m
+	-- M.map (\x -> substituteType x tvBindings) inferredTypes
 

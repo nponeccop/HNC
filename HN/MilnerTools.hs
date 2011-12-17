@@ -42,9 +42,6 @@ uncurryType _ t = t
 
 type Substitution = M.Map String T
 
-substituteEnv :: Substitution -> M.Map String T -> M.Map String T
-substituteEnv a b = xtrace "substitute.result: " $ M.map (`substituteType` a) b
-
 unify :: T -> T -> Substitution
 unify a b = xtrace ("unify-trace: " ++ makeType a ++ " ~ " ++ makeType b) d where
 	c = myUnify a b
