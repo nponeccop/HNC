@@ -40,7 +40,7 @@ SEM Definition
 
 		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
 		loc.normWs = normalizeSubstitution $ xxbindings @where.sM
-		loc.inferredType = xtrace "def.inferredType" $ closure (substituteEnv @loc.normWs @lhs.inferredTypes) $ substituteType @loc.tau @loc.normWs
+		loc.inferredType = xtrace "def.inferredType" $ closure (substituteEnv @loc.normWs @lhs.inferredTypes) $ xxsubst @where.sM @loc.tau
 
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)
