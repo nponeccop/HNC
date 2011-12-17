@@ -17,7 +17,7 @@ SEM Root
 		hd.inferredTypes = @lhs.library
 		hd.definitionTypes = @lhs.library
 		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		loc.ns = normalizeSubstitution @hd.s
+		loc.ns = normalizeSubstitution $ xxbindings @hd.sM
 		hd.finalSubstitution = \x -> substituteType x @loc.ns
 		hd.parent = "OH,PARENT (ASSERTION)"
 		hd.isLocalVar = False
