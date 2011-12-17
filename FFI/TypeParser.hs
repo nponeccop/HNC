@@ -17,13 +17,11 @@ importHni = readFile >=> return . M.fromList . map parseDecl . lines
 
 parseDecl = sp3 decl
 
-pf x y =  y >>= (return . x)
-
 sp3 x = fromRight . P.parseString x
 
-typePolyVar = string "?" >> identifier >>=	return . TU
+typePolyVar = fmap TU $ string "?" >> identifier
 
-typeVar = string "??" >> identifier >>= return . TV
+typeVar = fmap TV $ string "??" >> identifier
 
 decl = do
 	a <- identifier
@@ -55,6 +53,6 @@ parens = do
 	char ')'
 	return a
 
-simpleType = pf T $ identifier
+simpleType = fmap T identifier
 
 parseType = try fun <|> try paramType <|> simpleType <|> try typeVar <|> typePolyVar

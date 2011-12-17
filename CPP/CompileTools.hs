@@ -5,9 +5,9 @@ import HN.Parser2
 import FFI.TypeParser
 import Utils
 
-compile inFile f = parseFile inFile >>= return . f . fromRight
+compile inFile f = fmap (f . fromRight) $ parseFile inFile
 
-compile2 f inFile = compile3 "lib/lib.hni" f inFile
+compile2 f  = compile3 "lib/lib.hni" f
 
 compile3 hniFileName f inFile = do
 	libraryTypes <- importHni hniFileName

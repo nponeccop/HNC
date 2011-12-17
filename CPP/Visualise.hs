@@ -6,7 +6,7 @@ import Utils
 import Data.Maybe
 
 showWithIndent indentationLevel y
-	= concat $ map (inStrings indent "\n") $ filter (not . null) y where
+	= concatMap (inStrings indent "\n") $ filter (not . null) y where
 		indent = replicate indentationLevel '\t'
 
 showFunctionPrototype def = show (functionReturnType def) ++ " " ++ functionName def ++ inParens (showFunctionArgs $ functionArgs def)
@@ -47,8 +47,8 @@ instance Show CppContext where
 
 instance Show CppDefinition where
 	-- monomorphic top-level variables without local variables and context (closure env)
-	show (CppFunctionDef level [] True Nothing retType name [] [] retVal) | not (name == "hnMain") =
-		showWithIndent level $ [show $ CppVar retType name retVal]
+	show (CppFunctionDef level [] True Nothing retType name [] [] retVal) | name /= "hnMain" =
+		showWithIndent level [show $ CppVar retType name retVal]
 	show def @ (CppFunctionDef level templateArgs isStatic context _ _ _ localVars retVal)
 		= maybe [] show context ++ showWithIndent level (concat
 		[

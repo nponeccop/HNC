@@ -20,9 +20,7 @@ letWhere (Let d l) = d : letWhere l
 letWhere (In _) = []
 
 makeLet :: ASTExpression -> Program -> LetIn
-makeLet v w = ml w where
-	ml [] = In v
-	ml (d : ww) = Let d $ ml ww
+makeLet v = foldr Let (In v)
 
 insertLet prg (Definition name args (In value)) = Definition name args $ makeLet value prg
 
