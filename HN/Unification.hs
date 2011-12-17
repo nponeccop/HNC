@@ -7,7 +7,6 @@ import Data.Traversable (Traversable)
 import Data.Foldable
 import Control.Monad
 import Control.Monad.State
-import Control.Monad.Identity
 import Control.Monad.Error
 import qualified Data.Map as M
 import Data.Maybe
@@ -92,8 +91,6 @@ mySubsumes x y = a  where
 
 
 fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert x o))) $ lookupVar $ IntVar iv
-
-removeT ('t' : x) = read x
 
 importBindings :: M.Map String Old.T -> MyStack ()
 importBindings = Control.Monad.mapM_ importOne . M.toList where
