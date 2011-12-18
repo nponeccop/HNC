@@ -25,13 +25,13 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-closure env t = if S.null varsToSubst then t else mapTypeTU mapper t where
-	tpv = typeAllPolyVars t
+closure env t = if S.null varsToSubst then t else mapTypeTV mapper t where
+	tpv = typeTv t
 	epv = xtrace "closure.epv" $ envPolyVars env
 	varsToSubst = xtrace "closure.varsToSubst" $ tpv S.\\ epv
-	mapper (TU a) = xtrace "closure.mapper!" $ if S.member a varsToSubst then xtrace "Closure.TU" (TU a) else TV a
+	mapper a = xtrace "closure.mapper!" $ if S.member a varsToSubst then xtrace "Closure.TU" (TU a) else TV a
 	envPolyVars = M.fold f S.empty where
-		f el acc = S.union acc $ typeAllPolyVars el
+		f el acc = S.union acc $ typeTv el
 
 instantiatedType :: T -> Int -> (Int, T)
 instantiatedType t counter = (nextCounter, substituteType t substitutions) where

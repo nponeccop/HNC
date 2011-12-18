@@ -1,4 +1,4 @@
-module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTU, typeAllPolyVars) where
+module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV) where
 import SPL.Types
 import qualified Data.Set as S
 import Data.List
@@ -12,16 +12,8 @@ hasFunctionalType x = isJust $ find isFunctionType $ init x
 
 cppCannotInferReturnType x = not $ S.null $ (typeTu $ last x) S.\\ (typeTu $ TT $ init x)
 
-
 typeTu x = let union = S.unions . map typeTu in case x of
 	TU v -> S.singleton v
-	TT l -> union l
-	TD _ l -> union l
-	_    -> S.empty
-
-typeAllPolyVars x = let union = S.unions . map typeAllPolyVars in case x of
-	TU v -> S.singleton v
-	TV v -> S.singleton v
 	TT l -> union l
 	TD _ l -> union l
 	_    -> S.empty
@@ -32,10 +24,10 @@ typeTv x = let union = S.unions . map typeTv in case x of
 		TD _ l -> union l
 		_    -> S.empty
 
-mapTypeTU f t = subst t where
+mapTypeTV f t = subst t where
 	subst t = case t of
-		TU a -> f (TU a)
-		TV a -> f (TU a)
+		TU a -> TU a
+		TV a -> f a
 		TT a -> TT $ map subst a
   		TD a b -> TD a (map subst b)
 		_ -> t
