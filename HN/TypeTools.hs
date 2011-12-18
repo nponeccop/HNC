@@ -10,7 +10,7 @@ isFunctionType _ = False
 
 hasFunctionalType x = isJust $ find isFunctionType $ init x
 
-cppCannotInferReturnType x = not $ S.null $ (typeTu $ last x) S.\\ (typeTu $ TT $ init x)
+cppCannotInferReturnType x = not $ S.null $ typeTu (last x) S.\\ typeTu (TT $ init x)
 
 typeTu x = let union = S.unions . map typeTu in case x of
 	TU v -> S.singleton v

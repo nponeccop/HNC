@@ -10,7 +10,7 @@ type Foo n f t1 t2 = (Graph n C C, t1, t2)
 							   (Graph n C C, FactBase f, MaybeO C f)
 
 runDominatorF :: Foo Node Doms t1 t2
-runDominatorF n = runPass (analyzeAndRewriteFwd domPass) (\_ entry -> mapSingleton entry domEntry) n
+runDominatorF = runPass (analyzeAndRewriteFwd domPass) (\_ entry -> mapSingleton entry domEntry)
 
 graphPostdominators g = runSimpleUniqueMonad $ runWithFuel infiniteFuel $
 	runDominatorF (g, undefined, undefined) >>= \(_, f, _) -> return $ immediatePostdominators $ immediateDominators f
@@ -20,4 +20,4 @@ immediatePostdominators l = xx where
 	ll = mapToList l
 	xx :: M.Map Label [Label]
 	xx = foldr f M.empty ll
-	f (k, v) vv =  M.insertWith (\_ o -> k : o) v [k] vv
+	f (k, v) =  M.insertWith (\_ o -> k : o) v [k]

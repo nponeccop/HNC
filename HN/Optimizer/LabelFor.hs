@@ -1,6 +1,7 @@
 module HN.Optimizer.LabelFor where
 
 import Compiler.Hoopl
+import Control.Arrow ((***))
 import Control.Monad.State
 import qualified Data.Map as M
 
@@ -8,7 +9,7 @@ run foo = runSimpleUniqueMonad $ runStateT foo (M.empty, M.empty)
 
 freshLabelFor name = do
 	l <- lift freshLabel
-	modify $ \(n2l, l2n) -> (M.insert name l n2l, M.insert l name l2n)
+	modify $ M.insert name l *** M.insert l name
 	return l
 
 tracedUncondLookup m k = case M.lookup k m of

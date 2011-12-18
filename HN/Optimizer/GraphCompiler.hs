@@ -12,8 +12,7 @@ compileGraph a def @ (Definition name _ _) = LabelFor.run $ do
 	gg <- compileGraph5 def x
 	return $ foldr (\x y -> node x LibNode |*><*| y) emptyClosedGraph libLabels |*><*| gg
 
-compileGraph4 def @ (Definition name _ _) = do
-	freshLabelFor name >>=	compileGraph5 def
+compileGraph4 def @ (Definition name _ _) = freshLabelFor name >>=	compileGraph5 def
 
 compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		al <- mapM freshLabelFor args

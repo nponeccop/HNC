@@ -17,4 +17,4 @@ transform tf = withGraph (fromTuple . runSimpleUniqueMonad . runWithFuel infinit
 	fromTuple (agraph, _, _) = agraph
 
 optimize :: Definition -> Definition
-optimize = (error . showD) . (transform $ runFB >=> runFB)
+optimize = (error . showD) . transform (runFB >=> runFB)

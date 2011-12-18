@@ -86,10 +86,10 @@ revert x m = mrevert x where
 
 revert2 newTerm = fmap (revert newTerm . reverseMap) xget
 
-subst = subst2 >=> revert2
-
 subst2 = convert >=> runApply
 
 runApply = fmap fromRight . runErrorT . applyBindings
 
-closure2 inferredTypes tau = liftM2 closure (DT.mapM subst inferredTypes) (subst tau)
+closure2 inferredTypes tau = liftM2 closure (DT.mapM subst inferredTypes) (subst tau) where
+	subst = subst2 >=> revert2
+

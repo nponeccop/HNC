@@ -2,6 +2,7 @@ module Utils where
 
 import qualified Data.ByteString
 import Data.Char
+import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
 import Debug.Trace
 import Test.HUnit
@@ -42,4 +43,4 @@ inAngular x = inStrings "<" ">" x
 
 uncondLookup k m = tracedUncondLookup "No trace" k m
 
-tracedUncondLookup msg k m = maybe (error $ msg ++ ": uncondLookup cannot find " ++ show k ++ " in " ++ show m) id $ M.lookup k m
+tracedUncondLookup msg k m = fromMaybe (error $ msg ++ ": uncondLookup cannot find " ++ show k ++ " in " ++ show m) $ M.lookup k m
