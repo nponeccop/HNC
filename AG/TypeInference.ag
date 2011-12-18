@@ -16,7 +16,6 @@ ATTR ASTExpression Definition LetIn
 		tau : T
 	]
 
-
 ATTR Definition
 	[ | | inferredType : T ]
 
@@ -39,7 +38,7 @@ SEM Definition
 		where.inferredTypes = M.union (M.fromList @loc.argAtoms) @lhs.inferredTypes
 
 		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
-		loc.inferredType = xtrace "def.inferredType" $ closure2 @where.sM @lhs.inferredTypes @loc.tau
+		loc.inferredType = xtrace "def.inferredType" $ runStack $ closure2 @where.sM @lhs.inferredTypes @loc.tau
 
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)
@@ -90,7 +89,7 @@ SEM ASTExpression
 
 		loc.templateArgs = { map fs $ S.toList $ typeTu definitionType where
 			fs x = tracedUncondLookup "AG.TypeInference.fs" x subst
- 			subst = mySubsumes definitionType callSiteType
+ 			subst = runStack $ mySubsumes definitionType callSiteType
 			callSiteType = @lhs.finalSubstitution @loc.tau
 			definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
 		}

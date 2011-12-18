@@ -17,7 +17,7 @@ SEM Root
 		hd.inferredTypes = @lhs.library
 		hd.definitionTypes = @lhs.library
 		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		hd.finalSubstitution = xxsubst @hd.sM
+		hd.finalSubstitution = runStack . xxsubst @hd.sM
 		hd.parent = "OH,PARENT (ASSERTION)"
 		hd.isLocalVar = False
 		tl.library = M.insert @hd.name @hd.definitionType @lhs.library

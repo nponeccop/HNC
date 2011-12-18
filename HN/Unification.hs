@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (mySubsumes, MyStack, xxunify, xxsubst, closure2) where
+module HN.Unification (mySubsumes, MyStack, xxunify, xxsubst, closure2, runStack) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -46,8 +46,7 @@ xfreeVar a m = do
 
 type MyStack a = IntBindingT T (State (M.Map String Int)) a
 
-foo :: MyStack a -> ((a, IntBindingState T), M.Map String Int)
-foo x = flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
+runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
 
 convert (Old.T a) = return $ MutTerm $ T a
 convert (Old.TT a) = fmap (MutTerm . TT) $ Prelude.mapM convert a
@@ -64,25 +63,23 @@ xxunify x y = do
 	b <- convert y
 	xunify a b
 
-mySubsumes x y = a  where
-	((a, _), _) = u x y
-	u x y = foo $ do
+mySubsumes x y = do
 		a <- convert $ f x
 		b <- convert y
 		xsubsumes a b
-		exportBindings
+		exportBindings where
 	f (Old.TU x) = Old.TV x
 	f (Old.TT x) = Old.TT $ map f x
 	f (Old.TD a x) = Old.TD a $ map f x
 	f x = x
 
-fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert x o))) $ lookupVar $ IntVar iv
+fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert o x))) $ lookupVar $ IntVar iv
 
 exportBindings = do
 	x <- fmap reverseMap xget
 	xget >>= fmap (M.fromList . catMaybes) . mapM (fff x) . M.toList
 
-revert m x = mrevert x where
+revert x m = mrevert x where
 	mrevert (MutTerm x) = f x
 	mrevert (MutVar (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
 	f (T x) = Old.T x
@@ -90,11 +87,9 @@ revert m x = mrevert x where
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
 
-revert2 newTerm = do
-	x <- fmap reverseMap xget
-	return $ revert x newTerm
+revert2 newTerm = fmap (revert newTerm . reverseMap) xget
 
-xxsubst m x = fst $ fst $ foo $ do
+xxsubst m x = do
 	m
 	subst x
 
@@ -102,5 +97,5 @@ subst x = do
 	newTerm <- convert x
  	fmap fromRight (runErrorT $ applyBindings newTerm) >>= revert2
 
-closure2 sM inferredTypes tau = fst $ fst $ foo $ sM >> liftM2 closure (DT.mapM subst inferredTypes) (subst tau)
+closure2 sM inferredTypes tau = sM >> liftM2 closure (DT.mapM subst inferredTypes) (subst tau)
 
