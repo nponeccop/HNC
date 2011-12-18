@@ -87,10 +87,12 @@ SEM ASTExpression
  		-- и явно указать его шаблонным аргументом: print<int>(2 + x), если
 		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
 
-		loc.templateArgs = { map fs $ S.toList $ typeTu definitionType where
-			fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
- 			subst2 = runStack $ @lhs.finalSubstitution >> subst @loc.tau >>= mySubsumes definitionType
-			definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
+		loc.templateArgs = { runStack $ do
+				@lhs.finalSubstitution
+				subst2 <- subst @loc.tau >>= mySubsumes definitionType
+				let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
+				return $ map fs $ S.toList $ typeTu definitionType where
+					definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
 		}
 	| Application
 		fn.counter = @lhs.counter + 1
