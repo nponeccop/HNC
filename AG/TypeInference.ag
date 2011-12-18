@@ -2,7 +2,7 @@
 ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		inferredTypes : {M.Map String T}
-		finalSubstitution : {T -> T}
+		finalSubstitution : {MyStack ()}
 	|
 		counter : Int
 	|
@@ -62,7 +62,7 @@ SEM Definition
 		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
 
-		loc.definitionType = xtrace "DefinitionType" $ @lhs.finalSubstitution $ xtrace "InferredType" @loc.inferredType
+		loc.definitionType = xtrace "DefinitionType" $ runStack $ @lhs.finalSubstitution >> subst @loc.inferredType
 
 SEM LetIn
 	| Let
@@ -88,9 +88,9 @@ SEM ASTExpression
 		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
 
 		loc.templateArgs = { map fs $ S.toList $ typeTu definitionType where
-			fs x = tracedUncondLookup "AG.TypeInference.fs" x subst
- 			subst = runStack $ mySubsumes definitionType callSiteType
-			callSiteType = @lhs.finalSubstitution @loc.tau
+			fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
+ 			subst2 = runStack $ mySubsumes definitionType callSiteType
+			callSiteType = runStack $ @lhs.finalSubstitution >> subst @loc.tau
 			definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
 		}
 	| Application
