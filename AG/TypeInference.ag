@@ -37,9 +37,6 @@ SEM Definition
 		}
 		where.inferredTypes = M.union (M.fromList @loc.argAtoms) @lhs.inferredTypes
 
-		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
-		loc.inferredType = xtrace "def.inferredType" $ runStack $ @where.sM >> closure2 @lhs.inferredTypes @loc.tau
-
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)
 		-- такие "необобщенные типовые переменные" возникают, если в результате
@@ -61,8 +58,15 @@ SEM Definition
 		--
 		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
+		loc.definitionType = {
+			xtrace "DefinitionType" $ runStack $ do
+				foo <- @loc.xinferredType
+				@lhs.finalSubstitution >> convert foo >>= runApply >>= revert2
+		}
+		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
+		loc.inferredType = xtrace "def.inferredType" $ runStack @loc.xinferredType
 
-		loc.definitionType = xtrace "DefinitionType" $ runStack $ @lhs.finalSubstitution >> subst @loc.inferredType
+		loc.xinferredType = @where.sM >> closure2 @lhs.inferredTypes @loc.tau
 
 SEM LetIn
 	| Let
@@ -89,7 +93,9 @@ SEM ASTExpression
 
 		loc.templateArgs = { runStack $ do
 				@lhs.finalSubstitution
-				subst2 <- subst2 @loc.tau >>= mySubsumes definitionType
+				inferredType <- convertTU definitionType
+				callSiteType <- convert @loc.tau >>= runApply
+				subst2 <- mySubsumes inferredType callSiteType
 				let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
 				return $ map fs $ S.toList $ typeTu definitionType where
 					definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
