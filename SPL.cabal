@@ -21,6 +21,7 @@ Executable spl-test-hunit-exe
   Default-Language: Haskell2010
   Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, unification-fd
   Other-Modules:  Bar
+  GHC-Options: -fwarn-unused-binds -fwarn-unused-imports
 
 Test-Suite spl-test-hunit
   Main-Is: Test/Main.hs

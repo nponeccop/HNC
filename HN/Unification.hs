@@ -1,18 +1,19 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification (myUnify, mySubsumes, unifyIn, MyStack, xxunify, xxbindings, xxsubst, substituteEnv) where
+module HN.Unification (mySubsumes, MyStack, xxunify, xxsubst, closure2) where
 
 import Control.Unification
 import Control.Unification.IntVar
 import Data.Traversable (Traversable)
 import Data.Foldable
-import Control.Monad
 import Control.Monad.State
 import Control.Monad.Error
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Tuple
+import qualified Data.Traversable as DT
 
 import Utils
+import HN.MilnerTools (closure)
 import qualified SPL.Types as Old
 
 
@@ -58,24 +59,10 @@ convert (Old.TV a) = do
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
--- unifies two terms using non-empty bindings
-unifyIn bindingMap x y = a  where
-	((a, _), _) = u x y
-	u x y = foo $ do
-		importBindings bindingMap
-		xxunify x y
-		exportBindings
-
-xxbindings m = fst $ fst $ foo $ m >> exportBindings
-
 xxunify x y = do
 	a <- convert x
 	b <- convert y
 	xunify a b
-
-
--- myUnify should be identical to unifyIn M.empty
-myUnify = unifyIn M.empty
 
 mySubsumes x y = a  where
 	((a, _), _) = u x y
@@ -89,15 +76,7 @@ mySubsumes x y = a  where
 	f (Old.TD a x) = Old.TD a $ map f x
 	f x = x
 
-
 fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert x o))) $ lookupVar $ IntVar iv
-
-importBindings :: M.Map String Old.T -> MyStack ()
-importBindings = Control.Monad.mapM_ importOne . M.toList where
-	importOne (oldName, oldTerm) = do
- 		newTerm <- convert oldTerm
- 		newVar <- convert $ Old.TV oldName
-		bindVar (case newVar of MutVar x -> x) newTerm
 
 exportBindings = do
 	x <- fmap reverseMap xget
@@ -117,8 +96,11 @@ revert2 newTerm = do
 
 xxsubst m x = fst $ fst $ foo $ do
 	m
+	subst x
+
+subst x = do
 	newTerm <- convert x
  	fmap fromRight (runErrorT $ applyBindings newTerm) >>= revert2
 
-substituteEnv m  = M.map (xxsubst m)
+closure2 sM inferredTypes tau = fst $ fst $ foo $ sM >> liftM2 closure (DT.mapM subst inferredTypes) (subst tau)
 
