@@ -1,5 +1,4 @@
 module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv, instantiatedType) where
-import Control.Arrow (second)
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -34,10 +33,9 @@ closure env t = if S.null varsToSubst then t else mapTypeTV mapper t where
 		f el acc = S.union acc $ typeTv el
 
 instantiatedType :: T -> Int -> (Int, T)
-instantiatedType t counter = (nextCounter, substituteType t substitutions) where
-	foo = zip (S.toList $ typeTu t) [counter..]
-   	nextCounter = counter + length (S.toList $ typeTu t)
-	substitutions = M.fromList $ map (second tv) foo
+instantiatedType t counter = (counter + length tu, substituteType t substitutions) where
+	tu = S.toAscList $ typeTu t
+	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) tu [counter..]
 
 substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
 	subst t = case t of
