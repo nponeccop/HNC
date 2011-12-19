@@ -1,4 +1,4 @@
-module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv, instantiatedType, closure4) where
+module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv, closure4) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -8,8 +8,8 @@ import HN.TypeTools
 import SPL.Types
 
 
-lookupAndInstantiate :: String -> M.Map String T -> Int -> (Int, T)
-lookupAndInstantiate name table counter = let t = tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table in instantiatedType t counter
+lookupAndInstantiate name table counter = instantiatedType t counter where
+	t = tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table
 
 tv x = TV $ 't' : show x
 
@@ -35,11 +35,8 @@ closure4 env t = (varsToSubst, t) where
 	envPolyVars = M.fold f S.empty where
 		f el acc = S.union acc $ typeTv el
 
-
-instantiatedType :: T -> Int -> (Int, T)
-instantiatedType t counter = (counter + length tu, substituteType t substitutions) where
-	tu = S.toAscList $ typeTu t
-	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) tu [counter..]
+instantiatedType (tu, t) counter = (counter + S.size tu, substituteType t substitutions) where
+	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
 
 substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
 	subst t = case t of

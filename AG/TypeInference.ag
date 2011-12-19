@@ -47,6 +47,7 @@ SEM Definition
 			else TT $ map snd  @argAtoms ++ [@where.tau]
 		}
 		where.inferredTypes = M.union (M.fromList @loc.argAtoms) @lhs.inferredTypes
+		where.generalizedTypes = M.union (M.map (\t -> (S.empty, t)) $ M.fromList @loc.argAtoms) @lhs.generalizedTypes
 
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)
@@ -79,7 +80,8 @@ SEM Definition
 
 		loc.xinferredType = @where.sM >> closure2 @lhs.inferredTypes @loc.tau
 
-		loc.generalizedType = runStack $ @where.sM >> closure3 @lhs.inferredTypes @loc.tau
+		loc.generalizedType = runStack @loc.xgeneralizedType
+		loc.xgeneralizedType = @where.sM >> closure3 @lhs.inferredTypes @loc.tau
 
 SEM LetIn
 	| Let
@@ -90,7 +92,7 @@ SEM ASTExpression
 	| Constant
 		lhs.tau = constantType @c
 	| Atom
-		(lhs.counter, loc.tau) = xtrace "atom.tau" $ lookupAndInstantiate @name (xtrace "ASTExpression.Atom.inferredTypes" @lhs.inferredTypes) @lhs.counter
+		(lhs.counter, loc.tau) = xtrace "atom.tau" $ lookupAndInstantiate @name @lhs.generalizedTypes @lhs.counter
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения

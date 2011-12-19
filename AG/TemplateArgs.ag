@@ -14,7 +14,7 @@ SEM Definition
 		-- шаблонные переменные контекста верхнего уровня
 		lhs.definitionTv = typeTv @loc.definitionType
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
-		loc.templateArgs = fst $ @loc.generalizedType
+		loc.templateArgs = fst @loc.generalizedType
 
 ATTR ASTExpression LetIn Definition ExpressionList
 	[ abstractedTv : {S.Set String} | | ]

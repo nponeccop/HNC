@@ -12,6 +12,9 @@ simpleTests x = runTestTT $ TestList x
 
 xtrace _ b = b
 ztrace m t =  trace (m ++ " = " ++ show t) t
+xeqTrace _ _ y = y
+zeqTrace m x y = if x == y then y else trace (m ++ ": " ++ show x ++ " /= " ++ show y) y
+
 
 consMaybe Nothing value = value
 consMaybe (Just x) value = x : value
