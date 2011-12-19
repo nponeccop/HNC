@@ -14,7 +14,6 @@ SEM Root
 	| Cons
 		hd.level = 0
 		hd.counter = 0
-		hd.inferredTypes = @lhs.library
 		hd.generalizedTypes = M.map (\t -> (typeTu t, removeTU t)) @lhs.library
 		hd.definitionTypes = @lhs.library
 		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
