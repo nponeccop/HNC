@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification  (mySubsumes, MyStack, xxunify, runStack, subst2, revert2, runApply, convert, closureM) where
+module HN.Unification  (mySubsumes, MyStack, xxunify, runStack, subst, runApply, convert, closureM) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -79,9 +79,9 @@ revert x m = mrevert x where
 
 revert2 newTerm = fmap (revert newTerm . reverseMap) xget
 
-subst2 = convert >=> runApply
-
 runApply = fmap fromRight . runErrorT . applyBindings
 
-closureM inferredTypes tau = liftM2 closure (DT.mapM subst inferredTypes) (subst tau) where
-	subst = subst2 >=> revert2
+subst = convert >=> runApply >=> revert2
+
+closureM inferredTypes tau = liftM2 closure (DT.mapM (subst . snd) inferredTypes) (subst tau)
+

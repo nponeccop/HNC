@@ -8,8 +8,7 @@ import HN.TypeTools
 import SPL.Types
 
 
-lookupAndInstantiate name table counter = instantiatedType t counter where
-	t = tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table
+lookupAndInstantiate name table = instantiatedType $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table
 
 tv x = TV $ 't' : show x
 
@@ -24,10 +23,9 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-closure env t = (varsToSubst, t) where
+closure env t = (tpv S.\\ epv, t) where
 	tpv = typeTv t
 	epv = xtrace "closure.epv" $ envPolyVars env
-	varsToSubst = xtrace "closure.varsToSubst" $ tpv S.\\ epv
 	envPolyVars = M.fold f S.empty where
 		f el acc = S.union acc $ typeTv el
 
