@@ -1,4 +1,4 @@
-module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv, closure4) where
+module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -24,11 +24,7 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-closure env t = if S.null varsToSubst then t else mapTypeTV mapper t where
-	varsToSubst = fst $ closure4 env t
-	mapper a = xtrace "closure.mapper!" $ if S.member a varsToSubst then xtrace "Closure.TU" (TU a) else TV a
-
-closure4 env t = (varsToSubst, t) where
+closure env t = (varsToSubst, t) where
 	tpv = typeTv t
 	epv = xtrace "closure.epv" $ envPolyVars env
 	varsToSubst = xtrace "closure.varsToSubst" $ tpv S.\\ epv

@@ -1,4 +1,4 @@
-module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, removeTU) where
+module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, removeTU, addTU) where
 import SPL.Types
 import qualified Data.Set as S
 import Data.List
@@ -29,6 +29,10 @@ removeTU x = case x of
 	TT l -> TT $ map removeTU l
 	TD x l -> TD x $ map removeTU l
 	a    -> a
+
+addTU s = mapTypeTV f where
+	f x | x `S.member` s = TU x
+  	f x = TV x
 
 
 mapTypeTV f t = subst t where
