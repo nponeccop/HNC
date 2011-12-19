@@ -83,5 +83,10 @@ runApply = fmap fromRight . runErrorT . applyBindings
 
 subst = convert >=> runApply >=> revert2
 
-closureM inferredTypes tau = liftM2 closure (DT.mapM (subst . snd) inferredTypes) (subst tau)
-
+closureM inferredTypes tau = do
+	convEnv <- DT.mapM ((convert >=> runApply) . snd) inferredTypes
+	convTau <- (convert >=> runApply) tau
+	rm <- fmap reverseMap xget
+	let rev = (`revert` rm)
+	let finalTau = rev convTau
+	return $ (closure (M.map rev convEnv) finalTau, finalTau)

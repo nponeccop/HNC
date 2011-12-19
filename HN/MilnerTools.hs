@@ -23,7 +23,7 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-closure env t = (tpv S.\\ epv, t) where
+closure env t = tpv S.\\ epv where
 	tpv = typeTv t
 	epv = xtrace "closure.epv" $ envPolyVars env
 	envPolyVars = M.fold f S.empty where
