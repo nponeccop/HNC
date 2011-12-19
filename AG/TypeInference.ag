@@ -25,7 +25,6 @@ ATTR Definition
 	[
 	|
 	|
-		inferredType : T
  		generalizedType : GType
 	]
 
@@ -68,16 +67,15 @@ SEM Definition
 		--
 		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
+		--
+
 		loc.definitionType = {
 			xtrace "DefinitionType" $ runStack $ do
-				foo <- @loc.xinferredType
+				foo <- @where.sM >> closure2 (M.map snd @lhs.generalizedTypes) @loc.tau
 				@lhs.finalSubstitution >> convert foo >>= runApply >>= revert2
 		}
-		-- inferredType используется алгоритмом W _ДО_ того, как создается finalSubstitution
-		loc.inferredType = xtrace "def.inferredType" $ runStack @loc.xinferredType
 
-		loc.xinferredType = @where.sM >> closure2 (M.map snd @lhs.generalizedTypes) @loc.tau
-
+		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitution
 		loc.generalizedType = runStack @loc.xgeneralizedType
 		loc.xgeneralizedType = @where.sM >> closure3 (M.map snd @lhs.generalizedTypes) @loc.tau
 
