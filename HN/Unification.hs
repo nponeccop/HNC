@@ -10,7 +10,6 @@ import Control.Monad.Error
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Tuple
-import qualified Data.Traversable as DT
 
 import Utils
 import HN.MilnerTools (closure)
@@ -84,9 +83,9 @@ runApply = fmap fromRight . runErrorT . applyBindings
 subst = convert >=> runApply >=> revert2
 
 closureM inferredTypes tau = do
-	convEnv <- DT.mapM ((convert >=> runApply) . snd) inferredTypes
+	convEnv <- mapM ((convert >=> runApply) . snd) $ M.elems inferredTypes
 	convTau <- (convert >=> runApply) tau
 	rm <- fmap reverseMap xget
 	let rev = (`revert` rm)
 	let finalTau = rev convTau
-	return $ (closure (M.map rev convEnv) finalTau, finalTau)
+	return $ (closure (map rev convEnv) finalTau, finalTau)

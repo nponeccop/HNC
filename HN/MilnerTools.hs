@@ -25,9 +25,7 @@ constantType x = case x of
 
 closure env t = tpv S.\\ epv where
 	tpv = typeTv t
-	epv = xtrace "closure.epv" $ envPolyVars env
-	envPolyVars = M.fold f S.empty where
-		f el acc = S.union acc $ typeTv el
+	epv = S.unions $ map typeTv env
 
 instantiatedType (tu, t) counter = (counter + S.size tu, substituteType t substitutions) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
