@@ -2,6 +2,8 @@
 ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		inferredTypes : {M.Map String T}
+		generalizedTypes : {M.Map String GType}
+
 		finalSubstitution : {MyStack ()}
 	|
 		counter : Int
@@ -16,8 +18,17 @@ ATTR ASTExpression Definition LetIn
 		tau : T
 	]
 
+{
+type GType = (S.Set String, T)
+}
+
 ATTR Definition
-	[ | | inferredType : T ]
+	[
+	|
+	|
+		inferredType : T
+ 		generalizedType : GType
+	]
 
 ATTR ExpressionList
 	[
@@ -68,9 +79,12 @@ SEM Definition
 
 		loc.xinferredType = @where.sM >> closure2 @lhs.inferredTypes @loc.tau
 
+		loc.generalizedType = runStack $ @where.sM >> closure3 @lhs.inferredTypes @loc.tau
+
 SEM LetIn
 	| Let
 		tl.inferredTypes = M.insert @hd.name @hd.inferredType @lhs.inferredTypes
+		tl.generalizedTypes = M.insert @hd.name @hd.generalizedType @lhs.generalizedTypes
 
 SEM ASTExpression
 	| Constant
@@ -93,12 +107,12 @@ SEM ASTExpression
 
 		loc.templateArgs = { runStack $ do
 				@lhs.finalSubstitution
-				inferredType <- convertTU definitionType
+				inferredType <- convert $ snd $ generalizedType
 				callSiteType <- convert @loc.tau >>= runApply
 				subst2 <- mySubsumes inferredType callSiteType
 				let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
-				return $ map fs $ S.toList $ typeTu definitionType where
-					definitionType = tracedUncondLookup "Atom.definitionType" @name @lhs.definitionTypes
+				return $ map fs $ S.toList $ fst $ generalizedType where
+					generalizedType = tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes
 		}
 	| Application
 		fn.counter = @lhs.counter + 1

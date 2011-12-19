@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification  (mySubsumes, MyStack, xxunify, closure2, runStack, subst2, revert2, runApply, convert, convertTU) where
+module HN.Unification  (mySubsumes, MyStack, xxunify, closure2, runStack, subst2, revert2, runApply, convert, closure3) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -13,7 +13,7 @@ import Data.Tuple
 import qualified Data.Traversable as DT
 
 import Utils
-import HN.MilnerTools (closure)
+import HN.MilnerTools (closure, closure4)
 import qualified SPL.Types as Old
 
 
@@ -64,13 +64,6 @@ xxunify x y = do
 
 mySubsumes a b = xsubsumes a b >> exportBindings
 
-convertTU = convert . f where
-	f (Old.TU x) = Old.TV x
-	f (Old.TT x) = Old.TT $ map f x
-	f (Old.TD a x) = Old.TD a $ map f x
-	f x = x
-
-
 exportBindings = do
 	x <- fmap reverseMap xget
 	xget >>= fmap (M.fromList . catMaybes) . mapM (fff x) . M.toList where
@@ -93,3 +86,5 @@ runApply = fmap fromRight . runErrorT . applyBindings
 closure2 inferredTypes tau = liftM2 closure (DT.mapM subst inferredTypes) (subst tau) where
 	subst = subst2 >=> revert2
 
+closure3 inferredTypes tau = liftM2 closure4 (DT.mapM subst inferredTypes) (subst tau) where
+	subst = subst2 >=> revert2
