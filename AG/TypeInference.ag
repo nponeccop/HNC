@@ -2,7 +2,6 @@
 ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		generalizedTypes : {M.Map String GType}
-
 		finalSubstitution : {MyStack ()}
 	|
 		counter : Int
@@ -10,11 +9,11 @@ ATTR ASTExpression ExpressionList Definition LetIn
 		sM USE {>>} {return ()} : {MyStack ()}
 	]
 
-ATTR ASTExpression Definition LetIn
-	[ | | tau : T ]
-
 ATTR Definition
 	[ | | generalizedType : GType ]
+
+ATTR ASTExpression LetIn
+	[ | | tau : T ]
 
 ATTR ExpressionList
 	[ | | tau USE {:} {[]} : {[T]} ]
@@ -53,9 +52,10 @@ SEM Definition
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
 		--
 
-		loc.definitionType = runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= fmap (addTU @loc.templateArgs) . subst . snd
+		loc.definitionType = addTU @loc.templateArgs $ runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= subst . snd
 
-		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitution
+
+		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitu	tion
 		loc.generalizedType = runStack $ @where.sM >> @loc.generalizedTypeM
 		loc.generalizedTypeM = closureM @lhs.generalizedTypes @loc.tau
 
