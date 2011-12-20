@@ -1,3 +1,8 @@
+{
+type ExpressionList  = [ASTExpression]
+type GType = (S.Set String, T)
+}
+
 DATA ASTExpression
 	| Application fn : ASTExpression arg : ExpressionList
 	| Atom name : String
@@ -15,3 +20,4 @@ DATA LetIn
 
 DATA Definition
 	| Definition name : String params : {[String]} where : LetIn
+

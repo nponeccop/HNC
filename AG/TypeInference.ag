@@ -11,29 +11,13 @@ ATTR ASTExpression ExpressionList Definition LetIn
 	]
 
 ATTR ASTExpression Definition LetIn
-	[
-	|
-	|
-		tau : T
-	]
-
-{
-type GType = (S.Set String, T)
-}
+	[ | | tau : T ]
 
 ATTR Definition
-	[
-	|
-	|
- 		generalizedType : GType
-	]
+	[ | | generalizedType : GType ]
 
 ATTR ExpressionList
-	[
-	|
-	|
-		tau USE {:} {[]} : {[T]}
-	]
+	[ | | tau USE {:} {[]} : {[T]} ]
 
 SEM Definition
 	| Definition

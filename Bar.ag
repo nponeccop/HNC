@@ -14,12 +14,9 @@ import CPP.BackendTools
 import HN.Intermediate
 import HN.MilnerTools
 import HN.TypeTools
-import HN.Unification
 import SPL.Types
 
 import Utils
-
-type ExpressionList  = [ASTExpression]
 
 }
 
