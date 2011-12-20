@@ -1,12 +1,10 @@
-module HN.MilnerTools (lookupAndInstantiate, closure, constantType, freshAtoms, tv) where
+module HN.MilnerTools (lookupAndInstantiate, constantType, freshAtoms, tv) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Utils
 import HN.Intermediate
-import HN.TypeTools
 import SPL.Types
-
 
 lookupAndInstantiate name table = instantiatedType $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table
 
@@ -22,10 +20,6 @@ freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, tv i)) a [count
 constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
-
-closure env t = tpv S.\\ epv where
-	tpv = typeTv t
-	epv = S.unions $ map typeTv env
 
 instantiatedType (tu, t) counter = (counter + S.size tu, substituteType t substitutions) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]

@@ -8,11 +8,11 @@ import Data.Foldable
 import Control.Monad.State
 import Control.Monad.Error
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Maybe
 import Data.Tuple
 
 import Utils
-import HN.MilnerTools (closure)
 import qualified SPL.Types as Old
 
 
@@ -86,6 +86,9 @@ closureM inferredTypes tau = do
 	convEnv <- mapM ((convert >=> runApply) . snd) $ M.elems inferredTypes
 	convTau <- (convert >=> runApply) tau
 	rm <- fmap reverseMap xget
-	let rev = (`revert` rm)
-	let finalTau = rev convTau
-	return $ (closure (map rev convEnv) finalTau, finalTau)
+	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
+	tpv <- varListToSet $ getFreeVars convTau
+	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
+	let revertTv x = tracedUncondLookup "closureM" x rm
+	let finalTau = revert convTau rm
+	return (S.map revertTv $ tpv S.\\ epv, finalTau)
