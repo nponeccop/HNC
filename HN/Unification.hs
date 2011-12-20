@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.Unification  (mySubsumes, MyStack, xxunify, runStack, subst, runApply, convert, closureM) where
+module HN.Unification  (MyStack, unifyM, runStack, subst, closureM, templateArgs) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -28,8 +28,8 @@ instance Unifiable T where
 	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = fmap (TD l1) $ maybeZip a1 a2
 	zipMatch _ _ = Nothing
 
-xunify x y = runErrorT $ unify x y >>= applyBindings
-xsubsumes x y = runErrorT $ subsumes x y
+
+
 
 xget :: MyStack (M.Map String Int)
 xget = lift get
@@ -56,12 +56,12 @@ convert (Old.TV a) = do
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
-xxunify x y = do
+unifyM x y = do
 	a <- convert x
 	b <- convert y
-	xunify a b
+	runErrorT $ unify a b >>= applyBindings
 
-mySubsumes a b = xsubsumes a b >> exportBindings
+subsumesM x y = runErrorT (subsumes x y) >> exportBindings
 
 exportBindings = do
 	x <- fmap reverseMap xget
@@ -90,5 +90,12 @@ closureM inferredTypes tau = do
 	tpv <- varListToSet $ getFreeVars convTau
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
 	let revertTv x = tracedUncondLookup "closureM" x rm
-	let finalTau = revert convTau rm
-	return (S.map revertTv $ tpv S.\\ epv, finalTau)
+	return (S.map revertTv $ tpv S.\\ epv, revert convTau rm)
+
+templateArgs tau (generalizedVars, generalizedT) = do
+	inferredType <- convert generalizedT
+	callSiteType <- convert tau >>= runApply
+	subst2 <- subsumesM inferredType callSiteType
+	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
+	return $ map fs $ S.toList generalizedVars where
+

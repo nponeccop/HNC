@@ -102,17 +102,10 @@ SEM ASTExpression
  		-- и явно указать его шаблонным аргументом: print<int>(2 + x), если
 		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
 
-		loc.templateArgs = { runStack $ do
-				@lhs.finalSubstitution
-				inferredType <- convert $ snd $ generalizedType
-				callSiteType <- convert @loc.tau >>= runApply
-				subst2 <- mySubsumes inferredType callSiteType
-				let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
-				return $ map fs $ S.toList $ fst $ generalizedType where
-					generalizedType = tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes
-		}
+		loc.templateArgs = runStack $ @lhs.finalSubstitution >> templateArgs @loc.tau (tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes)
+
 	| Application
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
-		lhs.sM = @fn.sM >> @arg.sM >> xxunify @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
+		lhs.sM = @fn.sM >> @arg.sM >> unifyM @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
