@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 --module Code (C (..), St (..), eval0, res) where
 module SPL.Code (C (..), St (..), eval, res) where
 
@@ -13,7 +14,7 @@ eval a@(CBool n) e = a
 eval a@(CList l) e = a
 eval a@(CPair l) e = a
 eval a@(CStruct m) e = CStruct $ M.map (\x -> eval x e) m
-eval a@(CVal v) e = 
+eval a@(CVal v) e =
 	case M.lookup v e of
 		Just v -> v
 		Nothing -> error ("cannot find "++show v)

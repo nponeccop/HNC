@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Types (T (..), C (..), St (..), InFun (..)) where
 
 import Data.Map

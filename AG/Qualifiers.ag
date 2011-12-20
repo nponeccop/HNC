@@ -65,7 +65,7 @@ SEM Definition
 		lhs.declareSelf = @loc.foo  $ \x -> case x of CppCurrentClassMethod -> True ; CppCurrentClassMethodStatic -> True ; _ -> False
 		lhs.declareParent = @loc.foo $ \x -> case x of CppParentVar -> True ; _ -> False
 
-		loc.isFunctionStatic = { (isNothing $ find nonStaticReference $ M.elems $ M.intersectionWith (\a b -> a) @loc.valueQualifiers freeVarsMap) where
+		loc.isFunctionStatic = { (isNothing $ find nonStaticReference $ M.elems $ M.intersectionWith (\a _ -> a) @loc.valueQualifiers freeVarsMap) where
 			freeVarsMap = M.fromList $ map (\x -> (x, ())) $ S.toList @loc.freeVars
 		}
 		lhs.qualifier = { if @loc.isFunction

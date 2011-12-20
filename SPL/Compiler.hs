@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Compiler (P (..), compile, remove_cdebug, remove_ctyped, res) where
 
 import SPL.Types
@@ -27,7 +28,7 @@ comp (Scall (Ss "ffi" _) (SynK [(Sstr t _), Sstr ffn _]) _) u e =
 	where
 		lib = M.fromList $ SPL.Lib.Bignum.lib ++ SPL.Lib.Str.lib
 
-comp (Sdot (Sroot _) p i) u e = 
+comp (Sdot (Sroot _) p i) u e =
 	comp (Ss p i) [] e
 
 comp (Ss s i) u e =
@@ -52,7 +53,7 @@ comp (Ss s i) u e =
 				Nothing -> Nothing
 		f2 m1 (m:ms) e =
 			case M.lookup m (e::M.Map [Char] T) of
-				Just (TS e2) -> 
+				Just (TS e2) ->
 					case f2 (CL m1 (D m)) ms e2 of
 						Just v -> Just v
 						Nothing -> Nothing
@@ -72,7 +73,7 @@ comp (Sstruct l t i) u e =
 	in
 	case fn l e of
 		Right w -> P $ CDebug i $ CL (CStruct M.empty) $ W (w++t2)
-		Left e -> e 
+		Left e -> e
 	where
 		fn [] e = Right []
 		fn ((Sset k v i):l) e =
@@ -161,8 +162,8 @@ comp (Stype f a i) u e =
 						True -> eval (CL f (K ts)) e
 						False -> eval (CL f2 (K [CVal "go"])) e
 				do_ift o e = error $ "E: "++show o
-			
-	
+
+
 comp (Scall f (SynM a) i) u e =
 	case comp f u $ putp ["_f"] e of
 		P r -> P $ CDebug i $ CL r R

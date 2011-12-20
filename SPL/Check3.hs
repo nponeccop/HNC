@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Check3 (P (..), check, check_with_rename, res) where
 
 import System.IO.Unsafe

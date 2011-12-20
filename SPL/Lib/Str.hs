@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Lib.Str where
 
 import SPL.Types

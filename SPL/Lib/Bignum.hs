@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Lib.Bignum where
 
 import SPL.Types
@@ -16,7 +17,7 @@ do_bignum_of_int (CNum i:[]) e =
 	CF $ toInteger i
 
 do_bignum_of_str (CStr s:[]) e =
-	CF $ toInteger ((read s)::Integer)
+	CF $ ((read s)::Integer)
 
 do_sum (CF i:CF i2:[]) e =
 	CF $ i + i2

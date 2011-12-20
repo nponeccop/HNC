@@ -19,7 +19,7 @@ compileToSpl inFile = do
 	x <- compile inFile (map convertDef)
 	return $ show x ++ "\n" ++ joinStr "\n" (map showAsSource x)
 
-data Flag = Spl | Types | Optimize | Help | Import String
+data Flag = Spl | Optimize | Help | Import String
 
 options	=
 	[ Option ['O'] [] (NoArg Optimize) "optimize using HOOPL"

@@ -9,6 +9,7 @@
 -}
 -----------------------------------------------------------------------------------------
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,
 	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile, identifier, parseAndProcessFile) where
@@ -133,7 +134,7 @@ newExpression def = do
 
 indent = many $ char '\t'
 
-assignment = do
+_assignment = do
 	indent
 	i <- identifier
 	string " := "

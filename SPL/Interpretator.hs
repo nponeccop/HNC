@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Interpretator (SPL.Interpretator.P (..), step, get_type_of_expr, get_code_of_expr, get_code_of_expr2, get_type_debug_of_expr, get_type_tree_of_expr, get_syntax_of_expr) where
 
 import SPL.Parser2
@@ -92,7 +93,7 @@ get_syntax_of_expr str =
 		SPL.Parser2.N i _ ->
 			SPL.Interpretator.N (i, "parser error")
 
-{-comp2 str = 
+{-comp2 str =
 	case parse str of
 	Parser.P i p ->
 		case compile p of

@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
+
 module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
 
 import Data.Map as M hiding (map)

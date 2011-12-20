@@ -6,8 +6,6 @@ import Utils
 import HN.Intermediate
 import SPL.Types
 
-lookupAndInstantiate name table = instantiatedType $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table
-
 tv x = TV $ 't' : show x
 
 -- freshAtoms используется всего в одном месте - при
@@ -21,13 +19,13 @@ constantType x = case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
 
-instantiatedType (tu, t) counter = (counter + S.size tu, substituteType t substitutions) where
-	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
-
-substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
-	subst t = case t of
-		TU a -> fromMaybe (TU a) (M.lookup a substitutions)
-		TV a -> fromMaybe (TV a) (M.lookup a substitutions)
-		TT a -> TT $ map subst a
-  		TD a b -> TD a (map subst b)
-		_ -> t
+lookupAndInstantiate name table = instantiatedType $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" name table where
+	instantiatedType (tu, t) counter = (counter + S.size tu, substituteType t substitutions) where
+		substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
+	substituteType t substitutions = xtrace ("stv : " ++ show substitutions ++ " # " ++ show t) $ subst t where
+		subst t = case t of
+			TU a -> fromMaybe (TU a) (M.lookup a substitutions)
+			TV a -> fromMaybe (TV a) (M.lookup a substitutions)
+			TT a -> TT $ map subst a
+	  		TD a b -> TD a (map subst b)
+			_ -> t
