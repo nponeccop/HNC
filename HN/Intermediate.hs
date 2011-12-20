@@ -1,5 +1,8 @@
 module HN.Intermediate where
 import Data.Functor
+import qualified Data.Set as S
+import SPL.Types (T)
+
 
 type Program = [Definition]
 
@@ -32,6 +35,8 @@ data Definition
     deriving(Eq,Show)
 
 type ASTExpression = Expression String
+type ExpressionList  = [ASTExpression]
+type GType = (S.Set String, T)
 
 type Root = Program
 
