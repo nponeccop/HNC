@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Bar (compile2, Inh_Root(..)) where
 
+import Control.Unification
+import Control.Unification.IntVar
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List
@@ -12,7 +14,7 @@ import CPP.TypeProducer
 import CPP.BackendTools
 
 import HN.Intermediate
-import HN.MilnerTools
+import qualified HN.MilnerTools as MT
 import HN.TypeTools
 import SPL.Types
 

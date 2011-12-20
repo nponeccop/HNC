@@ -2,26 +2,33 @@
 ATTR ASTExpression ExpressionList Definition LetIn
 	[
 		generalizedTypes : {M.Map String GType}
-		finalSubstitution : {MyStack ()}
+		finalSubstitution : {MT.MyStack ()}
 	|
 		counter : Int
 	|
-		sM USE {>>} {return ()} : {MyStack ()}
+		sM USE {>>} {return ()} : {MT.MyStack ()}
 	]
 
 ATTR Definition
 	[ | | generalizedType : GType ]
 
 ATTR ASTExpression LetIn
-	[ | | tau : T ]
+	[
+	|
+	|
+		tau : T
+		tauM : {MT.MyStack (MutTerm IntVar MT.T)}
+	]
 
 ATTR ExpressionList
-	[ | | tau USE {:} {[]} : {[T]} ]
+	[ | |
+		tau USE {:} {[]} : {[T]}
+	]
 
 SEM Definition
 	| Definition
 		-- arguments get fresh type variables
-		(where.counter, loc.argAtoms) = freshAtoms @params @lhs.counter
+		(where.counter, loc.argAtoms) = MT.freshAtoms @params @lhs.counter
 
 		loc.tau = { if null @params
 			then @where.tau
@@ -52,12 +59,12 @@ SEM Definition
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
 		--
 
-		loc.definitionType = addTU @loc.templateArgs $ runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= subst . snd
+		loc.definitionType = addTU @loc.templateArgs $ MT.runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= MT.subst . snd
 
 
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitu	tion
-		loc.generalizedType = runStack $ @where.sM >> @loc.generalizedTypeM
-		loc.generalizedTypeM = closureM @lhs.generalizedTypes @loc.tau
+		loc.generalizedType = MT.runStack $ @where.sM >> @loc.generalizedTypeM
+		loc.generalizedTypeM = MT.closureM @lhs.generalizedTypes @loc.tau
 
 SEM LetIn
 	| Let
@@ -66,8 +73,10 @@ SEM LetIn
 SEM ASTExpression
 	| Constant
 		lhs.tau = constantType @c
+		lhs.tauM = MT.convert $ constantType @c
 	| Atom
-		(lhs.counter, loc.tau) = xtrace "atom.tau" $ instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
+		(lhs.counter, loc.tau) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
+		loc.tauM = MT.convert @loc.tau
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения
@@ -82,10 +91,10 @@ SEM ASTExpression
  		-- и явно указать его шаблонным аргументом: print<int>(2 + x), если
 		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
 
-		loc.templateArgs = runStack $ @lhs.finalSubstitution >> templateArgs @loc.tau (tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes)
+		loc.templateArgs = MT.runStack $ @lhs.finalSubstitution >> MT.templateArgs @loc.tau (tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes)
 
 	| Application
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		lhs.tau = @loc.beta
-		lhs.sM = @fn.sM >> @arg.sM >> unifyM @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
+		lhs.sM = @fn.sM >> @arg.sM >> MT.unifyM @fn.tau (TT $ @arg.tau ++ [@loc.beta]) >> return ()
