@@ -63,7 +63,7 @@ convert (Old.TV a) = do
 reverseMap x = M.fromList $ map swap $ M.toList x
 
 unifyM x y = do
-	a <- convert x
+	a <- x
 	b <- convert y
 	runErrorT $ unify a b >>= applyBindings
 
@@ -82,6 +82,7 @@ revert x m = mrevert x where
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
 
+runApply = fmap fromRight . runErrorT . applyBindings
 
 subst = convertAndBind >=> revert2 where
 	revert2 newTerm = fmap (revert newTerm . reverseMap) xget
@@ -100,7 +101,7 @@ closureM inferredTypes tau = do
 
 templateArgs tau (generalizedVars, generalizedT) = do
 	inferredType <- convert generalizedT
-	callSiteType <- convertAndBind tau
+	callSiteType <- tau >>= runApply
 	subst2 <- subsumesM inferredType callSiteType
 	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
 	return $ map fs $ S.toList generalizedVars where
