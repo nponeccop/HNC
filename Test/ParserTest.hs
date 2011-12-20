@@ -18,7 +18,7 @@ parserTest s _in = case parseString s _in of
 
 rtt name parser _in out = name ~: out ~=? parserTest parser _in
 
-rttp name _in out = rtt name program _in out
+rttp name = rtt name program
 
 
 ---------------------------------------------------
@@ -56,7 +56,7 @@ rtp2 p1 p2 x = do
 testNewExpression = do
 	runTest (newExpressionT "aaa") "{ a = b\nc }" (simpleEq "aaa" "c" [simpleEq "a" "b" []])
 	runTest simpleDefinition "aaa = { a = b\nc }" (simpleEq "aaa" "c" [Definition "a" [] $ makeLet (Atom "b") []])
-	rtp "aaa = { a = b\nc }" [(Definition "aaa" [] $ makeLet (Atom "c") [Definition "a" []  $ makeLet  (Atom "b") []])]
+	rtp "aaa = { a = b\nc }" [Definition "aaa" [] $ makeLet (Atom "c") [Definition "a" []  $ makeLet  (Atom "b") []]]
 	rtp "a = { c = d\ne = f\nb }" [Definition "a" []  $ makeLet  (Atom "b") [Definition "c" []  $ makeLet (Atom "d") [], Definition "e" []  $ makeLet (Atom "f") []]]
 	runTest (newExpressionT "a") "{ c = d\ne = f\nb }" (Definition "a" [] $ makeLet  (Atom "b") [Definition "c" [] $ makeLet (Atom "d") [], Definition "e" []  $ makeLet (Atom "f") []])
 	runTest xx "c = d\ne = f\nb }" [simpleEq "c" "d" [], simpleEq "e" "f" []]

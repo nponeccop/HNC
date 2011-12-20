@@ -1,3 +1,4 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module Utils where
 
 import qualified Data.ByteString
@@ -30,8 +31,6 @@ deconstructJust Nothing val = val
 
 packL = Data.ByteString.pack . map (fromIntegral . ord)
 
-subtractKeysFromMap m keyList = foldl (flip M.delete) m keyList
-
 joinStr _ [] = ""
 joinStr sep l = foldl1 (\x y -> x ++ sep ++ y) l
 
@@ -41,9 +40,9 @@ inStrings l r x = l ++ x ++ r
 showJoinedList separator = joinStr separator . map show
 
 showJoinedList2 separator = concatMap (\x -> show x ++ separator)
-inParens x = inStrings "(" ")" x
-inAngular x = inStrings "<" ">" x
+inParens = inStrings "(" ")"
+inAngular = inStrings "<" ">"
 
-uncondLookup k m = tracedUncondLookup "No trace" k m
+uncondLookup = tracedUncondLookup "No trace"
 
 tracedUncondLookup msg k m = fromMaybe (error $ msg ++ ": uncondLookup cannot find " ++ show k ++ " in " ++ show m) $ M.lookup k m

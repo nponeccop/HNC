@@ -4,6 +4,7 @@ import Compiler.Hoopl
 import Control.Arrow ((***))
 import Control.Monad.State
 import qualified Data.Map as M
+import Utils
 
 run foo = runSimpleUniqueMonad $ runStateT foo (M.empty, M.empty)
 
@@ -12,11 +13,9 @@ freshLabelFor name = do
 	modify $ M.insert name l *** M.insert l name
 	return l
 
-tracedUncondLookup m k = case M.lookup k m of
-	Just a -> a
-	Nothing -> error $ "LabelFor.tracedUncondLookup: " ++ show k ++ " not found"
+labelFor () = liftM (tracedUncondLookup2 . fst) get where
+	tracedUncondLookup2 = flip $ tracedUncondLookup "LabelFor.tracedUncondLookup: "
 
-labelFor () = liftM (tracedUncondLookup . fst) get
 
 innerScope f = do
 	a <- liftM fst get

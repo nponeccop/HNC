@@ -1,4 +1,4 @@
-﻿module Test.Tests (tests) where
+module Test.Tests (tests) where
 import HN.Intermediate
 import Test.Utils
 import Test.TestFixtures
@@ -49,7 +49,7 @@ tt3 = "test3" ~: stt test3
 	[ t "L1 = 2" "L1 = 2\n" $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" "L1 = 2\n" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" "L1 = 4\n" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
-	, t "plusX x = let f y = y in f" "L1 L3 = L4\nL3 :: @\nL4 L5 = L5\nL5 :: @\n" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	, t "plusX x = let f y = y in f" "L1 L3 = L4\nL3 :: @\nL4 L5 = L5\nL5 :: @\n" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
 	]
 
 tt4 = "Dominators" ~: stt testDominators
@@ -57,11 +57,11 @@ tt4 = "Dominators" ~: stt testDominators
 	, t "L1 = let L2 = 2 in L2" "LM (UM (fromList [(3,L1)]))" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" "LM (UM (fromList [(3,L1),(4,L3)]))" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
 	, t "L1 = let L2 = 3 in 4" "LM (UM (fromList []))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ ci 4
-	, t "plusX x = let f y = y in f" "LM (UM (fromList [(3,L1),(4,L1),(5,L4)]))" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	, t "plusX x = let f y = y in f" "LM (UM (fromList [(3,L1),(4,L1),(5,L4)]))" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
 	]
 
 tt5 = "Postdominators" ~: stt testPostdominators
-	[ t "plusX x = let f y = y in f" "fromList [(L1,[L3,L4]),(L4,[L5])]" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	[ t "plusX x = let f y = y in f" "fromList [(L1,[L3,L4]),(L4,[L5])]" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
 	, t "locals14.hn" "fromList [(L1,[L3,L4]),(L4,[L2])]"  $ Definition "main" ["z"] (Let (Definition "a" [] (In (Application (Atom "incr") [Atom "z"]))) (Let (Definition "y" [] (In (Atom "a"))) (In (Atom "a"))))
 	]
 
@@ -73,5 +73,5 @@ decompilerTests = "graphDecompiler" ~: stt decompilerTest $ map ee
 	[ t "L1 = 2" xd $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" xd $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
 	, t "L1 = let L2 L3 = L3 in L2 4" xd $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
-	, t "plusX x = let f y = y in f" xd $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom $ "y") $ In $ Atom "f"
+	, t "plusX x = let f y = y in f" xd $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
 	]

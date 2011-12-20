@@ -82,15 +82,15 @@ revert x m = mrevert x where
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
 
-revert2 newTerm = fmap (revert newTerm . reverseMap) xget
 
-runApply = fmap fromRight . runErrorT . applyBindings
+subst = convertAndBind >=> revert2 where
+	revert2 newTerm = fmap (revert newTerm . reverseMap) xget
 
-subst = convert >=> runApply >=> revert2
+convertAndBind = convert >=> fmap fromRight . runErrorT . applyBindings
 
 closureM inferredTypes tau = do
-	convEnv <- mapM ((convert >=> runApply) . snd) $ M.elems inferredTypes
-	convTau <- (convert >=> runApply) tau
+	convEnv <- mapM (convertAndBind . snd) $ M.elems inferredTypes
+	convTau <- convertAndBind tau
 	rm <- fmap reverseMap xget
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
@@ -100,7 +100,7 @@ closureM inferredTypes tau = do
 
 templateArgs tau (generalizedVars, generalizedT) = do
 	inferredType <- convert generalizedT
-	callSiteType <- convert tau >>= runApply
+	callSiteType <- convertAndBind tau
 	subst2 <- subsumesM inferredType callSiteType
 	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
 	return $ map fs $ S.toList generalizedVars where

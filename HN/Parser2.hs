@@ -108,7 +108,7 @@ mySepBy atom2 sep = try (do
 
 parens = do
 	char '('
-	x <- (lambda <|> application)
+	x <- lambda <|> application
 	char ')'
 	return x
 
