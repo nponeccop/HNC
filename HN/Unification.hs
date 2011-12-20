@@ -28,9 +28,6 @@ instance Unifiable T where
 	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = fmap (TD l1) $ maybeZip a1 a2
 	zipMatch _ _ = Nothing
 
-
-
-
 xget :: MyStack (M.Map String Int)
 xget = lift get
 
@@ -98,4 +95,3 @@ templateArgs tau (generalizedVars, generalizedT) = do
 	subst2 <- subsumesM inferredType callSiteType
 	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
 	return $ map fs $ S.toList generalizedVars where
-

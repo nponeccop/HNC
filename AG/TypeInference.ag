@@ -87,7 +87,7 @@ SEM ASTExpression
 	| Constant
 		lhs.tau = constantType @c
 	| Atom
-		(lhs.counter, loc.tau) = xtrace "atom.tau" $ lookupAndInstantiate @name @lhs.generalizedTypes @lhs.counter
+		(lhs.counter, loc.tau) = xtrace "atom.tau" $ instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения

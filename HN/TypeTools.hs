@@ -1,8 +1,9 @@
-module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, removeTU, addTU) where
+module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, removeTU, addTU, constantType, tv) where
 import SPL.Types
 import qualified Data.Set as S
 import Data.List
 import Data.Maybe
+import HN.Intermediate
 ---
 --
 isFunctionType (TT _) = True
@@ -11,6 +12,13 @@ isFunctionType _ = False
 hasFunctionalType x = isJust $ find isFunctionType $ init x
 
 cppCannotInferReturnType x = not $ S.null $ typeTu (last x) S.\\ typeTu (TT $ init x)
+
+tv x = TV $ 't' : show x
+
+-- используется при выводе типа константы в качестве tau
+constantType x = case x of
+	ConstInt _ -> T "num"
+	ConstString _ -> T "string"
 
 typeTu x = let union = S.unions . map typeTu in case x of
 	TU v -> S.singleton v
