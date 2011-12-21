@@ -60,7 +60,10 @@ SEM Definition
 		loc.generalizedType = MT.runStack $ @where.sM >> @loc.generalizedTypeM
 		loc.generalizedTypeM = { if null @params
 			then MT.emptyClosureM @where.tauM
-			else MT.closureM @lhs.generalizedTypes $ MT.convert $ TT $ map snd  @argAtoms ++ [@where.tau]
+			else MT.closureM @lhs.generalizedTypes $ do
+ 				args <- mapM (MT.convert . snd) @loc.argAtoms
+				result <- @where.tauM
+				return $ (MutTerm . MT.TT) $ args ++ [result]
 		}
 
 
