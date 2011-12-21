@@ -29,11 +29,6 @@ SEM Definition
 	| Definition
 		-- arguments get fresh type variables
 		(where.counter, loc.argAtoms) = MT.freshAtoms @params @lhs.counter
-
-		loc.tau = { if null @params
-			then @where.tau
-			else TT $ map snd  @argAtoms ++ [@where.tau]
-		}
 		where.generalizedTypes = M.union (M.map (\t -> (S.empty, t)) $ M.fromList @loc.argAtoms) @lhs.generalizedTypes
 
 		-- definitionType - "исправленные" типы, содержащих
@@ -64,7 +59,11 @@ SEM Definition
 
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitu	tion
 		loc.generalizedType = MT.runStack $ @where.sM >> @loc.generalizedTypeM
-		loc.generalizedTypeM = MT.closureM @lhs.generalizedTypes @loc.tau
+		loc.generalizedTypeM = { MT.closureM @lhs.generalizedTypes $ MT.convert $ if null @params
+			then @where.tau
+			else TT $ map snd  @argAtoms ++ [@where.tau]
+		}
+
 
 SEM LetIn
 	| Let

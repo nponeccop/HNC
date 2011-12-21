@@ -91,7 +91,7 @@ convertAndBind = convert >=> fmap fromRight . runErrorT . applyBindings
 
 closureM inferredTypes tau = do
 	convEnv <- mapM (convertAndBind . snd) $ M.elems inferredTypes
-	convTau <- convertAndBind tau
+	convTau <- tau >>= runApply
 	rm <- fmap reverseMap xget
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
