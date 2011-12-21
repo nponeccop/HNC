@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T, closure2M) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T, emptyClosureM) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -84,10 +84,11 @@ revert x m = mrevert x where
 
 runApply = fmap fromRight . runErrorT . applyBindings
 
-subst = convertAndBind >=> revert2 where
-	revert2 newTerm = fmap (revert newTerm . reverseMap) xget
+revertM newTerm = fmap (revert newTerm . reverseMap) xget
 
-convertAndBind = convert >=> fmap fromRight . runErrorT . applyBindings
+subst = convertAndBind >=> revertM
+
+convertAndBind = convert >=> runApply
 
 closureM inferredTypes tau = do
 	convEnv <- mapM (convertAndBind . snd) $ M.elems inferredTypes
@@ -99,10 +100,9 @@ closureM inferredTypes tau = do
 	let revertTv x = tracedUncondLookup "closureM" x rm
 	return (S.map revertTv $ tpv S.\\ epv, revert convTau rm)
 
-closure2M tau = do
-	convTau <- tau >>= runApply
-	rm <- fmap reverseMap xget
-	return (S.empty, revert convTau rm)
+emptyClosureM tau = do
+	convTau <- tau >>= runApply >>= revertM
+	return (S.empty, convTau)
 
 templateArgs tau (generalizedVars, generalizedT) = do
 	inferredType <- convert generalizedT
