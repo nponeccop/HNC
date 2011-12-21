@@ -95,7 +95,7 @@ SEM ASTExpression
 	| Application
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
-		loc.tauM = MT.convert @loc.beta
+		loc.tauM = MT.convertTv @loc.beta
 		lhs.sM = { do
 			@fn.sM >> @arg.sM
 			args <- sequence @arg.tauM

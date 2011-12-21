@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T(..), emptyClosureM, constantType) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T(..), emptyClosureM, constantType, convertTv) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -52,14 +52,15 @@ convert (Old.T a) = return $ MutTerm $ T a
 convert (Old.TT a) = fmap (MutTerm . TT) $ Prelude.mapM convert a
 convert (Old.TD n a) = fmap (MutTerm . TD n) $ Prelude.mapM convert a
 convert (Old.TU a) = return $ MutTerm $ TU a
-convert (Old.TV a) = do
+convert a @ (Old.TV _) = convertTv a
+
+convertTv (Old.TV a) = do
 	m <- xget
 	fmap MutVar $ maybe (xfreeVar a m) (return . IntVar) $ M.lookup a m where
 		xfreeVar a m = do
 			ii @ (IntVar i) <- freeVar
 			xput (M.insert a i m)
 			return ii
-
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
