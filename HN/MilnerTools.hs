@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T(..), emptyClosureM) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T(..), emptyClosureM, constantType) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -13,6 +13,7 @@ import Data.Tuple
 
 import Utils
 import HN.TypeTools
+import HN.Intermediate (Const (..))
 import qualified SPL.Types as Old
 
 -- freshAtoms используется всего в одном месте - при
@@ -109,3 +110,8 @@ templateArgs tau (generalizedVars, generalizedT) = do
 	subst2 <- subsumesM inferredType callSiteType
 	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
 	return $ map fs $ S.toList generalizedVars where
+
+-- используется при выводе типа константы в качестве tau
+constantType x = return $ MutTerm $ case x of
+	ConstInt _ -> T "num"
+	ConstString _ -> T "string"

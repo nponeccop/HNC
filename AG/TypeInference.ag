@@ -72,7 +72,7 @@ SEM LetIn
 
 SEM ASTExpression
 	| Constant
-		lhs.tauM = MT.convert $ constantType @c
+		lhs.tauM = MT.constantType @c
 	| Atom
 		(lhs.counter, loc.tau) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
 		loc.tauM = MT.convert @loc.tau
