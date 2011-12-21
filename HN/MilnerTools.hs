@@ -62,9 +62,8 @@ convert (Old.TV a) = do
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
-unifyM x y = do
+unifyM x b = do
 	a <- x
-	b <- convert y
 	runErrorT $ unify a b >>= applyBindings
 
 subsumesM x y = runErrorT (subsumes x y) >> exportBindings

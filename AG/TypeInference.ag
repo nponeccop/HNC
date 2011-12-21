@@ -16,13 +16,12 @@ ATTR ASTExpression LetIn
 	[
 	|
 	|
-		tau : T
 		tauM : {MT.MyStack (MutTerm IntVar MT.T)}
 	]
 
 ATTR ExpressionList
 	[ | |
-		tau USE {:} {[]} : {[T]}
+		tauM USE {:} {[]} : {[MT.MyStack (MutTerm IntVar MT.T)]}
 	]
 
 SEM Definition
@@ -73,7 +72,6 @@ SEM LetIn
 
 SEM ASTExpression
 	| Constant
-		lhs.tau = constantType @c
 		lhs.tauM = MT.convert $ constantType @c
 	| Atom
 		(lhs.counter, loc.tau) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
@@ -97,6 +95,11 @@ SEM ASTExpression
 	| Application
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
-		lhs.tau = @loc.beta
-		lhs.tauM = MT.convert @loc.beta
-		lhs.sM = @fn.sM >> @arg.sM >> MT.unifyM @fn.tauM (TT $ @arg.tau ++ [@loc.beta]) >> return ()
+		loc.tauM = MT.convert @loc.beta
+		lhs.sM = { do
+			@fn.sM >> @arg.sM
+			args <- sequence @arg.tauM
+			result <- @loc.tauM
+			MT.unifyM @fn.tauM $ MutTerm $ MT.TT $ args ++ [result]
+			return ()
+		}
