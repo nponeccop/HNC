@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, convert, T(..), emptyClosureM, constantType, convertTv) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -22,7 +22,7 @@ freshAtoms :: [String] -> Int -> (Int, [(String, Old.T)])
 freshAtoms [] counter = (counter, [])
 freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, tv i)) a [counter..])
 
-instantiatedType counter (tu, t) = (counter + S.size tu, mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
+instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
 
 

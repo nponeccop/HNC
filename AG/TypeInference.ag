@@ -60,7 +60,7 @@ SEM Definition
 		loc.generalizedTypeM = { if null @params
 			then MT.emptyClosureM @where.tauM
 			else MT.closureM @lhs.generalizedTypes $ do
- 				args <- mapM (MT.convert . snd) @loc.argAtoms
+ 				args <- mapM (MT.convertTv . snd) @loc.argAtoms
 				result <- @where.tauM
 				return $ (MutTerm . MT.TT) $ args ++ [result]
 		}
@@ -74,8 +74,7 @@ SEM ASTExpression
 	| Constant
 		lhs.tauM = MT.constantType @c
 	| Atom
-		(lhs.counter, loc.tau) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
-		loc.tauM = MT.convert @loc.tau
+		(lhs.counter, loc.tauM) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
 
 		-- дополнительно к Милнеровским s и tau, вычисляются
 		-- * definitionType - тип атома в месте определения
