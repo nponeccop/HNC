@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert) where
+{-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable, NoMonomorphismRestriction #-}
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -18,6 +18,7 @@ import qualified SPL.Types as Old
 
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
+-- argument types are not generalized, thus S.empty
 freshAtoms a counter = zipWith (\a i -> (a, (S.empty, tv i))) a [counter..]
 
 instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
@@ -60,8 +61,6 @@ convertTv (Old.TV a) = do
 			xput (M.insert a i m)
 			return ii
 
-reverseMap x = M.fromList $ map swap $ M.toList x
-
 subsumesM x y = runErrorT (subsumes x y) >> exportBindings
 
 exportBindings = do
@@ -85,15 +84,15 @@ subst = convertAndBind >=> revertM
 
 convertAndBind = convert >=> runApply
 
+getReverseMap = fmap reverseMap xget
+
 closureM = liftM3M $ \convEnv args result -> do
 	convTau <- return $ MutTerm $ TT $ args ++ [result]
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
-	rm <- fmap reverseMap xget
-	let revertTv x = tracedUncondLookup "closureM" x rm
-	convTau2 <- runApply convTau
-	return (S.map revertTv $ tpv S.\\ epv, revert convTau2 rm)
+	return (tpv S.\\ epv, convTau)
+
 
 emptyClosureM tau = do
 	convTau <- tau >>= runApply >>= revertM

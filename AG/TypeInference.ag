@@ -22,17 +22,23 @@ SEM Definition
 		-- arguments get fresh type variables
 		where.counter = @lhs.counter + length @params
 		loc.argAtoms = MT.freshAtoms @params @lhs.counter
-		-- argument types are not generalized, thus S.empty
 		where.generalizedTypes = M.union (M.fromList @loc.argAtoms) @lhs.generalizedTypes
 
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitution
 		loc.generalizedTypeM = { if null @params
 			then MT.emptyClosureM @where.tauM
-			else MT.closureM
-				(mapM (MT.convert . snd) $ M.elems @lhs.generalizedTypes)
- 				(mapM (MT.convertTv . snd . snd) @loc.argAtoms)
-				@where.tauM
+			else do
+ 				(genVars, tau) <- MT.closureM
+					(mapM (MT.convert . snd) $ M.elems @lhs.generalizedTypes)
+		 			(mapM (MT.convertTv . snd . snd) @loc.argAtoms)
+					@where.tauM
+				rm <- MT.getReverseMap
+				let revertTv x = tracedUncondLookup "closureM" x rm
+				convTau2 <- MT.runApply tau
+				return (S.map revertTv genVars, MT.revert convTau2 rm)
 		}
+
+
 
 SEM LetIn
 	| Let

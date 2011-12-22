@@ -5,12 +5,15 @@ import qualified Data.ByteString
 import Control.Monad
 import Data.Char
 import Data.Maybe (fromMaybe)
+import Data.Tuple (swap)
 import qualified Data.Map as M
 import Debug.Trace
 import Test.HUnit
 
 
 liftM3M f a b c = join $ liftM3 f a b c
+reverseMap x = M.fromList $ map swap $ M.toList x
+
 
 st testName expected actual = TestLabel testName $ TestCase $ assertEqual "" expected actual
 simpleTests x = runTestTT $ TestList x
