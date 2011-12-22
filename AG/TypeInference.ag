@@ -6,8 +6,15 @@ ATTR ASTExpression ExpressionList Definition LetIn
 	|
 		counter : Int
 	|
+	]
+
+ATTR ASTExpression ExpressionList Definition LetIn
+	[
+	|
+	|
 		sM USE {>>} {return ()} : {MT.MyStack ()}
 	]
+
 
 ATTR Definition
 	[ | | generalizedType : GType ]
@@ -94,11 +101,11 @@ SEM ASTExpression
 	| Application
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
-		loc.tauM = MT.convertTv @loc.beta
-		lhs.sM = { do
-			@fn.sM >> @arg.sM
+		loc.tauM = { do
+			@fn.sM
 			args <- sequence @arg.tauM
-			result <- @loc.tauM
+			result <- MT.convertTv @loc.beta
 			MT.unifyM @fn.tauM $ MutTerm $ MT.TT $ args ++ [result]
-			return ()
+			return result
 		}
+		loc.sM = @loc.tauM >> return ()
