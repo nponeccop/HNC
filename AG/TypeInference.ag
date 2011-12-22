@@ -17,12 +17,10 @@ ATTR Definition LetIn
 
 
 ATTR Definition
-	[ | | generalizedType : GType ]
+	[ | | generalizedTypeM : {MT.MyStack GType} ]
 
 ATTR ASTExpression LetIn
-	[
-	|
-	|
+	[ | |
 		tauM : {MT.MyStack (MutTerm IntVar MT.T)}
 	]
 
@@ -63,8 +61,8 @@ SEM Definition
 		loc.definitionType = addTU @loc.templateArgs $ MT.runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= MT.subst . snd
 
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitu	tion
-		loc.generalizedType = MT.runStack $ @where.sM >> @loc.generalizedTypeM
-		loc.generalizedTypeM = { if null @params
+		loc.generalizedType = MT.runStack $ @loc.generalizedTypeM
+		loc.generalizedTypeM = { @where.sM >> if null @params
 			then MT.emptyClosureM @where.tauM
 			else MT.closureM @lhs.generalizedTypes $ do
  				args <- mapM (MT.convertTv . snd) @loc.argAtoms
@@ -75,7 +73,7 @@ SEM Definition
 
 SEM LetIn
 	| Let
-		tl.generalizedTypes = M.insert @hd.name @hd.generalizedType @lhs.generalizedTypes
+		tl.generalizedTypes = M.insert @hd.name (MT.runStack @hd.generalizedTypeM) @lhs.generalizedTypes
 	| In
 		lhs.sM = @value.tauM >> return ()
 
