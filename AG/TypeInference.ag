@@ -20,7 +20,8 @@ ATTR ExpressionList
 SEM Definition
 	| Definition
 		-- arguments get fresh type variables
-		(where.counter, loc.argAtoms) = MT.freshAtoms @params @lhs.counter
+		where.counter = @lhs.counter + length @params
+		loc.argAtoms = MT.freshAtoms @params @lhs.counter
 		-- argument types are not generalized, thus S.empty
 		where.generalizedTypes = M.union (M.fromList @loc.argAtoms) @lhs.generalizedTypes
 

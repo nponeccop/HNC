@@ -18,7 +18,7 @@ import qualified SPL.Types as Old
 
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
-freshAtoms a counter = (counter + length a, zipWith (\a i -> (a, (S.empty, tv i))) a [counter..])
+freshAtoms a counter = zipWith (\a i -> (a, (S.empty, tv i))) a [counter..]
 
 instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
