@@ -28,30 +28,6 @@ SEM Definition
 		-- argument types are not generalized, thus S.empty
 		where.generalizedTypes = M.union (M.map (\t -> (S.empty, t)) $ M.fromList @loc.argAtoms) @lhs.generalizedTypes
 
-		-- definitionType - "исправленные" типы, содержащих
-		-- non-generic type variables (термин Карделли)
-		-- такие "необобщенные типовые переменные" возникают, если в результате
-		-- анализа тела определения получается, что свободная переменная может
-		-- иметь любой тип:
-		-- let x = 2 in y = i
-		-- для терма "i" алгоритм W выводит _МОНОТИП_ вида t324, где t324 - свободная
-		-- типовая переменная. В противоположность политипу вида forall t324 . t324,
-		-- в котором t324 - связанная типовая переменная
-		--
-		-- связывание типовых переменных с помощью квантификатора выполняет функция
-		-- closure (термин Милнера), принимающая тип и типовое окружение и
-		-- возвращающая тип, в котором некоторые типовые переменные квантифицированы
-		--
-		-- По историческим причинам вместо явных кванторов forall используются два вида
-		-- типовых переменных - TV для неквантифицированных и TU для квантифицированных
-		-- (описано в SPL.Types.T). Благо из-за shallow types квантор может находиться
-		-- только в одном месте - в начале политипа
-		--
-		-- TU используются очень ограниченно - в MilnerTools.closure создаются, а в
-		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
-		--
-		loc.definitionType = addTU @loc.templateArgs $ MT.runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= MT.subst . snd
-
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitu	tion
 		loc.generalizedType = MT.runStack $ @loc.generalizedTypeM
 		loc.generalizedTypeM = { @where.sM >> if null @params
@@ -75,29 +51,6 @@ SEM ASTExpression
 		lhs.tauM = MT.constantType @c
 	| Atom
 		(lhs.counter, loc.tauM) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
-
-		-- дополнительно к Милнеровским s и tau, вычисляются
-		-- * definitionType - тип атома в месте определения
-		-- * callSiteType - тип атома в месте использования
-		-- Унификацией этих типов можно найти фактические шаблонные
-		-- аргументы
-		-- Например:
-		-- print имеет в месте определения   inferredType =   a -> IO void,
- 		-- а в некотором месте использования callSiteType = int -> IO void.
- 		--
-		-- Унификацией этих типов можно найти значение a в месте использования,
- 		-- и явно указать его шаблонным аргументом: print<int>(2 + x), если
-		-- это требует система типов С++ ("компилятор С++ не может вывести тип").
-
-		loc.templateArgs = MT.runStack $ @lhs.finalSubstitution >> MT.templateArgs @loc.tauM (tracedUncondLookup "Atom.definitionType" @name @lhs.generalizedTypes)
-
 	| Application
 		fn.counter = @lhs.counter + 1
-		loc.beta = tv @lhs.counter
-		loc.tauM = { do
-			@fn.tauM
-			args <- sequence @arg.tauM
-			result <- MT.convertTv @loc.beta
-			MT.unifyM @fn.tauM $ MutTerm $ MT.TT $ args ++ [result]
-			return result
-		}
+		loc.tauM = MT.unifyM @fn.tauM @arg.tauM $ MT.convertTv $ tv @lhs.counter

@@ -64,10 +64,6 @@ convertTv (Old.TV a) = do
 
 reverseMap x = M.fromList $ map swap $ M.toList x
 
-unifyM x b = do
-	a <- x
-	runErrorT $ unify a b >>= applyBindings
-
 subsumesM x y = runErrorT (subsumes x y) >> exportBindings
 
 exportBindings = do
@@ -110,7 +106,15 @@ templateArgs tau (generalizedVars, generalizedT) = do
 	callSiteType <- tau >>= runApply
 	subst2 <- subsumesM inferredType callSiteType
 	let fs x = tracedUncondLookup "AG.TypeInference.fs" x subst2
-	return $ map fs $ S.toList generalizedVars where
+	return $ map fs $ S.toList generalizedVars
+
+unifyM fnTau argTau beta = do
+	args <- sequence argTau
+	result <- beta
+	fn <- fnTau
+	runErrorT $ unify fn $ MutTerm $ TT $ args ++ [result]
+	return result
+
 
 -- используется при выводе типа константы в качестве tau
 constantType x = return $ MutTerm $ case x of
