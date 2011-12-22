@@ -87,7 +87,7 @@ subst = convertAndBind >=> revertM
 
 convertAndBind = convert >=> runApply
 
-closureM inferredTypes tau = do
+closureM2 inferredTypes tau = do
 	convEnv <- mapM (convertAndBind . snd) $ M.elems inferredTypes
 	convTau <- tau >>= runApply
 	rm <- fmap reverseMap xget
@@ -96,6 +96,11 @@ closureM inferredTypes tau = do
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
 	let revertTv x = tracedUncondLookup "closureM" x rm
 	return (S.map revertTv $ tpv S.\\ epv, revert convTau rm)
+
+closureM env argAtoms letTauM = closureM2 env $ do
+	args <- mapM (convertTv . snd) argAtoms
+	result <- letTauM
+	return $ (MutTerm . TT) $ args ++ [result]
 
 emptyClosureM tau = do
 	convTau <- tau >>= runApply >>= revertM
