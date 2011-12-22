@@ -8,26 +8,18 @@ ATTR ASTExpression ExpressionList Definition LetIn
 	|
 	]
 
-ATTR Definition LetIn
-	[
-	|
-	|
-		sM USE {>>} {return ()} : {MT.MyStack ()}
-	]
+ATTR LetIn
+	[ | | sM : {MT.MyStack ()} ]
 
 
 ATTR Definition
 	[ | | generalizedTypeM : {MT.MyStack GType} ]
 
 ATTR ASTExpression LetIn
-	[ | |
-		tauM : {MT.MyStack (MutTerm IntVar MT.T)}
-	]
+	[ | | tauM : {MT.MyStack (MutTerm IntVar MT.T)} ]
 
 ATTR ExpressionList
-	[ | |
-		tauM USE {:} {[]} : {[MT.MyStack (MutTerm IntVar MT.T)]}
-	]
+	[ | | tauM USE {:} {[]} : {[MT.MyStack (MutTerm IntVar MT.T)]} ]
 
 SEM Definition
 	| Definition
@@ -74,6 +66,7 @@ SEM Definition
 SEM LetIn
 	| Let
 		tl.generalizedTypes = M.insert @hd.name (MT.runStack @hd.generalizedTypeM) @lhs.generalizedTypes
+		lhs.sM = fmap snd @hd.generalizedTypeM >> @tl.sM
 	| In
 		lhs.sM = @value.tauM >> return ()
 

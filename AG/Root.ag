@@ -17,7 +17,7 @@ SEM Root
 		hd.generalizedTypes = M.map (\t -> (typeTu t, removeTU t)) @lhs.library
 		hd.definitionTypes = @lhs.library
 		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		hd.finalSubstitution = @hd.sM
+		hd.finalSubstitution = fmap snd @hd.generalizedTypeM >> return ()
 		hd.parent = "OH,PARENT (ASSERTION)"
 		hd.isLocalVar = False
 		tl.library = M.insert @hd.name @hd.definitionType @lhs.library
