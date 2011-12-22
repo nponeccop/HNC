@@ -8,7 +8,7 @@ ATTR ASTExpression ExpressionList Definition LetIn
 	|
 	]
 
-ATTR ASTExpression ExpressionList Definition LetIn
+ATTR Definition LetIn
 	[
 	|
 	|
@@ -76,6 +76,8 @@ SEM Definition
 SEM LetIn
 	| Let
 		tl.generalizedTypes = M.insert @hd.name @hd.generalizedType @lhs.generalizedTypes
+	| In
+		lhs.sM = @value.tauM >> return ()
 
 SEM ASTExpression
 	| Constant
@@ -102,10 +104,9 @@ SEM ASTExpression
 		fn.counter = @lhs.counter + 1
 		loc.beta = tv @lhs.counter
 		loc.tauM = { do
-			@fn.sM
+			@fn.tauM
 			args <- sequence @arg.tauM
 			result <- MT.convertTv @loc.beta
 			MT.unifyM @fn.tauM $ MutTerm $ MT.TT $ args ++ [result]
 			return result
 		}
-		loc.sM = @loc.tauM >> return ()
