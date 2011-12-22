@@ -53,7 +53,7 @@ SEM Definition
 		-- MilnerClosure.instantiatedType уничтожаются (introduction/elimination)
 		--
 		loc.definitionType = addTU @loc.templateArgs $ MT.runStack $ @lhs.finalSubstitution >> @loc.generalizedTypeM >>= MT.subst . snd
-
+		loc.generalizedType = MT.runStack $ @loc.generalizedTypeM
 
 SEM ASTExpression
 	| Atom
