@@ -22,14 +22,14 @@ SEM Definition
 		-- arguments get fresh type variables
 		(where.counter, loc.argAtoms) = MT.freshAtoms @params @lhs.counter
 		-- argument types are not generalized, thus S.empty
-		where.generalizedTypes = M.union (M.map (\t -> (S.empty, t)) $ M.fromList @loc.argAtoms) @lhs.generalizedTypes
+		where.generalizedTypes = M.union (M.fromList @loc.argAtoms) @lhs.generalizedTypes
 
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitution
 		loc.generalizedTypeM = { if null @params
 			then MT.emptyClosureM @where.tauM
 			else MT.closureM
 				(mapM (MT.convert . snd) $ M.elems @lhs.generalizedTypes)
- 				(mapM (MT.convertTv . snd) @loc.argAtoms)
+ 				(mapM (MT.convertTv . snd . snd) @loc.argAtoms)
 				@where.tauM
 		}
 
@@ -45,4 +45,4 @@ SEM ASTExpression
 		(lhs.counter, loc.tauM) = xtrace "atom.tau" $ MT.instantiatedType @lhs.counter $ tracedUncondLookup "MilnerTools.lookupAndInstantiate" @name @lhs.generalizedTypes
 	| Application
 		fn.counter = @lhs.counter + 1
-		loc.tauM = MT.unifyM @fn.tauM @arg.tauM $ MT.convertTv $ tv @lhs.counter
+		lhs.tauM = MT.unifyM @fn.tauM @arg.tauM $ MT.convertTv $ tv @lhs.counter
