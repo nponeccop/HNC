@@ -27,7 +27,10 @@ SEM Definition
 		-- generalizedType используется алгоритмом W _ДО_ того, как создается finalSubstitution
 		loc.generalizedTypeM = { if null @params
 			then MT.emptyClosureM @where.tauM
-			else MT.closureM @lhs.generalizedTypes @loc.argAtoms @where.tauM
+			else MT.closureM
+				(mapM (MT.convert . snd) $ M.elems @lhs.generalizedTypes)
+ 				(mapM (MT.convertTv . snd) @loc.argAtoms)
+				@where.tauM
 		}
 
 SEM LetIn

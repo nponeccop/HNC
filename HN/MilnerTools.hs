@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -87,17 +87,15 @@ subst = convertAndBind >=> revertM
 
 convertAndBind = convert >=> runApply
 
-closureM env argAtoms letTauM = do
-	args <- mapM (convertTv . snd) argAtoms
-	result <- letTauM
-	convEnv <- mapM (convertAndBind . snd) $ M.elems env
-	convTau <- runApply $ MutTerm $ TT $ args ++ [result]
-	rm <- fmap reverseMap xget
+closureM = liftM3M $ \convEnv args result -> do
+	convTau <- return $ MutTerm $ TT $ args ++ [result]
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
+	rm <- fmap reverseMap xget
 	let revertTv x = tracedUncondLookup "closureM" x rm
-	return (S.map revertTv $ tpv S.\\ epv, revert convTau rm)
+	convTau2 <- runApply convTau
+	return (S.map revertTv $ tpv S.\\ epv, revert convTau2 rm)
 
 emptyClosureM tau = do
 	convTau <- tau >>= runApply >>= revertM
