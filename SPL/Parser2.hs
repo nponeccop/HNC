@@ -1,6 +1,6 @@
 module SPL.Parser2 (P (..), Syntax (..), SynParams (..), parse, res) where
 
-import Data.Map as M hiding (map)
+import qualified Data.Map as M
 -- UNUSED import System.IO.Unsafe
 
 data SynMark =
