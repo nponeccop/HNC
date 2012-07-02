@@ -22,9 +22,8 @@ Executable spl-test-hunit-exe
   Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.4, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
   Other-Modules:  Bar
 
-Test-Suite spl-test-hunit
+Executable spl-test-hunit
   Main-Is: Test/Main.hs
-  Type: exitcode-stdio-1.0
   Default-Language: Haskell2010
   Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.4, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
   Other-Modules:   Bar
