@@ -9,8 +9,6 @@ import Data.Traversable (Traversable)
 import Data.Foldable
 import Control.Monad.State
 import Control.Monad.Error
-import Data.Tuple
-
 import Utils
 import HN.TypeTools
 import HN.Intermediate (Const (..))

@@ -14,13 +14,13 @@ Executable spl-hnc
   Main-Is:         HNC.hs
   Other-Modules:   Bar
   Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, unification-fd
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, unification-fd == 0.6.0
   GHC-Options: -W -fno-warn-incomplete-patterns  -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
 
 Executable spl-test-hunit-exe
   Main-Is: Test/Main.hs
   Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, unification-fd
+  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, unification-fd == 0.6.0, hoopl == 3.8.7.4
   Other-Modules:  Bar
   GHC-Options: -W -fno-warn-incomplete-patterns  -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
 

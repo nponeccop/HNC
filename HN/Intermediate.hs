@@ -1,5 +1,4 @@
 module HN.Intermediate where
-import Data.Functor
 import qualified Data.Set as S
 import SPL.Types (T)
 
