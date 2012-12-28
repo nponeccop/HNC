@@ -13,7 +13,6 @@ import Utils
 import HN.TypeTools
 import HN.Intermediate (Const (..))
 import qualified SPL.Types as Old
-
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
 -- argument types are not generalized, thus S.empty
@@ -21,7 +20,6 @@ freshAtoms a counter = zipWith (\a i -> (a, (S.empty, tv i))) a [counter..]
 
 instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
-
 
 data T a = T String | TT [a] | TD String [a] | TU String deriving (Eq, Show, Functor, Traversable, Foldable)
 
@@ -85,7 +83,7 @@ convertAndBind = convert >=> runApply
 getReverseMap = fmap reverseMap xget
 
 closureM = liftM3M $ \convEnv args result -> do
-	convTau <- return $ MutTerm $ TT $ args ++ [result]
+	let convTau = MutTerm $ TT $ args ++ [result]
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv

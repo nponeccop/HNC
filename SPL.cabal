@@ -1,57 +1,87 @@
-Name:		SPL
-Version:        0.0.0.920
-Cabal-Version:  >= 1.10
-License:        LGPL
-Author:		<inv2004@gmail.com>
-Author:         Andy Melnikov <andy.melnikov@gmail.com>
-Synopsis:       A source-to-source translator of a variant of ML core into C++.
-License-File:   COPYING.LESSER
-Bug-Reports:	https://github.com/kayuri/HNC/issues
-Tested-With:	GHC == 7.0.2, GHC == 7.2.2
-Build-Type:	Custom
-
-Executable spl-hnc
-  Main-Is:         HNC.hs
-  Other-Modules:   Bar
-  Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, unification-fd == 0.6.0
-  GHC-Options: -W -fno-warn-incomplete-patterns  -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
-
-Executable spl-test-hunit-exe
-  Main-Is: Test/Main.hs
-  Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*, unification-fd == 0.6.0, hoopl == 3.8.7.4
-  Other-Modules:  Bar
-  GHC-Options: -W -fno-warn-incomplete-patterns  -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
-
-Test-Suite spl-test-hunit
-  Main-Is: Test/Main.hs
-  Type: exitcode-stdio-1.0
-  Default-Language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
-  Other-Modules:   Bar
-
-Executable	spli
-  Main-Is:	SPLI.hs
-  default-language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
-  Other-Modules:   Bar
-
-Executable	splm
-  Main-Is:	M.hs
-  default-language: Haskell2010
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
-  Other-Modules:   Bar
-
-Executable     spl-test-adhoc-hn
-  Main-Is:        HN_Tests.hs
-  default-language: Haskell98
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
-  Other-Modules:  Bar
-
-Executable	spl-test-adhoc-spl
-  Main-Is:	SPL_Tests.hs
-  default-language: Haskell98
-  Build-Depends:  base == 4.*, containers == 0.*, HUnit == 1.*, bytestring == 0.*, hoopl >= 3.8.7.1, mtl == 2.*, parsec >= 3.1, directory == 1.*, QuickCheck == 2.*
-  Other-Modules:   Bar
-
+name: SPL
+version: 0.0.0.920
+cabal-version: >=1.10
+build-type: Custom
+license: LGPL
+license-file: COPYING.LESSER
+bug-reports: https://github.com/kayuri/HNC/issues
+synopsis: A source-to-source translator of a variant of ML core into C++.
+description:  
+author: Andy Melnikov <andy.melnikov@gmail.com>
+tested-with: GHC ==7.0.2 GHC ==7.2.2
+data-dir: ""
+ 
+executable spl-hnc
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl ==3.8.7.4, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    main-is: HNC.hs
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: .
+    other-modules: HN.Optimizer.Node, Bar
+    ghc-options: -W -fno-warn-incomplete-patterns -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
+ 
+executable spl-test-hunit-exe
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, parsec >=3.1, mtl ==2.*,
+                   unification-fd ==0.6.0
+    main-is: Test/Main.hs
+    other-modules: Bar
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: .
+    ghc-options: -W -fno-warn-incomplete-patterns -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans
+ 
+executable spli
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    main-is: SPLI.hs
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: .
+ 
+executable splm
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    main-is: M.hs
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: .
+ 
+executable spl-test-adhoc-hn
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    main-is: HN_Tests.hs
+    buildable: True
+    default-language: Haskell98
+    hs-source-dirs: .
+ 
+executable spl-test-adhoc-spl
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    main-is: SPL_Tests.hs
+    buildable: True
+    default-language: Haskell98
+    hs-source-dirs: .
+ 
+test-suite spl-test-hunit
+    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
+                   bytestring ==0.*, containers ==0.*, directory ==1.*,
+                   hoopl, mtl ==2.*, parsec >=3.1,
+                   unification-fd ==0.6.0
+    type: exitcode-stdio-1.0
+    main-is: Test/Main.hs
+    buildable: True
+    default-language: Haskell2010
+    hs-source-dirs: .
