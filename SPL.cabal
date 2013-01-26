@@ -8,8 +8,22 @@ bug-reports: https://github.com/kayuri/HNC/issues
 synopsis: A source-to-source translator of a variant of ML core into C++.
 description:  
 author: Andy Melnikov <andy.melnikov@gmail.com>
+maintainer: Andy Melnikov <andy.melnikov@gmail.com>    
+homepage: https://github.com/kayuri/HNC/wiki
+category: compiler
 tested-with: GHC ==7.0.2 GHC ==7.2.2
 data-dir: ""
+description: 
+    HNC stands for HN compiler. HN is a tool to facilitate writing 
+    C programs. It is a macro language for C. It is not embedded 
+    in C but uses a new syntax and a new type system to express C
+    programs. It can be used by humans to prototype programs or 
+    separate functions in C or as an intermediate language 
+    for C generators.
+
+source-repository head
+    type: git
+    location: https://github.com/kayuri/NHC.git
  
 executable spl-hnc
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
