@@ -1,7 +1,5 @@
 @echo off
-@call ..\..\..\config.cmd
 cd ..
-rem @%CONFIG%
-@%BUILD% && echo Running!  
+call build.cmd
 cd cpplib 
 

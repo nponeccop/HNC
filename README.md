@@ -72,3 +72,27 @@ but mostly because we are too lazy to write more examples.
 ## License
 
 Distributed under GNU Lesser General Public Licence Version 3.
+
+# Setting up MSVC and Boost
+
+- Install free Visual C++ Express or non-free Visual Studio
+- Download Boost library from boost.org. 
+- Extract `boost` subfolder from the distribution. It's the folder containing header files for all libraries.
+
+Create `config.cmd` one level above HNC folder, so it's not under source control:
+
+```cmd
+@set INCLUDE=folder-containing-boost-subfolder
+@call "%VS100COMNTOOLS%..\..\VC\vcvarsall.bat"
+```
+
+`VS100COMNTOOLS` is environment variable name set by VC 10.0 installer. Use `set | findstr COMN` to find 
+out which version(s) of Visual C you have installed and change the `.cmd` file accordingly.
+
+run `testAll.cmd` from `hn_tests` folder. You should see `tmp-*.cpp` files being generated 
+from `.hn` sources and compiled into `.obj` files.
+
+# Setting up another C++ compiler
+
+The generated code is not specific to MSVC or Windows, so any other Boost-compatible C++ compiler 
+and platform should work too. However, the scripts to run test suite are not there yet. 

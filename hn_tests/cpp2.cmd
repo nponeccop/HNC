@@ -1,1 +1,1 @@
-cl -nologo -c -Id:\home2\libsrc\boost_1_37_0 -I..\cpplib\include  -EHa %1
+cl -nologo -EHsc -c -I..\cpplib\include  %1
