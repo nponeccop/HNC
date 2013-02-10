@@ -29,7 +29,7 @@ executable spl-hnc
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl ==3.8.7.4, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0
+                   unification-fd ==0.6.0, uuagc
     main-is: HNC.hs
     buildable: True
     default-language: Haskell2010
