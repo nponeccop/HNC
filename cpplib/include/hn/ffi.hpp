@@ -1,4 +1,9 @@
+#ifdef _WIN32
 #include <winsock.h>
+#else
+#include <netinet/in.h>
+#define SOCKET int
+#endif
 #include <stdio.h>
 
 namespace ff
