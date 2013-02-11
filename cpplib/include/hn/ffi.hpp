@@ -86,7 +86,8 @@ namespace ff
 	template <typename T>
 	IO<void> print(T t)
 	{
-		return boost::bind(&print_impl<T>, t);
+		IO<void> const result(boost::bind(&print_impl<T>, t));
+		return result;
 	}
 
 
