@@ -13,15 +13,15 @@ struct allDigits_impl
 	};
 	static bool gt(int c, int d)
 	{
-		return ff::not(leq(c, d));
+		return ff::_not(leq(c, d));
 	};
 	static bool geq(int c, int d)
 	{
-		return ff::not(lt(c, d));
+		return ff::_not(lt(c, d));
 	};
 	static bool and(bool a, bool b)
 	{
-		return ff::not(ff::not(a) || ff::not(b));
+		return ff::_not(ff::_not(a) || ff::_not(b));
 	};
 	static bool between(int a, int b, int c)
 	{

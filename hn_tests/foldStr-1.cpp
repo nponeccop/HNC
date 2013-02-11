@@ -4,7 +4,7 @@ struct foldStr_impl
 {
 	static bool neq(int a, int b)
 	{
-		return ff::not(a == b);
+		return ff::_not(a == b);
 	};
 };
 

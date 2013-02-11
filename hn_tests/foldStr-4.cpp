@@ -8,7 +8,7 @@ struct foldStr_impl
 
 	static bool neq(int a, int b)
 	{
-		return ff::not(a == b);
+		return ff::_not(a == b);
 	};
 	template <typename t9>
 	static bool loopCond(std::pair<t9, ff::ptr<int>> loopState)

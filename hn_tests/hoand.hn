@@ -11,7 +11,7 @@ hoand a b = {
 		g x y = f y x
 		g
 	}
-	g = comp (papp papp _or) not
-	f = comp (papp (flip comp) not) g
+	g = comp (papp papp _or) _not
+	f = comp (papp (flip comp) _not) g
 	(f a) b
 }

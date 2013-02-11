@@ -1,4 +1,5 @@
 #include <winsock.h>
+#include <stdio.h>
 
 namespace ff
 {
@@ -42,8 +43,8 @@ namespace ff
 		}
 	};
 
-	template <typename T1, typename T2>
-	typename IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
+	template <typename T1, typename T2> 
+	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
 	{
 		bind_impl<T1, T2> impl = { a1, a2 };
 		return impl;
@@ -216,7 +217,7 @@ namespace ff
 		return t;
 	}
 
-	bool not(bool x)
+	bool _not(bool x)
 	{
 		return !x;
 	}

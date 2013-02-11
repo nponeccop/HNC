@@ -81,7 +81,7 @@ template <typename F> struct result
 
 template <typename F, long N> struct arg
 {
-	typedef typename deduce<F>::arg<N>::type type;
+	typedef typename deduce<F>::template arg<N>::type type;
 };
 
 };

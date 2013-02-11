@@ -1,5 +1,5 @@
 foldStr f e s = {
-	neq a b = not (eq a b)
+	neq a b = _not (eq a b)
 	loopCond loopState = {
 		s = snd loopState
 		neq (deref s) 0

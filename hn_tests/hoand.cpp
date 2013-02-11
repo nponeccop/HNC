@@ -63,7 +63,7 @@ struct hoand_impl
 bool hoand(bool a, bool b)
 {
 	typedef hoand_impl local;
-	boost::function<boost::function<bool (bool)> (bool)> g = local::comp<bool, boost::function<bool (bool)>, bool>(local::papp<boost::function<bool (bool)>, boost::function<bool (bool, bool)>, bool>(&local::papp<bool, bool, bool>, &ff::_or), &ff::not);
-	boost::function<boost::function<bool (bool)> (bool)> f = local::comp<bool, boost::function<bool (bool)>, boost::function<bool (bool)>>(local::papp<boost::function<bool (bool)>, boost::function<bool (bool)>, boost::function<bool (bool)>>(local::flip<boost::function<bool (bool)>, boost::function<bool (bool)>, boost::function<bool (bool)>>(&local::comp<bool, bool, bool>), &ff::not), g);
+	boost::function<boost::function<bool (bool)> (bool)> g = local::comp<bool, boost::function<bool (bool)>, bool>(local::papp<boost::function<bool (bool)>, boost::function<bool (bool, bool)>, bool>(&local::papp<bool, bool, bool>, &ff::_or), &ff::_not);
+	boost::function<boost::function<bool (bool)> (bool)> f = local::comp<bool, boost::function<bool (bool)>, boost::function<bool (bool)>>(local::papp<boost::function<bool (bool)>, boost::function<bool (bool)>, boost::function<bool (bool)>>(local::flip<boost::function<bool (bool)>, boost::function<bool (bool)>, boost::function<bool (bool)>>(&local::comp<bool, bool, bool>), &ff::_not), g);
 	return (f(a))(b);
 };

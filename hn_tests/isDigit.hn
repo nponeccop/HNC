@@ -1,9 +1,9 @@
 isDigit c = {
 	lt c d = less c d
 	leq c d = _or (lt c d) (eq c d)
-	gt c d = not (leq c d)
-	geq c d = not (lt c d)
-	and a b = not (_or (not a) (not b))
+	gt c d = _not (leq c d)
+	geq c d = _not (lt c d)
+	and a b = _not (_or (_not a) (_not b))
 	between a b c = and (geq a b) (lt b c)
 	between 48 c 58
 }

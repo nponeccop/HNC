@@ -7,11 +7,11 @@ struct hasChar_impl
 
 	static bool and(bool a, bool b)
 	{
-		return ff::not(ff::not(a) || ff::not(b));
+		return ff::_not(ff::_not(a) || ff::_not(b));
 	};
 	static bool neq(int a, int b)
 	{
-		return ff::not(a == b);
+		return ff::_not(a == b);
 	};
 	bool loopCond(ff::ptr<int> s)
 	{

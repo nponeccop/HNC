@@ -1,6 +1,6 @@
 hasChar c s = {
-	and a b = not (_or (not a) (not b))
-	neq a b = not (eq a b)
+	and a b = _not (_or (_not a) (_not b))
+	neq a b = _not (eq a b)
 	loopCond s = and (neq c (deref s)) (neq (deref s) 0)
 	ss = whileF loopCond next s
 	eq (deref ss) c
