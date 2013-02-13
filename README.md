@@ -17,8 +17,10 @@ Install GHC or Haskell Platform and run:
 
 ```
 cabal update
-cabal install --only-dependencies
+cabal install happy
 PATH=$PATH:~/.cabal/bin
+cabal install --only-dependencies
+
 cabal configure
 cabal build
 ./dist/build/spl-hnc/spl-hnc ./hn_tests/euler6.hn
@@ -69,10 +71,6 @@ but mostly because we are too lazy to write more examples.
 - SPL support is almost missing
 - Polymorphic constants like “empty list” are not supported
 
-## License
-
-Distributed under GNU Lesser General Public Licence Version 3.
-
 # Setting up MSVC and Boost
 
 - Install free Visual C++ Express or non-free Visual Studio
@@ -92,7 +90,26 @@ out which version(s) of Visual C you have installed and change the `.cmd` file a
 run `testAll.cmd` from `hn_tests` folder. You should see `tmp-*.cpp` files being generated 
 from `.hn` sources and compiled into `.obj` files.
 
-# Setting up another C++ compiler
+# Setting up GCC
 
 The generated code is not specific to MSVC or Windows, so any other Boost-compatible C++ compiler 
 and platform should work too. However, the scripts to run test suite are not there yet. 
+
+To run `deref1.cpp` test manually with GCC, run
+
+```
+gcc -c -I../cpplib/include deref1.cpp
+```
+
+from `hn_tests` folder if Boost headers are installed globally to `/usr/include`, or
+
+```
+gcc -c -I../cpplib/include -Ifolder-containing-boost-subfolder deref1.cpp
+```
+
+if Boost headers are manually unpacked locally.
+
+## License
+
+Distributed under GNU Lesser General Public Licence Version 3.
+
