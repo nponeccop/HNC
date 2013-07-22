@@ -11,6 +11,8 @@ import Compiler.Hoopl
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
+import Utils
+import HN.Optimizer.Visualise ()
 {-
 Инлайнинг:
 
@@ -77,18 +79,20 @@ rewriteExitL dn f = case dn of
 
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
-	Just x -> rewriteAtomApplication x where
+	Just x -> rewriteAtomApplication $ xtrace ("rewriteAtomApplication fact " ++ show a) x where
 		rewriteAtomApplication :: ListFact -> Maybe (Expression Label)
 		rewriteAtomApplication x = case x of
-			Top -> fmap (Application $ Atom a) $ rewriteArgs b f
+			Top -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "Top.b" b) f
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
-				LetNode args expr -> rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b
-				LibNode -> fmap (Application $ Atom a) $ rewriteArgs b f
-				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs b f
+				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a)  $ case (rewriteExpression expr $ flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b) of
+					Nothing -> Just expr
+					Just x -> Just x
+				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
+				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f
 
 rewriteApplication a b f = case rewriteExpression a f of
-	Nothing -> fmap (Application a) $ rewriteArgs b f
+	Nothing -> fmap (Application a) $ xtrace ("rewriteArgs " ++ show b) $ rewriteArgs b f
 	Just _ -> error "rapp.Just"
 
 rewriteArgs [] _ = Nothing
@@ -100,10 +104,10 @@ rewriteArgs (a : at) f = case (rewriteArgs at f, rewriteExpression a f) of
 
 rewriteExpression expr f =  case expr of
 	Constant _ -> Nothing
-	Atom a -> case lookupFact a f of
+	Atom a -> xtrace ("rewriteExpression Atom " ++ show a) $ case lookupFact a f of
 		Nothing -> error "rewriteExpression.Nothing"
 		Just x -> processAtom x
-	Application a b -> rewriteApplication a b f
+	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 
 processAtom :: ListFact -> Maybe (Expression Label)
 processAtom x = case x of
