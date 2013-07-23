@@ -76,7 +76,6 @@ rewriteExitL dn f = case dn of
 	ArgNode -> Nothing
 	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression expr f
 
-
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
 	Just x -> rewriteAtomApplication $ xtrace ("rewriteAtomApplication fact " ++ show a) x where
@@ -88,7 +87,7 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a) $ inlineApplication expr args b f
 				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
 				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f	
-			
+
 rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 	Nothing -> error "rewriteApplication.double.Nothing"
 	Just x -> case x of
@@ -103,19 +102,7 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 							Just x -> Just (Application x bb)
 							Nothing -> Just (Application aa bb)
 						Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
-						Nothing -> Nothing
- 						
-					{-
-					of
-						Nothing -> error "rewriteApplication.double.LetNode.fn.Nothing"
-						Just (Application aa bb) -> undefined  inlineApplication aa outerParams bb f of
-							Nothing -> Just (LetNode oo (Application aa bb))
-							Just x -> Just x 
-						
-						Nothing -> Just x-}
-
-					-- Just $ Application (Application innerBody b) c  
-					-- inlinePartialApplication x b c f
+						Nothing -> Nothing						
 					_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
  				_ -> error "rewriteApplication.double.LetNode.fn"
 			LibNode -> error "rewriteApplication.double.LibNode"
@@ -124,18 +111,10 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 rewriteApplication a b f = case rewriteExpression a f of
 	Nothing -> fmap (Application a) $ xtrace ("rewriteArgs " ++ show b) $ rewriteArgs b f
 	Just _ -> Nothing --error "rapp.Just" 
-	{- 
-	case rewriteArgs b f of
-		Nothing -> Just (Application a b)
- 		Just b -> Just (Application a b)
--}
 
 inlineApplication inlinedBody formalArgs actualArgs f = case (rewriteExpression inlinedBody $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) of
 	Nothing -> Just inlinedBody
 	Just x -> Just x
-
-inlinePartialApplication x b c f = error "rewriteApplication.double.LetNode.fn.atombody.canInline"
--- Application (Application x b) c -- 
 
 rewriteArgs [] _ = Nothing
 rewriteArgs (a : at) f = case (rewriteArgs at f, rewriteExpression a f) of
@@ -167,12 +146,9 @@ passBL = BwdPass
 	, bp_rewrite = rewriteBL
 	}
 
-
 runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
-
-
 
 -- Utilities
 --

@@ -10,6 +10,7 @@ import HN.SplExport
 
 import SPL.Visualise
 import Utils
+import Control.Applicative
 import qualified Data.Map as M
 import FFI.TypeParser
 import HN.Parser2
@@ -20,8 +21,8 @@ compileFile = compile2 id
 compileWithOpt symbolList = compile2 (map (optimize symbolList))
 
 dumpOpt inFile = do
-	symbolList <- fmap M.keys $ importHni "lib/lib.hni" 
-	(fmap (map (showD . optimize symbolList) . fromRight) $ parseFile inFile) >>= \x -> putStrLn $ joinStr "\n" x
+	symbolList <- importHni "lib/lib.hni" 
+	joinStr "\n" . map (showD . optimize (M.keys symbolList)) . fromRight <$> parseFile inFile   
 
 compileToSpl inFile = do
 	x <- compile inFile (map convertDef)
@@ -46,7 +47,7 @@ help = usageInfo header options where
 	header = "Usage: hnc <infile> [<outfile> | --spl | --types | -O ]\n"
 
 main = getArgs >>= compilerOpts >>= g where
-	g ([DumpOpt], [inFile]) = dumpOpt inFile
+	g ([DumpOpt], [inFile]) = dumpOpt inFile >>= putStr
 	g ([Import i], [inFile]) = compile3 i id inFile >>= putStr
 	g ([], [inFile]) = compileFile inFile >>= putStr
 	g ([], [inFile, outFile]) = compileFile inFile >>= writeFile outFile
