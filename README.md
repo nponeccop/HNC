@@ -29,9 +29,10 @@ cabal build
 # Advanced use
 
 - read wiki
-- run our test suites
-- run `hnc` with `-O` option to see our first attempts at optimization
-- feed generated `.cpp` files to a C++ compiler and linker either directly or by using our extension to Boost.Build.
+- run our main test suite (`dist/build/spl-test-hunit-exe/spl-test-hunit-exe`)
+- run `hnc` with either `-O` or `--dump-opt` option to see our first attempts at optimization
+- follow instructions below to feed generated `.cpp` files to a C++ compiler 
+  and linker either directly or by using our extension to Boost.Build.
 
 You'll need MSVC/GCC, Boost and Boost.
 
