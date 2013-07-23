@@ -13,19 +13,16 @@ import Utils
 import Control.Applicative
 import qualified Data.Map as M
 import FFI.TypeParser
-import HN.Parser2
 import HN.Visualise (showD)
 
-compileFile = compile2 id
+compileWithOpt inFile libraryTypes 
+	= compileHN libraryTypes <$> (map (optimize (M.keys libraryTypes))) <$> compile inFile
 
-compileWithOpt symbolList = compile2 (map (optimize symbolList))
-
-dumpOpt inFile = do
-	symbolList <- importHni "lib/lib.hni" 
-	joinStr "\n" . map (showD . optimize (M.keys symbolList)) . fromRight <$> parseFile inFile   
+dumpOpt inFile libraryTypes 
+	= (joinStr "\n" . map (showD . optimize (M.keys libraryTypes))) <$> compile inFile    
 
 compileToSpl inFile = do
-	x <- compile inFile (map convertDef)
+	x <- (map convertDef) <$> compile inFile 
 	return $ show x ++ "\n" ++ joinStr "\n" (map showAsSource x)
 
 data Flag = Spl | Optimize | DumpOpt | Help | Import String
@@ -47,14 +44,17 @@ help = usageInfo header options where
 	header = "Usage: hnc <infile> [<outfile> | --spl | --types | -O ]\n"
 
 main = getArgs >>= compilerOpts >>= g where
-	g ([DumpOpt], [inFile]) = dumpOpt inFile >>= putStr
-	g ([Import i], [inFile]) = compile3 i id inFile >>= putStr
-	g ([], [inFile]) = compileFile inFile >>= putStr
-	g ([], [inFile, outFile]) = compileFile inFile >>= writeFile outFile
+	g ([DumpOpt], [inFile]) 
+		= importHni "lib/lib.hni" >>= dumpOpt inFile >>= putStr
+	g ([Import hniFileName], [inFile]) 
+		= importHni hniFileName >>= compileFile inFile >>= putStr
+	g ([], [inFile]) 
+		= importHni "lib/lib.hni" >>= compileFile inFile >>= putStr
+	g ([], [inFile, outFile]) 
+		= importHni "lib/lib.hni" >>= compileFile inFile >>= writeFile outFile 
+	g ([Optimize], [inFile]) 
+		= importHni "lib/lib.hni" >>=compileWithOpt inFile >>= putStr
 	g ([Spl], [inFile]) = compileToSpl inFile >>= putStr
-	g ([Optimize], [inFile]) = do
-		symbolList <- fmap M.keys $ importHni "lib/lib.hni" 
-		compileWithOpt symbolList inFile >>= putStr
 	g ([Help], _) = putStrLn help
 	g ([], []) = putStrLn help
 	g (_, _) = error "Unrecognized command line"

@@ -1,17 +1,15 @@
-module CPP.CompileTools (compile2, compile, compile3) where
+module CPP.CompileTools (compile, compileHN, compileFile) where
 
 import qualified Bar as AG
 import HN.Parser2
-import FFI.TypeParser
 import Utils
+import Control.Applicative
 
-compile inFile f = fmap (f . fromRight) $ parseFile inFile
+compileFile inFile libraryTypes = compileHN libraryTypes <$> compile inFile
 
-compile2 = compile3 "lib/lib.hni"
+compile inFile  = fromRight <$> parseFile inFile
 
-compile3 hniFileName f inFile = do
-	libraryTypes <- importHni hniFileName
-	compile inFile $ (++) "#include <hn/lib.hpp>\n\n" . joinStr "\n" . map show . compileDefinition2 libraryTypes . f
+compileHN libraryTypes = ("#include <hn/lib.hpp>\n\n" ++) . joinStr "\n" . map show . compileDefinition2 libraryTypes 
 
 compileDefinition2 libraryTypes self = AG.compile2 self inh where
 	inh = AG.Inh_Root {

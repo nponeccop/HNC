@@ -4,6 +4,7 @@ import System.Directory
 import Control.Monad
 import System.IO
 import CPP.CompileTools
+import FFI.TypeParser (importHni)
 
 windowsLineMode = NewlineMode { inputNL  = CRLF, outputNL = CRLF }
 
@@ -16,8 +17,7 @@ comp2 f g x y = f $ g x y
 
 test testName =	liftM2 (comp2 (testName ~:) (~=?))
 	(readFileCRLF $ "hn_tests/" ++ testName ++ ".cpp")
-	(compile2 id $ "hn_tests/" ++ testName ++ ".hn")
-
+	(importHni "lib/lib.hni" >>= compileFile ("hn_tests/" ++ testName ++ ".hn"))
 
 iotests =
 	getDirectoryContents "hn_tests" >>=
