@@ -10,13 +10,9 @@ import HN.Visualise
 
 runFB = runF >=> runB
 
-xxx = ["incr", "print", "sum", "filter", "bind", "readnum", "natrec", "_if", "eq", "mod", 
-	"mul", "forever", "voidbind", "udp_receive", "time_msec", "udp_send", "udp_connect", 
-	"udp_listen", "sub", "div", "_or", "udp_reply", "deref", "snd", "_not"]
-
-transform tf = withGraph (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . tf . toTuple) xxx  where
+transform tf xxx = withGraph (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . tf . toTuple) xxx  where
 	toTuple agraph = (agraph, undefined, undefined)
 	fromTuple (agraph, _, _) = agraph
 
-optimize :: Definition -> Definition
-optimize = (error . showD) . transform (runFB >=> runFB)
+optimize :: [String] -> Definition -> Definition
+optimize xxx = (error . showD) . transform (runFB >=> runFB) xxx

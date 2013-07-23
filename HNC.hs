@@ -10,10 +10,12 @@ import HN.SplExport
 
 import SPL.Visualise
 import Utils
+import qualified Data.Map as M
+import FFI.TypeParser
 
 compileFile = compile2 id
 
-compileWithOpt = compile2 (map optimize)
+compileWithOpt symbolList = compile2 (map (optimize symbolList))
 
 compileToSpl inFile = do
 	x <- compile inFile (map convertDef)
@@ -41,7 +43,9 @@ main = getArgs >>= compilerOpts >>= g where
 	g ([], [inFile]) = compileFile inFile >>= putStr
 	g ([], [inFile, outFile]) = compileFile inFile >>= writeFile outFile
 	g ([Spl], [inFile]) = compileToSpl inFile >>= putStr
-	g ([Optimize], [inFile]) = compileWithOpt inFile >>= putStr
+	g ([Optimize], [inFile]) = do
+		symbolList <- fmap M.keys $ importHni "lib/lib.hni" 
+		compileWithOpt symbolList inFile >>= putStr
 	g ([Help], _) = putStrLn help
 	g ([], []) = putStrLn help
 	g (_, _) = error "Unrecognized command line"
