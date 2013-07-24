@@ -1,6 +1,7 @@
 module Test.TestFixtures (test1, test2, test3, testDominators, testPostdominators, compilerTest, decompilerTest) where
 import Compiler.Hoopl
 import Control.Monad
+import qualified Data.Map as M
 import HN.Optimizer.GraphCompiler
 import HN.Optimizer.Inliner2
 import HN.Optimizer.Inbound
@@ -10,7 +11,7 @@ import Compiler.Hoopl.Passes.Dominator
 import HN.Optimizer.WithGraph
 
 
-cg = fst . compileGraph ["incr"]
+cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg") 
 
 compilerTest = foo . cg
 
@@ -35,4 +36,4 @@ testPostdominators = testFacts (immediatePostdominators . immediateDominators) r
 bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . cg where
 	toTuple agraph = (agraph, undefined, undefined)
 
-decompilerTest = withGraph id []
+decompilerTest = withGraph id M.empty

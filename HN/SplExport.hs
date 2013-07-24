@@ -1,6 +1,10 @@
-module HN.SplExport (convertDef, convertExpr) where
+module HN.SplExport (convertToSpl, convertExpr) where
 import HN.Intermediate
+import SPL.Visualise (showAsSource)
 import SPL.Types
+import Utils (joinStr)
+
+convertToSpl = (\x -> show x ++ "\n" ++ joinStr "\n" (map showAsSource x)) . map convertDef
 
 convertExpr (Constant (ConstInt i)) = CNum i
 convertExpr (Constant (ConstString i)) = CStr i

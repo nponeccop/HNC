@@ -1,29 +1,20 @@
 module Main (main) where
 
+import Control.Applicative
 import System.Environment
 import System.Console.GetOpt
 
 import CPP.CompileTools
-
-import HN.Optimizer.Frontend
-import HN.SplExport
-
-import SPL.Visualise
-import Utils
-import Control.Applicative
-import qualified Data.Map as M
 import FFI.TypeParser
-import HN.Visualise (showD)
+import HN.Optimizer.Frontend
+import HN.SplExport (convertToSpl)
+import HN.Visualise (formatHN)
 
 compileWithOpt inFile libraryTypes 
-	= compileHN libraryTypes <$> (map (optimize (M.keys libraryTypes))) <$> compile inFile
+	= compileHN libraryTypes <$> optimizeHN libraryTypes <$> parseHN inFile
 
 dumpOpt inFile libraryTypes 
-	= (joinStr "\n" . map (showD . optimize (M.keys libraryTypes))) <$> compile inFile    
-
-compileToSpl inFile = do
-	x <- (map convertDef) <$> compile inFile 
-	return $ show x ++ "\n" ++ joinStr "\n" (map showAsSource x)
+	=  formatHN <$> optimizeHN libraryTypes <$> parseHN inFile
 
 data Flag = Spl | Optimize | DumpOpt | Help | Import String
 
@@ -53,8 +44,8 @@ main = getArgs >>= compilerOpts >>= g where
 	g ([], [inFile, outFile]) 
 		= importHni "lib/lib.hni" >>= compileFile inFile >>= writeFile outFile 
 	g ([Optimize], [inFile]) 
-		= importHni "lib/lib.hni" >>=compileWithOpt inFile >>= putStr
-	g ([Spl], [inFile]) = compileToSpl inFile >>= putStr
+		= importHni "lib/lib.hni" >>= compileWithOpt inFile >>= putStr
+	g ([Spl], [inFile]) = convertToSpl <$> parseHN inFile >>= putStr
 	g ([Help], _) = putStrLn help
 	g ([], []) = putStrLn help
 	g (_, _) = error "Unrecognized command line"

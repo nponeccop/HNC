@@ -1,13 +1,13 @@
-module CPP.CompileTools (compile, compileHN, compileFile) where
+module CPP.CompileTools (parseHN, compileHN, compileFile) where
 
 import qualified Bar as AG
-import HN.Parser2
+import HN.Parser2 (parseFile) 
 import Utils
 import Control.Applicative
 
-compileFile inFile libraryTypes = compileHN libraryTypes <$> compile inFile
+compileFile inFile libraryTypes = compileHN libraryTypes <$> parseHN inFile
 
-compile inFile  = fromRight <$> parseFile inFile
+parseHN inFile  = fromRight <$> parseFile inFile
 
 compileHN libraryTypes = ("#include <hn/lib.hpp>\n\n" ++) . joinStr "\n" . map show . compileDefinition2 libraryTypes 
 

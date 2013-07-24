@@ -1,14 +1,14 @@
 module HN.Optimizer.GraphCompiler (compileGraph) where
-
 import Compiler.Hoopl
+import qualified Data.Map as M
 
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.LabelFor as LabelFor
 
-compileGraph a def @ (Definition name _ _) = LabelFor.run $ do
+compileGraph libraryTypes def @ (Definition name _ _) = LabelFor.run $ do
 	x <- freshLabelFor name
-	libLabels <- mapM freshLabelFor a
+	libLabels <- mapM freshLabelFor $ M.keys libraryTypes
 	gg <- compileGraph5 def x
 	return $ foldr (\x y -> node x LibNode |*><*| y) emptyClosedGraph libLabels |*><*| gg
 

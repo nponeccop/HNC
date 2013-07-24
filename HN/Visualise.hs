@@ -1,7 +1,9 @@
-module HN.Visualise (showD) where
+module HN.Visualise (formatHN) where
 
 import HN.Intermediate
 import Utils
+
+formatHN = joinStr "\n" . map showD
 
 showD x = joinStr "\n" $ showDD x
 
