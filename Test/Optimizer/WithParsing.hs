@@ -3,7 +3,7 @@ import qualified Data.Map as M
 import Test.HUnit hiding (test)
 
 import HN.Parser2
-import HN.Optimizer.WithGraph
+import HN.Optimizer.Frontend (withGraph)
 
 fakeLib :: M.Map String a
 fakeLib = M.fromList $ zip ["print", "sub", "mul", "natrec", "sum", "incr"] $ repeat $ error "Test.Optimizer.WithParsing.fakeValue"

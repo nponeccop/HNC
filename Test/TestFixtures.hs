@@ -8,8 +8,7 @@ import HN.Optimizer.Inbound
 import HN.Optimizer.Visualise (foo)
 import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
-import HN.Optimizer.WithGraph
-
+import HN.Optimizer.Frontend (withGraph)
 
 cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg") 
 
@@ -23,7 +22,6 @@ test3 = transform $ runFB >=> runFB
 
 transform tf = foo . fromTuple . bar tf where
 	fromTuple (agraph, _, _) = agraph
-
 
 test1 = testFacts id runF
 
