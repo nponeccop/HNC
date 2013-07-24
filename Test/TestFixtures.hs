@@ -36,4 +36,4 @@ testPostdominators = testFacts (immediatePostdominators . immediateDominators) r
 bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . cg where
 	toTuple agraph = (agraph, undefined, undefined)
 
-decompilerTest = withGraph id M.empty
+decompilerTest = withGraph M.empty id 

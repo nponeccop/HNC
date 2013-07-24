@@ -5,10 +5,11 @@ import HN.Optimizer.Inbound (runF)
 import HN.Optimizer.Inliner2 (runB)
 import HN.Optimizer.WithGraph (withGraph)
 
+optimizeHN libraryTypes = map (withGraph libraryTypes (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . tf . toTuple))
+
 runFB = runF >=> runB
 
-transform tf libraryTypes = withGraph (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . tf . toTuple) libraryTypes where
-	toTuple agraph = (agraph, undefined, undefined)
-	fromTuple (agraph, _, _) = agraph
+tf = runFB >=> runFB where
 
-optimizeHN libraryTypes = map (transform (runFB >=> runFB) libraryTypes)
+toTuple agraph = (agraph, undefined, undefined)
+fromTuple (agraph, _, _) = agraph

@@ -10,7 +10,7 @@ fakeLib = M.fromList $ zip ["print", "sub", "mul", "natrec", "sum", "incr"] $ re
 
 realTest inFile = TestCase $ do
         x <- parseAndProcessFile inFile id
-        x @=? withGraph id fakeLib x
+        x @=? withGraph fakeLib id x
 
 tests = "WithParsing" ~:  map (\x -> realTest ("hn_tests/" ++ x ++ ".hn"))
         [

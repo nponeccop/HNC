@@ -1,7 +1,7 @@
 module HN.Optimizer.WithGraph where
 import HN.Optimizer.GraphCompiler
 import HN.Optimizer.GraphDecompiler
+import Utils
 
-withGraph f libNames def = decompileGraph labelNames $ f graph where
+withGraph libNames f def = decompileGraph (xtrace "labelNames" labelNames) $ f graph where
 	(graph, (_, labelNames)) = compileGraph libNames def
-
