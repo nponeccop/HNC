@@ -1,0 +1,4 @@
+flip f = {
+	flipped x y = f y x
+	flipped
+}

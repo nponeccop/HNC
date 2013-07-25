@@ -2,3 +2,4 @@ dist/
 hn_tests/tmp-*.cpp
 *.obj
 *.o
+hn_tests/opt/!*

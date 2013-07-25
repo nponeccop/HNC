@@ -1,0 +1,1 @@
+f s = _not (eq (deref s) 0)

@@ -1,0 +1,4 @@
+intfunc f = {
+	g x = f (sum x 0)
+	g
+}

@@ -19,6 +19,7 @@ import Test.FFI
 import Test.TypeParser
 import Test.Tests
 import Test.ParserTest
+import Test.Optimizer.FileTest
 
 import SPL.Interpretator
 
@@ -110,9 +111,11 @@ splTest (s, r, t) = TestLabel s $ TestCase $ case step s of
 splTests = map splTest Test.SPL.tests
 
 main = do
+	optTests <- Test.Optimizer.FileTest.iotests
 	compilerTests <- Test.Compiler.iotests
 	ioTests <- Test.TypeParser.iotests
 	simpleTests $
+		optTests ++
 		tests2 ++
 		Main.tests ++
 		compilerTests ++
