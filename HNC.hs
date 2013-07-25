@@ -1,7 +1,8 @@
 module Main (main) where
 
 import Control.Applicative
-import System.Environment
+import qualified Data.Set as S
+import qualified Data.Map as M
 import System.Console.GetOpt
 
 import CPP.CompileTools
@@ -9,6 +10,7 @@ import FFI.TypeParser
 import HN.Optimizer.Frontend
 import HN.SplExport (convertToSpl)
 import HN.Visualise (formatHN)
+import Utils.Options
 
 compileWithOpt inFile libraryTypes 
 	= compileHN libraryTypes <$> optimizeHN libraryTypes <$> parseHN inFile
@@ -16,36 +18,33 @@ compileWithOpt inFile libraryTypes
 dumpOpt inFile libraryTypes 
 	=  formatHN <$> optimizeHN libraryTypes <$> parseHN inFile
 
-data Flag = Spl | Optimize | DumpOpt | Help | Import String
-
 options	=
-	[ Option ['O'] [] (NoArg Optimize) "optimize using HOOPL"
-	, Option [] ["spl"] (NoArg Spl) "output SPL.Types.C and SPL sources to stdout"
-	, Option "i" ["hni"] (ReqArg Import "FILE.hni") "import FILE.hni instead of default lib.hni"
-	, Option [] ["dump-opt"] (NoArg DumpOpt) "dump optimized HN to stdout"
-	, Option "h?" ["help"] (NoArg Help)  "show this help"
+	[ Option ['O'] [] (NoArg $ OptBool "O") "optimize using HOOPL"
+	, Option [] ["spl"] (NoArg $ OptBool "spl") "output SPL.Types.C and SPL sources"
+	, Option "i" ["hni"] (ReqArg (OptString "i") "FILE.hni") "import FILE.hni instead of default lib.hni"
+	, Option [] ["dump-opt"] (NoArg $ OptBool "dump-opt") "dump optimized HN"
+	, Option "h?" ["help"] (NoArg $ OptBool "help")  "show this help"
 	]
-
-compilerOpts argv =
-	case getOpt Permute options argv of
-        (o,n,[]  ) -> return (o,n)
-        (_,_,errs) -> ioError (userError (concat errs ++ help))
-
+	
 help = usageInfo header options where
-	header = "Usage: hnc <infile> [<outfile> | --spl | --types | -O ]\n"
+	header = "Usage: hnc [options] <infile> [<outfile>]\n"
 
-main = getArgs >>= compilerOpts >>= g where
-	g ([DumpOpt], [inFile]) 
-		= importHni "lib/lib.hni" >>= dumpOpt inFile >>= putStr
-	g ([Import hniFileName], [inFile]) 
-		= importHni hniFileName >>= compileFile inFile >>= putStr
-	g ([], [inFile]) 
-		= importHni "lib/lib.hni" >>= compileFile inFile >>= putStr
-	g ([], [inFile, outFile]) 
-		= importHni "lib/lib.hni" >>= compileFile inFile >>= writeFile outFile 
-	g ([Optimize], [inFile]) 
-		= importHni "lib/lib.hni" >>= compileWithOpt inFile >>= putStr
-	g ([Spl], [inFile]) = convertToSpl <$> parseHN inFile >>= putStr
-	g ([Help], _) = putStrLn help
-	g ([], []) = putStrLn help
-	g (_, _) = error "Unrecognized command line"
+main = runOptions options ff
+
+ff (O oBool oString oNonOptions) = f where  
+	b x = S.member x oBool
+	hni = importHni $ M.findWithDefault "lib/lib.hni" "hni" oString
+	output = if (length oNonOptions == 2) then writeFile outFile else putStr
+	outFile = oNonOptions !! 1
+	inFile = oNonOptions !! 0
+	dumpOptFlag = b "dump-opt"
+	splFlag = b "spl"
+	optFlag = b "O"
+	helpFlag = b "help"
+	processWith f = hni >>= f inFile >>= output
+	f 	| length oNonOptions > 2 = err "Too many files specified in command line"
+		| length oNonOptions == 0 || helpFlag = putStrLn help
+		| dumpOptFlag = processWith dumpOpt
+		| optFlag = processWith compileWithOpt
+		| splFlag = convertToSpl <$> parseHN inFile >>= output
+		| otherwise = processWith compileFile
