@@ -16,7 +16,7 @@ data O = O
 
 defaultO = O S.empty M.empty []
 
-xxx opts = foldM f defaultO opts where
+xxx = foldM f defaultO where
 	f o (OptBool opt) = if S.member opt $ oBool o 
 		then throwError $ "Duplicate " ++ opt ++ " option"
 		else return o { oBool = S.insert opt (oBool o) }

@@ -1,5 +1,5 @@
 module Main (main) where
-
+import Control.Applicative
 import Test.QuickCheck
 import Test.HUnit
 
@@ -60,7 +60,7 @@ instance Show Foo where
 	show (Foo x) = show x ++ "\n\n" ++ showAsSource x
 
 instance Arbitrary Foo where
-	arbitrary = arbitrary >>= return . Foo
+	arbitrary = Foo <$> arbitrary
 
 typeCheck xs = case SPL.Top.check2 xs of
 	SPL.Check3.P _ -> True
@@ -72,7 +72,7 @@ ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 	fp = fullParse x
 
 fullParse t = remove_cdebug $
-	case (case (parse t) of SPL.Parser2.P _ _ x _ -> compile0 x ; SPL.Parser2.N _ _ -> error "QuickCheck.fullParse.1: Parsing failed") of SPL.Compiler.P xx -> xx ; SPL.Compiler.N _ aa -> error $ show aa
+	case (case parse t of SPL.Parser2.P _ _ x _ -> compile0 x ; SPL.Parser2.N _ _ -> error "QuickCheck.fullParse.1: Parsing failed") of SPL.Compiler.P xx -> xx ; SPL.Compiler.N _ aa -> error $ show aa
 
 tests = map ttt [
 		"(less (incr 2*foo:2) 2*foo:less (incr 2*foo:2) 2)*foo:1b"

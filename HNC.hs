@@ -34,7 +34,7 @@ main = runOptions options ff
 ff (O oBool oString oNonOptions) = f where  
 	b x = S.member x oBool
 	hni = importHni $ M.findWithDefault "lib/lib.hni" "hni" oString
-	output = if (length oNonOptions == 2) then writeFile outFile else putStr
+	output = if length oNonOptions == 2 then writeFile outFile else putStr
 	outFile = oNonOptions !! 1
 	inFile = oNonOptions !! 0
 	dumpOptFlag = b "dump-opt"
