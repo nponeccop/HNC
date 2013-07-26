@@ -1,0 +1,7 @@
+hnMain = {
+	plusX x = {
+		f y = sum x y
+		f
+	}
+	print ((plusX 5) 4)
+}

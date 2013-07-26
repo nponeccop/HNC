@@ -1,0 +1,4 @@
+hnMain = {
+	g x total = 1
+	print (natrec g 0 100)
+}

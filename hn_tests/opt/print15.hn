@@ -1,0 +1,4 @@
+hnMain = {
+	f x y = voidbind (print x) y
+	natrec f (print "") 15
+}

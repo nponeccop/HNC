@@ -1,0 +1,1 @@
+foldStr f e s = s

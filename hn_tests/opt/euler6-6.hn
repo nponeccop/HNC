@@ -1,0 +1,4 @@
+hnMain = {
+	id x y = 5
+	print (natrec id 6 5)
+}

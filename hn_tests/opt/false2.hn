@@ -1,0 +1,1 @@
+hMain = print (sum 5 7)
