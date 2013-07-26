@@ -78,12 +78,15 @@ rewriteExitL dn f = case dn of
 
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
-	Just x -> rewriteAtomApplication $ xtrace ("rewriteAtomApplication fact " ++ show a) x where
+	Just x -> xtrace ("rewriteAtomApplication of " ++ show a ++ " to " ++ show b) $ rewriteAtomApplication $ xtrace ("rewriteAtomApplication fact " ++ show a) x where
 		rewriteAtomApplication :: ListFact -> Maybe (Expression Label)
-		rewriteAtomApplication x = case x of
+		rewriteAtomApplication aDef = case aDef of
 			Top -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "Top.b" b) f
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
+				LetNode [] expr -> Just $ Application expr $ case rewriteArgs b f of
+					Nothing -> b
+					Just b' -> b'
 				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a) $ inlineApplication expr args b f
 				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
 				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f	
@@ -109,15 +112,18 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 			ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
 
 rewriteApplication a b f = case rewriteExpression a f of
-	Nothing -> fmap (Application a) $ xtrace ("rewriteArgs " ++ show b) $ rewriteArgs b f
-	Just _ -> Nothing --error "rapp.Just" 
+	Nothing -> case rewriteArgs b f of
+		Nothing -> ztrace ("rewriteArgsNothing " ++ show b) Nothing
+		Just b' -> Just $ (Application a) $ ztrace ("rewriteArgs " ++ show b) b' 
+	Just _ -> error "rapp.Just" 
 
-inlineApplication inlinedBody formalArgs actualArgs f = case (rewriteExpression inlinedBody $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) of
-	Nothing -> Just inlinedBody
-	Just x -> Just x
+inlineApplication inlinedBody formalArgs actualArgs f = let f' = flip mapUnion f $ mapFromList $ zip (xtrace "formalArgs" formalArgs) $ map (PElem . LetNode []) actualArgs  
+	in case xtrace ("inlineApp.inlineBody of " ++ show inlinedBody) $ rewriteExpression inlinedBody f' of
+		Nothing -> Just $ xtrace "inlineApp.inlinedBody" inlinedBody
+		Just x -> Just $ xtrace "inlineApp.rewrittenBody" x
 
 rewriteArgs [] _ = Nothing
-rewriteArgs (a : at) f = case (rewriteArgs at f, rewriteExpression a f) of
+rewriteArgs (a : at) f = xtrace ("rewriteArgs " ++ show (a : at) ++ " is ") $ case (rewriteArgs at f, rewriteExpression a f) of
 	(Nothing , Nothing) -> Nothing
 	(Nothing , Just a') -> Just $ a' : at
 	(Just at', Nothing) -> Just $ a : at'
