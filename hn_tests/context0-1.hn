@@ -1,0 +1,6 @@
+foo = {
+	ap foo bar = foo bar
+	t4 xx = incr xx
+	t3 x = ap t4 x
+	t3 5
+}

@@ -1,4 +1,0 @@
-foo y = {
-	t4 x = sum x y
-	t4
-}

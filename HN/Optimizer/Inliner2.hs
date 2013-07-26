@@ -87,7 +87,7 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 				LetNode [] expr -> Just $ Application expr $ case rewriteArgs b f of
 					Nothing -> b
 					Just b' -> b'
-				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a) $ inlineApplication expr args b f
+				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a ++ ":" ++ show b) $ inlineApplication expr args b f
 				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
 				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f	
 
@@ -114,10 +114,10 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 rewriteApplication a b f = case rewriteExpression a f of
 	Nothing -> case rewriteArgs b f of
 		Nothing -> ztrace ("rewriteArgsNothing " ++ show b) Nothing
-		Just b' -> Just $ (Application a) $ ztrace ("rewriteArgs " ++ show b) b' 
+		Just b' -> Just $ (Application a) $ xtrace ("rewriteArgs " ++ show b) b' 
 	Just _ -> error "rapp.Just" 
 
-inlineApplication inlinedBody formalArgs actualArgs f = let f' = flip mapUnion f $ mapFromList $ zip (xtrace "formalArgs" formalArgs) $ map (PElem . LetNode []) actualArgs  
+inlineApplication inlinedBody formalArgs actualArgs f = let f' = flip mapUnion f $ mapFromList $ xtrace "zipped" $ zip formalArgs $ map (PElem . LetNode []) actualArgs  
 	in case xtrace ("inlineApp.inlineBody of " ++ show inlinedBody) $ rewriteExpression inlinedBody f' of
 		Nothing -> Just $ xtrace "inlineApp.inlinedBody" inlinedBody
 		Just x -> Just $ xtrace "inlineApp.rewrittenBody" x
@@ -128,12 +128,18 @@ rewriteArgs (a : at) f = xtrace ("rewriteArgs " ++ show (a : at) ++ " is ") $ ca
 	(Nothing , Just a') -> Just $ a' : at
 	(Just at', Nothing) -> Just $ a : at'
 	(Just at', Just a') -> Just $ a' : at'
+	
+rewriteExpression expr f = case rewriteExpression2 expr f of
+	Nothing -> Nothing
+	Just expr' -> Just $ case rewriteExpression expr' f of
+		Nothing -> expr'
+		Just expr'' -> expr'' 
 
-rewriteExpression expr f =  case expr of
+rewriteExpression2 expr f =  case expr of
 	Constant _ -> Nothing
-	Atom a -> xtrace ("rewriteExpression Atom " ++ show a) $ case lookupFact a f of
+	Atom a -> case lookupFact a f of
 		Nothing -> error "rewriteExpression.Nothing"
-		Just x -> processAtom x
+		Just x -> xtrace ("rewriteExpression Atom " ++ show a ++ "[" ++ show x ++ "]" ++ show f) $ processAtom x
 	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 
 processAtom :: ListFact -> Maybe (Expression Label)
@@ -141,7 +147,7 @@ processAtom x = case x of
  	Top -> Nothing
  	Bot -> error "rewriteExitL.Bot"
  	PElem e -> case e of
-		ArgNode -> error "processFact.ArgNode"
+		ArgNode -> Nothing -- error "processFact.ArgNode"
 		LetNode [] e -> Just e
 		LetNode _ _ -> Nothing
 		LibNode -> Nothing
