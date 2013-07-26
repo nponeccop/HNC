@@ -1,0 +1,1 @@
+loopCond loopState = eq (deref (snd loopState)) 0

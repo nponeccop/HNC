@@ -1,0 +1,1 @@
+hnMain = print (sum (sum 1 5) 5)

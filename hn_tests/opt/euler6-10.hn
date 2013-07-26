@@ -1,0 +1,4 @@
+natr f = {
+	g x total = f x
+	natrec g 0 100
+}

@@ -1,0 +1,1 @@
+hnMain = print (sum (incr 5) (incr 6))

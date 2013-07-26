@@ -1,0 +1,1 @@
+monofunc xx = eq 0 (mod xx 7)
