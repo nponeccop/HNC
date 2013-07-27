@@ -45,17 +45,15 @@ rewriteApplication (Atom a) b f = case processAtom "rewriteApplication.Single" a
 	Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
 	Just (args, expr) -> inlineApplication args b f expr	
 
-rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of
+rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of 
 	Nothing -> Nothing
-	Just ([], _) -> error "rewriteApplication.double.LetNode.var"
-	Just (outerParams, body) -> case body of
- 		Atom aOuterBody -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
-			Just (innerParams, innerBody) -> case inlineApplication innerParams c f innerBody of
-				Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
-				Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
-				Nothing -> Nothing						
-			_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
- 		_ -> error "rewriteApplication.double.LetNode.fn"
+	Just ([], _) -> error "rewriteApplication.double.var"
+	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
+		Just (innerParams, innerBody) -> case inlineApplication innerParams c f innerBody of
+			Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
+			Just _ -> error "rewriteApplication.double.fn.Just.noApp"
+			Nothing -> Nothing						
+		_ -> error "rewriteApplication.double.fn.Nothing"
 
 rewriteApplication a b f = case rewriteExpression f a of
 	Nothing -> Application a <$> rewriteArgs f b 
