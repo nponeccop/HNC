@@ -40,26 +40,22 @@ uncondLookupFact err a f = case lookupFact a f of
 	Just x -> x
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
 
-rewriteApplication (Atom a) b f = case processAtom $ uncondLookupFact "rewriteApplication.Single" a f of
+rewriteApplication (Atom a) b f = case processAtom "rewriteApplication.Single" a f of
 	Nothing -> Application (Atom a) <$> rewriteArgs f b
 	Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
 	Just (args, expr) -> inlineApplication args b f expr	
 
-rewriteApplication (Application (Atom a) b) c f = case uncondLookupFact "rewriteApplication.Double.1" a f of
-	Top -> error "rewriteApplication.double.Top"
-	Bot -> error "rewriteApplication.double.Bot"
-	PElem x -> case x of
- 		LetNode [] _ -> error "rewriteApplication.double.LetNode.var"
- 		LetNode outerParams body -> case body of
- 			Atom aOuterBody -> case processAtom $ uncondLookupFact "rewriteApplication.Double.2" aOuterBody f of
-				Just (innerParams, innerBody) -> case inlineApplication innerParams c f innerBody of
-					Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
-					Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
-					Nothing -> Nothing						
-				_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
- 			_ -> error "rewriteApplication.double.LetNode.fn"
-		LibNode -> error "rewriteApplication.double.LibNode"
-		ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
+rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of
+	Nothing -> Nothing
+	Just ([], _) -> error "rewriteApplication.double.LetNode.var"
+	Just (outerParams, body) -> case body of
+ 		Atom aOuterBody -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
+			Just (innerParams, innerBody) -> case inlineApplication innerParams c f innerBody of
+				Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
+				Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
+				Nothing -> Nothing						
+			_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
+ 		_ -> error "rewriteApplication.double.LetNode.fn"
 
 rewriteApplication a b f = case rewriteExpression f a of
 	Nothing -> Application a <$> rewriteArgs f b 
@@ -83,16 +79,12 @@ rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
 rewriteExpression2 :: FactBase ListFact -> Rewrite (Expression Label)
 rewriteExpression2 f expr =  case expr of
 	Constant _ -> Nothing
-	Atom a -> case processAtom $ uncondLookupFact "rewriteExpression2" a f of
+	Atom a -> case processAtom "rewriteExpression2" a f of
 		Just ([], e) -> Just e
 		_ -> Nothing
 	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
-
-processAtom :: ListFact -> Maybe ([Label], Expression Label)
-processAtom x = case x of
- 	Top -> Nothing
+	
+processAtom err a f = case uncondLookupFact err a f of
  	Bot -> error "rewriteExitL.Bot"
- 	PElem e -> case e of
-		ArgNode -> Nothing -- error "processFact.ArgNode"
-		LetNode args body -> Just (args, body)
-		LibNode -> Nothing
+ 	PElem (LetNode args body) -> Just (args, body)
+	_ -> Nothing
