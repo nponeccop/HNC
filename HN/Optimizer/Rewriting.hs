@@ -36,31 +36,30 @@ apply1 cons rewriter el = fmap cons $ rewriter el
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
 apply2 cons rh rt h t = undefined  
 
-rewriteApplication (Atom a) b f = let onlyArgs = Application (Atom a) <$> rewriteArgs f b
-	in case lookupFact a f of
-		Nothing -> error "rapp.Atom.Nothing"
-		Just x -> case processAtom2 x of
- 			Nothing -> onlyArgs
-			Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
-			Just (args, expr) -> inlineApplication args b f expr	
+uncondLookupFact err a f = case lookupFact a f of
+	Just x -> x
+	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
 
-rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
-	Nothing -> error "rewriteApplication.double.Nothing"
-	Just x -> case x of
-		Top -> error "rewriteApplication.double.Top"
-		Bot -> error "rewriteApplication.double.Bot"
-		PElem x -> case x of
- 			LetNode [] _ -> error "rewriteApplication.double.LetNode.var"
- 			LetNode outerParams body -> case body of
- 				Atom aOuterBody -> case lookupFact aOuterBody f of
-					Just (PElem (LetNode innerParams innerBody)) -> case inlineApplication innerParams c f innerBody of
-						Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
-						Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
-						Nothing -> Nothing						
-					_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
- 				_ -> error "rewriteApplication.double.LetNode.fn"
-			LibNode -> error "rewriteApplication.double.LibNode"
-			ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
+rewriteApplication (Atom a) b f = case processAtom $ uncondLookupFact "rewriteApplication.Single" a f of
+	Nothing -> Application (Atom a) <$> rewriteArgs f b
+	Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
+	Just (args, expr) -> inlineApplication args b f expr	
+
+rewriteApplication (Application (Atom a) b) c f = case uncondLookupFact "rewriteApplication.Double.1" a f of
+	Top -> error "rewriteApplication.double.Top"
+	Bot -> error "rewriteApplication.double.Bot"
+	PElem x -> case x of
+ 		LetNode [] _ -> error "rewriteApplication.double.LetNode.var"
+ 		LetNode outerParams body -> case body of
+ 			Atom aOuterBody -> case processAtom $ uncondLookupFact "rewriteApplication.Double.2" aOuterBody f of
+				Just (innerParams, innerBody) -> case inlineApplication innerParams c f innerBody of
+					Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
+					Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
+					Nothing -> Nothing						
+				_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
+ 			_ -> error "rewriteApplication.double.LetNode.fn"
+		LibNode -> error "rewriteApplication.double.LibNode"
+		ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
 
 rewriteApplication a b f = case rewriteExpression f a of
 	Nothing -> Application a <$> rewriteArgs f b 
@@ -78,23 +77,19 @@ lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
 	Nothing -> cons h <$> rewriteTail t
 	Just h' -> cons h' <$> Just (dropR rewriteTail t)
 
+rewriteExpression :: FactBase ListFact -> Rewrite (Expression Label)
 rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
 
 rewriteExpression2 :: FactBase ListFact -> Rewrite (Expression Label)
 rewriteExpression2 f expr =  case expr of
 	Constant _ -> Nothing
-	Atom a -> case lookupFact a f of
-		Nothing -> error "rewriteExpression.Nothing"
-		Just x -> xtrace ("rewriteExpression Atom " ++ show a ++ "[" ++ show x ++ "]" ++ show f) $ processAtom x
+	Atom a -> case processAtom $ uncondLookupFact "rewriteExpression2" a f of
+		Just ([], e) -> Just e
+		_ -> Nothing
 	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 
-processAtom :: ListFact -> Maybe (Expression Label)
-processAtom x = case processAtom2 x of
-	Just ([], e) -> Just e
-	_ -> Nothing
-
-processAtom2 :: ListFact -> Maybe ([Label], Expression Label)
-processAtom2 x = case x of
+processAtom :: ListFact -> Maybe ([Label], Expression Label)
+processAtom x = case x of
  	Top -> Nothing
  	Bot -> error "rewriteExitL.Bot"
  	PElem e -> case e of
