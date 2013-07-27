@@ -13,8 +13,9 @@ import Data.Maybe
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
-import Utils
+import HN.Optimizer.Rewriting
 import HN.Optimizer.Visualise ()
+import Utils
 
 {-
 Инлайнинг:
@@ -77,7 +78,7 @@ rewriteBL = mkBRewrite cp where
 rewriteExitL dn f = case dn of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression expr f
+	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression f expr
 	
 
 rewriteApplication (Atom a) b f = case lookupFact a f of
@@ -85,13 +86,13 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 	Just x -> xtrace ("rewriteAtomApplication of " ++ show a ++ " to " ++ show b) $ rewriteAtomApplication $ xtrace ("rewriteAtomApplication fact " ++ show a) x where
 		rewriteAtomApplication :: ListFact -> Maybe (Expression Label)
 		rewriteAtomApplication aDef = case aDef of
-			Top -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "Top.b" b) f
+			Top -> fmap (Application $ Atom a) $ rewriteArgs f (xtrace "Top.b" b)
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
-				LetNode [] expr -> Just $ Application expr $ fromMaybe b (rewriteArgs b f)
+				LetNode [] expr -> Just $ Application expr $ fromMaybe b (rewriteArgs f b)
 				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a ++ ":" ++ show b) $ inlineApplication expr args b f
-				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
-				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f	
+				LibNode -> fmap (Application $ Atom a) $ rewriteArgs f(xtrace "LibNode.b" b)
+				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs f (xtrace "ArgNode.b" b)	
 
 rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 	Nothing -> error "rewriteApplication.double.Nothing"
@@ -113,45 +114,35 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 			LibNode -> error "rewriteApplication.double.LibNode"
 			ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
 
-rewriteApplication a b f = case rewriteExpression a f of
-	Nothing -> case rewriteArgs b f of
+rewriteApplication a b f = case rewriteExpression f a of
+	Nothing -> case rewriteArgs f b of
 		Nothing -> ztrace ("rewriteArgsNothing " ++ show b) Nothing
 		Just b' -> Just $ Application a $ xtrace ("rewriteArgs " ++ show b) b' 
 	Just _ -> error "rapp.Just" 
 
-inlineApplication inlinedBody formalArgs actualArgs f = let f' = flip mapUnion f $ mapFromList $ xtrace "zipped" $ zip formalArgs $ map (PElem . LetNode []) actualArgs  
-	in case xtrace ("inlineApp.inlineBody of " ++ show inlinedBody) $ rewriteExpression inlinedBody f' of
-		Nothing -> Just $ xtrace "inlineApp.inlinedBody" inlinedBody
-		Just x -> Just $ xtrace "inlineApp.rewrittenBody" x
+inlineApplication inlinedBody formalArgs actualArgs f 
+	= Just $ fromMaybe inlinedBody $ rewriteExpression (flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) inlinedBody 
 
-rewriteArgs [] _ = Nothing
-rewriteArgs (a : at) f = xtrace ("rewriteArgs " ++ show (a : at) ++ " is ") $ case (rewriteArgs at f, rewriteExpression a f) of
+rewriteArgs :: FactBase ListFact -> Rewrite [Expression Label]
+rewriteArgs f [] = Nothing
+rewriteArgs f (a : at) = xtrace ("rewriteArgs " ++ show (a : at) ++ " is ") $ case (rewriteArgs f at, rewriteExpression f a) of
 	(Nothing , Nothing) -> Nothing
 	(Nothing , Just a') -> Just $ a' : at
 	(Just at', Nothing) -> Just $ a : at'
 	(Just at', Just a') -> Just $ a' : at'
 
-rewriteArgs2  :: [Expression Label] -> FactBase ListFact -> Maybe [Expression Label]
+rewriteArgs2  :: FactBase ListFact -> Rewrite [Expression Label]
+rewriteArgs2 f (h : t) = lift2 (:) (rewriteExpression f) h (rewriteArgs2 f) t
 
-rewriteArgs2 l f = ff l where
-	ff (h : t) = lift2 (:) (\a -> rewriteExpression a f) h ff t   
-
+lift2 :: (t -> a1 -> a) -> Rewrite t -> t -> Rewrite a1 -> a1 -> Maybe a 
 lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
 	Nothing -> cons h <$> rewriteTail t
 	Just h' -> Just $ cons h' $ fromMaybe t $ rewriteTail t
-
-apply a x = fromMaybe x (a x)
 	
-compose a b x = if ch then Just result else Nothing where
-	result = apply b $ apply a x
-	ch = changed (a x) || changed (b x)
-	changed Nothing = False
-	changed _ = True
-   	
-	
-rewriteExpression expr f = apply (\e -> rewriteExpression e f) <$> rewriteExpression2 expr f
+rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
 
-rewriteExpression2 expr f =  case expr of
+rewriteExpression2 :: FactBase ListFact -> Rewrite (Expression Label)
+rewriteExpression2 f expr =  case expr of
 	Constant _ -> Nothing
 	Atom a -> case lookupFact a f of
 		Nothing -> error "rewriteExpression.Nothing"

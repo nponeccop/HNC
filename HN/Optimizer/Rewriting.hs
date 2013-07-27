@@ -1,6 +1,32 @@
-{-# LANGUAGE DeriveFunctor #-}
+module HN.Optimizer.Rewriting where
 
-import Data.Functor.Fixedpoint
+import Data.Maybe
+
+type Rewrite a = a -> Maybe a
+
+composeR :: Rewrite a -> Rewrite a -> Rewrite a
+composeR a b x = if ch then Just result else Nothing where
+	result = dropR b $ dropR a x
+	ch = changed (a x) || changed (b x)
+	
+
+changed Nothing = False
+changed _ = True
+	
+dropR :: Rewrite a -> a -> a
+dropR a x = fromMaybe x (a x)
+	
+unitR :: Rewrite a
+unitR = const Nothing
+	
+liftR :: (t -> a) -> Rewrite t -> t -> a
+liftR f rf x = f $ dropR rf x
+
+apply1 :: (a -> b) -> Rewrite a -> a -> Maybe b
+apply1 cons rewriter el = fmap cons $ rewriter el
+
+apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
+apply2 cons rh rt h t = undefined  
 
 {-
 x = cata phi where
@@ -30,8 +56,6 @@ compose f g t = case f t of
 
 apply f t jt' = case jt' of
 	Nothing -> f 
--}	
-
 
 data GTerm a = Atom | Application (GTerm a) (GTerm a) deriving (Functor)
 
@@ -49,8 +73,8 @@ simpleRewriteTop rewriteTop t = case rewriteTop t of
  	Just t' -> simpleRewriteTop rewriteTop t'
 
 
-
-
+newtype Rewritten a = Rewritten (Maybe a)
+-}	
 
 {- case rewriteTop t of
 	Nothing -> t
