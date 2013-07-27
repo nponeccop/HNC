@@ -1,6 +1,15 @@
-module HN.Optimizer.Rewriting where
+{-# LANGUAGE GADTs #-}
+module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
 
 import Data.Maybe
+import Control.Applicative
+import Compiler.Hoopl
+import Data.Maybe
+import HN.Intermediate
+import HN.Optimizer.Node
+import HN.Optimizer.Pass
+import HN.Optimizer.Visualise ()
+import Utils
 
 type Rewrite a = a -> Maybe a
 
@@ -8,7 +17,8 @@ composeR :: Rewrite a -> Rewrite a -> Rewrite a
 composeR a b x = if ch then Just result else Nothing where
 	result = dropR b $ dropR a x
 	ch = changed (a x) || changed (b x)
-	
+
+type ListFact = WithTopAndBot DefinitionNode	
 
 changed Nothing = False
 changed _ = True
@@ -28,66 +38,70 @@ apply1 cons rewriter el = fmap cons $ rewriter el
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
 apply2 cons rh rt h t = undefined  
 
-{-
-x = cata phi where
-	phi Atom = Nothing
-	phi (Application a b) = apply Application a b
+rewriteApplication (Atom a) b f = case lookupFact a f of
+		Nothing -> error "rapp.Atom.Nothing"
+		Just x -> case x of
+			Top -> Application (Atom a) <$> rewriteArgs f b
+			Bot -> error "rapp.bot"
+			PElem x -> case x of
+				LetNode [] expr -> Just $ Application expr $ dropR (rewriteArgs f) b
+				LetNode args expr -> inlineApplication args b f expr
+				LibNode -> Application (Atom a) <$> rewriteArgs f b
+				ArgNode -> Application (Atom a) <$> rewriteArgs f b	
 
-apply2 cons a b = case (a, b) of
-	(Nothing, Nothing) -> Nothing
- 	(Just a', Nothing) -> Just $ cons a' b
-  	(Nothing, Just b') -> Just $ cons a b' 
+rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
+	Nothing -> error "rewriteApplication.double.Nothing"
+	Just x -> case x of
+		Top -> error "rewriteApplication.double.Top"
+		Bot -> error "rewriteApplication.double.Bot"
+		PElem x -> case x of
+ 			LetNode [] _ -> error "rewriteApplication.double.LetNode.var"
+ 			LetNode outerParams body -> case body of
+ 				Atom aOuterBody -> case lookupFact aOuterBody f of
+					Just (PElem (LetNode innerParams innerBody)) -> case inlineApplication innerParams c f innerBody of
+						Just (Application aa bb) -> (\x -> Application x bb) <$> (Just $ dropR (inlineApplication outerParams b f) aa)
+						Just _ -> error "rewriteApplication.double.LetNode.fn.Just.noApp"
+						Nothing -> Nothing						
+					_ -> error "rewriteApplication.double.LetNode.fn.atombody.cannotInline"
+ 				_ -> error "rewriteApplication.double.LetNode.fn"
+			LibNode -> error "rewriteApplication.double.LibNode"
+			ArgNode -> Nothing -- error "rewriteApplication.double.ArgNode"
 
+rewriteApplication a b f = case rewriteExpression f a of
+	Nothing -> Application a <$> rewriteArgs f b 
+	Just _ -> error "rapp.Just" 
 
+inlineApplication formalArgs actualArgs f inlinedBody 
+	= Just $ fromMaybe inlinedBody $ rewriteExpression (flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) inlinedBody 
 
-rewrite t = case rewriter t of
-	Nothing -> rewriteChildren t
-	x @ (Just t') -> case rewriteChildren t' of
-		Nothing -> x
-		xx -> xx
+rewriteArgs  :: FactBase ListFact -> Rewrite [Expression Label]
+rewriteArgs f [] = Nothing 
+rewriteArgs f (h : t) = lift2 (:) (rewriteExpression f) h (rewriteArgs f) t
 
-rewrite2 = compose rewriter rewriteChildren
+lift2 :: (t -> a1 -> a) -> Rewrite t -> t -> Rewrite a1 -> a1 -> Maybe a 
+lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
+	Nothing -> cons h <$> rewriteTail t
+	Just h' -> Just $ cons h' $ fromMaybe t $ rewriteTail t
 
-compose f g t = case f t of
-	Nothing -> g t
-	x @ (Just t') -> case g t' of
-		Nothing -> x
-		xx -> xx
+rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
 
-apply f t jt' = case jt' of
-	Nothing -> f 
+rewriteExpression2 :: FactBase ListFact -> Rewrite (Expression Label)
+rewriteExpression2 f expr =  case expr of
+	Constant _ -> Nothing
+	Atom a -> case lookupFact a f of
+		Nothing -> error "rewriteExpression.Nothing"
+		Just x -> xtrace ("rewriteExpression Atom " ++ show a ++ "[" ++ show x ++ "]" ++ show f) $ processAtom x
+	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 
-data GTerm a = Atom | Application (GTerm a) (GTerm a) deriving (Functor)
-
-type Term = Fix GTerm
-
-rewriteTop :: Term -> Maybe Term
-rewriteTop x = undefined
-
-rewriteChildren :: Term -> Maybe Term
-rewriteChildren x = undefined
-
-simpleRewriteTop :: (Term -> Maybe Term) -> Term -> Term
-simpleRewriteTop rewriteTop t = case rewriteTop t of
-	Nothing -> t
- 	Just t' -> simpleRewriteTop rewriteTop t'
-
-
-newtype Rewritten a = Rewritten (Maybe a)
--}	
-
-{- case rewriteTop t of
-	Nothing -> t
- 	Just t' -> rewriteTop t'
--}	
-{-
-simpleDeepRewrite simpleRewriteTop t = simpleRewriteTop $ case t of
-	Atom -> Atom
-	Application a b -> Application $ (simpleRewriteTop a) (simpleRewriteTop b) 
--}
-
-
-
+processAtom :: ListFact -> Maybe (Expression Label)
+processAtom x = case x of
+ 	Top -> Nothing
+ 	Bot -> error "rewriteExitL.Bot"
+ 	PElem e -> case e of
+		ArgNode -> Nothing -- error "processFact.ArgNode"
+		LetNode [] e -> Just e
+		LetNode _ _ -> Nothing
+		LibNode -> Nothing
 
 
 
