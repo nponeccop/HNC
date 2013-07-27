@@ -4,10 +4,8 @@ module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
 import Data.Maybe
 import Control.Applicative
 import Compiler.Hoopl
-import Data.Maybe
 import HN.Intermediate
 import HN.Optimizer.Node
-import HN.Optimizer.Pass
 import HN.Optimizer.Visualise ()
 import Utils
 
@@ -38,16 +36,17 @@ apply1 cons rewriter el = fmap cons $ rewriter el
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
 apply2 cons rh rt h t = undefined  
 
-rewriteApplication (Atom a) b f = case lookupFact a f of
+rewriteApplication (Atom a) b f = let onlyArgs = Application (Atom a) <$> rewriteArgs f b
+	in case lookupFact a f of
 		Nothing -> error "rapp.Atom.Nothing"
 		Just x -> case x of
-			Top -> Application (Atom a) <$> rewriteArgs f b
+			Top -> onlyArgs
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
-				LetNode [] expr -> Just $ Application expr $ dropR (rewriteArgs f) b
+				LetNode [] expr -> Application expr <$> Just (dropR (rewriteArgs f) b)
 				LetNode args expr -> inlineApplication args b f expr
-				LibNode -> Application (Atom a) <$> rewriteArgs f b
-				ArgNode -> Application (Atom a) <$> rewriteArgs f b	
+				LibNode -> onlyArgs
+				ArgNode -> onlyArgs	
 
 rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 	Nothing -> error "rewriteApplication.double.Nothing"
@@ -71,8 +70,8 @@ rewriteApplication a b f = case rewriteExpression f a of
 	Nothing -> Application a <$> rewriteArgs f b 
 	Just _ -> error "rapp.Just" 
 
-inlineApplication formalArgs actualArgs f inlinedBody 
-	= Just $ fromMaybe inlinedBody $ rewriteExpression (flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) inlinedBody 
+inlineApplication formalArgs actualArgs f
+	= Just . dropR (rewriteExpression (flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs)) 
 
 rewriteArgs  :: FactBase ListFact -> Rewrite [Expression Label]
 rewriteArgs f [] = Nothing 
@@ -81,7 +80,7 @@ rewriteArgs f (h : t) = lift2 (:) (rewriteExpression f) h (rewriteArgs f) t
 lift2 :: (t -> a1 -> a) -> Rewrite t -> t -> Rewrite a1 -> a1 -> Maybe a 
 lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
 	Nothing -> cons h <$> rewriteTail t
-	Just h' -> Just $ cons h' $ fromMaybe t $ rewriteTail t
+	Just h' -> cons h' <$> Just (dropR rewriteTail t)
 
 rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
 
@@ -102,29 +101,3 @@ processAtom x = case x of
 		LetNode [] e -> Just e
 		LetNode _ _ -> Nothing
 		LibNode -> Nothing
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
