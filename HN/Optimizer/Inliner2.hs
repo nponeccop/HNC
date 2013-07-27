@@ -1,54 +1,57 @@
 {-
 
-Идея - использовать Hoopl как фреймворк произвольных оптимизаторов графов,
-а не только "императивной лапши с Goto", как описано в статье
+РРґРµСЏ - РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ Hoopl РєР°Рє С„СЂРµР№РјРІРѕСЂРє РїСЂРѕРёР·РІРѕР»СЊРЅС‹С… РѕРїС‚РёРјРёР·Р°С‚РѕСЂРѕРІ РіСЂР°С„РѕРІ,
+Р° РЅРµ С‚РѕР»СЊРєРѕ "РёРјРїРµСЂР°С‚РёРІРЅРѕР№ Р»Р°РїС€Рё СЃ Goto", РєР°Рє РѕРїРёСЃР°РЅРѕ РІ СЃС‚Р°С‚СЊРµ
 
 -}
 {-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction #-}
 module HN.Optimizer.Inliner2 (runB) where
 
+import Control.Applicative
 import Compiler.Hoopl
+import Data.Maybe
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import Utils
 import HN.Optimizer.Visualise ()
-{-
-Инлайнинг:
 
-Вход:
+{-
+РРЅР»Р°Р№РЅРёРЅРі:
+
+Р’С…РѕРґ:
 
 foo x = {
 	bar x = incr x
 	bar x
 }
 
-Факты:
+Р¤Р°РєС‚С‹:
 
 bar -> 1
 
-Выход (без учета других оптимизаций):
+Р’С‹С…РѕРґ (Р±РµР· СѓС‡РµС‚Р° РґСЂСѓРіРёС… РѕРїС‚РёРјРёР·Р°С†РёР№):
 
 foo x = {
 	bar x = incr x
 	incr x
 }
 
-Основа Hoopl - таблица меток, содержащая факты - результаты анализа перехода на метку.
+РћСЃРЅРѕРІР° Hoopl - С‚Р°Р±Р»РёС†Р° РјРµС‚РѕРє, СЃРѕРґРµСЂР¶Р°С‰Р°СЏ С„Р°РєС‚С‹ - СЂРµР·СѓР»СЊС‚Р°С‚С‹ Р°РЅР°Р»РёР·Р° РїРµСЂРµС…РѕРґР° РЅР° РјРµС‚РєСѓ.
 
-Попробую использовать таблицу символов, содержащую факты - результаты анализа
+РџРѕРїСЂРѕР±СѓСЋ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚Р°Р±Р»РёС†Сѓ СЃРёРјРІРѕР»РѕРІ, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ С„Р°РєС‚С‹ - СЂРµР·СѓР»СЊС‚Р°С‚С‹ Р°РЅР°Р»РёР·Р°
 
-Для начала можно попробовать универсальные узлы без данных. В таком
-виде можно представить любой граф. Конструктору узла передаются
-два параметра: имя узла и имена узлов, к которым идут дуги.
+Р”Р»СЏ РЅР°С‡Р°Р»Р° РјРѕР¶РЅРѕ РїРѕРїСЂРѕР±РѕРІР°С‚СЊ СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Рµ СѓР·Р»С‹ Р±РµР· РґР°РЅРЅС‹С…. Р’ С‚Р°РєРѕРј
+РІРёРґРµ РјРѕР¶РЅРѕ РїСЂРµРґСЃС‚Р°РІРёС‚СЊ Р»СЋР±РѕР№ РіСЂР°С„. РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂСѓ СѓР·Р»Р° РїРµСЂРµРґР°СЋС‚СЃСЏ
+РґРІР° РїР°СЂР°РјРµС‚СЂР°: РёРјСЏ СѓР·Р»Р° Рё РёРјРµРЅР° СѓР·Р»РѕРІ, Рє РєРѕС‚РѕСЂС‹Рј РёРґСѓС‚ РґСѓРіРё.
 
-Пока похоже, что составные блоки нужны только для императивных последовательностей инструкций
+РџРѕРєР° РїРѕС…РѕР¶Рµ, С‡С‚Рѕ СЃРѕСЃС‚Р°РІРЅС‹Рµ Р±Р»РѕРєРё РЅСѓР¶РЅС‹ С‚РѕР»СЊРєРѕ РґР»СЏ РёРјРїРµСЂР°С‚РёРІРЅС‹С… РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚РµР№ РёРЅСЃС‚СЂСѓРєС†РёР№
 -}
 
 --data Node0 e x where
---	Node0 :: Label -> [Label] -> Node0 C С
+--	Node0 :: Label -> [Label] -> Node0 C РЎ
 
--- для блоков из одного СС-узла нет вспомогательных функций
+-- РґР»СЏ Р±Р»РѕРєРѕРІ РёР· РѕРґРЅРѕРіРѕ РЎРЎ-СѓР·Р»Р° РЅРµС‚ РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹С… С„СѓРЅРєС†РёР№
 
 type ListFact = WithTopAndBot DefinitionNode
 
@@ -75,6 +78,7 @@ rewriteExitL dn f = case dn of
 	LibNode -> Nothing
 	ArgNode -> Nothing
 	LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression expr f
+	
 
 rewriteApplication (Atom a) b f = case lookupFact a f of
 	Nothing -> error "rapp.Atom.Nothing"
@@ -84,9 +88,7 @@ rewriteApplication (Atom a) b f = case lookupFact a f of
 			Top -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "Top.b" b) f
 			Bot -> error "rapp.bot"
 			PElem x -> case x of
-				LetNode [] expr -> Just $ Application expr $ case rewriteArgs b f of
-					Nothing -> b
-					Just b' -> b'
+				LetNode [] expr -> Just $ Application expr $ fromMaybe b (rewriteArgs b f)
 				LetNode args expr -> xtrace ("rewriteAtomApplication rewritten LetNode " ++ show a ++ ":" ++ show b) $ inlineApplication expr args b f
 				LibNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "LibNode.b" b) f
 				ArgNode -> fmap (Application $ Atom a) $ rewriteArgs (xtrace "ArgNode.b" b) f	
@@ -114,7 +116,7 @@ rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 rewriteApplication a b f = case rewriteExpression a f of
 	Nothing -> case rewriteArgs b f of
 		Nothing -> ztrace ("rewriteArgsNothing " ++ show b) Nothing
-		Just b' -> Just $ (Application a) $ xtrace ("rewriteArgs " ++ show b) b' 
+		Just b' -> Just $ Application a $ xtrace ("rewriteArgs " ++ show b) b' 
 	Just _ -> error "rapp.Just" 
 
 inlineApplication inlinedBody formalArgs actualArgs f = let f' = flip mapUnion f $ mapFromList $ xtrace "zipped" $ zip formalArgs $ map (PElem . LetNode []) actualArgs  
@@ -128,12 +130,26 @@ rewriteArgs (a : at) f = xtrace ("rewriteArgs " ++ show (a : at) ++ " is ") $ ca
 	(Nothing , Just a') -> Just $ a' : at
 	(Just at', Nothing) -> Just $ a : at'
 	(Just at', Just a') -> Just $ a' : at'
+
+rewriteArgs2  :: [Expression Label] -> FactBase ListFact -> Maybe [Expression Label]
+
+rewriteArgs2 l f = ff l where
+	ff (h : t) = lift2 (:) (\a -> rewriteExpression a f) h ff t   
+
+lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
+	Nothing -> cons h <$> rewriteTail t
+	Just h' -> Just $ cons h' $ fromMaybe t $ rewriteTail t
+
+apply a x = fromMaybe x (a x)
 	
-rewriteExpression expr f = case rewriteExpression2 expr f of
-	Nothing -> Nothing
-	Just expr' -> Just $ case rewriteExpression expr' f of
-		Nothing -> expr'
-		Just expr'' -> expr'' 
+compose a b x = if ch then Just result else Nothing where
+	result = apply b $ apply a x
+	ch = changed (a x) || changed (b x)
+	changed Nothing = False
+	changed _ = True
+   	
+	
+rewriteExpression expr f = apply (\e -> rewriteExpression e f) <$> rewriteExpression2 expr f
 
 rewriteExpression2 expr f =  case expr of
 	Constant _ -> Nothing
@@ -176,13 +192,13 @@ foo x = {
 	bar x
 }
 
-Основная идея обратного анализа:
+РћСЃРЅРѕРІРЅР°СЏ РёРґРµСЏ РѕР±СЂР°С‚РЅРѕРіРѕ Р°РЅР°Р»РёР·Р°:
 
-На вход подается FactBase ListFact, полученный в результате прямого анализа,
-в котором для функций, которые нужно инлайнить, указано Bot, а для функций,
-которые не нужно инлайнить - Top.
+РќР° РІС…РѕРґ РїРѕРґР°РµС‚СЃСЏ FactBase ListFact, РїРѕР»СѓС‡РµРЅРЅС‹Р№ РІ СЂРµР·СѓР»СЊС‚Р°С‚Рµ РїСЂСЏРјРѕРіРѕ Р°РЅР°Р»РёР·Р°,
+РІ РєРѕС‚РѕСЂРѕРј РґР»СЏ С„СѓРЅРєС†РёР№, РєРѕС‚РѕСЂС‹Рµ РЅСѓР¶РЅРѕ РёРЅР»Р°Р№РЅРёС‚СЊ, СѓРєР°Р·Р°РЅРѕ Bot, Р° РґР»СЏ С„СѓРЅРєС†РёР№,
+РєРѕС‚РѕСЂС‹Рµ РЅРµ РЅСѓР¶РЅРѕ РёРЅР»Р°Р№РЅРёС‚СЊ - Top.
 
-Обратный анализатор для каждой функции возвращает [...]. Соответственно:
+РћР±СЂР°С‚РЅС‹Р№ Р°РЅР°Р»РёР·Р°С‚РѕСЂ РґР»СЏ РєР°Р¶РґРѕР№ С„СѓРЅРєС†РёРё РІРѕР·РІСЂР°С‰Р°РµС‚ [...]. РЎРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ:
 
 Top `join` [...] = Top
 Bottom `join` [...] = [...]
