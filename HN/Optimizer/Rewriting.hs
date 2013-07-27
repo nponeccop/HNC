@@ -36,10 +36,6 @@ apply1 cons rewriter el = fmap cons $ rewriter el
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
 apply2 cons rh rt h t = undefined  
 
-uncondLookupFact err a f = case lookupFact a f of
-	Just x -> x
-	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
-
 rewriteApplication (Atom a) b f = case processAtom "rewriteApplication.Single" a f of
 	Nothing -> Application (Atom a) <$> rewriteArgs f b
 	Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
@@ -58,8 +54,8 @@ rewriteApplication a b f = case rewriteExpression f a of
 	Nothing -> Application a <$> rewriteArgs f b 
 	Just _ -> error "rapp.Just" 
 
-inlineApplication formalArgs actualArgs f
-	= Just . dropR (rewriteExpression (flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs)) 
+inlineApplication formalArgs actualArgs f 
+	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
 
 rewriteArgs  :: FactBase ListFact -> Rewrite [Expression Label]
 rewriteArgs f [] = Nothing 
@@ -81,7 +77,9 @@ rewriteExpression2 f expr =  case expr of
 		_ -> Nothing
 	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 	
-processAtom err a f = case uncondLookupFact err a f of
- 	Bot -> error "rewriteExitL.Bot"
- 	PElem (LetNode args body) -> Just (args, body)
+processAtom err a f = case lookupFact a f of
+	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
+ 	Just Bot -> error $ err ++ ".rewriteExitL.Bot"
+ 	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
+
