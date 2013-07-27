@@ -1,0 +1,7 @@
+ii = {
+	comp f g = {
+		h x = incr (g 5)
+		h
+	}
+	comp 6 incr
+}
