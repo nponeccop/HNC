@@ -39,14 +39,10 @@ apply2 cons rh rt h t = undefined
 rewriteApplication (Atom a) b f = let onlyArgs = Application (Atom a) <$> rewriteArgs f b
 	in case lookupFact a f of
 		Nothing -> error "rapp.Atom.Nothing"
-		Just x -> case x of
-			Top -> onlyArgs
-			Bot -> error "rapp.bot"
-			PElem x -> case x of
-				LetNode [] expr -> Application expr <$> Just (dropR (rewriteArgs f) b)
-				LetNode args expr -> inlineApplication args b f expr
-				LibNode -> onlyArgs
-				ArgNode -> onlyArgs	
+		Just x -> case processAtom2 x of
+ 			Nothing -> onlyArgs
+			Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
+			Just (args, expr) -> inlineApplication args b f expr	
 
 rewriteApplication (Application (Atom a) b) c f = case lookupFact a f of
 	Nothing -> error "rewriteApplication.double.Nothing"
@@ -93,11 +89,15 @@ rewriteExpression2 f expr =  case expr of
 	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 
 processAtom :: ListFact -> Maybe (Expression Label)
-processAtom x = case x of
+processAtom x = case processAtom2 x of
+	Just ([], e) -> Just e
+	_ -> Nothing
+
+processAtom2 :: ListFact -> Maybe ([Label], Expression Label)
+processAtom2 x = case x of
  	Top -> Nothing
  	Bot -> error "rewriteExitL.Bot"
  	PElem e -> case e of
 		ArgNode -> Nothing -- error "processFact.ArgNode"
-		LetNode [] e -> Just e
-		LetNode _ _ -> Nothing
+		LetNode args body -> Just (args, body)
 		LibNode -> Nothing
