@@ -1,0 +1,7 @@
+ii = {
+	comp g = {
+		h x = g
+		h
+	}
+	comp incr
+}
