@@ -72,21 +72,21 @@ rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression = rewriteMany . rewriteExpression2 
 	
 rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression2 f = process $ \expr -> case expr of 
-	Constant _ -> Nothing
-	Atom a -> do 
+rewriteExpression2 f = process phi where
+	phi (Constant _) = Nothing
+	phi (Atom a) = do 
 		([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 		return e
-	Application aa @ (Fix (Atom _), _) bb -> let
+	phi (Application (a, _) bb) | isAtom (a) = let
 		-- b = map fst bb
 		b' = map (uncurry fromMaybe) bb
-		a = fst aa
 		bChanged = any (isJust . snd) bb
 		in case processAtom2 "rewriteApplication.Single" a f of
 			Nothing -> if bChanged then Just $ Fix $ Application a b' else Nothing
 			Just ([], expr) -> Just $ Fix $ Application expr b' 
 			Just (args, expr) -> inlineApplication args b' f expr
-	Application aa bb -> rewriteApplication (fst aa) (map fst bb) f
+	
+	phi (Application aa bb) = rewriteApplication (fst aa) (map fst bb) f
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
