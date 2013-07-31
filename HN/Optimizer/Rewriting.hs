@@ -36,42 +36,25 @@ rewriteApplication (Fix (Application a b)) c f = case processAtom2 "rewriteAppli
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
 inlineApplication formalArgs actualArgs f 
-	= Just . dropR (rewriteExpression2 $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
+	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
 
-rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression = rewriteMany . rewriteExpression2 
+rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
+rewriteExpression = process . phi
 	
-rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression2 = process2 . phi2
-	
-phi :: FactBase ListFact -> (ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix)
-phi f (Constant _) = Nothing
+phi :: FactBase ListFact -> ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix
+phi _ (Constant _) = Nothing
 phi f a @ (Atom _) = do 
-	([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
+	([], e) <- processAtom "rewriteExpression" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 	return e
-phi f expr @ (Application (a, _) bb) | isAtom (a) = let
+phi f expr @ (Application (a, _) bb) | isAtom a = let
 	b' = map (uncurry fromMaybe) bb
 	in case processAtom2 "rewriteApplication.Single" a f of
 		Nothing -> foo expr
 		Just ([], expr) -> Just $ Fix $ Application expr b' 
 		Just (args, expr) -> inlineApplication args b' f expr
-phi f (Application (a, _) bb) | isAtomApplication (a) = rewriteApplication a (map fst bb) f
-phi f expr @ (Application _ _) = foo expr
-
-
-phi2 :: FactBase ListFact -> (ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor))
-phi2 f (Constant _) = Nothing
-phi2 f a @ (Atom _) = do 
-	([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
-	return e
-phi2 f expr @ (Application a b') | isAtom (a) = case processAtom2 "rewriteApplication.Single" a f of
-	Nothing -> Nothing
-	Just ([], expr) -> Just $ Fix $ Application expr b' 
-	Just (args, expr) -> inlineApplication args b' f expr
-phi2 f (Application a bb) | isAtomApplication (a) = rewriteApplication a bb f
-phi2 f (Application a bb) = Nothing 
- 
-		
+phi f (Application (a, _) bb) | isAtomApplication a = rewriteApplication a (map fst bb) f
+phi _ expr @ (Application _ _) = foo expr
+	
 foo (Application (a, _) bb) = if bChanged then Just $ Fix $ Application a b' else Nothing where
 	b' = map (uncurry fromMaybe) bb 
 	bChanged = any (isJust . snd) bb
@@ -81,9 +64,8 @@ processAtom err (Atom a) f = case lookupFact a f of
  	Just Bot -> error $ err ++ ".rewriteExitL.Bot"
  	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
-
-
-processAtom2 err a f = processAtom err (unFix a) f 
+	
+processAtom2 err = processAtom err . unFix 
 
 process3 :: (Fix ExpressionFunctor -> c -> b) -> (ExpressionFunctor b -> c) -> Fix ExpressionFunctor -> c
 process3 j f = self
@@ -94,14 +76,19 @@ process = process3 (,)
 
 process2 :: (ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor)) -> Rewrite ExpressionFix
 process2 f = process ff where
-	ff x = let
- 		isChanged = F.any (isJust . snd) x
-		x' :: ExpressionFunctor ExpressionFix
-		x' = uncurry fromMaybe <$> x
+	ff x = let x' = uncurry fromMaybe <$> x
 		in case f x' of
- 			Nothing -> if isChanged then Just $ Fix x' else Nothing
+ 			Nothing -> if F.any (isJust . snd) x then Just $ Fix x' else Nothing
 			x -> x
-	
-rewriteMany :: Rewrite a -> Rewrite a
-rewriteMany clientRewrite x = clientRewrite x >>= rewriteAfterChange where
-	rewriteAfterChange x = (clientRewrite x >>= rewriteAfterChange) <|> return x
+
+phi2 :: FactBase ListFact -> ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor)
+phi2 _ (Constant _) = Nothing
+phi2 f a @ (Atom _) = do 
+	([], e) <- processAtom "rewriteExpression" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
+	return e
+phi2 f (Application a b') | isAtom a = case processAtom2 "rewriteApplication.Single" a f of
+	Nothing -> Nothing
+	Just ([], expr) -> Just $ Fix $ Application expr b' 
+	Just (args, expr) -> inlineApplication args b' f expr
+-- phi2 f (Application a bb) | isAtomApplication (a) = rewriteApplication a bb f
+-- phi2 f (Application a bb) = Nothing 
