@@ -1,10 +1,11 @@
 {-# LANGUAGE GADTs #-}
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
+import Data.Functor.Fixedpoint
 import Compiler.Hoopl
 import HN.Optimizer.Visualise ()
 import qualified Data.Map as M
-import HN.Optimizer.Node
+import qualified HN.Optimizer.Node as N
 import HN.Intermediate
 import HN.Optimizer.Dominator
 import Data.Maybe
@@ -19,12 +20,17 @@ decompileGraph labelNames g @ (GMany _ l _) = (insertLet foo $ fromJust $ decomp
 			Just entry -> entry
 		l2n l = M.findWithDefault (show l) l labelNames
 
-decompiledBlock :: Block Node C C -> DefinitionNode
+decompiledBlock :: Block N.Node C C -> N.DefinitionNode
 decompiledBlock x = foldBlockNodesB f x undefined where
-	f :: Node e x -> DefinitionNode -> DefinitionNode
-	f (Entry _) o = o
-	f (Exit d) _ = d
+	f :: N.Node e x -> N.DefinitionNode -> N.DefinitionNode
+	f (N.Entry _) o = o
+	f (N.Exit d) _ = d
 
 decompiledNode2 l2n l x = case x of
-	LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ In $ fmap l2n expr
+	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ In $ decompiledExpr l2n expr
 	_ -> Nothing
+
+decompiledExpr l2n = cata $ \x -> case x of
+	N.Application a b -> Application a b 
+	N.Constant a -> Constant a
+	N.Atom a -> Atom $ l2n a

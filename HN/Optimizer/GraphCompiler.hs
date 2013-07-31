@@ -1,16 +1,17 @@
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
+import Data.Functor.Fixedpoint
 import qualified Data.Map as M
 
 import HN.Intermediate
-import HN.Optimizer.Node
+import qualified HN.Optimizer.Node as N
 import HN.Optimizer.LabelFor as LabelFor
 
 compileGraph libraryTypes def @ (Definition name _ _) = LabelFor.run $ do
 	x <- freshLabelFor name
 	libLabels <- mapM freshLabelFor $ M.keys libraryTypes
 	gg <- compileGraph5 def x
-	return $ foldr (\x y -> node x LibNode |*><*| y) emptyClosedGraph libLabels |*><*| gg
+	return $ foldr (\x y -> N.node x N.LibNode |*><*| y) emptyClosedGraph libLabels |*><*| gg
 
 compileGraph4 def @ (Definition name _ _) = freshLabelFor name >>=	compileGraph5 def
 
@@ -18,7 +19,7 @@ compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		al <- mapM freshLabelFor args
 		y <- compileLet letIn
 		e <- compileExpr $ letValue letIn
-		return $ node x (LetNode al e) |*><*| y |*><*| foldr (\x y -> argNode x |*><*| y) emptyClosedGraph al
+		return $ N.node x (N.LetNode al e) |*><*| y |*><*| foldr (\x y -> N.argNode x |*><*| y) emptyClosedGraph al
 
 compileLet (Let def letIn) = do
 	y <- compileGraph4 def
@@ -27,11 +28,16 @@ compileLet (Let def letIn) = do
 
 compileLet (In _) = return emptyClosedGraph
 
-
 -- compileLet :: LetIn -> LabelMapM ()
 -- compileLet (In e) = compileExpr e
 -- compileLet (Let def inner) = compileGraph def >> compileLet inner
 
 compileExpr x = do
 	aa <- labelFor ()
-	return $ fmap aa x
+	return $ compileExpr' aa x
+
+compileExpr' aa x = self x where
+	self x = Fix $ case x of
+		Atom a -> N.Atom $ aa a
+  		Application a b -> N.Application (self a) (map self b)
+		Constant x -> N.Constant x

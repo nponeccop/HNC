@@ -1,10 +1,11 @@
 {-# LANGUAGE GADTs #-}
 module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
 
+import Data.Functor.Fixedpoint
 import Data.Maybe
 import Control.Applicative
 import Compiler.Hoopl
-import HN.Intermediate
+import HN.Intermediate (Const)
 import HN.Optimizer.Node
 import HN.Optimizer.Visualise ()
 import Utils
@@ -34,49 +35,51 @@ apply1 :: (a -> b) -> Rewrite a -> a -> Maybe b
 apply1 cons rewriter el = fmap cons $ rewriter el
 
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
-apply2 cons rh rt h t = undefined  
+apply2 cons rh rt h t = undefined
 
-rewriteApplication (Atom a) b f = case processAtom "rewriteApplication.Single" a f of
-	Nothing -> Application (Atom a) <$> rewriteArgs f b
-	Just ([], expr) -> Application expr <$> Just (dropR (rewriteArgs f) b)
+rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix  
+
+rewriteApplication (Fix (Atom a)) b f = case processAtom "rewriteApplication.Single" a f of
+	Nothing -> (Fix . Application (Fix (Atom a))) <$> rewriteArgs f b
+	Just ([], expr) -> (Fix . Application expr) <$> Just (dropR (rewriteArgs f) b)
 	Just (args, expr) -> inlineApplication args b f expr	
 
-rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of 
+rewriteApplication (Fix (Application (Fix (Atom a)) b)) c f = case processAtom "rewriteApplication.Double.1" a f of 
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
-	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
+	Just (outerParams, Fix (Atom aOuterBody)) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
 		Just (innerParams, innerBody) -> fmap ff $ inlineApplication innerParams c f innerBody where
-			ff (Application aa bb) = Application (dropR (inlineApplication outerParams b f) aa) bb  
+			ff (Fix (Application aa bb)) = Fix $ Application (dropR (inlineApplication outerParams b f) aa) bb  
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"				
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
 rewriteApplication a b f = case rewriteExpression f a of
-	Nothing -> Application a <$> rewriteArgs f b 
+	Nothing -> (Fix . Application a) <$> rewriteArgs f b 
 	Just _ -> error "rapp.Just" 
 
 inlineApplication formalArgs actualArgs f 
 	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
 
-rewriteArgs  :: FactBase ListFact -> Rewrite [Expression Label]
+rewriteArgs  :: FactBase ListFact -> Rewrite [ExpressionFix]
 rewriteArgs f [] = Nothing 
-rewriteArgs f (h : t) = lift2 (:) (rewriteExpression f) h (rewriteArgs f) t
+rewriteArgs f (h : t) = lift2 (rewriteExpression f) (rewriteArgs f) (:) h t 
 
-lift2 :: (t -> a1 -> a) -> Rewrite t -> t -> Rewrite a1 -> a1 -> Maybe a 
-lift2 cons rewriteHead h rewriteTail t = case rewriteHead h of
+lift2 :: Rewrite t -> Rewrite a1 -> (t -> a1 -> a) -> t -> a1 -> Maybe a 
+lift2 rewriteHead rewriteTail cons h  t = case rewriteHead h of
 	Nothing -> cons h <$> rewriteTail t
 	Just h' -> cons h' <$> Just (dropR rewriteTail t)
 
-rewriteExpression :: FactBase ListFact -> Rewrite (Expression Label)
+rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
-
-rewriteExpression2 :: FactBase ListFact -> Rewrite (Expression Label)
-rewriteExpression2 f expr =  case expr of
-	Constant _ -> Nothing
-	Atom a -> case processAtom "rewriteExpression2" a f of
-		Just ([], e) -> Just e
-		_ -> Nothing
-	Application a b -> xtrace ("rewriteExpression.rewriteApplication of " ++ show a ++ " to " ++ show b) $ rewriteApplication a b f
 	
+rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
+rewriteExpression2 f expr =  case unFix expr of
+	Constant _ -> Nothing
+	Atom a -> do 
+		([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
+  		return e
+	Application a b -> rewriteApplication a b f
+
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
  	Just Bot -> error $ err ++ ".rewriteExitL.Bot"

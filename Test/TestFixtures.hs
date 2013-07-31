@@ -5,10 +5,13 @@ import qualified Data.Map as M
 import HN.Optimizer.GraphCompiler
 import HN.Optimizer.Inliner2
 import HN.Optimizer.Inbound
-import HN.Optimizer.Visualise (foo)
+import HN.Optimizer.Node
 import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
 import HN.Optimizer.Frontend (withGraph)
+
+foo :: Graph Node C C -> String
+foo = showGraph show
 
 cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg") 
 
