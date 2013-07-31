@@ -1,9 +1,9 @@
-{-# LANGUAGE GADTs, DeriveFunctor #-}
+{-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable #-}
 module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors, ExpressionFunctor(..), ExpressionFix) where
 
 import Compiler.Hoopl
 import Data.Functor.Fixedpoint
-
+import qualified Data.Foldable as F
 import HN.Intermediate (Const)
 
 data Node e x where
@@ -29,7 +29,7 @@ argNode label = node label ArgNode
 data ExpressionFunctor a 
     =   Application a [a]
     |   Atom Label
-    |   Constant Const deriving (Functor)
+    |   Constant Const deriving (Functor, F.Foldable)
 
 data DefinitionNode
 	= LetNode [Label] ExpressionFix
