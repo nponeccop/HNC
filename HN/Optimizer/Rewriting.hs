@@ -70,7 +70,7 @@ lift2 rewriteHead rewriteTail cons h  t = case rewriteHead h of
 	Just h' -> cons h' <$> Just (dropR rewriteTail t)
 
 rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression f = fmap (dropR $ rewriteExpression f) . rewriteExpression2 f
+rewriteExpression = rewriteMany . rewriteExpression2 
 	
 rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression2 f expr =  case unFix expr of
@@ -86,3 +86,13 @@ processAtom err a f = case lookupFact a f of
  	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
 
+process3 :: (Fix ExpressionFunctor -> c -> b) -> (ExpressionFunctor b -> c) -> Fix ExpressionFunctor -> c
+process3 j f = self
+	where self = f . fmap (\x -> j x (self x)) . unFix
+	
+process :: (ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix) -> Rewrite ExpressionFix
+process = process3 (,) 
+	
+rewriteMany :: Rewrite a -> Rewrite a
+rewriteMany clientRewrite x = clientRewrite x >>= rewriteAfterChange where
+	rewriteAfterChange x = (clientRewrite x >>= rewriteAfterChange) <|> return x
