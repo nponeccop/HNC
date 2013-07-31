@@ -42,7 +42,7 @@ rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression = rewriteMany . rewriteExpression2 
 	
 rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression2 = process . phi
+rewriteExpression2 = process2 . phi2
 	
 phi :: FactBase ListFact -> (ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix)
 phi f (Constant _) = Nothing
@@ -56,7 +56,21 @@ phi f expr @ (Application (a, _) bb) | isAtom (a) = let
 		Just ([], expr) -> Just $ Fix $ Application expr b' 
 		Just (args, expr) -> inlineApplication args b' f expr
 phi f (Application (a, _) bb) | isAtomApplication (a) = rewriteApplication a (map fst bb) f
-phi f expr @ (Application _ _) = foo expr  
+phi f expr @ (Application _ _) = foo expr
+
+
+phi2 :: FactBase ListFact -> (ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor))
+phi2 f (Constant _) = Nothing
+phi2 f a @ (Atom _) = do 
+	([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
+	return e
+phi2 f expr @ (Application a b') | isAtom (a) = case processAtom2 "rewriteApplication.Single" a f of
+	Nothing -> Nothing
+	Just ([], expr) -> Just $ Fix $ Application expr b' 
+	Just (args, expr) -> inlineApplication args b' f expr
+phi2 f (Application a bb) | isAtomApplication (a) = rewriteApplication a bb f
+phi2 f (Application a bb) = Nothing 
+ 
 		
 foo (Application (a, _) bb) = if bChanged then Just $ Fix $ Application a b' else Nothing where
 	b' = map (uncurry fromMaybe) bb 
@@ -67,7 +81,8 @@ processAtom err (Atom a) f = case lookupFact a f of
  	Just Bot -> error $ err ++ ".rewriteExitL.Bot"
  	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
-	
+
+
 processAtom2 err a f = processAtom err (unFix a) f 
 
 process3 :: (Fix ExpressionFunctor -> c -> b) -> (ExpressionFunctor b -> c) -> Fix ExpressionFunctor -> c
@@ -77,6 +92,7 @@ process3 j f = self
 process :: (ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix) -> Rewrite ExpressionFix
 process = process3 (,)
 
+process2 :: (ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor)) -> Rewrite ExpressionFix
 process2 f = process ff where
 	ff x = let
  		isChanged = F.any (isJust . snd) x
@@ -85,7 +101,6 @@ process2 f = process ff where
 		in case f x' of
  			Nothing -> if isChanged then Just $ Fix x' else Nothing
 			x -> x
-	
 	
 rewriteMany :: Rewrite a -> Rewrite a
 rewriteMany clientRewrite x = clientRewrite x >>= rewriteAfterChange where
