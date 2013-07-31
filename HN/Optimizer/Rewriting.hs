@@ -73,10 +73,13 @@ rewriteExpression2 f = process $ \expr -> case expr of
 	Atom a -> do 
 		([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 		return e
-	Application (Fix (Atom a), aa) bb -> let b = map fst bb in case processAtom "rewriteApplication.Single" a f of
-		Nothing -> (Fix . Application (Fix (Atom a))) <$> rewriteArgs f b
-		Just ([], expr) -> (Fix . Application expr) <$> Just (dropR (rewriteArgs f) b)
-		Just (args, expr) -> inlineApplication args b f expr
+	Application aa @ (Fix (Atom at), a') bb -> let 
+		b = map fst bb
+		b' = map (uncurry fromMaybe) bb
+		in case processAtom "rewriteApplication.Single" at f of
+			Nothing -> (Fix . Application (Fix (Atom at))) <$> rewriteArgs f b
+			Just ([], expr) -> Just $ Fix $ Application expr b' 
+			Just (args, expr) -> inlineApplication args b' f expr
 	Application aa bb -> rewriteApplication (fst aa) (map fst bb) f
 
 processAtom err a f = case lookupFact a f of
