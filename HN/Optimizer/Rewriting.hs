@@ -73,12 +73,12 @@ rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression = rewriteMany . rewriteExpression2 
 	
 rewriteExpression2 :: FactBase ListFact -> Rewrite (ExpressionFix)
-rewriteExpression2 f expr =  case unFix expr of
+rewriteExpression2 f = process $ \expr -> case expr of 
 	Constant _ -> Nothing
 	Atom a -> do 
 		([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
-  		return e
-	Application a b -> rewriteApplication a b f
+		return e
+	Application aa bb -> rewriteApplication (fst aa) (map fst bb) f
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
