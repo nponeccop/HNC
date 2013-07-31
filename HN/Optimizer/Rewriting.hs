@@ -37,12 +37,15 @@ apply1 cons rewriter el = fmap cons $ rewriter el
 apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
 apply2 cons rh rt h t = undefined
 
-rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix  
+rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix
 
-rewriteApplication (Fix (Application (Fix (Atom a)) b)) c f = case processAtom "rewriteApplication.Double.1" a f of 
+isAtom (Fix (Atom _)) = True
+isAtom _ = False  
+
+rewriteApplication (Fix (Application a b)) c f | isAtom a = case processAtom2 "rewriteApplication.Double.1" a f of 
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
-	Just (outerParams, Fix (Atom aOuterBody)) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
+	Just (outerParams, Fix (Atom aOuterBody)) -> case processAtom2 "rewriteApplication.Double.2" (Fix $ Atom aOuterBody) f of
 		Just (innerParams, innerBody) -> fmap ff $ inlineApplication innerParams c f innerBody where
 			ff (Fix (Application aa bb)) = Fix $ Application (dropR (inlineApplication outerParams b f) aa) bb  
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"				
@@ -73,11 +76,12 @@ rewriteExpression2 f = process $ \expr -> case expr of
 	Atom a -> do 
 		([], e) <- processAtom "rewriteExpression2" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 		return e
-	Application aa @ (Fix (Atom at), a') bb -> let 
+	Application aa @ (Fix (Atom _), a') bb -> let
 		b = map fst bb
 		b' = map (uncurry fromMaybe) bb
-		in case processAtom "rewriteApplication.Single" at f of
-			Nothing -> (Fix . Application (Fix (Atom at))) <$> rewriteArgs f b
+		a = fst aa
+		in case processAtom2 "rewriteApplication.Single" a f of
+			Nothing -> (Fix . Application a) <$> rewriteArgs f b
 			Just ([], expr) -> Just $ Fix $ Application expr b' 
 			Just (args, expr) -> inlineApplication args b' f expr
 	Application aa bb -> rewriteApplication (fst aa) (map fst bb) f
@@ -87,6 +91,8 @@ processAtom err a f = case lookupFact a f of
  	Just Bot -> error $ err ++ ".rewriteExitL.Bot"
  	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
+	
+processAtom2 err (Fix (Atom a)) f = processAtom err a f 
 
 process3 :: (Fix ExpressionFunctor -> c -> b) -> (ExpressionFunctor b -> c) -> Fix ExpressionFunctor -> c
 process3 j f = self
