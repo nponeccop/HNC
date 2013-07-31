@@ -19,31 +19,18 @@ composeR a b x = if ch then Just result else Nothing where
 
 type ListFact = WithTopAndBot DefinitionNode	
 
--- changed Nothing = False
--- changed _ = True
-	
 dropR :: Rewrite a -> a -> a
 dropR a x = fromMaybe x (a x)
-{-	
-unitR :: Rewrite a
-unitR = const Nothing
-	
-liftR :: (t -> a) -> Rewrite t -> t -> a
-liftR f rf x = f $ dropR rf x
-
-apply1 :: (a -> b) -> Rewrite a -> a -> Maybe b
-apply1 cons rewriter el = fmap cons $ rewriter el
-
-apply2 :: (h -> t -> l) -> Rewrite h -> Rewrite t -> h -> t -> Rewrite l
-apply2 cons rh rt h t = undefined
--}
 
 rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix
 
 isAtom (Fix (Atom _)) = True
 isAtom _ = False  
 
-rewriteApplication (Fix (Application a b)) c f | isAtom a = case processAtom2 "rewriteApplication.Double.1" a f of 
+isAtomApplication (Fix (Application (Fix (Atom _)) _)) = True
+isAtomApplication _ = False
+
+rewriteApplication (Fix (Application a b)) c f = case processAtom2 "rewriteApplication.Double.1" a f of 
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Fix (Atom aOuterBody)) -> case processAtom2 "rewriteApplication.Double.2" (Fix $ Atom aOuterBody) f of
@@ -52,21 +39,8 @@ rewriteApplication (Fix (Application a b)) c f | isAtom a = case processAtom2 "r
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"				
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
-rewriteApplication a b f = case rewriteExpression f a of
-	Nothing -> (Fix . Application a) <$> rewriteArgs f b 
-	Just _ -> error "rapp.Just" 
-
 inlineApplication formalArgs actualArgs f 
-	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
-
-rewriteArgs  :: FactBase ListFact -> Rewrite [ExpressionFix]
-rewriteArgs _ [] = Nothing 
-rewriteArgs f (h : t) = lift2 (rewriteExpression f) (rewriteArgs f) (:) h t 
-
-lift2 :: Rewrite t -> Rewrite a1 -> (t -> a1 -> a) -> t -> a1 -> Maybe a 
-lift2 rewriteHead rewriteTail cons h  t = case rewriteHead h of
-	Nothing -> cons h <$> rewriteTail t
-	Just h' -> cons h' <$> Just (dropR rewriteTail t)
+	= Just . dropR (rewriteExpression2 $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
 
 rewriteExpression :: FactBase ListFact -> Rewrite (ExpressionFix)
 rewriteExpression = rewriteMany . rewriteExpression2 
@@ -85,8 +59,13 @@ rewriteExpression2 f = process phi where
 			Nothing -> if bChanged then Just $ Fix $ Application a b' else Nothing
 			Just ([], expr) -> Just $ Fix $ Application expr b' 
 			Just (args, expr) -> inlineApplication args b' f expr
-	
-	phi (Application aa bb) = rewriteApplication (fst aa) (map fst bb) f
+	phi (Application (a, _) bb) | isAtomApplication (a) = rewriteApplication a (map fst bb) f
+	phi (Application (a, _) bb) = let 
+		b' = map (uncurry fromMaybe) bb 
+		bChanged = any (isJust . snd) bb
+		in case rewriteExpression2 f a of
+			Nothing -> if bChanged then Just $ Fix $ Application a b' else Nothing 
+			Just _ -> error "rapp.Just" 
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
