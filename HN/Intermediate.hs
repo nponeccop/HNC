@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 module HN.Intermediate where
 import qualified Data.Set as S
 import SPL.Types (T)
@@ -44,13 +45,7 @@ data Expression a
     |   Atom a
     |   Constant Const
     |   Lambda [a] (Expression a)
-    deriving Eq
-
-instance Functor Expression where
-	fmap f y = case y of
-		Atom a -> Atom $ f a
-		Application x y -> Application (fmap f x) $ map (fmap f) y
-		Constant x -> Constant x
+    deriving (Eq, Functor)
 
 instance Show Const where
 	show (ConstString x) = show x
