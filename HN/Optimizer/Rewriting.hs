@@ -2,7 +2,7 @@
 module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
 
 import qualified Data.Foldable as F
-import Data.Functor.Fixedpoint
+import Data.Functor.Foldable
 import Data.Maybe
 import Control.Applicative
 import Compiler.Hoopl
@@ -39,7 +39,7 @@ inlineApplication formalArgs actualArgs f
 	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs) 
 
 rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression = process . phi
+rewriteExpression = para . phi
 	
 phi :: FactBase ListFact -> ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix
 phi _ (Constant _) = Nothing
@@ -65,17 +65,12 @@ processAtom err (Atom a) f = case lookupFact a f of
  	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
 	
+unFix (Fix a) = a
+	
 processAtom2 err = processAtom err . unFix 
 
-process3 :: (Fix ExpressionFunctor -> c -> b) -> (ExpressionFunctor b -> c) -> Fix ExpressionFunctor -> c
-process3 j f = self
-	where self = f . fmap (\x -> j x (self x)) . unFix
-	
-process :: (ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix) -> Rewrite ExpressionFix
-process = process3 (,)
-
 process2 :: (ExpressionFunctor ExpressionFix -> Maybe (Fix ExpressionFunctor)) -> Rewrite ExpressionFix
-process2 f = process ff where
+process2 f = para ff where
 	ff x = let x' = uncurry fromMaybe <$> x
 		in case f x' of
  			Nothing -> if F.any (isJust . snd) x then Just $ Fix x' else Nothing

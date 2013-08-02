@@ -1,6 +1,6 @@
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
-import Data.Functor.Fixedpoint
+import Data.Functor.Foldable
 import qualified Data.Map as M
 
 import HN.Intermediate

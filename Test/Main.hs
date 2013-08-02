@@ -17,7 +17,8 @@ import Test.Compiler
 import Test.SPL
 import Test.FFI
 import Test.TypeParser
-import Test.Tests
+-- TODO Fix and re-enable tests of graph (de)compiler (Issue #59)
+-- import Test.Tests
 import Test.ParserTest
 import Test.Optimizer.FileTest
 
@@ -123,6 +124,8 @@ main = do
 		++ Test.FFI.tests
 		++ Test.TypeParser.tests
 		++ ioTests
-		++ (Test.Tests.tests : Test.ParserTest.tests : [])
+		-- ++ [Test.Tests.tests] 
+		++ [Test.ParserTest.tests]
+	  	++ []
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

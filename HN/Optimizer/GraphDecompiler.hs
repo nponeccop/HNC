@@ -1,7 +1,7 @@
 {-# LANGUAGE GADTs #-}
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
-import Data.Functor.Fixedpoint
+import Data.Functor.Foldable
 import Compiler.Hoopl
 import HN.Optimizer.Visualise ()
 import qualified Data.Map as M
