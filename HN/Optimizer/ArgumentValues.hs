@@ -28,12 +28,6 @@ process = para varArgs
 
 mapFromDataMap a = mapFromList $ M.toList a
 
-joinList [] = Bot
-joinList a | any (\(x,y) -> x /= y) $ zip a $ tail a = Top
-joinList (a : _) = PElem a  	
-
-
-
 fff (k, v) = map (\x -> (k, PElem $ map PElem x)) v
 
 transferF = mkFTransfer ft where
@@ -41,3 +35,14 @@ transferF = mkFTransfer ft where
 	ft (Entry _) _ = undefined
 	ft (Exit dn) _ = case dn of
 		LetNode _ v -> mkFactBase argLattice $ concatMap fff $ M.toList $ process v
+
+avPass :: FwdPass
+          SimpleFuelMonad
+          HN.Optimizer.Node.Node
+          (WithTopAndBot [WithTopAndBot HN.Optimizer.Node.ExpressionFix])
+
+avPass = FwdPass 
+	{ fp_lattice = argLattice
+	, fp_transfer = transferF
+	, fp_rewrite = noFwdRewrite
+	}

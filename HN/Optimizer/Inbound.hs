@@ -29,7 +29,6 @@ runF
 runF = runPass (analyzeAndRewriteFwd passF) $ \_ entry -> mfbF [(entry, 2)]
 
 
-
 intLattice = DataflowLattice
 	{ fact_name = "IntFact"
 	, fact_bot = 0
