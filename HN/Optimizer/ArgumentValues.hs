@@ -22,6 +22,9 @@ joinA a b = fact_join singleArgLattice undefined (OldFact a) (NewFact b)
 varArgs a = case a of
 	Atom _ -> M.empty
 	Application (Fix (Atom var), _) bb -> let (xx, yy) = unzip bb in M.insertWith (++) var [xx] $ M.unions yy
+	Application _ _ -> M.empty
+	_ -> M.empty
+	--(_, aa)  (_, bb) -> let (xx, yy) = unzip bb in M.unions yy
 
 process :: ExpressionFix -> M.Map Label [[ExpressionFix]]
 process = para varArgs
@@ -35,6 +38,8 @@ transferF = mkFTransfer ft where
 	ft (Entry _) _ = undefined
 	ft (Exit dn) _ = case dn of
 		LetNode _ v -> mkFactBase argLattice $ concatMap fff $ M.toList $ process v
+		ArgNode -> mapEmpty
+		LibNode -> mapEmpty
 
 avPass :: FwdPass
           SimpleFuelMonad
