@@ -2,14 +2,14 @@
 import CPP.CompileTools
 import HN.Optimizer.ArgumentValues
 import HN.Optimizer.GraphCompiler
-import HN.Optimizer.Visualise ()
+import HN.Optimizer.Visualise
 import FFI.TypeParser
 import Compiler.Hoopl
 
 main = do
 	ast <- parseHN "hn_tests/print15.hn"
 	ffi <- importHni "lib/lib.hni"
-	print $ run avPass $ fst $ compileGraph ffi $ head ast
+	putStrLn $ foo $ run avPass $ fst $ compileGraph ffi $ head ast
 
 run pass graph = case runSimpleUniqueMonad . runWithFuel infiniteFuel $ 
 	analyzeAndRewriteFwd pass entry graph $ 
