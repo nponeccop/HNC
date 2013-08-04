@@ -29,7 +29,7 @@ argNode label = node label ArgNode
 data ExpressionFunctor a 
     =   Application a [a]
     |   Atom Label
-    |   Constant Const deriving (Functor, F.Foldable, Eq, Show)
+    |   Constant Const deriving (Functor, F.Foldable, Eq)
 
 data DefinitionNode
 	= LetNode [Label] ExpressionFix
