@@ -2,6 +2,7 @@
 import CPP.CompileTools
 import HN.Optimizer.ArgumentValues
 import HN.Optimizer.GraphCompiler
+import HN.Optimizer.Visualise ()
 import FFI.TypeParser
 import Compiler.Hoopl
 
