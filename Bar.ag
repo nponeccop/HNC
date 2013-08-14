@@ -1,3 +1,4 @@
+imports
 {
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Bar (compile2, Inh_Root(..)) where
