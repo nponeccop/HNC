@@ -1,6 +1,5 @@
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
-import Data.Functor.Foldable
 import qualified Data.Map as M
 
 import HN.Intermediate
@@ -37,7 +36,7 @@ compileExpr x = do
 	return $ compileExpr' aa x
 
 compileExpr' aa x = self x where
-	self x = Fix $ case x of
+	self x = case x of
 		Atom a -> N.Atom $ aa a
-  		Application a b -> N.Application (self a) (map self b)
+		Application a b -> N.Application (self a) (map self b)
 		Constant x -> N.Constant x

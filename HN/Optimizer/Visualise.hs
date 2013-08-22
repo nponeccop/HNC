@@ -19,9 +19,12 @@ instance Show DefinitionNode where
 
 instance Show a => Show (ExpressionFunctor a) where
 	show e = case e of
-		Constant c -> show c
-		Atom aa -> show aa
-		Application a b -> show a ++ concatMap (\b -> ' ' : show b) b
+		ConstantF c -> show c
+		AtomF aa -> show aa
+		ApplicationF a b -> show a ++ concatMap (\b -> ' ' : show b) b
+		
+instance Show ExpressionFix where
+	show = cata show
 
 foo x = concatMap ff $ mapToList x where
 	ff (l, x) = show l ++ " => " ++ case x of
@@ -36,7 +39,7 @@ bar x = case x of
 		PElem x -> cata phi x ++ " "
 		
 phi x = case x of
-	Atom x -> show x
-	Constant x -> show x
-	Application a b -> "(" ++ a ++ " " ++ joinStr " " b ++ ")"
+	AtomF x -> show x
+	ConstantF x -> show x
+	ApplicationF a b -> "(" ++ a ++ " " ++ joinStr " " b ++ ")"
 

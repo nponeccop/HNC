@@ -31,6 +31,6 @@ decompiledNode2 l2n l x = case x of
 	_ -> Nothing
 
 decompiledExpr l2n = cata $ \x -> case x of
-	N.Application a b -> Application a b 
-	N.Constant a -> Constant a
-	N.Atom a -> Atom $ l2n a
+	N.ApplicationF a b -> Application a b 
+	N.ConstantF a -> Constant a
+	N.AtomF a -> Atom $ l2n a
