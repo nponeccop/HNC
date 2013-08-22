@@ -33,10 +33,4 @@ compileLet (In _) = return emptyClosedGraph
 
 compileExpr x = do
 	aa <- labelFor ()
-	return $ compileExpr' aa x
-
-compileExpr' aa x = self x where
-	self x = case x of
-		Atom a -> N.Atom $ aa a
-		Application a b -> N.Application (self a) (map self b)
-		Constant x -> N.Constant x
+	return $ fmap aa x

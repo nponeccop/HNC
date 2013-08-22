@@ -1,10 +1,10 @@
-{-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies #-}
-module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors, ExpressionFunctor(..), ExpressionFix(..)) where
+{-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
+module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors, ExpressionFunctor(..), ExpressionFix) where
 
 import Compiler.Hoopl
 import Data.Functor.Foldable
 import qualified Data.Foldable as F
-import HN.Intermediate (Const)
+import HN.Intermediate
 
 data Node e x where
 	Entry :: Label -> Node C O
@@ -31,10 +31,7 @@ data ExpressionFunctor a
 	|   AtomF Label
 	|   ConstantF Const deriving (Functor, F.Foldable, Eq)
 	
-data ExpressionFix 
-	= Application ExpressionFix [ExpressionFix]
-	| Atom Label
-	| Constant Const deriving (Eq)
+type ExpressionFix = Expression Label 
 	
 type instance Base ExpressionFix = ExpressionFunctor
 

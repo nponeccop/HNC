@@ -23,9 +23,6 @@ instance Show a => Show (ExpressionFunctor a) where
 		AtomF aa -> show aa
 		ApplicationF a b -> show a ++ concatMap (\b -> ' ' : show b) b
 		
-instance Show ExpressionFix where
-	show = cata show
-
 foo x = concatMap ff $ mapToList x where
 	ff (l, x) = show l ++ " => " ++ case x of
 		

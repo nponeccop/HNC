@@ -6,7 +6,7 @@ import Control.Applicative
 import qualified Data.Foldable as F
 import Data.Functor.Foldable
 import Data.Maybe
-
+import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Visualise ()
 import Utils
