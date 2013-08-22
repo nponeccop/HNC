@@ -18,14 +18,11 @@ type ListFact = WithTopAndBot DefinitionNode
 dropR :: Rewrite a -> a -> a
 dropR a x = fromMaybe x (a x)
 
-isAtom (Atom _) = True
-isAtom _ = False
-
 isAtomApplication (Application (Atom _) _) = True
 isAtomApplication _ = False
 
 rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix
-rewriteApplication (Application a b) c f = case processAtom2 "rewriteApplication.Double.1" a f of
+rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Atom aOuterBody) -> case processAtom2 "rewriteApplication.Double.2" (Atom aOuterBody) f of
@@ -45,9 +42,9 @@ phi _ (ConstantF _) = Nothing
 phi f (AtomF a) = do
 	([], e) <- processAtom "rewriteExpression" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 	return e
-phi f expr @ (ApplicationF (a, _) bb) | isAtom a = let
+phi f expr @ (ApplicationF (Atom a, _) bb) = let
 	b' = map (uncurry fromMaybe) bb
-	in case processAtom2 "rewriteApplication.Single" a f of
+	in case processAtom "rewriteApplication.Single" a f of
 		Nothing -> foo expr
 		Just ([], expr) -> Just $ Application expr b'
 		Just (args, expr) -> inlineApplication args b' f expr

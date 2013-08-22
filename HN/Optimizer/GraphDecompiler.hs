@@ -1,7 +1,6 @@
 {-# LANGUAGE GADTs #-}
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
-import Data.Functor.Foldable
 import Compiler.Hoopl
 import HN.Optimizer.Visualise ()
 import qualified Data.Map as M
@@ -27,10 +26,5 @@ decompiledBlock x = foldBlockNodesB f x undefined where
 	f (N.Exit d) _ = d
 
 decompiledNode2 l2n l x = case x of
-	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ In $ decompiledExpr l2n expr
+	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ In $ fmap l2n expr
 	_ -> Nothing
-
-decompiledExpr l2n = cata $ \x -> case x of
-	N.ApplicationF a b -> Application a b 
-	N.ConstantF a -> Constant a
-	N.AtomF a -> Atom $ l2n a

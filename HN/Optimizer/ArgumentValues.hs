@@ -4,7 +4,9 @@ module HN.Optimizer.ArgumentValues where
 import Compiler.Hoopl
 import Control.Arrow
 import qualified Data.Foldable as F
-import Data.Functor.Foldable
+import Data.Functor.Foldable hiding (Fix)
+
+import HN.Intermediate
 import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 
@@ -19,7 +21,7 @@ argLattice :: Eq a => DataflowLattice (WithTopAndBot [WithTopAndBot a])
 argLattice = listLattice singleArgLattice "Jo"
 
 varArgs a = case a of
-	Application (Fix (Atom var)) xx -> [(var, xx)]
+	ApplicationF (Atom var) xx -> [(var, xx)]
 	_ -> []
 
 unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)

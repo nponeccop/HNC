@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs #-}
-module HN.Optimizer.Visualise where
+module HN.Optimizer.Visualise (foo) where
 import Compiler.Hoopl
 import Data.Functor.Foldable
 import HN.Optimizer.Node
@@ -25,7 +25,6 @@ instance Show a => Show (ExpressionFunctor a) where
 		
 foo x = concatMap ff $ mapToList x where
 	ff (l, x) = show l ++ " => " ++ case x of
-		
 		Top -> "T\n"
 		Bot -> "⊥\n"
 		PElem x -> concatMap bar x ++ "\n"
@@ -39,4 +38,3 @@ phi x = case x of
 	AtomF x -> show x
 	ConstantF x -> show x
 	ApplicationF a b -> "(" ++ a ++ " " ++ joinStr " " b ++ ")"
-
