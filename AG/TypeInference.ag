@@ -12,10 +12,10 @@ ATTR Definition
 	[ | | generalizedTypeM : {MT.MyStack GType} ]
 
 ATTR ASTExpression LetIn
-	[ | | tauM : {MT.MyStack (MutTerm IntVar MT.T)} ]
+	[ | | tauM : {MT.MyStack (UTerm MT.T IntVar)} ]
 
 ATTR ExpressionList
-	[ | | tauM USE {:} {[]} : {[MT.MyStack (MutTerm IntVar MT.T)]} ]
+	[ | | tauM USE {:} {[]} : {[MT.MyStack (UTerm MT.T IntVar)]} ]
 
 SEM Definition
 	| Definition

@@ -29,7 +29,7 @@ executable spl-hnc
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl ==3.8.7.4, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0, recursion-schemes, uuagc
+                   unification-fd ==0.9.0, recursion-schemes, uuagc
     main-is: HNC.hs
     buildable: True
     default-language: Haskell2010
@@ -41,7 +41,7 @@ executable spl-test-hunit-exe
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl, parsec >=3.1, mtl ==2.*,
-                   unification-fd ==0.6.0, recursion-schemes
+                   unification-fd ==0.9.0, recursion-schemes
     main-is: Test/Main.hs
     other-modules: Bar
     buildable: True
@@ -53,7 +53,7 @@ executable spli
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0
+                   unification-fd ==0.9.0
     main-is: SPLI.hs
     buildable: True
     default-language: Haskell2010
@@ -63,7 +63,7 @@ executable splm
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0
+                   unification-fd ==0.9.0
     main-is: M.hs
     buildable: True
     default-language: Haskell2010
@@ -73,7 +73,7 @@ executable spl-test-adhoc-hn
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0
+                   unification-fd ==0.9.0
     main-is: HN_Tests.hs
     buildable: True
     default-language: Haskell98
@@ -83,7 +83,7 @@ executable spl-test-adhoc-spl
     build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
                    bytestring ==0.*, containers ==0.*, directory ==1.*,
                    hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.6.0
+                   unification-fd ==0.9.0
     main-is: SPL_Tests.hs
     buildable: True
     default-language: Haskell98

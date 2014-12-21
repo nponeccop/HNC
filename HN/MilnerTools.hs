@@ -23,7 +23,7 @@ instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a
 
 data T a = T String | TT [a] | TD String [a] | TU String deriving (Eq, Show, Functor, Traversable, Foldable)
 
-maybeZip a b | length a == length b = Just $ zip a b
+maybeZip a b | length a == length b = Just $ zipWith (\a b -> Right (a, b)) a b
 maybeZip _ _ = Nothing
 
 instance Unifiable T where
@@ -43,15 +43,15 @@ type MyStack a = IntBindingT T (State (M.Map String Int)) a
 
 runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
 
-convert (Old.T a) = return $ MutTerm $ T a
-convert (Old.TT a) = fmap (MutTerm . TT) $ Prelude.mapM convert a
-convert (Old.TD n a) = fmap (MutTerm . TD n) $ Prelude.mapM convert a
-convert (Old.TU a) = return $ MutTerm $ TU a
+convert (Old.T a) = return $ UTerm $ T a
+convert (Old.TT a) = fmap (UTerm . TT) $ Prelude.mapM convert a
+convert (Old.TD n a) = fmap (UTerm . TD n) $ Prelude.mapM convert a
+convert (Old.TU a) = return $ UTerm $ TU a
 convert a @ (Old.TV _) = convertTv a
 
 convertTv (Old.TV a) = do
 	m <- xget
-	fmap MutVar $ maybe (xfreeVar a m) (return . IntVar) $ M.lookup a m where
+	fmap UVar $ maybe (xfreeVar a m) (return . IntVar) $ M.lookup a m where
 		xfreeVar a m = do
 			ii @ (IntVar i) <- freeVar
 			xput (M.insert a i m)
@@ -65,8 +65,8 @@ exportBindings = do
 		fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert o x))) $ lookupVar $ IntVar iv
 
 revert x m = mrevert x where
-	mrevert (MutTerm x) = f x
-	mrevert (MutVar (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
+	mrevert (UTerm x) = f x
+	mrevert (UVar (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
 	f (T x) = Old.T x
 	f (TU x) = Old.TU x
 	f (TT x) = Old.TT $ map mrevert x
@@ -83,7 +83,7 @@ convertAndBind = convert >=> runApply
 getReverseMap = fmap reverseMap xget
 
 closureM = liftM3M $ \convEnv args result -> do
-	let convTau = MutTerm $ TT $ args ++ [result]
+	let convTau = UTerm $ TT $ args ++ [result]
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
@@ -105,11 +105,11 @@ unifyM fnTau argTau beta = do
 	args <- sequence argTau
 	result <- beta
 	fn <- fnTau
-	runErrorT $ unify fn $ MutTerm $ TT $ args ++ [result]
+	runErrorT $ unify fn $ UTerm $ TT $ args ++ [result]
 	return result
 
 
 -- используется при выводе типа константы в качестве tau
-constantType x = return $ MutTerm $ case x of
+constantType x = return $ UTerm $ case x of
 	ConstInt _ -> T "num"
 	ConstString _ -> T "string"
