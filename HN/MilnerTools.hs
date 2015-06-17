@@ -6,7 +6,7 @@ import qualified Data.Set as S
 import Control.Unification
 import Control.Unification.IntVar
 import Control.Monad.State
-import Control.Monad.Error
+import Control.Monad.Trans.Except
 import Utils
 import HN.TypeTools
 import HN.Intermediate (Const (..))
@@ -61,8 +61,8 @@ convertTv (Old.TV a) = do
 
 subsumesM x y = runErrorT2 (subsumes x y) >> exportBindings
 
-runErrorT2 :: ErrorT String m a -> m (Either String a)
-runErrorT2 = runErrorT
+runErrorT2 :: ExceptT String m a -> m (Either String a)
+runErrorT2 = runExceptT
 
 exportBindings = do
 	x <- fmap reverseMap xget

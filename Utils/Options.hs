@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Utils.Options (err, O(..), Options(..), runOptions) where
 import Control.Monad
-import Control.Monad.Error
+import Control.Monad.Except
 import System.Console.GetOpt
 import System.Environment
 import qualified Data.Map as M
