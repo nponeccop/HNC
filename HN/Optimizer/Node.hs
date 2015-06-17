@@ -1,6 +1,7 @@
 {-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
 module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors, ExpressionFunctor(..), ExpressionFix) where
 
+import Prelude hiding ((<*>), Foldable)
 import Compiler.Hoopl
 import Data.Functor.Foldable
 import qualified Data.Foldable as F
