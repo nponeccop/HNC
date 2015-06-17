@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Test.ParserTest (runTests, runTest2, tests) where
 
 import HN.Parser2

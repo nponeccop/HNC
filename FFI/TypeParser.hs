@@ -1,4 +1,4 @@
-{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE FlexibleContexts, NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 
 module FFI.TypeParser (sp3, decl, fun, parseType, typePolyVar, typeVar, importHni) where

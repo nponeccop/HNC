@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FlexibleContexts, GADTs #-}
 module HN.Optimizer.Visualise (foo) where
 import Compiler.Hoopl
 import Data.Functor.Foldable

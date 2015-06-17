@@ -8,7 +8,7 @@
     Portability :
 -}
 -----------------------------------------------------------------------------------------
-{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE NoMonomorphismRestriction, FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module HN.Parser2 (
 	program, parseString, application, expression, mySepBy,

@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
 import qualified Data.Map as M

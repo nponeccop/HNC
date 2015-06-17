@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module Utils.Options (err, O(..), Options(..), runOptions) where
 import Control.Monad
 import Control.Monad.Error

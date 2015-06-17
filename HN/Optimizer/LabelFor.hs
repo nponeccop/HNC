@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 module HN.Optimizer.LabelFor where
 
 import Compiler.Hoopl
