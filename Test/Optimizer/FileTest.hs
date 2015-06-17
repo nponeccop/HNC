@@ -6,13 +6,8 @@ import System.IO
 import CPP.CompileTools
 import FFI.TypeParser (importHni)
 
--- import CPP.CompileTools
--- import FFI.TypeParser
 import HN.Optimizer.Frontend
--- import HN.SplExport (convertToSpl)
 import HN.Visualise (formatHN)
--- import Utils.Options
-import Control.Applicative
 
 windowsLineMode = NewlineMode { inputNL  = CRLF, outputNL = CRLF }
 

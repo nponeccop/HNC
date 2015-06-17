@@ -5,8 +5,6 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Unification
 import Control.Unification.IntVar
-import Data.Traversable (Traversable)
-import Data.Foldable
 import Control.Monad.State
 import Control.Monad.Error
 import Utils

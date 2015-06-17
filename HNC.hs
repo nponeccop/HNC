@@ -1,6 +1,5 @@
 module Main (main) where
 
-import Control.Applicative
 import qualified Data.Set as S
 import qualified Data.Map as M
 import System.Console.GetOpt

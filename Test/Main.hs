@@ -1,5 +1,4 @@
 module Main (main) where
-import Control.Applicative
 import Test.QuickCheck
 import Test.HUnit
 

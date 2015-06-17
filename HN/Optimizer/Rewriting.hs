@@ -2,7 +2,6 @@
 module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
 
 import Compiler.Hoopl
-import Control.Applicative
 import qualified Data.Foldable as F
 import Data.Functor.Foldable
 import Data.Maybe
