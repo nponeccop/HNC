@@ -26,10 +26,10 @@ source-repository head
     location: https://github.com/kayuri/NHC.git
  
 executable spl-hnc
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl ==3.8.7.4, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.9.0, recursion-schemes, uuagc
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: HNC.hs
     buildable: True
     default-language: Haskell2010
@@ -38,10 +38,10 @@ executable spl-hnc
     ghc-options: -W -fno-warn-incomplete-patterns -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-tabs
  
 executable spl-test-hunit-exe
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl, parsec >=3.1, mtl ==2.*,
-                   unification-fd ==0.9.0, recursion-schemes
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: Test/Main.hs
     other-modules: Bar
     buildable: True
@@ -50,10 +50,10 @@ executable spl-test-hunit-exe
     ghc-options: -W -fno-warn-incomplete-patterns -fno-warn-missing-local-sigs -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-tabs
  
 executable spli
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.9.0
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: SPLI.hs
     buildable: True
     default-language: Haskell2010
@@ -62,10 +62,10 @@ executable spli
 
  
 executable splm
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.9.0
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: M.hs
     buildable: True
     default-language: Haskell2010
@@ -74,10 +74,10 @@ executable splm
     ghc-options: -fno-warn-tabs
  
 executable spl-test-adhoc-hn
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.9.0
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: HN_Tests.hs
     buildable: True
     default-language: Haskell98
@@ -85,10 +85,10 @@ executable spl-test-adhoc-hn
     ghc-options: -fno-warn-tabs
  
 executable spl-test-adhoc-spl
-    build-depends: HUnit ==1.*, QuickCheck ==2.*, base ==4.*,
-                   bytestring ==0.*, containers ==0.*, directory ==1.*,
-                   hoopl, mtl ==2.*, parsec >=3.1,
-                   unification-fd ==0.9.0
+    build-depends: HUnit, QuickCheck, base,
+                   bytestring, containers, directory,
+                   hoopl >=3.10.1.0, mtl, parsec,
+                   unification-fd >=0.10, recursion-schemes, uuagc
     main-is: SPL_Tests.hs
     buildable: True
     default-language: Haskell98
