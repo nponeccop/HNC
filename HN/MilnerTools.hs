@@ -1,5 +1,5 @@
-{-# LANGUAGE DeriveFunctor, DeriveTraversable, DeriveFoldable, NoMonomorphismRestriction #-}
-module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply) where
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, DeriveFunctor, DeriveTraversable, DeriveFoldable, NoMonomorphismRestriction, FlexibleContexts #-}
+module HN.MilnerTools where-- (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -33,6 +33,10 @@ instance Unifiable T where
 	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = fmap (TD l1) $ maybeZip a1 a2
 	zipMatch _ _ = Nothing
 
+instance Fallible T IntVar String where
+	occursFailure _ _ = "ooo"
+	mismatchFailure _ _ = "mmm"
+
 xget :: MyStack (M.Map String Int)
 xget = lift get
 
@@ -57,7 +61,10 @@ convertTv (Old.TV a) = do
 			xput (M.insert a i m)
 			return ii
 
-subsumesM x y = runErrorT (subsumes x y) >> exportBindings
+subsumesM x y = runErrorT2 (subsumes x y) >> exportBindings
+
+runErrorT2 :: ErrorT String m a -> m (Either String a)
+runErrorT2 = runErrorT
 
 exportBindings = do
 	x <- fmap reverseMap xget
@@ -72,7 +79,7 @@ revert x m = mrevert x where
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
 
-runApply = fmap fromRight . runErrorT . applyBindings
+runApply = fmap fromRight . runErrorT2 . applyBindings
 
 revertM newTerm = fmap (revert newTerm . reverseMap) xget
 
@@ -89,7 +96,6 @@ closureM = liftM3M $ \convEnv args result -> do
 	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
 	return (tpv S.\\ epv, convTau)
 
-
 emptyClosureM tau = do
 	convTau <- tau >>= runApply >>= revertM
 	return (S.empty, convTau)
@@ -105,7 +111,7 @@ unifyM fnTau argTau beta = do
 	args <- sequence argTau
 	result <- beta
 	fn <- fnTau
-	runErrorT $ unify fn $ UTerm $ TT $ args ++ [result]
+	runErrorT2 $ unify fn $ UTerm $ TT $ args ++ [result]
 	return result
 
 
