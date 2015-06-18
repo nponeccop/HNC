@@ -9,9 +9,10 @@ import HN.Optimizer.Node
 import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
 import HN.Optimizer.Frontend (withGraph)
+import Test.Optimizer.Show
 
 foo :: Graph Node C C -> String
-foo = showGraph show
+foo = showGraph2 show
 
 cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg") 
 
