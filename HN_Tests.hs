@@ -86,7 +86,6 @@ main = do
 --	testCheck3
 --	rt convertDef
 --	rt $ SPL.Top.check0 . convertDef
-	print $ cppType $ T "num"
 
 --	testCodeGen
 	return ()

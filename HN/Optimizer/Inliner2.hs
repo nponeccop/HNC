@@ -84,7 +84,7 @@ rewriteBL = mkBRewrite (\a b -> return $ cp a b) where
 	cp (Exit xll) f = case xll of
 		LibNode -> Nothing
 		ArgNode -> Nothing
-		LetNode l expr -> fmap (nodeToG . Exit . LetNode l) $ rewriteExpression f expr
+		LetNode l expr -> (nodeToG . Exit . LetNode l) <$> rewriteExpression f expr
 		
 passBL = BwdPass
 	{ bp_lattice = listLattice

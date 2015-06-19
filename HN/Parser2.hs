@@ -56,9 +56,9 @@ lambda = do
 	lambdaTail
 
 expression =
-	(many1 digit >>= return . Constant . ConstInt . read)
+	(Constant . ConstInt . read) <$> many1 digit
 	<|>
-	(literal >>= return . Constant . ConstString)
+	(Constant . ConstString) <$> literal
 	<|>
 	lambda
 	<|>
@@ -138,7 +138,7 @@ _assignment = do
 	indent
 	i <- identifier
 	string " := "
-	expression >>= return . Assign i . In
+	(Assign i . In) <$> expression
 
 
 simpleDefinition = 	do
@@ -180,4 +180,4 @@ parseProg = parseString program
 
 parseFile = parseFromFile program
 
-parseAndProcessFile inFile f = parseFile inFile >>= return . f . head . fromRight
+parseAndProcessFile inFile f = (f . head . fromRight) <$> parseFile inFile

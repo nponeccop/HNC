@@ -21,14 +21,14 @@ instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a
 
 data T a = T String | TT [a] | TD String [a] | TU String deriving (Eq, Show, Functor, Traversable, Foldable)
 
-maybeZip a b | length a == length b = Just $ zipWith (\a b -> Right (a, b)) a b
+maybeZip a b | length a == length b = Just $ zipWith (curry Right) a b
 maybeZip _ _ = Nothing
 
 instance Unifiable T where
-	zipMatch (TT a1) (TT a2) = fmap TT $ maybeZip a1 a2
+	zipMatch (TT a1) (TT a2) = TT <$> maybeZip a1 a2
 	zipMatch (T a) (T b) | a == b = Just $ T a
 	zipMatch (TU a) (TU b) | a == b = Just $ TU a
-	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = fmap (TD l1) $ maybeZip a1 a2
+	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = TD l1 <$> maybeZip a1 a2
 	zipMatch _ _ = Nothing
 
 instance Fallible T IntVar String where
@@ -46,8 +46,8 @@ type MyStack a = IntBindingT T (State (M.Map String Int)) a
 runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
 
 convert (Old.T a) = return $ UTerm $ T a
-convert (Old.TT a) = fmap (UTerm . TT) $ Prelude.mapM convert a
-convert (Old.TD n a) = fmap (UTerm . TD n) $ Prelude.mapM convert a
+convert (Old.TT a) = (UTerm . TT) <$> Prelude.mapM convert a
+convert (Old.TD n a) = (UTerm . TD n) <$> Prelude.mapM convert a
 convert (Old.TU a) = return $ UTerm $ TU a
 convert a @ (Old.TV _) = convertTv a
 
@@ -91,7 +91,7 @@ closureM = liftM3M $ \convEnv args result -> do
 	let convTau = UTerm $ TT $ args ++ [result]
 	let varListToSet = fmap (S.fromList . map (\(IntVar x) -> x))
 	tpv <- varListToSet $ getFreeVars convTau
-	epv <- varListToSet $ fmap Prelude.concat $ mapM getFreeVars convEnv
+	epv <- varListToSet $ Prelude.concat <$> mapM getFreeVars convEnv
 	return (tpv S.\\ epv, convTau)
 
 emptyClosureM tau = do
