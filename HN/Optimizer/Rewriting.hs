@@ -25,7 +25,7 @@ rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteAppli
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Atom aOuterBody) -> case processAtom2 "rewriteApplication.Double.2" (Atom aOuterBody) f of
-		Just (innerParams, innerBody) -> fmap ff $ inlineApplication innerParams c f innerBody where
+		Just (innerParams, innerBody) -> ff <$> inlineApplication innerParams c f innerBody where
 			ff (Application aa bb) = Application (dropR (inlineApplication outerParams b f) aa) bb
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"
 		_ -> error "rewriteApplication.double.fn.Nothing"

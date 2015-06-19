@@ -5,18 +5,14 @@ import qualified Data.Map as M
 import HN.Optimizer.GraphCompiler
 import HN.Optimizer.Inliner2
 import HN.Optimizer.Inbound
-import HN.Optimizer.Node
 import HN.Optimizer.Dominator
 import Compiler.Hoopl.Passes.Dominator
 import HN.Optimizer.Frontend (withGraph)
-import Test.Optimizer.Show
-
-foo :: Graph Node C C -> String
-foo = showGraph2 show
+import HN.Optimizer.Visualise
 
 cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg") 
 
-compilerTest = foo . cg
+compilerTest = formatGraph . cg
 
 runFB = runF >=> runB
 
@@ -24,7 +20,7 @@ test2 = transform runFB
 
 test3 = transform $ runFB >=> runFB
 
-transform tf = foo . fromTuple . bar tf where
+transform tf = formatGraph . fromTuple . bar tf where
 	fromTuple (agraph, _, _) = agraph
 
 test1 = testFacts id runF
