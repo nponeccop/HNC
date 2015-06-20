@@ -2,5 +2,6 @@ dist/
 hn_tests/tmp-*.cpp
 *.obj
 *.o
+*.swp
 .cabal-sandbox/*
 cabal.sandbox.config
