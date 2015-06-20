@@ -33,9 +33,9 @@ compilerTests = "graphCompiler" ~: stt compilerTest
 tests = "HN.Optimizer" ~: compilerTests : tt1 : tt2 : tt3 : tt4 : decompilerTests : tt5 : Test.Optimizer.WithParsing.tests : []
 
 tt1 = "test1" ~: stt test1
-	[ t "aaa" "LM (UM (fromList [(1,2)]))" $ Definition "a" [] $ In $ ci 2
-	, t "aab" "LM (UM (fromList [(1,2),(3,1)]))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ Atom "L2"
-	, t "L1 = let L2 = 3 in 4" "LM (UM (fromList [(1,2)]))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ ci 2
+	[ t "aaa" "LM (UM (fromList [(1,0)]))" $ Definition "a" [] $ In $ ci 2
+	, t "aab" "LM (UM (fromList [(1,0),(3,1)]))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ Atom "L2"
+	, t "L1 = let L2 = 3 in 4" "LM (UM (fromList [(1,0)]))" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ ci 2
 	]
 
 tt2 = "test2" ~: stt test2

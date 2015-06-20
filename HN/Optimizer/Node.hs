@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
-module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), dnSuccessors, ExpressionFunctor(..), ExpressionFix) where
+module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFunctor(..), ExpressionFix) where
 
 import Prelude hiding ((<*>), Foldable)
 import Compiler.Hoopl
@@ -13,10 +13,8 @@ data Node e x where
 
 instance NonLocal Node where
 	entryLabel (Entry l) = l
- 	successors (Exit dn) = dnSuccessors dn
-
-dnSuccessors (LetNode args e) = args ++ exprSuccessors e
-dnSuccessors _ = []
+	successors (Exit (LetNode args e)) = args ++ exprSuccessors e
+	successors _ = []
 
 exprSuccessors :: ExpressionFix -> [Label]
 exprSuccessors = cata $ \x -> case x of

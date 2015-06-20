@@ -18,7 +18,7 @@ runFB = runF >=> runB
 
 test2 = transform runFB
 
-test3 = transform $ runFB >=> runFB
+test3 = transform $ runFB >=> runF
 
 transform tf = formatGraph . fromTuple . bar tf where
 	fromTuple (agraph, _, _) = agraph

@@ -84,7 +84,7 @@ rewriteBL = mkBRewrite (\a b -> return $ cp a b) where
 	cp (Exit xll) f = case xll of
 		LibNode -> Nothing
 		ArgNode -> Nothing
-		LetNode l expr -> (nodeToG . Exit . LetNode l) <$> rewriteExpression f expr
+		LetNode l expr -> (mkLast . Exit . LetNode l) <$> rewriteExpression f expr
 		
 passBL = BwdPass
 	{ bp_lattice = listLattice
@@ -95,11 +95,4 @@ passBL = BwdPass
 runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
-
--- Utilities
---
---
-nodeToG :: Node e x -> Graph Node e x
-nodeToG (Entry el) = mkFirst (Entry el)
-nodeToG (Exit xll) = mkLast (Exit xll)
 
