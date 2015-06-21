@@ -1,8 +1,8 @@
-{-# LANGUAGE GADTs #-}
-module HN.Optimizer.Rewriting (rewriteExpression, ListFact) where
+{-# LANGUAGE GADTs, FlexibleContexts #-}
+module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression2) where
 
+import Control.Monad (mplus)
 import Compiler.Hoopl
-import qualified Data.Foldable as F
 import Data.Functor.Foldable
 import Data.Maybe
 import HN.Intermediate
@@ -24,7 +24,7 @@ rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> M
 rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
-	Just (outerParams, Atom aOuterBody) -> case processAtom2 "rewriteApplication.Double.2" (Atom aOuterBody) f of
+	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
 		Just (innerParams, innerBody) -> ff <$> inlineApplication innerParams c f innerBody where
 			ff (Application aa bb) = Application (dropR (inlineApplication outerParams b f) aa) bb
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"
@@ -60,14 +60,11 @@ processAtom err a f = case lookupFact a f of
 	Just (PElem (LetNode args body)) -> Just (args, body)
 	_ -> Nothing
 
-processAtom2 err (Atom a) = processAtom err a
+rewriteExpression2 :: FactBase ListFact -> Rewrite ExpressionFix
+rewriteExpression2 = para . process2 . phi2
 
-process2 :: (ExpressionFunctor ExpressionFix -> Maybe ExpressionFix) -> Rewrite ExpressionFix
-process2 f = para ff where
-	ff x = let x' = uncurry fromMaybe <$> x
-		in case f x' of
-			Nothing -> if F.any (isJust . snd) x then Just (embed x') else Nothing
-			x -> x
+process2 f x = let x' = uncurry fromMaybe <$> x
+		in mplus (f x') $ if any (isJust . snd) x then Just (embed x') else Nothing
 
 phi2 :: FactBase ListFact -> ExpressionFunctor ExpressionFix -> Maybe ExpressionFix
 phi2 _ (ConstantF _) = Nothing
@@ -78,5 +75,5 @@ phi2 f (ApplicationF (Atom a) b') = case processAtom "rewriteApplication.Single"
 	Nothing -> Nothing
 	Just ([], expr) -> Just $ Application expr b'
 	Just (args, expr) -> inlineApplication args b' f expr
--- phi2 f (Application a bb) | isAtomApplication (a) = rewriteApplication a bb f
--- phi2 f (Application a bb) = Nothing
+phi2 f (ApplicationF a bb) | isAtomApplication a = rewriteApplication a bb f
+phi2 f (ApplicationF _ _) = Nothing
