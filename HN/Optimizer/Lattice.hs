@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, FlexibleContexts #-}
 module HN.Optimizer.Lattice where
 
 import Compiler.Hoopl
@@ -7,8 +7,7 @@ import Data.Void
 liftedLattice ff name = addPoints' name f where
 	f _ o @ (OldFact oo) n = case ff o n of
 		Bot -> (NoChange, PElem oo)
-		PElem a -> (SomeChange, PElem a)
-		Top -> (SomeChange, Top)
+		x -> (SomeChange, x)
 
 plusLattice :: (Num a, Eq a) => DataflowLattice a
 plusLattice = eqBotLattice "IntFact" 0 (+)
@@ -31,11 +30,19 @@ flatEqLattice :: Eq a => UnnamedLattice a
 flatEqLattice = liftedLattice $ \(OldFact o) (NewFact n) -> 
 	if o == n then Bot else Top
 
-notTop Top = False
-notTop _ = True
+listLattice :: JoinFun a -> UnnamedLattice [a]
+listLattice = flip $ \name -> addPoints' name . joinLists
 
-listLattice x = liftedLattice ff where
-	ff (OldFact o) (NewFact n) = let j = zipWith (fact_join x undefined) (map OldFact o) (map NewFact n)
-		in if any (notTop . snd) j 
-			then PElem $ map snd j 
-			else Top 
+joinLists _ _ (OldFact o) (NewFact n)
+	| length o /= length n = (SomeChange, Top)
+joinLists _ _ (OldFact o) (NewFact []) = (NoChange, PElem o)
+
+joinLists joinElems label (OldFact o) (NewFact n) =
+	if any (isSomeChange . fst) j
+		then (SomeChange, PElem $ map snd j)
+		else (NoChange, PElem o)
+	where
+		j = zipWith (joinElems label) (map OldFact o) (map NewFact n)
+		isSomeChange SomeChange = True
+		isSomeChange NoChange = False
+

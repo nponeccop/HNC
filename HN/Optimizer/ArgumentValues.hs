@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, StandaloneDeriving #-}
 module HN.Optimizer.ArgumentValues where
 
 import Compiler.Hoopl
@@ -14,11 +14,13 @@ type ArgFact = WithTopAndBot [WithTopAndBot ExpressionFix]
 
 type SingleArgLattice a = DataflowLattice (WithTopAndBot a)
 
+deriving instance Show ChangeFlag
+
 singleArgLattice :: Eq a => SingleArgLattice a
 singleArgLattice = flatEqLattice "ArgumentValues"
 
 argLattice :: Eq a => DataflowLattice (WithTopAndBot [WithTopAndBot a])
-argLattice = listLattice singleArgLattice "Jo"
+argLattice = listLattice (fact_join singleArgLattice) "Jo"
 
 varArgs a = case a of
 	ApplicationF (Atom var) xx -> [(var, xx)]
