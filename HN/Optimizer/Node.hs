@@ -13,14 +13,12 @@ data Node e x where
 
 instance NonLocal Node where
 	entryLabel (Entry l) = l
-	successors (Exit (LetNode args e)) = args ++ exprSuccessors e
+	successors (Exit (LetNode _ e)) = cata exprSuccessors e
 	successors _ = []
 
-exprSuccessors :: ExpressionFix -> [Label]
-exprSuccessors = cata $ \x -> case x of
-	ApplicationF a b -> concat $ a : b 
-	ConstantF _ -> []
-	AtomF a -> [a]
+exprSuccessors (ApplicationF a b) = concat $ a : b
+exprSuccessors (ConstantF _) = []
+exprSuccessors (AtomF a) = [a]
 
 node l dn = mkFirst (Entry l) <*> mkLast (Exit dn)
 argNode label = node label ArgNode
@@ -50,6 +48,3 @@ data DefinitionNode
 	= LetNode [Label] ExpressionFix
 	| ArgNode
 	| LibNode
-	
-
-

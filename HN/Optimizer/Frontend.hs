@@ -7,11 +7,9 @@ import HN.Optimizer.Inbound (runF)
 import HN.Optimizer.Inliner2 (runB)
 import Utils
 
-optimizeHN libraryTypes = map (withGraph libraryTypes (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . tf . toTuple))
+optimizeHN libraryTypes = map (withGraph libraryTypes (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . (runFB >=> runFB) . toTuple))
 
 runFB = runF >=> runB
-
-tf = runFB >=> runFB where
 
 toTuple agraph = (agraph, undefined, undefined)
 fromTuple (agraph, _, _) = agraph
