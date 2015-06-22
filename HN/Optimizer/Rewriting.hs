@@ -8,6 +8,7 @@ import Data.Maybe
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Visualise ()
+import HN.Optimizer.ExpressionRewriter
 import Utils
 
 type Rewrite a = a -> Maybe a
