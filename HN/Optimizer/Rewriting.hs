@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, FlexibleContexts #-}
-module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression3) where
+module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression2) where
 
 import Compiler.Hoopl
 import Data.Functor.Foldable
@@ -25,13 +25,18 @@ rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteAppli
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
-		Just (innerParams, innerBody) -> ff <$> inlineApplication innerParams c f innerBody where
-			ff (Application aa bb) = Application (dropR (inlineApplication outerParams b f) aa) bb
+		Just (innerParams, innerBody) -> ff <$> inlineApplication2 innerParams c innerBody where
+			ff (Application aa bb) = Application (dropR (inlineApplication2 outerParams b) aa) bb
 			ff _ = error "rewriteApplication.double.fn.Just.noApp"
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
 inlineApplication formalArgs actualArgs f
 	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs)
+
+inlineApplication2 formalArgs actualArgs = process $ rewriteAtoms $ mapFromList $ zip formalArgs actualArgs where
+	rewriteAtoms :: LabelMap ExpressionFix -> Rewrite ExpressionFix
+	rewriteAtoms atomMap (Atom a) = mapLookup a atomMap
+	rewriteAtoms _ _ = Nothing
 
 rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
 rewriteExpression = para . phi
@@ -73,4 +78,4 @@ phi2 f (ApplicationF (Atom a) b') = case processAtom "rewriteApplication.Single"
 	Just ([], expr) -> Just $ Application expr b'
 	Just (args, expr) -> inlineApplication args b' f expr
 phi2 f (ApplicationF a bb) | isAtomApplication a = rewriteApplication a bb f
-phi2 f (ApplicationF _ _) = Nothing
+phi2 _ (ApplicationF _ _) = Nothing
