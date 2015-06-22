@@ -1,7 +1,6 @@
 {-# LANGUAGE GADTs, FlexibleContexts #-}
-module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression2) where
+module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression3) where
 
-import Control.Monad (mplus)
 import Compiler.Hoopl
 import Data.Functor.Foldable
 import Data.Maybe
@@ -62,10 +61,7 @@ processAtom err a f = case lookupFact a f of
 	_ -> Nothing
 
 rewriteExpression2 :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression2 = para . process2 . phi2
-
-process2 f x = let x' = uncurry fromMaybe <$> x
-		in mplus (f x') $ if any (isJust . snd) x then Just (embed x') else Nothing
+rewriteExpression2 f = process $ phi2 f . project
 
 phi2 :: FactBase ListFact -> ExpressionFunctor ExpressionFix -> Maybe ExpressionFix
 phi2 _ (ConstantF _) = Nothing
