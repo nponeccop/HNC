@@ -55,9 +55,9 @@ phi f expr @ (ApplicationF (Atom a, _) bb) = let
 phi f (ApplicationF (a, _) bb) | isAtomApplication a = rewriteApplication a (map fst bb) f
 phi _ expr @ (ApplicationF _ _) = foo expr
 
-foo (ApplicationF (a, _) bb) = if bChanged then Just $ Application a b' else Nothing where
-	b' = map (uncurry fromMaybe) bb
-	bChanged = any (isJust . snd) bb
+foo xx = if any (isJust . snd) xx 
+	then Just $ embed $ uncurry fromMaybe <$> xx 
+	else Nothing 
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
