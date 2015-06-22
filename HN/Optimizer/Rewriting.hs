@@ -17,11 +17,11 @@ type ListFact = WithTopAndBot DefinitionNode
 dropR :: Rewrite a -> a -> a
 dropR a x = fromMaybe x (a x)
 
-isAtomApplication (Application (Atom _) _) = True
-isAtomApplication _ = False
+isDoubleAtomApplication (ApplicationF (Application (Atom _) _) _)= True
+isDoubleAtomApplication _ = False
 
-rewriteApplication :: ExpressionFix -> [ExpressionFix] -> FactBase ListFact -> Maybe ExpressionFix
-rewriteApplication (Application (Atom a) b) c f = case processAtom "rewriteApplication.Double.1" a f of
+rewriteDoubleAtomApplication :: FactBase ListFact -> Rewrite ExpressionFix
+rewriteDoubleAtomApplication f (Application (Application (Atom a) b) c) = case processAtom "rewriteApplication.Double.1" a f of
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
@@ -52,12 +52,12 @@ phi f expr @ (ApplicationF (Atom a, _) bb) = let
 		Nothing -> foo expr
 		Just ([], expr) -> Just $ Application expr b'
 		Just (args, expr) -> inlineApplication args b' f expr
-phi f (ApplicationF (a, _) bb) | isAtomApplication a = rewriteApplication a (map fst bb) f
+phi f xx | isDoubleAtomApplication (fst <$> xx) = rewriteDoubleAtomApplication f $ embed $ fst <$> xx
 phi _ expr @ (ApplicationF _ _) = foo expr
 
-foo xx = if any (isJust . snd) xx 
-	then Just $ embed $ uncurry fromMaybe <$> xx 
-	else Nothing 
+foo xx = if any (isJust . snd) xx
+	then Just $ embed $ uncurry fromMaybe <$> xx
+	else Nothing
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
@@ -77,5 +77,5 @@ phi2 f (ApplicationF (Atom a) b') = case processAtom "rewriteApplication.Single"
 	Nothing -> Nothing
 	Just ([], expr) -> Just $ Application expr b'
 	Just (args, expr) -> inlineApplication args b' f expr
-phi2 f (ApplicationF a bb) | isAtomApplication a = rewriteApplication a bb f
+phi2 f xx | isDoubleAtomApplication xx = rewriteDoubleAtomApplication f $ embed xx
 phi2 _ (ApplicationF _ _) = Nothing
