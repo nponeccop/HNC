@@ -9,6 +9,15 @@ process rewrite = para phi where
 			foo = embed $ uncurry fromMaybe <$> cons
 			bar = rewrite foo
 		in
-			if isJust bar || any (isJust . snd) cons 
-				then mplus bar $ Just foo 
-				else Nothing	
+			if isJust bar || any (isJust . snd) cons
+				then mplus bar $ Just foo
+				else Nothing
+
+process' rewrite = para phi where
+	phi cons = let
+			foo = embed $ uncurry fromMaybe <$> cons
+			bar = rewrite $ embed $ fst <$> cons
+		in
+			if isJust bar || any (isJust . snd) cons
+				then mplus bar $ Just foo
+				else Nothing

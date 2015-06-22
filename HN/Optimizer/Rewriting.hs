@@ -66,7 +66,7 @@ processAtom err a f = case lookupFact a f of
 	_ -> Nothing
 
 rewriteExpression2 :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression2 f = process $ phi2 f . project
+rewriteExpression2 f = process' $ phi2 f . project
 
 phi2 :: FactBase ListFact -> ExpressionFunctor ExpressionFix -> Maybe ExpressionFix
 phi2 _ (ConstantF _) = Nothing
