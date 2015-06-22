@@ -62,7 +62,7 @@ tt4 = "Dominators" ~: stt testDominators
 
 tt5 = "Postdominators" ~: stt testPostdominators
 	[ t "plusX x = let f y = y in f" "fromList [(L1,[L4]),(L4,[L5])]" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
-	, t "locals14.hn" "fromList [(L1,[L4]),(L4,[L2])]"  $ Definition "main" ["z"] (Let (Definition "a" [] (In (Application (Atom "incr") [Atom "z"]))) (Let (Definition "y" [] (In (Atom "a"))) (In (Atom "a"))))
+	, t "locals14.hn" "fromList [(L1,[L4]),(L4,[L2,L3])]"  $ Definition "main" ["z"] (Let (Definition "a" [] (In (Application (Atom "incr") [Atom "z"]))) (Let (Definition "y" [] (In (Atom "a"))) (In (Atom "a"))))
 	]
 
 xd = undefined
