@@ -3,7 +3,6 @@ module HN.Optimizer.Rewriting (ListFact, rewriteExpression2) where
 
 import Compiler.Hoopl
 import Data.Functor.Foldable
-import Data.Maybe
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Visualise ()
@@ -48,30 +47,10 @@ rewriteDoubleAtomApplication f (Application (Application (Atom a) b) c) = case p
 			new = b ++ c
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
-inlineApplication formalArgs actualArgs f
-	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs)
-
 inlineApplication2 formalArgs actualArgs = process' $ rewriteAtoms $ mapFromList $ zip formalArgs actualArgs where
 	rewriteAtoms :: LabelMap ExpressionFix -> Rewrite ExpressionFix
 	rewriteAtoms atomMap (Atom a) = mapLookup a atomMap
 	rewriteAtoms _ _ = Nothing
-
-rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression = para . phi
-
-phi :: FactBase ListFact -> ExpressionFunctor (ExpressionFix, Maybe ExpressionFix) -> Maybe ExpressionFix
-phi _ (ConstantF _) = Nothing
-phi f (AtomF a) = do
-	([], e) <- processAtom "rewriteExpression" a $ xtrace ("factBase-atom {" ++ show a ++ "}") f
-	return e
-phi f expr @ (ApplicationF (Atom a, _) bb) = let
-	b' = map (uncurry fromMaybe) bb
-	in case processAtom "rewriteApplication.Single" a f of
-		Nothing -> applyChildRewrites expr
-		Just ([], expr) -> Just $ Application expr b'
-		Just (args, expr) -> inlineApplication2 args b' expr
-phi f xx | isDoubleAtomApplication (fst <$> xx) = rewriteDoubleAtomApplication f $ embed $ fst <$> xx
-phi _ expr @ (ApplicationF _ _) = applyChildRewrites expr
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
@@ -90,6 +69,6 @@ phi2 f a @ (AtomF aa) = do
 phi2 f (ApplicationF (Atom a) b') = case processAtom "rewriteApplication.Single" a f of
 	Nothing -> Nothing
 	Just ([], expr) -> Just $ Application expr b'
-	Just (args, expr) -> inlineApplication args b' f expr
+	Just (args, expr) -> Just $ dropR (deep $ rewriteExpression2 (flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b')) expr -- inlineApplication args b' f expr
 phi2 f xx | isDoubleAtomApplication xx = rewriteDoubleAtomApplication f $ embed xx
 phi2 _ (ApplicationF _ _) = Nothing
