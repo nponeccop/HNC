@@ -2,7 +2,6 @@
 module HN.Optimizer.Rewriting (ListFact, rewriteExpression2) where
 
 import Compiler.Hoopl
-import Data.Functor.Foldable
 import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Visualise ()
@@ -11,7 +10,7 @@ import Utils
 
 type ListFact = WithTopAndBot DefinitionNode
 
-isDoubleAtomApplication (ApplicationF (Application (Atom _) _) _)= True
+isDoubleAtomApplication (Application (Application (Atom _) _) _)= True
 isDoubleAtomApplication _ = False
 {-
    Инлайнинг двойной аппликации
@@ -59,16 +58,17 @@ processAtom err a f = case lookupFact a f of
 	_ -> Nothing
 
 rewriteExpression2 :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression2 f = process' $ phi2 f . project
+rewriteExpression2 = process' . phi2
 
-phi2 :: FactBase ListFact -> ExpressionFunctor ExpressionFix -> Maybe ExpressionFix
-phi2 _ (ConstantF _) = Nothing
-phi2 f a @ (AtomF aa) = do
+phi2 :: FactBase ListFact -> Rewrite ExpressionFix
+phi2 _ (Constant _) = Nothing
+phi2 f a @ (Atom aa) = do
 	([], e) <- processAtom "rewriteExpression" aa $ xtrace ("factBase-atom {" ++ show a ++ "}") f
 	return e
-phi2 f (ApplicationF (Atom a) b') = case processAtom "rewriteApplication.Single" a f of
+phi2 f (Application (Atom a) b') = case processAtom "rewriteApplication.Single" a f of
 	Nothing -> Nothing
-	Just ([], expr) -> Just $ Application expr b'
-	Just (args, expr) -> Just $ dropR (deep $ rewriteExpression2 (flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b')) expr -- inlineApplication args b' f expr
-phi2 f xx | isDoubleAtomApplication xx = rewriteDoubleAtomApplication f $ embed xx
-phi2 _ (ApplicationF _ _) = Nothing
+	Just (args, expr) -> Just $ case args of
+		[] -> Application expr b'
+		_ -> dropR (deep $ rewriteExpression2 (flip mapUnion f $ mapFromList $ zip args $ map (PElem . LetNode []) b')) expr -- inlineApplication args b' f expr
+phi2 f xx | isDoubleAtomApplication xx = rewriteDoubleAtomApplication f xx
+phi2 _ (Application _ _) = Nothing
