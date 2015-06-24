@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, FlexibleContexts #-}
-module HN.Optimizer.Rewriting (rewriteExpression, ListFact, rewriteExpression2) where
+module HN.Optimizer.Rewriting (ListFact, rewriteExpression2) where
 
 import Compiler.Hoopl
 import Data.Functor.Foldable
@@ -19,21 +19,44 @@ dropR a x = fromMaybe x (a x)
 
 isDoubleAtomApplication (ApplicationF (Application (Atom _) _) _)= True
 isDoubleAtomApplication _ = False
+{-
+   Инлайнинг двойной аппликации
+
+   (foo bar) baz
+
+   hnMain = {
+      foo x = {
+          f y = sum y x
+          f
+      }
+      (foo bar) baz
+   }
+
+   a -- foo
+   b -- bar
+   c -- baz
+   aOuterBody -- f
+   outerParams -- x
+   innerParams -- y
+   innerBody -- sum x y
+
+   На выходе hnMain = sum baz bar
+-}
 
 rewriteDoubleAtomApplication :: FactBase ListFact -> Rewrite ExpressionFix
 rewriteDoubleAtomApplication f (Application (Application (Atom a) b) c) = case processAtom "rewriteApplication.Double.1" a f of
 	Nothing -> Nothing
 	Just ([], _) -> error "rewriteApplication.double.var"
 	Just (outerParams, Atom aOuterBody) -> case processAtom "rewriteApplication.Double.2" aOuterBody f of
-		Just (innerParams, innerBody) -> ff <$> inlineApplication2 innerParams c innerBody where
-			ff (Application aa bb) = Application (dropR (inlineApplication2 outerParams b) aa) bb
-			ff _ = error "rewriteApplication.double.fn.Just.noApp"
+		Just (innerParams, innerBody) -> Just $ dropR (inlineApplication2 old new) innerBody where
+			old = outerParams ++ innerParams
+			new = b ++ c
 		_ -> error "rewriteApplication.double.fn.Nothing"
 
 inlineApplication formalArgs actualArgs f
 	= Just . dropR (rewriteExpression $ flip mapUnion f $ mapFromList $ zip formalArgs $ map (PElem . LetNode []) actualArgs)
 
-inlineApplication2 formalArgs actualArgs = process $ rewriteAtoms $ mapFromList $ zip formalArgs actualArgs where
+inlineApplication2 formalArgs actualArgs = process' $ rewriteAtoms $ mapFromList $ zip formalArgs actualArgs where
 	rewriteAtoms :: LabelMap ExpressionFix -> Rewrite ExpressionFix
 	rewriteAtoms atomMap (Atom a) = mapLookup a atomMap
 	rewriteAtoms _ _ = Nothing
@@ -51,7 +74,7 @@ phi f expr @ (ApplicationF (Atom a, _) bb) = let
 	in case processAtom "rewriteApplication.Single" a f of
 		Nothing -> foo expr
 		Just ([], expr) -> Just $ Application expr b'
-		Just (args, expr) -> inlineApplication args b' f expr
+		Just (args, expr) -> inlineApplication2 args b' expr
 phi f xx | isDoubleAtomApplication (fst <$> xx) = rewriteDoubleAtomApplication f $ embed $ fst <$> xx
 phi _ expr @ (ApplicationF _ _) = foo expr
 
