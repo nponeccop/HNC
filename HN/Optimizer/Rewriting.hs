@@ -10,12 +10,7 @@ import HN.Optimizer.Visualise ()
 import HN.Optimizer.ExpressionRewriter
 import Utils
 
-type Rewrite a = a -> Maybe a
-
 type ListFact = WithTopAndBot DefinitionNode
-
-dropR :: Rewrite a -> a -> a
-dropR a x = fromMaybe x (a x)
 
 isDoubleAtomApplication (ApplicationF (Application (Atom _) _) _)= True
 isDoubleAtomApplication _ = False
@@ -72,15 +67,11 @@ phi f (AtomF a) = do
 phi f expr @ (ApplicationF (Atom a, _) bb) = let
 	b' = map (uncurry fromMaybe) bb
 	in case processAtom "rewriteApplication.Single" a f of
-		Nothing -> foo expr
+		Nothing -> applyChildRewrites expr
 		Just ([], expr) -> Just $ Application expr b'
 		Just (args, expr) -> inlineApplication2 args b' expr
 phi f xx | isDoubleAtomApplication (fst <$> xx) = rewriteDoubleAtomApplication f $ embed $ fst <$> xx
-phi _ expr @ (ApplicationF _ _) = foo expr
-
-foo xx = if any (isJust . snd) xx
-	then Just $ embed $ uncurry fromMaybe <$> xx
-	else Nothing
+phi _ expr @ (ApplicationF _ _) = applyChildRewrites expr
 
 processAtom err a f = case lookupFact a f of
 	Nothing -> error $ err ++ ".uncondLookupFact.Nothing"
