@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable #-}
-module HN.Optimizer.ArgumentValues (runAv) where
+module HN.Optimizer.ArgumentValues (runAv, ArgFact) where
 
 import Compiler.Hoopl
 import Control.Arrow
