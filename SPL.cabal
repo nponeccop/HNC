@@ -30,7 +30,7 @@ executable spl-hnc
                    bytestring, containers, directory,
                    hoopl >=3.10.1.0, mtl, parsec,
                    unification-fd >=0.10, recursion-schemes, uuagc,
-                   transformers
+                   transformers, safe
     main-is: HNC.hs
     buildable: True
     default-language: Haskell2010
@@ -43,7 +43,7 @@ executable spl-test-hunit-exe
                    bytestring, containers, directory,
                    hoopl >=3.10.1.0, mtl, parsec,
                    unification-fd >=0.10, recursion-schemes, uuagc,
-                   transformers
+                   transformers, safe
     main-is: Test/Main.hs
     other-modules: Bar
     buildable: True

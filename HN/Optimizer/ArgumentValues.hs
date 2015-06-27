@@ -1,10 +1,11 @@
 {-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable #-}
-module HN.Optimizer.ArgumentValues where
+module HN.Optimizer.ArgumentValues (runAv) where
 
 import Compiler.Hoopl
 import Control.Arrow
 import qualified Data.Foldable as F
 import Data.Functor.Foldable hiding (Fix, Foldable)
+import Safe.Exact
 
 import HN.Intermediate
 import HN.Optimizer.Lattice
@@ -43,9 +44,7 @@ transferF = mkFTransfer ft where
 		LibNode -> []
 
 unzipArgs :: ArgFact -> [Label] -> [(Label, [ExpressionFix])]
-unzipArgs (PElem actualArgs) formalArgs
-	| length actualArgs /= length formalArgs = error "Wrong formalArgs"
-	| otherwise = concatMap foo $ zip formalArgs actualArgs
+unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "Wrong formalArgs" formalArgs actualArgs
 unzipArgs _ _ = []
 
 foo (formalArg, PElem actualArg) = [(formalArg, [actualArg])]
@@ -61,8 +60,8 @@ rewriteF = mkFRewrite $ \a b -> return $ cp a b where
 
 rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label] 
 rewriteFormalArgs actualArgs formalArgs
-	| length formalArgs /= length actualArgs = error "Wrong formalArgs during rewrite"
-	| otherwise = map fst <$> process foo (zip formalArgs actualArgs) where
+	= map fst <$> process foo (zipExactNote "Wrong formalArgs during rewrite" formalArgs actualArgs)
+	where
 		foo ((_, PElem _) : tail) = Just tail
 		foo _ = Nothing
 
