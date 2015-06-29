@@ -45,7 +45,7 @@ ft n @ (Exit dn) f = mkFactBase argLattice $ (++) (defaultFactsHack argLattice n
 	LibNode -> []
 
 unzipArgs :: ArgFact -> [Label] -> [(Label, [ExpressionFix])]
-unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "Wrong formalArgs" formalArgs actualArgs
+unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactDef [] formalArgs actualArgs
 unzipArgs _ _ = []
 
 foo (formalArg, PElem actualArg) = [(formalArg, [actualArg])]
@@ -70,7 +70,7 @@ avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
 	, fp_transfer = mkFTransfer ft
-	, fp_rewrite = pureFRewrite no
+	, fp_rewrite = pureFRewrite cp
 	}
 
 runAv :: Pass any ArgFact

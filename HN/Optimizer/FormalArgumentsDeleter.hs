@@ -75,6 +75,7 @@ Bottom `join` [...] = [...]
 
 transferB :: Node e x -> Fact x ArgFact -> ArgFact
 transferB (Entry _)  f = f
+transferB (Exit LibNode) _ = Top
 transferB (Exit _) _ = Bot
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
@@ -88,10 +89,13 @@ rewriteB (Exit xll) f = case xll of
 	ArgNode -> Nothing
 	LetNode l expr -> (mkLast . Exit . LetNode l) <$> process (rewriteExpression f) expr
 
-rewriteExpression f (Application aa @ (Atom a) b) = Application aa <$> rewriteArguments b (justPElem =<< lookupFact a f)
+rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> rewriteArguments b (justPElem =<< lookupFact a f)
 rewriteExpression _ _ = Nothing
 
 rewriteArguments b f = map fst <$> (process deleteArg =<< zip b <$> f)
+
+smartApplication a [] = a
+smartApplication a b = Application a b
 
 deleteArg :: Rewrite [(ExpressionFix, WithTopAndBot ExpressionFix)]
 deleteArg ((_, PElem _) : tail) = Just tail
