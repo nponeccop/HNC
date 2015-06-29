@@ -8,16 +8,15 @@ import qualified HN.Optimizer.Node as N
 import HN.Intermediate
 import HN.Optimizer.Dominator
 import Data.Maybe
+import Utils
 
 firstLabel = runSimpleUniqueMonad freshLabel
 
-decompileGraph labelNames g @ (GMany _ l _) = (insertLet foo $ fromJust $ decompiledNode2 l2n firstLabel $ decompiledBlock $ case mapLookup firstLabel l of
-	Just entry -> entry) where
-		pd = graphPostdominators g
-		foo = mapMaybe (\l -> decompiledNode2 l2n l $ bar l) $ M.findWithDefault [] firstLabel pd
-		bar ll = decompiledBlock $ case mapLookup ll l of
-			Just entry -> entry
-		l2n l = M.findWithDefault (show l) l labelNames
+decompileGraph labelNames g @ (GMany _ l _) = insertLet (mapMaybe baz $ M.findWithDefault [] firstLabel $ graphPostdominators g) $ fromJust $ baz firstLabel where
+		l2n l = uncondLookup l labelNames
+		baz x = decompiledNode2 l2n x $ decompiledBlock $ mapUncond x l
+
+mapUncond k m = fromMaybe (error "mapUncond failed in GraphDecompiler") $ mapLookup k m
 
 decompiledBlock :: Block N.Node C C -> N.DefinitionNode
 decompiledBlock x = foldBlockNodesB f x undefined where
