@@ -35,7 +35,7 @@ ATTR ASTExpression [ | | freeVars : {S.Set String} ]
 
 ATTR ExpressionList [ | | freeVars USE {:} {[]} : {[S.Set String]} ]
 
-ATTR LetIn
+ATTR ASTLetIn
 	[
 	|
 	|
@@ -48,7 +48,7 @@ ATTR LetIn
 		sem : CppExpression
 	]
 
-ATTR Definition LetIn
+ATTR Definition ASTLetIn
 	[
 		level : Int
 		parent : String
@@ -121,6 +121,6 @@ SEM ASTExpression
 	| Atom        lhs.freeVars = S.singleton @name
 	| Application lhs.freeVars = S.unions (@fn.freeVars : @arg.freeVars)
 
-SEM LetIn
+SEM ASTLetIn
 	| Let
 		lhs.freeVars = @tl.freeVars `S.union` @hd.freeVars S.\\ S.singleton @hd.name

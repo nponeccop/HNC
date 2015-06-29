@@ -3,7 +3,7 @@
 -- функций) и фактические (в типах переменных, типах аргументов функции, типах возврата функций и в выражениях)
 -- шаблонные аргументы
 --
-ATTR LetIn
+ATTR ASTLetIn
 	[ | | definitionTv USE {`S.union`} {S.empty} : {S.Set String} ]
 
 ATTR Definition
@@ -16,7 +16,7 @@ SEM Definition
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
 		loc.templateArgs = fst @loc.generalizedType
 
-ATTR ASTExpression LetIn Definition ExpressionList
+ATTR ASTExpression ASTLetIn Definition ExpressionList
 	[ abstractedTv : {S.Set String} | | ]
 
 SEM Root

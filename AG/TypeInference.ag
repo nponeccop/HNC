@@ -1,5 +1,5 @@
  -- Модуль вывода типов
-ATTR ASTExpression ExpressionList Definition LetIn
+ATTR ASTExpression ExpressionList Definition ASTLetIn
 	[
 		generalizedTypes : {M.Map String GType}
 		finalSubstitution : {MT.MyStack ()}
@@ -11,7 +11,7 @@ ATTR ASTExpression ExpressionList Definition LetIn
 ATTR Definition
 	[ | | generalizedTypeM : {MT.MyStack GType} ]
 
-ATTR ASTExpression LetIn
+ATTR ASTExpression ASTLetIn
 	[ | | tauM : {MT.MyStack (UTerm MT.T IntVar)} ]
 
 ATTR ExpressionList
@@ -40,7 +40,7 @@ SEM Definition
 
 
 
-SEM LetIn
+SEM ASTLetIn
 	| Let
 		tl.generalizedTypes = M.insert @hd.name (MT.runStack @hd.generalizedTypeM) @lhs.generalizedTypes
 		lhs.tauM = fmap snd @hd.generalizedTypeM >> @tl.tauM

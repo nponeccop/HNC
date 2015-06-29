@@ -7,8 +7,8 @@
 
 ATTR Definition [ | | definitionType : T ]
 
-ATTR Definition LetIn ASTExpression ExpressionList [ definitionTypes : {M.Map String T} | | ]
+ATTR Definition ASTLetIn ASTExpression ExpressionList [ definitionTypes : {M.Map String T} | | ]
 
-SEM LetIn
+SEM ASTLetIn
 	| Let
 		tl.definitionTypes = M.insert @hd.name @hd.definitionType @lhs.definitionTypes

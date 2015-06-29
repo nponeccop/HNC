@@ -25,5 +25,5 @@ decompiledBlock x = foldBlockNodesB f x undefined where
 	f (N.Exit d) _ = d
 
 decompiledNode2 l2n l x = case x of
-	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ In $ fmap l2n expr
+	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ fmap l2n $ In expr
 	_ -> Nothing

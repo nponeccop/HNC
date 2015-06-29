@@ -9,10 +9,10 @@ DATA ASTExpression
 -- и не определять data ExpressionList = ELCons a b | ELNil
 TYPE ExpressionList = [ASTExpression]
 
-DATA LetIn
-	| Let hd : Definition tl : LetIn
+DATA ASTLetIn
+	| Let hd : Definition tl : ASTLetIn
 	| In value : ASTExpression
 
 DATA Definition
-	| Definition name : String params : {[String]} where : LetIn
+	| Definition name : String params : {[String]} where : ASTLetIn
 

@@ -10,7 +10,7 @@ ATTR Definition
 	[ | | qualifier : CppQualifier ]
 
 -- квалификатор в выражении в конце программы
-ATTR LetIn
+ATTR ASTLetIn
 	[ localVars : {M.Map String CppQualifier} | | qualifiers : {M.Map String CppQualifier} ]
 
 
@@ -22,13 +22,13 @@ ATTR LetIn
 -- предыдущие. Соответственно, при проходе программы qualifiers
 -- нужно непрерывно пополнять
 
-ATTR Definition LetIn ASTExpression ExpressionList
+ATTR Definition ASTLetIn ASTExpression ExpressionList
 	[ qualifiers : {M.Map String CppQualifier} | | ]
 
 ATTR Definition
 	[ isLocalVar : Bool | | ]
 
-SEM LetIn
+SEM ASTLetIn
 	| Let
 		tl.qualifiers = M.insert @hd.name @hd.qualifier @lhs.qualifiers
 		loc.isLocalVar = not $ S.member @hd.name @tl.varsFreeInFunctions

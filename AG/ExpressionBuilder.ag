@@ -47,7 +47,7 @@ SEM ASTExpression
 		arg.atomTransformer = transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
 
-SEM LetIn
+SEM ASTLetIn
 	-- ФВП обработки по умолчанию
 	-- умолчание нужно, например, для вырожденных значений, содержащих одиночный атом,
 	-- таких, как, foo = bar
