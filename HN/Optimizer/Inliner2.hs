@@ -93,6 +93,7 @@ passBL = BwdPass
 	, bp_rewrite = pureBRewrite rewriteB
 	}
 
+runB :: Pass Int ListFact
 runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top

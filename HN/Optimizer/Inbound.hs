@@ -19,10 +19,7 @@ passF = FwdPass
 	, fp_transfer = mkFTransfer transferF
 	, fp_rewrite = noFwdRewrite }
 
-runF
-  :: (Graph Node C C, t1, t2)
-     -> SimpleFuelMonad
-          (Graph Node C C, FactBase IntFact, MaybeO C IntFact)
+runF :: Pass any IntFact
 runF = runPass (analyzeAndRewriteFwd passF) $ \_ _ -> noFacts
 
 

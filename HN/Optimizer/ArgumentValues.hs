@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable #-}
-module HN.Optimizer.ArgumentValues (runAv, ArgFact) where
+module HN.Optimizer.ArgumentValues (runAv, ArgFact, argLattice) where
 
 import Compiler.Hoopl
 import Control.Arrow
@@ -73,4 +73,5 @@ avPass = FwdPass
 	, fp_rewrite = pureFRewrite no
 	}
 
+runAv :: Pass any ArgFact
 runAv = runPass (analyzeAndRewriteFwd avPass) (\_ _ -> mapEmpty)

@@ -4,9 +4,9 @@ module HN.Optimizer.FormalArgumentsDeleter (runB) where
 import Compiler.Hoopl hiding ((<*>))
 import HN.Intermediate
 import HN.Optimizer.Node
---import HN.Optimizer.Pass
+import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
-import HN.Optimizer.ArgumentValues (ArgFact)
+import HN.Optimizer.ArgumentValues (ArgFact, argLattice)
 {-
 
 Идея - использовать Hoopl как фреймворк произвольных оптимизаторов графов,
@@ -69,33 +69,24 @@ Bottom `join` [...] = [...]
 с ArgNode на LetNode.
 -}
 
-{-
-listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Join" (SomeChange, PElem new)
+-- listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Join" (SomeChange, PElem new)
 
 -- BACKWARD pass
 
-transferBL :: BwdTransfer Node ListFact
-transferBL = mkBTransfer bt where
-  bt :: Node e x -> Fact x ListFact -> ListFact
-  bt (Entry _)  f = f
-  bt (Exit dn) _ = PElem dn
-
--}
+transferB :: Node e x -> Fact x ArgFact -> ArgFact
+transferB (Entry _)  f = f
+transferB (Exit _) _ = Bot
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
 --
 
-type ListFact = ArgFact
-
-rewriteBL :: FuelMonad m => BwdRewrite m Node ListFact
-rewriteBL = mkBRewrite (\a b -> return $ cp a b) where
-	cp :: Node e x -> Fact x ListFact -> Maybe (Graph Node e x)
-	cp (Entry _) _ = Nothing
-	cp (Exit xll) f = case xll of
-		LibNode -> Nothing
-		ArgNode -> Nothing
-		LetNode l expr -> (mkLast . Exit . LetNode l) <$> process (rewriteExpression f) expr
+rewriteB :: Node e x -> Fact x ArgFact -> Maybe (Graph Node e x)
+rewriteB (Entry _) _ = Nothing
+rewriteB (Exit xll) f = case xll of
+	LibNode -> Nothing
+	ArgNode -> Nothing
+	LetNode l expr -> (mkLast . Exit . LetNode l) <$> process (rewriteExpression f) expr
 
 rewriteExpression f (Application aa @ (Atom a) b) = Application aa <$> rewriteArguments b (justPElem =<< lookupFact a f)
 rewriteExpression _ _ = Nothing
@@ -109,15 +100,11 @@ deleteArg _ = Nothing
 justPElem (PElem a) = Just a
 justPElem _ = Nothing
 
-runB = rewriteBL
-{-
-passBL = BwdPass
-	{ bp_lattice = listLattice
-	, bp_transfer = transferBL
-	, bp_rewrite = rewriteBL
+passB = BwdPass
+	{ bp_lattice = argLattice
+	, bp_transfer = mkBTransfer transferB
+	, bp_rewrite = pureBRewrite rewriteB
 	}
 
-runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
-	int2list 1 = Bot
-	int2list _ = Top
--}
+runB :: Pass ArgFact ArgFact
+runB = runPass (analyzeAndRewriteBwd passB) const

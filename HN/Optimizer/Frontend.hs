@@ -5,11 +5,15 @@ import HN.Optimizer.GraphCompiler
 import HN.Optimizer.GraphDecompiler
 import HN.Optimizer.Inbound (runF)
 import HN.Optimizer.Inliner2 (runB)
+import qualified HN.Optimizer.ArgumentValues as AV
+import qualified HN.Optimizer.FormalArgumentsDeleter as AAD
 import Utils
 
 optimizeHN libraryTypes = map (withGraph libraryTypes (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . (runFB >=> runFB) . toTuple))
 
 runFB = runF >=> runB
+
+oo = AV.runAv >=> AAD.runB
 
 toTuple agraph = (agraph, undefined, undefined)
 fromTuple (agraph, _, _) = agraph

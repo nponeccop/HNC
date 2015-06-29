@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
-module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFunctor(..), ExpressionFix) where
+module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFunctor(..), ExpressionFix, PassResult, Pass) where
 
 import Prelude hiding ((<*>), Foldable)
 import Compiler.Hoopl
@@ -48,3 +48,7 @@ data DefinitionNode
 	= LetNode [Label] ExpressionFix
 	| ArgNode
 	| LibNode
+
+type PassResult f = (Graph Node C C, FactBase f, MaybeO C f)
+
+type Pass inputFact outputFact = PassResult inputFact -> SimpleFuelMonad (PassResult outputFact)
