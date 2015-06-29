@@ -48,7 +48,7 @@ ATTR ASTLetIn
 		sem : CppExpression
 	]
 
-ATTR Definition ASTLetIn
+ATTR ASTDefinition ASTLetIn
 	[
 		level : Int
 		parent : String
@@ -57,7 +57,7 @@ ATTR Definition ASTLetIn
 
 	]
 
-ATTR Definition
+ATTR ASTDefinition
 	[
 	|
 	|
@@ -71,7 +71,7 @@ ATTR Definition
 		declareParent : Bool
 	]
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 		-- тривиальные атрибуты
 		where.level = @lhs.level + 1

@@ -12,9 +12,12 @@ import Utils
 
 firstLabel = runSimpleUniqueMonad freshLabel
 
-decompileGraph labelNames g @ (GMany _ l _) = insertLet (mapMaybe baz $ M.findWithDefault [] firstLabel $ graphPostdominators g) $ fromJust $ baz firstLabel where
-		l2n l = uncondLookup l labelNames
-		baz x = decompiledNode2 l2n x $ decompiledBlock $ mapUncond x l
+decompileGraph :: M.Map Label String -> Graph N.Node C C -> Definition String
+decompileGraph labelNames g = l2n <$> decompiledGraph g where
+	l2n l = uncondLookup l labelNames
+
+decompiledGraph g = insertLet (mapMaybe byLabel $ M.findWithDefault [] firstLabel $ graphPostdominators g) $ fromJust $ byLabel firstLabel where
+	byLabel = lookupDefinition g
 
 mapUncond k m = fromMaybe (error "mapUncond failed in GraphDecompiler") $ mapLookup k m
 
@@ -24,6 +27,7 @@ decompiledBlock x = foldBlockNodesB f x undefined where
 	f (N.Entry _) o = o
 	f (N.Exit d) _ = d
 
-decompiledNode2 l2n l x = case x of
-	N.LetNode argLabels expr -> Just $ Definition (l2n l) (map l2n argLabels) $ fmap l2n $ In expr
+lookupDefinition :: Graph N.Node e x -> Label -> Maybe (Definition Label)
+lookupDefinition (GMany _ l _) x = case decompiledBlock $ mapUncond x l of
+	N.LetNode argLabels expr -> Just $ Definition x argLabels (In expr)
 	_ -> Nothing

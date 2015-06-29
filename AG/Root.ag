@@ -1,6 +1,6 @@
 WRAPPER Root
 
-TYPE Root = [Definition]
+TYPE Root = [ASTDefinition]
 
 ATTR Root
 	[

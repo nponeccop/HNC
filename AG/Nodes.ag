@@ -10,9 +10,9 @@ DATA ASTExpression
 TYPE ExpressionList = [ASTExpression]
 
 DATA ASTLetIn
-	| Let hd : Definition tl : ASTLetIn
+	| Let hd : ASTDefinition tl : ASTLetIn
 	| In value : ASTExpression
 
-DATA Definition
+DATA ASTDefinition
 	| Definition name : String params : {[String]} where : ASTLetIn
 

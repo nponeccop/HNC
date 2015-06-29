@@ -6,29 +6,29 @@
 ATTR ASTLetIn
 	[ | | definitionTv USE {`S.union`} {S.empty} : {S.Set String} ]
 
-ATTR Definition
+ATTR ASTDefinition
 	[ | | definitionTv : {S.Set String} ]
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 		-- шаблонные переменные контекста верхнего уровня
 		lhs.definitionTv = typeTv @loc.definitionType
 		loc.contextTemplateArgs = S.toList $ S.unions (@where.definitionTv : @loc.argsTv)
 		loc.templateArgs = fst @loc.generalizedType
 
-ATTR ASTExpression ASTLetIn Definition ExpressionList
+ATTR ASTExpression ASTLetIn ASTDefinition ExpressionList
 	[ abstractedTv : {S.Set String} | | ]
 
 SEM Root
 	| Cons
 		hd.abstractedTv = S.empty
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 		where.abstractedTv = S.union @lhs.abstractedTv @loc.templateArgs
 
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 		-- definitionType - "исправленные" типы, содержащих
 		-- non-generic type variables (термин Карделли)

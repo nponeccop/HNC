@@ -4,7 +4,7 @@ import qualified Data.Set as S
 import SPL.Types (T)
 
 
-type Program = [Definition]
+type Program = [Definition String]
 
 data Const      =   ConstString String
                 |   ConstInt    Int
@@ -15,7 +15,7 @@ data Const      =   ConstString String
 
 type ASTLetIn = LetIn String
 
-data LetIn a = Let Definition (LetIn a) | In (Expression a)
+data LetIn a = Let (Definition a) (LetIn a) | In (Expression a)
 	deriving (Eq, Show, Functor)
 
 letValue (Let _ l) = letValue l
@@ -24,17 +24,19 @@ letValue (In v) = v
 letWhere (Let d l) = d : letWhere l
 letWhere (In _) = []
 
-makeLet :: ASTExpression -> Program -> ASTLetIn
+makeLet :: Expression a -> [Definition a] -> LetIn a
 makeLet v = foldr Let (In v)
 
 insertLet prg (Definition name args (In value)) = Definition name args $ makeLet value prg
 
-data Definition
-	=   Definition String [String] (LetIn String)
-	|	Assign String (LetIn String)
+type ASTDefinition = Definition String
+
+data Definition a
+	=   Definition a [a] (LetIn a)
+	|	Assign a (LetIn a)
 --	|	While Expression LetIn
 --	|	If Expression LetIn LetIn
-    deriving(Eq,Show)
+    deriving (Eq, Show, Functor)
 
 type ASTExpression = Expression String
 type ExpressionList  = [ASTExpression]

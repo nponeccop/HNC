@@ -6,7 +6,7 @@
 -- пути к одному и тому же атому из разных мест различны.
 
 
-ATTR Definition
+ATTR ASTDefinition
 	[ | | qualifier : CppQualifier ]
 
 -- квалификатор в выражении в конце программы
@@ -22,10 +22,10 @@ ATTR ASTLetIn
 -- предыдущие. Соответственно, при проходе программы qualifiers
 -- нужно непрерывно пополнять
 
-ATTR Definition ASTLetIn ASTExpression ExpressionList
+ATTR ASTDefinition ASTLetIn ASTExpression ExpressionList
 	[ qualifiers : {M.Map String CppQualifier} | | ]
 
-ATTR Definition
+ATTR ASTDefinition
 	[ isLocalVar : Bool | | ]
 
 SEM ASTLetIn
@@ -38,7 +38,7 @@ SEM ASTLetIn
 		lhs.varsFreeInFunctions = S.empty
 		value.qualifiers = M.union @lhs.localVars @lhs.qualifiers
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 
 		-- В локальных определениях дополнительно видны параметры определения. Вдобавок, вложенные

@@ -5,9 +5,9 @@
 -- в узел Program для агрегации и последующей передачи в узел @Definition.where : ASTExpression
 --
 
-ATTR Definition [ | | definitionType : T ]
+ATTR ASTDefinition [ | | definitionType : T ]
 
-ATTR Definition ASTLetIn ASTExpression ExpressionList [ definitionTypes : {M.Map String T} | | ]
+ATTR ASTDefinition ASTLetIn ASTExpression ExpressionList [ definitionTypes : {M.Map String T} | | ]
 
 SEM ASTLetIn
 	| Let

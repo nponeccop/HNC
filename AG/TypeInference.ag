@@ -1,5 +1,5 @@
  -- Модуль вывода типов
-ATTR ASTExpression ExpressionList Definition ASTLetIn
+ATTR ASTExpression ExpressionList ASTDefinition ASTLetIn
 	[
 		generalizedTypes : {M.Map String GType}
 		finalSubstitution : {MT.MyStack ()}
@@ -8,7 +8,7 @@ ATTR ASTExpression ExpressionList Definition ASTLetIn
 	|
 	]
 
-ATTR Definition
+ATTR ASTDefinition
 	[ | | generalizedTypeM : {MT.MyStack GType} ]
 
 ATTR ASTExpression ASTLetIn
@@ -17,7 +17,7 @@ ATTR ASTExpression ASTLetIn
 ATTR ExpressionList
 	[ | | tauM USE {:} {[]} : {[MT.MyStack (UTerm MT.T IntVar)]} ]
 
-SEM Definition
+SEM ASTDefinition
 	| Definition
 		-- arguments get fresh type variables
 		where.counter = @lhs.counter + length @params
