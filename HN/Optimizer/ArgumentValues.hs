@@ -35,13 +35,14 @@ unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
-transferF = mkFTransfer ft where
-	ft :: Node e x -> ArgFact -> Fact x ArgFact
-	ft (Entry _) f = f
-	ft (Exit dn) f = mkFactBase argLattice $ map (second $ PElem . map PElem) $ case dn of
-		LetNode args value -> unzipArgs f args ++ process2 value
-		ArgNode -> []
-		LibNode -> []
+
+
+ft :: Node e x -> ArgFact -> Fact x ArgFact
+ft (Entry _) f = f
+ft n @ (Exit dn) f = mkFactBase argLattice $ (++) (defaultFactsHack argLattice n) $ map (second $ PElem . map PElem) $ case dn of
+	LetNode args value -> unzipArgs f args ++ process2 value
+	ArgNode -> []
+	LibNode -> []
 
 unzipArgs :: ArgFact -> [Label] -> [(Label, [ExpressionFix])]
 unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "Wrong formalArgs" formalArgs actualArgs
@@ -50,13 +51,13 @@ unzipArgs _ _ = []
 foo (formalArg, PElem actualArg) = [(formalArg, [actualArg])]
 foo _ = []
 
-rewriteF :: FwdRewrite SimpleFuelMonad Node ArgFact
-rewriteF = mkFRewrite $ \a b -> return $ cp a b where
-	cp :: Node e x -> ArgFact -> Maybe (Graph Node e x)
-	cp (Entry _) _ = Nothing
-	cp (Exit ArgNode) (PElem [PElem x]) = Just $ mkLast $ Exit $ LetNode [] x
-	cp (Exit (LetNode l x)) (PElem f) = (\l -> mkLast $ Exit $ LetNode l x) <$> rewriteFormalArgs f l
-	cp (Exit _) _ = Nothing
+no _ _ = Nothing
+
+cp :: Node e x -> ArgFact -> Maybe (Graph Node e x)
+cp (Entry _) _ = Nothing
+cp (Exit ArgNode) (PElem [PElem x]) = Just $ mkLast $ Exit $ LetNode [] x
+cp (Exit (LetNode l x)) (PElem f) = (\l -> mkLast $ Exit $ LetNode l x) <$> rewriteFormalArgs f l
+cp (Exit _) _ = Nothing
 
 rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label] 
 rewriteFormalArgs actualArgs formalArgs
@@ -68,8 +69,8 @@ rewriteFormalArgs actualArgs formalArgs
 avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
-	, fp_transfer = transferF
-	, fp_rewrite = rewriteF
+	, fp_transfer = mkFTransfer ft
+	, fp_rewrite = pureFRewrite no
 	}
 
 runAv = runPass (analyzeAndRewriteFwd avPass) (\_ _ -> mapEmpty)

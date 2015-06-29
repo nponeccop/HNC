@@ -10,21 +10,20 @@ import HN.Optimizer.Pass
 -- Type and definition of the lattice
 type IntFact = Int
 
-transferF = mkFTransfer ft where
-	ft :: Node e x -> IntFact -> Fact x IntFact
-	ft (Entry _) _ = 0
-	ft n @ (Exit _) _ = distributeXfer intLattice (\_ _ -> 1) n undefined
+transferF :: Node e x -> IntFact -> Fact x IntFact
+transferF (Entry _) _ = 0
+transferF n @ (Exit _) _ = distributeXfer intLattice (\_ _ -> 1) n undefined
 
 passF = FwdPass
 	{ fp_lattice = intLattice
-	, fp_transfer = transferF
+	, fp_transfer = mkFTransfer transferF
 	, fp_rewrite = noFwdRewrite }
 
 runF
   :: (Graph Node C C, t1, t2)
      -> SimpleFuelMonad
           (Graph Node C C, FactBase IntFact, MaybeO C IntFact)
-runF = runPass (analyzeAndRewriteFwd passF) $ \_ _ -> mapEmpty
+runF = runPass (analyzeAndRewriteFwd passF) $ \_ _ -> noFacts
 
 
 intLattice = DataflowLattice

@@ -73,28 +73,24 @@ listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Joi
 
 -- BACKWARD pass
 
-transferBL :: BwdTransfer Node ListFact
-transferBL = mkBTransfer bt where
-  bt :: Node e x -> Fact x ListFact -> ListFact
-  bt (Entry _)  f = f
-  bt (Exit dn) _ = PElem dn
+transferB :: Node e x -> Fact x ListFact -> ListFact
+transferB (Entry _)  f = f
+transferB (Exit dn) _ = PElem dn
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
 
-rewriteBL :: FuelMonad m => BwdRewrite m Node ListFact
-rewriteBL = mkBRewrite (\a b -> return $ cp a b) where
-	cp :: Node e x -> Fact x ListFact -> Maybe (Graph Node e x)
-	cp (Entry _) _ = Nothing
-	cp (Exit xll) f = case xll of
+rewriteB :: Node e x -> Fact x ListFact -> Maybe (Graph Node e x)
+rewriteB (Entry _) _ = Nothing
+rewriteB (Exit xll) f = case xll of
 		LibNode -> Nothing
 		ArgNode -> Nothing
 		LetNode l expr -> (mkLast . Exit . LetNode l) <$> rewriteExpression f expr
 		
 passBL = BwdPass
 	{ bp_lattice = listLattice
-	, bp_transfer = transferBL
-	, bp_rewrite = rewriteBL
+	, bp_transfer = mkBTransfer transferB
+	, bp_rewrite = pureBRewrite rewriteB
 	}
 
 runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
