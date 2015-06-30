@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, TupleSections #-}
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
 import Compiler.Hoopl
@@ -16,18 +16,13 @@ firstLabel = runSimpleUniqueMonad freshLabel
 
 decompileGraph :: M.Map Label String -> Graph N.Node C C -> Definition String
 decompileGraph labelNames g = fmap (`uncondLookup` labelNames ) 
-	$ foo (flip (M.findWithDefault []) $ graphPostdominators g) (lookupValue g) firstLabel
+	$ ana (mapWhere $ mapMaybe baz) $ fromJust $ baz firstLabel
+	where
+		baz :: Label -> Maybe (DefinitionBase Label Label)
+		baz x = lookupValue2 g (M.findWithDefault [] x pd) x
+		pd = graphPostdominators g
 
-lookupLet l2pd l2value = self where
-	self l = insertLet (mapMaybe self $ l2pd l) <$> l2value l
-
-foo :: (Label -> [Label]) -> (Label -> Maybe (Definition Label)) -> Label -> Definition Label
-foo l2pd l2value = ana phi where
-	phi :: Label -> DefinitionBase Label Label
-	phi x = DefinitionF a b v foo where
-		foo = mapMaybe quux $ l2pd x
-		(DefinitionF a b v []) = project $ fromJust $ l2value x
-		quux x = const x <$> l2value x
+mapWhere f (DefinitionF a b v w) = DefinitionF a b v $ f w
 
 mapUncond k m = fromJustNote "GraphDecompiler.mapUncond" $ mapLookup k m
 
@@ -37,7 +32,6 @@ decompiledBlock x = foldBlockNodesB f x undefined where
 	f (N.Entry _) o = o
 	f (N.Exit d) _ = d
 
-lookupValue :: Graph N.Node e x -> Label -> Maybe (Definition Label)
-lookupValue (GMany _ l _) x = case decompiledBlock $ mapUncond x l of
-	N.LetNode argLabels expr -> Just $ Definition x argLabels (In expr)
+lookupValue2 (GMany _ l _) pd x = case decompiledBlock $ mapUncond x l of
+	N.LetNode argLabels expr -> Just $ DefinitionF x argLabels expr pd
 	_ -> Nothing
