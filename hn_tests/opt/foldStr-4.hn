@@ -1,0 +1,8 @@
+foldStr f e ss = {
+	loopCond loopState = _not (eq (deref (snd loopState)) 0)
+	loopTrans loopState = {
+		s = snd loopState
+		pair (f (fst loopState) (deref s)) (next s)
+	}
+	whileF loopCond loopTrans (pair e ss)
+}

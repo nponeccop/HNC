@@ -1,0 +1,11 @@
+hnMain = {
+	tb start_time = {
+		c = udp_connect "localhost" 99
+		t3 reply = {
+			t4 end_time = print (sub end_time start_time)
+			bind (voidbind (print reply) time_msec) t4
+		}
+		bind (voidbind (udp_send c "foo") (udp_receive c)) t3
+	}
+	forever (bind time_msec tb)
+}

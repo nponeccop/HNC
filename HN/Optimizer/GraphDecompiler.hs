@@ -13,10 +13,11 @@ import Utils
 firstLabel = runSimpleUniqueMonad freshLabel
 
 decompileGraph :: M.Map Label String -> Graph N.Node C C -> Definition String
-decompileGraph labelNames g = l2n <$> decompiledGraph g where
+decompileGraph labelNames g = l2n <$> fromJust (decompiledGraph l2pd g firstLabel) where
 	l2n l = uncondLookup l labelNames
+	l2pd l = M.findWithDefault [] l $ graphPostdominators g
 
-decompiledGraph g = insertLet (mapMaybe byLabel $ M.findWithDefault [] firstLabel $ graphPostdominators g) $ fromJust $ byLabel firstLabel where
+decompiledGraph l2pd g l = insertLet (mapMaybe (decompiledGraph l2pd g) $ l2pd l) <$> byLabel l where
 	byLabel = lookupDefinition g
 
 mapUncond k m = fromMaybe (error "mapUncond failed in GraphDecompiler") $ mapLookup k m

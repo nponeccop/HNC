@@ -1,0 +1,10 @@
+hnMain = {
+	tb start_time = {
+		t3 reply = {
+			t4 end_time = print 0
+			bind time_msec t4
+		}
+		bind (udp_receive (udp_connect "localhost" 99)) t3
+	}
+	forever (bind time_msec tb)
+}
