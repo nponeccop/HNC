@@ -1,6 +1,8 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFunctor, TypeFamilies #-}
 module HN.Intermediate where
 import qualified Data.Set as S
+import Data.Functor.Foldable
+import Prelude hiding (Foldable)
 import SPL.Types (T)
 
 
@@ -37,6 +39,23 @@ data Definition a
 --	|	While Expression LetIn
 --	|	If Expression LetIn LetIn
     deriving (Eq, Show, Functor)
+
+data DefinitionBase a b
+	= DefinitionF a [a] (Expression a) [b]
+	| AssignF a (Expression a) [b]
+	deriving (Show, Functor)
+
+type instance Base (Definition a) = DefinitionBase a
+
+instance Foldable (Definition a) where
+	project x = case x of
+		Definition a b l -> DefinitionF a b (letValue l) (letWhere l)
+		Assign a l -> AssignF a (letValue l) (letWhere l)
+
+instance Unfoldable (Definition a) where
+	embed x = case x of
+		DefinitionF name args value prg -> Definition name args $ makeLet value prg
+		AssignF name value prg -> Assign name $ makeLet value prg
 
 type ASTExpression = Expression String
 type ExpressionList  = [ASTExpression]
