@@ -12,6 +12,8 @@ import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
+import HN.Optimizer.Utils
+import Utils;
 
 type ArgFact = WithTopAndBot [WithTopAndBot ExpressionFix]
 
@@ -35,29 +37,29 @@ unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
-
-
-ft :: Node e x -> ArgFact -> Fact x ArgFact
-ft (Entry _) f = f
-ft n @ (Exit dn) f = mkFactBase argLattice $ (++) (defaultFactsHack argLattice n) $ map (second $ PElem . map PElem) $ case dn of
-	LetNode args value -> unzipArgs f args ++ process2 value
+ft :: DefinitionNode -> ArgFact -> FactBase ArgFact
+ft dn f = ztrace "fb" $ mkFactBase argLattice $ (++) (defaultFactsHack argLattice (Exit dn)) $ map (second $ PElem . map PElem) $ case dn of
+	LetNode args value -> unzipArgs f (ztrace "args" args) ++ process2 value
 	ArgNode -> []
 	LibNode -> []
 
 unzipArgs :: ArgFact -> [Label] -> [(Label, [ExpressionFix])]
-unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactDef [] formalArgs actualArgs
-unzipArgs _ _ = []
+unzipArgs (PElem actualArgs) formalArgs = ztrace "xaaa" $ concatMap foo $ zipExactDef [] formalArgs actualArgs
+unzipArgs Bot _ = ztrace "bot" []
+unzipArgs Top _ = error "top!"
 
 foo (formalArg, PElem actualArg) = [(formalArg, [actualArg])]
 foo _ = []
 
 no _ _ = Nothing
 
-cp :: Node e x -> ArgFact -> Maybe (Graph Node e x)
-cp (Entry _) _ = Nothing
-cp (Exit ArgNode) (PElem [PElem x]) = Just $ mkLast $ Exit $ LetNode [] x
-cp (Exit (LetNode l x)) (PElem f) = (\l -> mkLast $ Exit $ LetNode l x) <$> rewriteFormalArgs f l
-cp (Exit _) _ = Nothing
+cp :: DefinitionNode -> ArgFact -> Maybe DefinitionNode
+cp ArgNode (PElem [PElem x]) = Just $ LetNode [] $ ztrace "newArg" x
+cp ArgNode (PElem e) = error $ show $ "aaa = " ++ show e
+cp ArgNode Bot = Nothing
+cp ArgNode _ = error "ooo"
+cp (LetNode l x) (PElem f) = (\l -> LetNode l x) <$> rewriteFormalArgs f l
+cp _ _ = Nothing
 
 rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label] 
 rewriteFormalArgs actualArgs formalArgs
@@ -69,8 +71,8 @@ rewriteFormalArgs actualArgs formalArgs
 avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
-	, fp_transfer = mkFTransfer ft
-	, fp_rewrite = pureFRewrite cp
+	, fp_transfer = mkFTransfer $ transferExitF ft
+	, fp_rewrite = pureFRewrite $ rewriteExit cp
 	}
 
 runAv :: Pass any ArgFact
