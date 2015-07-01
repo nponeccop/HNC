@@ -72,7 +72,7 @@ avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
 	, fp_transfer = mkFTransfer $ transferExitF ft
-	, fp_rewrite = pureFRewrite $ rewriteExit cp
+	, fp_rewrite = pureFRewrite $ rewriteExitF cp
 	}
 
 runAv :: Pass any ArgFact

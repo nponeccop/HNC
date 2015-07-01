@@ -5,6 +5,7 @@ import Compiler.Hoopl
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.Rewriting
+import HN.Optimizer.Utils
 
 {-
 
@@ -73,24 +74,22 @@ listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Joi
 
 -- BACKWARD pass
 
-transferB :: Node e x -> Fact x ListFact -> ListFact
-transferB (Entry _)  f = f
-transferB (Exit dn) _ = PElem dn
+transferB :: DefinitionNode -> FactBase ListFact -> ListFact
+transferB dn _ = PElem dn
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
 
-rewriteB :: Node e x -> Fact x ListFact -> Maybe (Graph Node e x)
-rewriteB (Entry _) _ = Nothing
-rewriteB (Exit xll) f = case xll of
-		LibNode -> Nothing
-		ArgNode -> Nothing
-		LetNode l expr -> (mkLast . Exit . LetNode l) <$> rewriteExpression f expr
+rewriteB :: DefinitionNode -> FactBase ListFact -> Maybe DefinitionNode
+rewriteB xll f = case xll of
+	LibNode -> Nothing
+	ArgNode -> Nothing
+	LetNode l expr ->  LetNode l <$> rewriteExpression f expr
 		
 passBL = BwdPass
 	{ bp_lattice = listLattice
-	, bp_transfer = mkBTransfer transferB
-	, bp_rewrite = pureBRewrite rewriteB
+	, bp_transfer = mkBTransfer $ transferExitB transferB
+	, bp_rewrite = pureBRewrite $ rewriteExitB rewriteB
 	}
 
 runB :: Pass Int ListFact

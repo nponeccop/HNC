@@ -7,6 +7,7 @@ import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.ArgumentValues (ArgFact, argLattice)
+import HN.Optimizer.Utils
 {-
 
 Идея - использовать Hoopl как фреймворк произвольных оптимизаторов графов,
@@ -73,21 +74,19 @@ Bottom `join` [...] = [...]
 
 -- BACKWARD pass
 
-transferB :: Node e x -> Fact x ArgFact -> ArgFact
-transferB (Entry _)  f = f
-transferB (Exit LibNode) _ = Top
-transferB (Exit _) _ = Bot
+transferB :: DefinitionNode -> FactBase ArgFact -> ArgFact
+transferB LibNode _ = Top
+transferB _ _ = Bot
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
 --
 
-rewriteB :: Node e x -> Fact x ArgFact -> Maybe (Graph Node e x)
-rewriteB (Entry _) _ = Nothing
-rewriteB (Exit xll) f = case xll of
+rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
+rewriteB xll f = case xll of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> (mkLast . Exit . LetNode l) <$> process (rewriteExpression f) expr
+	LetNode l expr -> LetNode l <$> process (rewriteExpression f) expr
 
 rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> rewriteArguments b (justPElem =<< lookupFact a f)
 rewriteExpression _ _ = Nothing
@@ -106,8 +105,8 @@ justPElem _ = Nothing
 
 passB = BwdPass
 	{ bp_lattice = argLattice
-	, bp_transfer = mkBTransfer transferB
-	, bp_rewrite = pureBRewrite rewriteB
+	, bp_transfer = mkBTransfer $ transferExitB transferB
+	, bp_rewrite = pureBRewrite $ rewriteExitB rewriteB
 	}
 
 runB :: Pass ArgFact ArgFact
