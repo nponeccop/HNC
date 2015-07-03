@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable #-}
-module HN.Optimizer.ArgumentValues (runAv, ArgFact, argLattice) where
+module HN.Optimizer.ArgumentValues (runAv, ArgFact, argLattice, AFType(..)) where
 
 import Compiler.Hoopl
 import Control.Arrow
@@ -14,8 +14,6 @@ import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
-import HN.Optimizer.ExpressionRewriter
-import HN.Optimizer.Utils
 import Utils
 
 import HN.Optimizer.Visualise ()
@@ -31,9 +29,6 @@ deriving instance Foldable (Prim [a])
 
 singleArgLattice :: Eq a => SingleArgLattice a
 singleArgLattice = flatEqLattice "ArgumentValues"
-
---argLattice :: Eq a => DataflowLattice (WithTopAndBot [WithTopAndBot a])
---argLattice = listLattice (fact_join singleArgLattice) "Jo"
 
 argLattice :: DataflowLattice ArgFact
 argLattice = dataflowLattice
@@ -72,29 +67,11 @@ unzipArgs Top _ = error "top!"
 foo (formalArg, PElem actualArg) = [(formalArg, [actualArg])]
 foo _ = []
 
-no _ _ = Nothing
-
-cp :: DefinitionNode -> WithTopAndBot AFType -> Maybe DefinitionNode
-cp ArgNode (PElem (Value x)) = ztrace "newArg" $ Just $ LetNode [] x
-cp ArgNode (PElem e) = error $ show $ "aaa = " ++ show e
-cp ArgNode Bot = Nothing
-cp ArgNode _ = error "ooo"
-cp (LetNode [] _) _ = Nothing
-cp (LetNode l x) (PElem f) = Nothing -- (\l -> LetNode l x) <$> rewriteFormalArgs f l
-cp _ _ = Nothing
-
-rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label] 
-rewriteFormalArgs actualArgs formalArgs
-	= map fst <$> process foo (zipExactNote "Wrong formalArgs during rewrite" formalArgs actualArgs)
-	where
-		foo ((_, PElem _) : tail) = Just tail
-		foo _ = Nothing
-
 avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
 	, fp_transfer = mkFTransfer transferF
-	, fp_rewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
+	, fp_rewrite = noFwdRewrite
 	}
 
 runAv :: Pass any ArgFact
