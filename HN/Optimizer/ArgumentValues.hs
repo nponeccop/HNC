@@ -5,9 +5,12 @@ import Compiler.Hoopl
 import Control.Arrow
 import qualified Data.Foldable as F
 import Data.Functor.Foldable hiding (Fix, Foldable)
+import qualified Data.Map as M
+import Data.Maybe
 import Safe.Exact
 
 import HN.Intermediate
+import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
@@ -19,7 +22,7 @@ import HN.Optimizer.Visualise ()
 
 data AFType = Call [WithTopAndBot ExpressionFix] | Value ExpressionFix deriving (Eq, Show)
 
-type ArgFact = WithTopAndBot AFType
+type ArgFact = (WithTopAndBot AFType, M.Map Label (WithTopAndBot AFType))
 
 type SingleArgLattice a = DataflowLattice (WithTopAndBot a)
 
@@ -33,12 +36,15 @@ singleArgLattice = flatEqLattice "ArgumentValues"
 --argLattice = listLattice (fact_join singleArgLattice) "Jo"
 
 argLattice :: DataflowLattice ArgFact
-argLattice = liftedLattice f "ArgFact" where
-	f (OldFact o @ (Value _)) (NewFact n) = if o == n then Bot else Top
-	f (OldFact o @ (Call ol)) (NewFact n @ (Call on)) = case joinLists (fact_join singleArgLattice) undefined (OldFact ol) (NewFact on) of
-		(NoChange, _) -> Bot
-		(_, Top) -> Top
-		(_, PElem j) -> PElem $ Call j
+argLattice = dataflowLattice
+
+instance Lattice (WithTopAndBot AFType) where
+	dataflowLattice = liftedLattice f "ArgFact.AFType" where
+			f (OldFact o @ (Value _)) (NewFact n) = if o == n then Bot else Top
+			f (OldFact (Call ol)) (NewFact (Call on)) = case joinLists (fact_join singleArgLattice) undefined (OldFact ol) (NewFact on) of
+				(NoChange, _) -> Bot
+				(_, Top) -> Top
+				(_, PElem j) -> PElem $ Call j
 
 varArgs a = case a of
 	ApplicationF (Atom var) xx -> [(var, xx)]
@@ -49,16 +55,15 @@ unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
-transferF :: DefinitionNode -> ArgFact -> FactBase ArgFact
-transferF dn @ (LetNode args value) f @ (PElem (Call argValues)) = mkFactBase argLattice
-	$ (map (second $ PElem . Call . map PElem) $ process2 value) ++ (defaultFactsHack argLattice (Exit dn)) ++ (map (second $ PElem . Value . head) $ unzipArgs f args)
+transferF :: Node e x -> ArgFact -> Fact x ArgFact
+transferF (Entry l) (_, m) = (fromMaybe Bot $ M.lookup l m, m)
+transferF n @ (Exit (LetNode args value)) (f @ (PElem (Call _)), _)
+	= distributeFact n $ (,) Bot $ M.fromList $ (map (second $ PElem . Call . map PElem) $ process2 value) ++ (map (second $ PElem . Value . head) $ unzipArgs f args)
 
-transferF dn @ (LetNode args value) _ = mkFactBase argLattice
-	$ defaultFactsHack argLattice (Exit dn)
-		++ (map (second $ PElem . Call . map PElem) $ process2 value)
-transferF _ _ = noFacts
+transferF n @ (Exit (LetNode _ value)) _ = distributeFact n $ (,) Bot $ M.fromList (map (second $ PElem . Call . map PElem) $ process2 value)
+transferF (Exit _) _ = noFacts
 
-unzipArgs :: ArgFact -> [Label] -> [(Label, [ExpressionFix])]
+unzipArgs :: WithTopAndBot AFType -> [Label] -> [(Label, [ExpressionFix])]
 unzipArgs (PElem (Call actualArgs)) formalArgs = ztrace "xaaa" $ concatMap foo $ zipExactDef [] formalArgs actualArgs
 unzipArgs (PElem (Value _)) [] = []
 unzipArgs Bot _ = ztrace "bot" []
@@ -69,7 +74,7 @@ foo _ = []
 
 no _ _ = Nothing
 
-cp :: DefinitionNode -> ArgFact -> Maybe DefinitionNode
+cp :: DefinitionNode -> WithTopAndBot AFType -> Maybe DefinitionNode
 cp ArgNode (PElem (Value x)) = ztrace "newArg" $ Just $ LetNode [] x
 cp ArgNode (PElem e) = error $ show $ "aaa = " ++ show e
 cp ArgNode Bot = Nothing
@@ -88,9 +93,10 @@ rewriteFormalArgs actualArgs formalArgs
 avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
-	, fp_transfer = mkFTransfer $ transferExitF transferF
-	, fp_rewrite = pureFRewrite $ rewriteExitF cp
+	, fp_transfer = mkFTransfer transferF
+	, fp_rewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
 	}
 
 runAv :: Pass any ArgFact
 runAv = runPass (analyzeAndRewriteFwd avPass) (\_ _ -> mapEmpty)
+
