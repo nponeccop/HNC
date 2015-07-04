@@ -79,9 +79,9 @@ Bottom `join` [...] = [...]
 -- BACKWARD pass
 
 transferB :: DefinitionNode -> FactBase ArgFact -> ArgFact
-transferB LibNode _ = (Top, bot)
-transferB ArgNode _ = (Top, bot)
-transferB (LetNode _ _) _ = (Bot, bot)
+transferB LibNode _ = ((Top, bot), bot)
+transferB ArgNode _ = ((Top, bot), bot)
+transferB (LetNode _ _) _ = bot
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
@@ -91,14 +91,14 @@ rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
 rewriteB xll f = case xll of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> LetNode l <$> process (rewriteExpression $ mapMapWithKey convertFact $ xtrace "rewrite.f" f) expr
+	LetNode l expr -> LetNode l <$> process' (rewriteExpression $ mapMapWithKey convertFact $ xtrace "rewrite.f" f) expr
 
 convertFact :: Label -> ArgFact -> Maybe [WithTopAndBot ExpressionFix]
-convertFact l (v, m) = case v of
-	PElem (Call a) -> Just a
+convertFact l ((callFact, _), m) = case xtrace "callFact" callFact of
+	PElem a -> Just a
 	Top -> Nothing
-	x -> case uncondLookup l m of
-		PElem (Call x) -> Just x
+	x -> case uncondLookup (xtrace "label" l) m of
+		(PElem callFact, _) -> Just $ xtrace "callFact2" callFact
 		_ -> Nothing
 
 rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments b $ CM.join $ lookupFact a f)
