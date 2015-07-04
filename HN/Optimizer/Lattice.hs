@@ -1,8 +1,9 @@
-{-# LANGUAGE GADTs, FlexibleContexts #-}
+{-# LANGUAGE GADTs, FlexibleContexts, ScopedTypeVariables #-}
 module HN.Optimizer.Lattice where
 
 import Compiler.Hoopl
 import Data.Void
+import Safe.Exact
 
 liftedLattice ff name = addPoints' name f where
 	f _ o @ (OldFact oo) n = case ff o n of
@@ -33,8 +34,13 @@ flatEqLattice = liftedLattice $ \(OldFact o) (NewFact n) ->
 listLattice :: JoinFun a -> UnnamedLattice [a]
 listLattice = flip $ \name -> addPoints' name . joinLists
 
-joinLists _ _ (OldFact o) (NewFact n)
-	| length o /= length n = (SomeChange, Top)
+joinLists
+  :: (t -> OldFact a -> NewFact a1 -> (ChangeFlag, a))
+     -> t
+     -> OldFact [a]
+     -> NewFact [a1]
+     -> (ChangeFlag, Pointed C b [a])
+
 joinLists _ _ (OldFact o) (NewFact []) = (NoChange, PElem o)
 
 joinLists joinElems label (OldFact o) (NewFact n) =
@@ -42,7 +48,6 @@ joinLists joinElems label (OldFact o) (NewFact n) =
 		then (SomeChange, PElem $ map snd j)
 		else (NoChange, PElem o)
 	where
-		j = zipWith (joinElems label) (map OldFact o) (map NewFact n)
+		j = zipWithExactNote "Lattice.joinLists" (joinElems label) (map OldFact o) (map NewFact n)
 		isSomeChange SomeChange = True
 		isSomeChange NoChange = False
-

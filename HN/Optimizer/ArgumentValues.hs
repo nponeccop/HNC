@@ -34,12 +34,7 @@ argLattice :: DataflowLattice ArgFact
 argLattice = dataflowLattice
 
 instance Lattice (WithTopAndBot [WithTopAndBot ExpressionFix]) where
-	dataflowLattice = liftedLattice f "AV.Call" where
-		f (OldFact ol) (NewFact on)
-			= case joinLists (fact_join singleArgLattice) undefined (OldFact ol) (NewFact on) of
-				(NoChange, _) -> Bot
-				(_, Top) -> Top
-				(_, PElem j) -> PElem j
+	dataflowLattice = addPoints' "AV.Call" $ joinLists (fact_join singleArgLattice)
 
 instance Lattice (WithTopAndBot ExpressionFix) where
 	dataflowLattice = flatEqLattice "AV.Value"
@@ -62,7 +57,7 @@ transferF n @ (Exit (LetNode args value)) ((callFact, _), _)
 transferF (Exit _) _ = noFacts
 
 unzipArgs :: WithTopAndBot [WithTopAndBot ExpressionFix] -> [Label] -> [(Label, ExpressionFix)]
-unzipArgs (PElem actualArgs) formalArgs = xtrace "xaaa" $ concatMap foo $ zipExactDef [] formalArgs actualArgs
+unzipArgs (PElem actualArgs) formalArgs = xtrace "xaaa" $ concatMap foo $ zipExactNote "unzipArgs" formalArgs actualArgs
 unzipArgs Bot _ = xtrace "bot" []
 unzipArgs Top _ = error "top!"
 

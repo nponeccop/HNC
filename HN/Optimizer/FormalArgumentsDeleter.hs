@@ -3,6 +3,7 @@ module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
 import qualified Control.Monad as CM
+import Safe.Exact
 
 import HN.Intermediate
 import HN.Optimizer.ClassyLattice
@@ -104,7 +105,7 @@ convertFact l ((callFact, _), m) = case xtrace "callFact" callFact of
 rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments b $ CM.join $ lookupFact a f)
 rewriteExpression _ _ = Nothing
 
-rewriteArguments b f = map fst <$> (process deleteArg =<< zip b <$> f)
+rewriteArguments b f = map fst <$> (process deleteArg =<< zipExactNote "AD.rewriteArguments" b <$> f)
 
 smartApplication a [] = a
 smartApplication a b = Application a b
