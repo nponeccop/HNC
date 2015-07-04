@@ -2,12 +2,17 @@
 module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
+import qualified Control.Monad as CM
+import qualified Data.Map as M
+
 import HN.Intermediate
+import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
-import HN.Optimizer.ArgumentValues (ArgFact, argLattice)
+import HN.Optimizer.ArgumentValues (ArgFact, argLattice, AFType(..))
 import HN.Optimizer.Utils
+import Utils
 {-
 
 Идея - использовать Hoopl как фреймворк произвольных оптимизаторов графов,
@@ -75,8 +80,9 @@ Bottom `join` [...] = [...]
 -- BACKWARD pass
 
 transferB :: DefinitionNode -> FactBase ArgFact -> ArgFact
-transferB LibNode _ = Top
-transferB _ _ = Bot
+transferB LibNode _ = (Top, bot)
+transferB ArgNode _ = (Top, bot)
+transferB (LetNode _ _) _ = (Bot, bot)
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
@@ -86,9 +92,15 @@ rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
 rewriteB xll f = case xll of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> LetNode l <$> process (rewriteExpression f) expr
+	LetNode l expr -> LetNode l <$> process (rewriteExpression $ mapMapWithKey convertFact $ ztrace "rewrite.f" f) expr
 
-rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> rewriteArguments b (justPElem =<< lookupFact a f)
+convertFact :: Label -> ArgFact -> Maybe [WithTopAndBot ExpressionFix]
+convertFact l (v, m) = case v of
+	PElem (Call a) -> Just a
+	Top -> Nothing
+	x -> case uncondLookup l m of PElem (Call x) -> Just x
+
+rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments b $ CM.join $ lookupFact a f)
 rewriteExpression _ _ = Nothing
 
 rewriteArguments b f = map fst <$> (process deleteArg =<< zip b <$> f)
