@@ -3,7 +3,6 @@ module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
 import qualified Control.Monad as CM
-import qualified Data.Map as M
 
 import HN.Intermediate
 import HN.Optimizer.ClassyLattice
@@ -92,13 +91,15 @@ rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
 rewriteB xll f = case xll of
 	LibNode -> Nothing
 	ArgNode -> Nothing
-	LetNode l expr -> LetNode l <$> process (rewriteExpression $ mapMapWithKey convertFact $ ztrace "rewrite.f" f) expr
+	LetNode l expr -> LetNode l <$> process (rewriteExpression $ mapMapWithKey convertFact $ xtrace "rewrite.f" f) expr
 
 convertFact :: Label -> ArgFact -> Maybe [WithTopAndBot ExpressionFix]
 convertFact l (v, m) = case v of
 	PElem (Call a) -> Just a
 	Top -> Nothing
-	x -> case uncondLookup l m of PElem (Call x) -> Just x
+	x -> case uncondLookup l m of
+		PElem (Call x) -> Just x
+		_ -> Nothing
 
 rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments b $ CM.join $ lookupFact a f)
 rewriteExpression _ _ = Nothing

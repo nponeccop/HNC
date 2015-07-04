@@ -19,8 +19,8 @@ transferF (Entry l) (_, m) = (fromMaybe Bot $ M.lookup l m, m)
 transferF n @ (Exit _) (_, m) = distributeFact n $ (,) Bot m
 
 cp :: DefinitionNode -> WithTopAndBot AFType -> Maybe DefinitionNode
-cp ArgNode (PElem (Value x)) = ztrace "newArg" $ Just $ LetNode [] x
-cp ArgNode (PElem e) = error $ show $ "aaa = " ++ show e
+cp ArgNode (PElem (Value x)) = xtrace "newArg" $ Just $ LetNode [] x
+cp ArgNode (PElem e) = Nothing -- error $ show $ "aaa = " ++ show e
 cp ArgNode Bot = Nothing
 cp ArgNode _ = error "ooo"
 cp (LetNode [] _) _ = Nothing

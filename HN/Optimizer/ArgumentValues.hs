@@ -40,6 +40,7 @@ instance Lattice (WithTopAndBot AFType) where
 				(NoChange, _) -> Bot
 				(_, Top) -> Top
 				(_, PElem j) -> PElem $ Call j
+			f (OldFact o @ (Call _)) _ = Bot
 
 varArgs a = case a of
 	ApplicationF (Atom var) xx -> [(var, xx)]
@@ -59,7 +60,7 @@ transferF n @ (Exit (LetNode _ value)) _ = distributeFact n $ (,) Bot $ M.fromLi
 transferF (Exit _) _ = noFacts
 
 unzipArgs :: WithTopAndBot AFType -> [Label] -> [(Label, [ExpressionFix])]
-unzipArgs (PElem (Call actualArgs)) formalArgs = ztrace "xaaa" $ concatMap foo $ zipExactDef [] formalArgs actualArgs
+unzipArgs (PElem (Call actualArgs)) formalArgs = xtrace "xaaa" $ concatMap foo $ zipExactDef [] formalArgs actualArgs
 unzipArgs (PElem (Value _)) [] = []
 unzipArgs Bot _ = ztrace "bot" []
 unzipArgs Top _ = error "top!"
