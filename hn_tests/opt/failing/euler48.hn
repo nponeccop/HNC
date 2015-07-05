@@ -1,11 +1,7 @@
 hnMain = {
-	natr ff l = {
-		g x total = sum total (ff x)
-		natrec g 0 l
-	}
-	poww a = {
+	g x total = {
 		f zz prod = mod (mul prod a) 1000000000
-		natrec f 1 (sub a 1)
+		sum total (natrec f 1 (sub x 1))
 	}
-	print (mod (sub (natr poww 1000) 1) 1000000000)
+	print (mod (sub (natrec g 0 1000) 1) 1000000000)
 }

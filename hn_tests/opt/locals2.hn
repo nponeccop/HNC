@@ -1,1 +1,4 @@
-hnMain = print (sum (sum 1 5) 5)
+hnMain = {
+	b = 5
+	print (sum (sum 1 b) b)
+}

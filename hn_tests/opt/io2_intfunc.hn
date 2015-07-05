@@ -1,7 +1,4 @@
 hnMain = {
-	intfunc f = {
-		g x = f (sum x 0)
-		g
-	}
-	bind readnum (intfunc print)
+	g x = print (sum x 0)
+	bind readnum g
 }

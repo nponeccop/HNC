@@ -1,13 +1,10 @@
 allDigits ss = {
-	lt c d = less c d
-	leq c d = _or (lt c d) (eq c d)
-	gt c d = _not (leq c d)
-	geq c d = _not (lt c d)
-	and a b = _not (_or (_not a) (_not b))
-	between a b c = and (geq a b) (lt b c)
-	isDigit c = between 48 c 58
-	loopCond s = isDigit (deref s)
+	loopCond s = {
+		lt c d = less b c
+		b = deref s
+		c = 58
+		_not (_or (_not (_not (lt 48 b))) (_not (lt b c)))
+	}
 	loopBody s = next s
-	firstFailure = whileF loopCond loopBody ss
-	eq (deref firstFailure) 0
+	eq (deref (whileF loopCond loopBody ss)) 0
 }

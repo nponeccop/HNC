@@ -1,4 +1,1 @@
-hnMain = {
-	natr f = 6
-	print (natr natr)
-}
+hnMain = print 6

@@ -1,7 +1,4 @@
 ii = {
-	comp f g = {
-		h x = incr (g 5)
-		h
-	}
-	comp 6 incr
+	h x = incr (incr 5)
+	h
 }

@@ -1,1 +1,4 @@
-hnMain = print (sum 5 (incr 5))
+hnMain = {
+	x = 5
+	print (sum x (incr x))
+}

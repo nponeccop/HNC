@@ -1,1 +1,4 @@
-hnMain = print (sum (mul 55 10) (div (mul 33 10) 100))
+hnMain = {
+	mp = 10
+	print (sum (mul 55 mp) (div (mul 33 mp) 100))
+}

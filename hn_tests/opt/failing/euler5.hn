@@ -1,15 +1,8 @@
 hnMain = {
 	f xx rr = {
-		not_divisable x = {
-			natfind pred n = {
-				ff nn found = _if found found (pred nn)
-				natrec ff (eq 0 1) n
-			}
-			g divisor = _if (eq 0 (mod x (incr divisor))) (eq 0 1) (eq 0 0)
-			natfind g 20
-		}
+		ff nn found = _if found found (_if (eq 0 (mod xxx (incr nn))) (eq 0 1) (eq 0 0))
 		xxx = mul 60 (mul 19 (incr xx))
-		_if (eq rr 0) (_if (not_divisable xxx) rr xxx) rr
+		_if (eq rr 0) (_if (natrec ff (eq 0 1) 20) rr xxx) rr
 	}
 	print (natrec f 0 1000000)
 }

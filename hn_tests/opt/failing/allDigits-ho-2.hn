@@ -1,8 +1,0 @@
-allDigits ss = {
-	comp f g = {
-		h x = f (g x)
-		h
-	}
-	loopCond = comp incr incr
-	loopCond ss
-}
