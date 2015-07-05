@@ -43,11 +43,12 @@ joinLists
 
 joinLists _ _ (OldFact o) (NewFact []) = (NoChange, PElem o)
 
-joinLists joinElems label (OldFact o) (NewFact n) =
-	if any (isSomeChange . fst) j
-		then (SomeChange, PElem $ map snd j)
-		else (NoChange, PElem o)
+joinLists joinElems label (OldFact o) (NewFact n) = case j of
+		Nothing -> (SomeChange, Top)
+		Just j -> if any (isSomeChange . fst) j
+			then (SomeChange, PElem $ map snd j)
+			else (NoChange, PElem o)
 	where
-		j = zipWithExactNote "Lattice.joinLists" (joinElems label) (map OldFact o) (map NewFact n)
+		j = zipWithExactMay (joinElems label) (map OldFact o) (map NewFact n)
 		isSomeChange SomeChange = True
 		isSomeChange NoChange = False

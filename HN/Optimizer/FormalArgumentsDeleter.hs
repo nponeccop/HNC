@@ -1,10 +1,10 @@
-{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction, FlexibleContexts #-}
+{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction, FlexibleContexts, FlexibleInstances #-}
 module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
 import qualified Control.Monad as CM
 import qualified Data.Map as M
-import Data.Monoid
+import Data.Maybe
 import Safe.Exact
 
 import HN.Intermediate
@@ -117,10 +117,10 @@ convertFact l ((callFact, _), m) = case xtrace "callFact" callFact of
 		(PElem callFact, _) -> Just $ xtrace "callFact2" callFact
 		_ -> Nothing
 
-rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments b $ CM.join $ lookupFact a f)
+rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments (xtrace "rewriteExpression.args" b) $ xtrace "rewriteExpression.fact" $ CM.join $ lookupFact a f)
 rewriteExpression _ _ = Nothing
 
-rewriteArguments b f = map fst <$> (process deleteArg =<< zipExactNote "AD.rewriteArguments" b <$> f)
+rewriteArguments b f = map fst <$> (process deleteArg =<< zipExactMay b =<< f)
 
 smartApplication a [] = a
 smartApplication a b = Application a b
@@ -139,4 +139,28 @@ passB = BwdPass
 	}
 
 runB :: Pass ArgFact ArgFact
-runB = runPass (analyzeAndRewriteBwd passB) const
+runB = runPass (analyzeAndRewriteBwd passB) (const . convertFactBase)
+
+instance Functor LabelMap where
+	fmap = mapMap
+
+firstLabel = runSimpleUniqueMonad freshLabel
+
+convertFactBase :: FactBase ArgFact -> FactBase ArgFact
+convertFactBase f = mapSquare $ foldr foo M.empty $ concatMap ff $ mapToList $ f where
+	ff (l, (f, m)) = (l, f) : M.toList m
+
+	bar :: M.Map Label AFType -> ArgFact
+	bar x = (bot, x)
+
+	mereJoin o n = fromMaybe o $ join (OldFact o) (NewFact n)
+
+	foo (l, f) factBase = M.insertWith mereJoin l f factBase
+
+
+mapSquare1 :: M.Map Label AFType -> Label -> ArgFact
+mapSquare1 m l = (fromMaybe bot $ M.lookup l m, m)
+
+mapSquare :: M.Map Label AFType -> FactBase ArgFact
+mapSquare m = mapFromList $ map ff $ M.keys m where
+	ff l = (l, mapSquare1 m l)

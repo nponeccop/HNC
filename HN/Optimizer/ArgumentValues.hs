@@ -57,8 +57,6 @@ transferF (Entry l) (curFact, factBase) = newFact where
 			Nothing -> (baseFact, factBase)
 			Just newFact -> (newFact, M.insert l newFact factBase)
 
-transferF n @ (Exit (LetNode [] value)) ((PElem _, _), _) = error "aaa"
-
 transferF n @ (Exit (LetNode args value)) ((callFact, _), _)
 	= distributeFact n $ (,) bot $ M.fromList $ (map (second $ (\x -> (x, bot)) . PElem . map PElem) $ process2 value) ++ (map (second $ (,) bot . PElem) $ unzipArgs callFact args)
 
@@ -79,6 +77,6 @@ avPass = FwdPass
 	, fp_rewrite = noFwdRewrite
 	}
 
-runAv :: Pass any ArgFact
-runAv = runPass (analyzeAndRewriteFwd avPass) (\_ _ -> mapEmpty)
+runAv :: Pass ArgFact ArgFact
+runAv = runPass (analyzeAndRewriteFwd avPass) const
 
