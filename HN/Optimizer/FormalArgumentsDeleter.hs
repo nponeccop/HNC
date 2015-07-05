@@ -3,6 +3,8 @@ module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
 import qualified Control.Monad as CM
+import qualified Data.Map as M
+import Data.Monoid
 import Safe.Exact
 
 import HN.Intermediate
@@ -78,10 +80,23 @@ Bottom `join` [...] = [...]
 -- listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Join" (SomeChange, PElem new)
 
 -- BACKWARD pass
+--
+
+transferB' :: Node e x -> Fact x ArgFact -> ArgFact
+transferB' (Entry l) o @ (curFact, factBase) = newFact where
+	baseFact = M.lookup l factBase
+	newFact = case baseFact of
+		Nothing -> (curFact, M.insert l curFact factBase)
+		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
+			Nothing -> (baseFact, factBase)
+			Just newFact -> (newFact, M.insert l newFact factBase)
+
+transferB' (Exit d) o = transferB d o
 
 transferB :: DefinitionNode -> FactBase ArgFact -> ArgFact
 transferB LibNode _ = ((Top, bot), bot)
 transferB ArgNode _ = ((Top, bot), bot)
+--transferB (LetNode [] _) _ = ((Top, bot), bot)
 transferB (LetNode _ _) _ = bot
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
@@ -119,7 +134,7 @@ justPElem _ = Nothing
 
 passB = BwdPass
 	{ bp_lattice = argLattice
-	, bp_transfer = mkBTransfer $ transferExitB transferB
+	, bp_transfer = mkBTransfer transferB'
 	, bp_rewrite = pureBRewrite $ rewriteExitB rewriteB
 	}
 

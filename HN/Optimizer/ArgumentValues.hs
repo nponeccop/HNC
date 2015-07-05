@@ -49,7 +49,15 @@ process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
 transferF :: Node e x -> ArgFact -> Fact x ArgFact
-transferF (Entry l) (_, m) = (fromMaybe bot $ M.lookup l m, m)
+transferF (Entry l) (curFact, factBase) = newFact where
+	baseFact = M.lookup l factBase
+	newFact = case baseFact of
+		Nothing -> (curFact, M.insert l curFact factBase)
+		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
+			Nothing -> (baseFact, factBase)
+			Just newFact -> (newFact, M.insert l newFact factBase)
+
+transferF n @ (Exit (LetNode [] value)) ((PElem _, _), _) = error "aaa"
 
 transferF n @ (Exit (LetNode args value)) ((callFact, _), _)
 	= distributeFact n $ (,) bot $ M.fromList $ (map (second $ (\x -> (x, bot)) . PElem . map PElem) $ process2 value) ++ (map (second $ (,) bot . PElem) $ unzipArgs callFact args)
