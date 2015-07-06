@@ -33,5 +33,7 @@ fromJoinFun jf a b = case jf (error "No label") a b of
 	(SomeChange, n) -> Just n
 	_ -> Nothing
 
+mereJoin a b = fromMaybe a $ join (OldFact a) (NewFact b)
+
 instance (Lattice a, Lattice b) => Lattice (a, b) where
 	dataflowLattice = pairLattice dataflowLattice dataflowLattice

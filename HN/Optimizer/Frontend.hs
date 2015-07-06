@@ -1,4 +1,4 @@
-module HN.Optimizer.Frontend (optimizeHN, withGraph, newInliner, noInliner, oldInliner) where
+module HN.Optimizer.Frontend (optimizeHN, withGraph, newInliner, noInliner, oldInliner, ootrace) where
 import Compiler.Hoopl
 import Control.Monad
 import HN.Optimizer.GraphCompiler
@@ -27,6 +27,7 @@ noInliner :: Pass any ()
 noInliner (x, _, _) = return (x, noFacts, undefined)
 
 otrace _ x = x
+ootrace x = trace x
 
 toTuple agraph = (agraph, undefined, undefined)
 fromTuple (agraph, facts, _) = otrace (formatGraph agraph ++ show facts) agraph

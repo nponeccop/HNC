@@ -6,7 +6,6 @@ import Control.Arrow
 import qualified Data.Foldable as F
 import Data.Functor.Foldable hiding (Fix, Foldable)
 import qualified Data.Map as M
-import Data.Maybe
 import Safe.Exact
 
 import HN.Intermediate
@@ -14,9 +13,7 @@ import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
-import Utils
-
-import HN.Optimizer.Visualise ()
+import HN.Optimizer.Utils
 
 type AFType = (WithTopAndBot [WithTopAndBot ExpressionFix], WithTopAndBot ExpressionFix)
 
@@ -48,23 +45,15 @@ unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
-transferF :: Node e x -> ArgFact -> Fact x ArgFact
-transferF (Entry l) (curFact, factBase) = newFact where
-	baseFact = M.lookup l factBase
-	newFact = case baseFact of
-		Nothing -> (curFact, M.insert l curFact factBase)
-		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
-			Nothing -> (baseFact, factBase)
-			Just newFact -> (newFact, M.insert l newFact factBase)
+transferF :: DefinitionNode -> AFType -> [(Label, AFType)]
+transferF (LetNode args value) (callFact, _) 
+	= (map (second $ (\x -> (x, bot)) . PElem . map PElem) $ process2 value) ++ (map (second $ (,) bot . PElem) $ unzipArgs callFact args)
 
-transferF n @ (Exit (LetNode args value)) ((callFact, _), _)
-	= distributeFact n $ (,) bot $ M.fromList $ (map (second $ (\x -> (x, bot)) . PElem . map PElem) $ process2 value) ++ (map (second $ (,) bot . PElem) $ unzipArgs callFact args)
-
-transferF (Exit _) _ = noFacts
+transferF _ _ = []
 
 unzipArgs :: WithTopAndBot [WithTopAndBot ExpressionFix] -> [Label] -> [(Label, ExpressionFix)]
-unzipArgs (PElem actualArgs) formalArgs = xtrace "xaaa" $ concatMap foo $ zipExactNote "unzipArgs" formalArgs actualArgs
-unzipArgs Bot _ = xtrace "bot" []
+unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "unzipArgs" formalArgs actualArgs
+unzipArgs Bot _ = []
 unzipArgs Top _ = error "top!"
 
 foo (formalArg, PElem actualArg) = [(formalArg, actualArg)]
@@ -73,7 +62,7 @@ foo _ = []
 avPass :: FwdPass SimpleFuelMonad Node ArgFact
 avPass = FwdPass 
 	{ fp_lattice = argLattice
-	, fp_transfer = mkFTransfer transferF
+	, fp_transfer = mkFTransfer $ transferMapExitF transferF
 	, fp_rewrite = noFwdRewrite
 	}
 

@@ -14,11 +14,6 @@ import HN.Optimizer.Pass
 import HN.Optimizer.Utils
 import Utils
 
-transferF :: Node e x -> ArgFact -> Fact x ArgFact
-transferF (Entry l) (_, m) = (fromMaybe bot $ M.lookup l m, m)
-
-transferF n @ (Exit _) (_, m) = distributeFact n $ (,) bot m
-
 cp :: DefinitionNode -> AFType -> Maybe DefinitionNode
 cp ArgNode (_, PElem x) = xtrace "newArg" $ Just $ LetNode [] x
 cp ArgNode (_, Bot) = Nothing
@@ -37,7 +32,7 @@ rewriteFormalArgs actualArgs formalArgs
 passF :: FwdPass SimpleFuelMonad Node ArgFact
 passF = FwdPass 
 	{ fp_lattice = argLattice
-	, fp_transfer = mkFTransfer transferF
+	, fp_transfer = noTransferMapF
 	, fp_rewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
 	}
 
