@@ -2,20 +2,17 @@
 module HN.Optimizer.ArgumentDeleter (runF) where
 
 import Compiler.Hoopl
-import qualified Data.Map as M
-import Data.Maybe
 import Safe.Exact
 
 import HN.Optimizer.ArgumentValues
-import HN.Optimizer.ClassyLattice (bot)
+import HN.Optimizer.ClassyLattice (dataflowLattice)
 import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.Utils
-import Utils
 
 cp :: DefinitionNode -> AFType -> Maybe DefinitionNode
-cp ArgNode (_, PElem x) = xtrace "newArg" $ Just $ LetNode [] x
+cp ArgNode (_, PElem x) = Just $ LetNode [] x
 cp ArgNode (_, Bot) = Nothing
 cp ArgNode _ = error "ooo"
 cp (LetNode [] _) _ = Nothing
@@ -31,7 +28,7 @@ rewriteFormalArgs actualArgs formalArgs
 
 passF :: FwdPass SimpleFuelMonad Node ArgFact
 passF = FwdPass 
-	{ fp_lattice = argLattice
+	{ fp_lattice = dataflowLattice
 	, fp_transfer = noTransferMapF
 	, fp_rewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
 	}

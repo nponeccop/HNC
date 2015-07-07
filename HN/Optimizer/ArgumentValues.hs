@@ -1,8 +1,7 @@
-{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable #-}
+{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable,  MultiParamTypeClasses, FlexibleContexts #-}
 module HN.Optimizer.ArgumentValues (runAv, ArgFact, argLattice, AFType) where
 
 import Compiler.Hoopl
-import Control.Arrow
 import qualified Data.Foldable as F
 import Data.Functor.Foldable hiding (Fix, Foldable)
 import qualified Data.Map as M
@@ -14,6 +13,7 @@ import HN.Optimizer.Lattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.Utils
+import Utils.Kmett (unzippedPara, mapValues)
 
 type AFType = (WithTopAndBot [WithTopAndBot ExpressionFix], WithTopAndBot ExpressionFix)
 
@@ -40,14 +40,15 @@ varArgs a = case a of
 	ApplicationF (Atom var) xx -> [(var, xx)]
 	_ -> []
 
-unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
-
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
+onlyCall x = (PElem $ map PElem x, bot)
+onlyValue x = (bot,  PElem x)
+
 transferF :: DefinitionNode -> AFType -> [(Label, AFType)]
 transferF (LetNode args value) (callFact, _) 
-	= (map (second $ (\x -> (x, bot)) . PElem . map PElem) $ process2 value) ++ (map (second $ (,) bot . PElem) $ unzipArgs callFact args)
+	= mapValues onlyCall (process2 value) ++ mapValues onlyValue (unzipArgs callFact args)
 
 transferF _ _ = []
 
