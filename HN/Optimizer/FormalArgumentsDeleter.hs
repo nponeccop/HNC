@@ -2,7 +2,6 @@
 module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
-import qualified Control.Monad as CM
 import Safe.Exact
 
 import HN.Intermediate
@@ -12,26 +11,25 @@ import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.ArgumentValues (ArgFact, argLattice, AFType)
 import HN.Optimizer.Utils
-import Utils
 
 transferB :: DefinitionNode -> FactBase AFType -> AFType
 transferB _ _ = bot
 
 rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
-rewriteB xll f = case xll of
-	LibNode -> Nothing
-	ArgNode -> Nothing
-	LetNode l expr -> LetNode l <$> process' (rewriteExpression $ mapMapWithKey convertFact $ xtrace "rewrite.f" f) expr
+rewriteB (LetNode l expr) f = LetNode l <$> process' (rewriteExpression f) expr
+rewriteB _ _ = Nothing
 
-convertFact :: Label -> ArgFact -> Maybe [WithTopAndBot ExpressionFix]
-convertFact l ((callFact, _), _) = case xtrace "callFact" callFact of
-	PElem a -> Just a
-	Top -> Nothing
+convertFact :: ArgFact -> Maybe [WithTopAndBot ExpressionFix]
+convertFact ((PElem a, _), _) = Just a
+convertFact _ = Nothing
 
-rewriteExpression f (Application aa @ (Atom a) b) = smartApplication aa <$> (rewriteArguments (xtrace "rewriteExpression.args" b) $ xtrace "rewriteExpression.fact" $ CM.join $ lookupFact a f)
+rewriteExpression f (Application aa @ (Atom a) b)
+	= fmap (smartApplication aa . map fst) . process deleteArg
+		=<< zipExactMay b
+		=<< convertFact
+		=<< lookupFact a f
+
 rewriteExpression _ _ = Nothing
-
-rewriteArguments b f = map fst <$> (process deleteArg =<< zipExactMay b =<< f)
 
 smartApplication a [] = a
 smartApplication a b = Application a b
