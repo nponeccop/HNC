@@ -1,5 +1,5 @@
 {-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable,  MultiParamTypeClasses, FlexibleContexts #-}
-module HN.Optimizer.ArgumentValues (runAv, ArgFact, argLattice, AFType) where
+module HN.Optimizer.ArgumentValues (runAv, ArgFact, AFType) where
 
 import Compiler.Hoopl
 import qualified Data.Foldable as F
@@ -26,9 +26,6 @@ deriving instance Foldable (Prim [a])
 
 singleArgLattice :: Eq a => SingleArgLattice a
 singleArgLattice = flatEqLattice "ArgumentValues"
-
-argLattice :: DataflowLattice ArgFact
-argLattice = dataflowLattice
 
 instance Lattice (WithTopAndBot [WithTopAndBot ExpressionFix]) where
 	dataflowLattice = addPoints' "AV.Call" $ joinLists (fact_join singleArgLattice)

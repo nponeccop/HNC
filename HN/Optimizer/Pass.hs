@@ -1,5 +1,5 @@
 {-# LANGUAGE Rank2Types #-}
-module HN.Optimizer.Pass (runPass, pureFRewrite, pureBRewrite, defaultFactsHack, PassParams(..), runPassF) where
+module HN.Optimizer.Pass (runPass, pureFRewrite, pureBRewrite, defaultFactsHack, PassParams(..), runPassF, runPassB) where
 import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Node
 import Compiler.Hoopl
@@ -23,6 +23,13 @@ runPassF (PassParams makeFacts tf rf) = runPass (analyzeAndRewriteFwd passF) mak
 		{ fp_lattice = dataflowLattice
 		, fp_transfer = tf
 		, fp_rewrite = rf
+		}
+
+runPassB (PassParams makeFacts tf rf) = runPass (analyzeAndRewriteBwd passB) makeFacts where
+	passB = BwdPass
+		{ bp_lattice = dataflowLattice
+		, bp_transfer = tf
+		, bp_rewrite = rf
 		}
 
 data PassParams a b c = PassParams

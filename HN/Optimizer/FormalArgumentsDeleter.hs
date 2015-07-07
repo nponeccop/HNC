@@ -5,15 +5,11 @@ import Compiler.Hoopl hiding ((<*>))
 import Safe.Exact
 
 import HN.Intermediate
-import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.ExpressionRewriter
-import HN.Optimizer.ArgumentValues (ArgFact, argLattice, AFType)
+import HN.Optimizer.ArgumentValues (ArgFact)
 import HN.Optimizer.Utils
-
-transferB :: DefinitionNode -> FactBase AFType -> AFType
-transferB _ _ = bot
 
 rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
 rewriteB (LetNode l expr) f = LetNode l <$> process' (rewriteExpression f) expr
@@ -38,14 +34,9 @@ deleteArg :: Rewrite [(ExpressionFix, WithTopAndBot ExpressionFix)]
 deleteArg ((_, PElem _) : tail) = Just tail
 deleteArg _ = Nothing
 
-passB = BwdPass
-	{ bp_lattice = argLattice
-	, bp_transfer = mkBTransfer $ transferMapExitB transferB
-	, bp_rewrite = pureBRewrite $ rewriteExitB rewriteB
-	}
-
 runB :: Pass ArgFact ArgFact
-runB = runPass (analyzeAndRewriteBwd passB) (const . convertFactBase)
-
-instance Functor LabelMap where
-	fmap = mapMap
+runB = runPassB PassParams
+	{ ppConvertFacts = const . convertFactBase
+	, ppTransfer = noTransferMapB
+	, ppRewrite = pureBRewrite $ rewriteExitB rewriteB
+	}

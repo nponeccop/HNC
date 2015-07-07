@@ -51,6 +51,9 @@ transferMapExitF tf nn @ (Exit n) (f, m) = distributeFact nn $ (,) bot $ mereJoi
 noTransferMapF :: Lattice f => FwdTransfer Node (MapFact f)
 noTransferMapF = mkFTransfer $ transferMapExitF (\_ _ -> [])
 
+noTransferMapB :: Lattice f => BwdTransfer Node (MapFact f)
+noTransferMapB = mkBTransfer $ transferMapExitB (\_ _ -> bot)
+
 convertFactBase :: Lattice f => FactBase (MapFact f) -> FactBase (MapFact f)
 convertFactBase f = mapSquare $ foldr foo M.empty $ concatMap ff $ mapToList f where
 	ff (l, (f, m)) = (l, f) : M.toList m
@@ -62,3 +65,6 @@ mapSquare1 m l = (fromMaybe bot $ M.lookup l m, m)
 mapSquare :: Lattice f => M.Map Label f -> FactBase (MapFact f)
 mapSquare m = mapFromList $ map ff $ M.keys m where
 	ff l = (l, mapSquare1 m l)
+
+instance Functor LabelMap where
+	fmap = mapMap
