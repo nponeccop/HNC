@@ -3,6 +3,7 @@ module HN.Optimizer.Utils where
 
 import Compiler.Hoopl
 import qualified Data.Map as M
+import Data.Maybe
 
 import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Node
@@ -23,6 +24,16 @@ transferExitB :: (DefinitionNode -> FactBase f -> f)  -> Node e x -> Fact x f ->
 transferExitB _ (Entry _)  f = f
 transferExitB tf (Exit n) f = tf n f
 
+transferMapExitB :: Lattice f => (DefinitionNode -> FactBase f -> f) -> Node e x -> Fact x (MapFact f) -> MapFact f
+transferMapExitB _ (Entry l) o @ (curFact, factBase) = newFact where
+	baseFact = M.lookup l factBase
+	newFact = case baseFact of
+		Nothing -> (curFact, M.insert l curFact factBase)
+		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
+			Nothing -> (baseFact, factBase)
+			Just newFact -> (newFact, M.insert l newFact factBase)
+transferMapExitB tf (Exit dn) f = (tf dn (mapMap fst $ convertFactBase f), bot)
+
 type MapFact f = (f, M.Map Label f)
 
 transferMapExitF :: Lattice f => (DefinitionNode -> f -> [(Label, f)]) -> Node e x -> MapFact f -> Fact x (MapFact f)
@@ -39,3 +50,15 @@ transferMapExitF tf nn @ (Exit n) (f, m) = distributeFact nn $ (,) bot $ mereJoi
 
 noTransferMapF :: Lattice f => FwdTransfer Node (MapFact f)
 noTransferMapF = mkFTransfer $ transferMapExitF (\_ _ -> [])
+
+convertFactBase :: Lattice f => FactBase (MapFact f) -> FactBase (MapFact f)
+convertFactBase f = mapSquare $ foldr foo M.empty $ concatMap ff $ mapToList f where
+	ff (l, (f, m)) = (l, f) : M.toList m
+	foo (l, f) = M.insertWith mereJoin l f
+
+mapSquare1 :: Lattice f => M.Map Label f -> Label -> MapFact f
+mapSquare1 m l = (fromMaybe bot $ M.lookup l m, m)
+
+mapSquare :: Lattice f => M.Map Label f -> FactBase (MapFact f)
+mapSquare m = mapFromList $ map ff $ M.keys m where
+	ff l = (l, mapSquare1 m l)

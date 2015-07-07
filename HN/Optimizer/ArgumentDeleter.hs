@@ -5,7 +5,6 @@ import Compiler.Hoopl
 import Safe.Exact
 
 import HN.Optimizer.ArgumentValues
-import HN.Optimizer.ClassyLattice (dataflowLattice)
 import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
