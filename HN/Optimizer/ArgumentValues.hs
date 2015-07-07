@@ -60,13 +60,9 @@ unzipArgs Top _ = error "top!"
 foo (formalArg, PElem actualArg) = [(formalArg, actualArg)]
 foo _ = []
 
-avPass :: FwdPass SimpleFuelMonad Node ArgFact
-avPass = FwdPass 
-	{ fp_lattice = argLattice
-	, fp_transfer = mkFTransfer $ transferMapExitF transferF
-	, fp_rewrite = noFwdRewrite
-	}
-
 runAv :: Pass ArgFact ArgFact
-runAv = runPass (analyzeAndRewriteFwd avPass) const
-
+runAv = runPassF PassParams
+	{ ppConvertFacts = const
+	, ppTransfer = mkFTransfer $ transferMapExitF transferF
+	, ppRewrite = noFwdRewrite
+	}

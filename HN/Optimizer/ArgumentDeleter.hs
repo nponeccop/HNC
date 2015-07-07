@@ -26,14 +26,9 @@ rewriteFormalArgs actualArgs formalArgs
 		foo ((_, PElem _) : tail) = Just tail
 		foo _ = Nothing
 
-passF :: FwdPass SimpleFuelMonad Node ArgFact
-passF = FwdPass 
-	{ fp_lattice = dataflowLattice
-	, fp_transfer = noTransferMapF
-	, fp_rewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
-	}
-
 runF :: Pass ArgFact ArgFact
-runF = runPass (analyzeAndRewriteFwd passF) const 
-
-
+runF = runPassF PassParams
+	{ ppConvertFacts = const
+	, ppTransfer = noTransferMapF
+	, ppRewrite = pureFRewrite $ rewriteExitF $ \n f -> cp n $ fst f
+	}
