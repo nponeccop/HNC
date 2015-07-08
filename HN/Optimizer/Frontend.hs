@@ -9,6 +9,7 @@ import qualified HN.Optimizer.FormalArgumentsDeleter as AAD
 import qualified HN.Optimizer.ArgumentValues as AV
 import qualified HN.Optimizer.ArgumentDeleter as AD
 import qualified HN.Optimizer.Arity as Ar
+import qualified HN.Optimizer.SimpleAlias as SA
 
 import HN.Optimizer.Node (Pass)
 import Utils
@@ -21,7 +22,7 @@ oldInliner = runF >=> runB
 
 newInliner = AV.runAv >=> AD.runF >=> AAD.runB
 
-passes = Ar.runB >=> AV.runAv >=> AD.runF >=> AAD.runB >=> oldInliner >=> oldInliner --AV.runAv >=> AD.runF-- >=> AAD.runB
+passes = Ar.runB >=> AV.runAv >=> AD.runF >=> AAD.runB >=> SA.runB >=> oldInliner >=> oldInliner --AV.runAv >=> AD.runF-- >=> AAD.runB
 
 noInliner :: Pass any ()
 noInliner (x, _, _) = return (x, noFacts, undefined)

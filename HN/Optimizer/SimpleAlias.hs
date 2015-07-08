@@ -9,8 +9,8 @@ import HN.Optimizer.ClassyLattice
 import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.Lattice
 import HN.Optimizer.Node
-import HN.Optimizer.Utils
 import HN.Optimizer.Pass
+import HN.Optimizer.Utils
 
 type SAFact = WithTopAndBot ExpressionFix 
 
@@ -42,4 +42,3 @@ runB = runPassB PassParams
 	, ppTransfer = mkBTransfer $ transferExitB transferB
 	, ppRewrite = pureBRewrite $ rewriteExitB rewriteB
 	}
-
