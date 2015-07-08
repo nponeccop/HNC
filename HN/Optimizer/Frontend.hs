@@ -20,9 +20,9 @@ optimizeHN libraryTypes = map (withGraph libraryTypes (fromTuple . runSimpleUniq
 
 oldInliner = runF >=> runB
 
-newInliner = AV.runAv >=> AD.runF >=> AAD.runB
+newInliner = Ar.runB >=> AV.runAv >=> AD.runF >=> AAD.runB
 
-passes = Ar.runB >=> AV.runAv >=> AD.runF >=> AAD.runB >=> SA.runB >=> oldInliner >=> oldInliner >=> SA.runB --AV.runAv >=> AD.runF-- >=> AAD.runB
+passes = newInliner >=> SA.runB >=> newInliner >=> SA.runB  >=> oldInliner >=> oldInliner >=> SA.runB --AV.runAv >=> AD.runF-- >=> AAD.runB
 
 noInliner :: Pass any ()
 noInliner (x, _, _) = return (x, noFacts, undefined)

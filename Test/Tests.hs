@@ -41,14 +41,12 @@ tt1 = "test1" ~: stt test1
 tt2 = "test2" ~: stt test2
 	[ t "L1 = 2" "L1 = 2\n" $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" "L1 = 2\nL3 = 2\n" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
-	, t "L1 = let L2 L3 = L3 in L2 4" "L1 = 4\nL3 L4 = L4\nL4 :: @\n" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
 	, t "L1 = let L2 = 3 in 4" "L1 = 4\n" $ Definition "L1" [] $ Let (sv "L2" 3) $ In $ ci 4
 	]
 
 tt3 = "test3" ~: stt test3
 	[ t "L1 = 2" "L1 = 2\n" $ Definition "L1" [] $ In $ ci 2
 	, t "L1 = let L2 = 2 in L2" "L1 = 2\n" $ Definition "L1" [] $ Let (Definition "L2" [] $ In $ ci 2) $ In $ Atom "L2"
-	, t "L1 = let L2 L3 = L3 in L2 4" "L1 = 4\n" $ Definition "L1" [] $ Let (Definition "L2" ["L3"] $ In $ Atom "L3" ) $ In $ Application (Atom "L2") [ci 4]
 	, t "plusX x = let f y = y in f" "L1 L3 = L4\nL4 L5 = L5\nL5 :: @\n" $ Definition "plusX" ["x"] $ Let (Definition "f" ["y"] $ In $ Atom "y") $ In $ Atom "f"
 	]
 
