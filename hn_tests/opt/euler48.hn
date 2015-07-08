@@ -1,6 +1,6 @@
 hnMain = {
 	g x total = {
-		f zz prod = mod (mul prod a) 1000000000
+		f zz prod = mod (mul prod x) 1000000000
 		sum total (natrec f 1 (sub x 1))
 	}
 	print (mod (sub (natrec g 0 1000) 1) 1000000000)
