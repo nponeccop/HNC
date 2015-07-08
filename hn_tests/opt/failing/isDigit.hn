@@ -1,4 +1,5 @@
 isDigit c = {
-	lt c d = less c d
-	_not (_or (_not (_not (lt 48 c))) (_not (lt c 58)))
+	a = 48
+	c1 = 58
+	_not (_or (_not (_not (less a c))) (_not (less c c1)))
 }
