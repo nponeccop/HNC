@@ -3,6 +3,5 @@ hnMain = {
 		g x total = 1
 		natrec g 0 100
 	}
-	x = natr
-	print (sub (mul x x) natr)
+	print (sub (mul natr natr) natr)
 }

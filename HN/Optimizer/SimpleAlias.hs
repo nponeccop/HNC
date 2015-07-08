@@ -18,6 +18,7 @@ instance Lattice SAFact where
 	dataflowLattice = flatEqLattice "SimpleAlias" 
 
 transferB :: DefinitionNode -> FactBase SAFact -> SAFact
+transferB (LetNode [] aa @ (Atom _)) _ = PElem aa
 transferB (LetNode args (Application aa @ (Atom _) argValues)) _ = pelemJust $ fmap (const aa) . sequence =<< zipWithExactMay f args argValues where
 	f a (Atom b) | a == b = Just ()
 	f _ _ = Nothing
