@@ -1,4 +1,1 @@
-ii = {
-	h x = incr (incr 5)
-	h
-}
+ii x = incr (incr 5)

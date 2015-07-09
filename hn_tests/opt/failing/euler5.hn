@@ -1,7 +1,7 @@
 hnMain = {
 	f xx rr = {
-		ff nn found = _if found found (_if (eq 0 (mod xxx (incr nn))) (eq 0 1) (eq 0 0))
 		xxx = mul 60 (mul 19 (incr xx))
+		ff nn found = _if found found (_if (eq 0 (mod xxx (incr nn))) (eq 0 1) (eq 0 0))
 		_if (eq rr 0) (_if (natrec ff (eq 0 1) 20) rr xxx) rr
 	}
 	print (natrec f 0 1000000)

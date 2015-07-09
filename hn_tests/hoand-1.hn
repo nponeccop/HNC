@@ -1,0 +1,28 @@
+hoand a b = {
+	comp1 f g = {
+		h x = f (g x)
+		h
+	}
+	comp2 f g = {
+		h x = f (g x)
+		h
+	}
+	comp3 f g = {
+		h x = f (g x)
+		h
+	}
+	papp1 f x = {
+		g y = f x y
+		g
+	}
+	papp2 f x = {
+		g y = f x y
+		g
+	}
+	papp3 f x = {
+		g y = f x y
+		g
+	}
+	g x y = comp3 y x
+	((comp1 (papp1 g _not) (comp2 (papp2 papp3 _or) _not)) a) b
+}
