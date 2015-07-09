@@ -1,0 +1,1 @@
+isDigit c = _not (_or (_not (_not (less 48 c))) (_not (less c 58)))

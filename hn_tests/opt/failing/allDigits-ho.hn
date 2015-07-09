@@ -1,9 +1,0 @@
-allDigits ss = {
-	h x = {
-		lt c d = less b c
-		b = c
-		c = 58
-		_not (_or (_not (_not (lt 48 b))) (_not (lt b c)))
-	}
-	eq (deref (whileF h next ss)) 0
-}

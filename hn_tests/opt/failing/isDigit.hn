@@ -1,5 +1,0 @@
-isDigit c = {
-	a = 48
-	c1 = 58
-	_not (_or (_not (_not (less a c))) (_not (less c c1)))
-}

@@ -1,0 +1,7 @@
+allDigits ss = {
+	h x = {
+		c = deref x
+		_not (_or (_not (_not (less 48 c))) (_not (less c 58)))
+	}
+	eq (deref (whileF h next ss)) 0
+}

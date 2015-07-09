@@ -1,0 +1,7 @@
+allDigits ss = {
+	loopCond s = {
+		c = deref s
+		_not (_or (_not (_not (less 48 c))) (_not (less c 58)))
+	}
+	eq (deref (whileF loopCond next ss)) 0
+}
