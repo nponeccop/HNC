@@ -22,7 +22,7 @@ oldInliner = runF >=> runB
 
 newInliner = Ar.runB >=> AV.runAv >=> AD.runF >=> AAD.runB
 
-passes = SA.runB >=> oldInliner >=> newInliner >=> SA.runB >=> newInliner >=> SA.runB >=> newInliner >=> SA.runB  >=> oldInliner >=> oldInliner
+passes = newInliner >=> SA.runB >=> newInliner >=> SA.runB >=> newInliner >=> oldInliner
 
 noInliner :: Pass any ()
 noInliner (x, _, _) = return (x, noFacts, undefined)
