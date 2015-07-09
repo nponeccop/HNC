@@ -52,7 +52,7 @@ transferF _ _ = []
 unzipArgs :: WithTopAndBot [WithTopAndBot ExpressionFix] -> [Label] -> [(Label, ExpressionFix)]
 unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "unzipArgs" formalArgs actualArgs
 unzipArgs Bot _ = []
-unzipArgs Top _ = error "top!"
+unzipArgs Top _ = []
 
 foo (formalArg, PElem actualArg) = [(formalArg, actualArg)]
 foo _ = []
