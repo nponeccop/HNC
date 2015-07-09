@@ -46,7 +46,7 @@ transferMapExitF _ (Entry l) (curFact, factBase) = newFact where
 			Nothing -> (baseFact, factBase)
 			Just newFact -> update newFact
 
-transferMapExitF tf nn @ (Exit n) (f, m) = distributeFact nn $ (,) bot $ mereJoin m $ M.fromList $ tf n f where
+transferMapExitF tf nn @ (Exit n) (f, m) = distributeFact nn $ (,) bot $ foldr (uncurry $ M.insertWith mereJoin) m $ tf n f
 
 noTransferMapF :: Lattice f => FwdTransfer Node (MapFact f)
 noTransferMapF = mkFTransfer $ transferMapExitF (\_ _ -> [])
