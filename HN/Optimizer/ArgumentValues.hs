@@ -41,7 +41,7 @@ process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
 process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
 
 onlyCall x = (PElem $ map PElem x, bot)
-onlyValue x = (bot,  PElem x)
+onlyValue x = (bot,  x)
 
 transferF :: DefinitionNode -> AFType -> [(Label, AFType)]
 transferF (LetNode args value) (callFact, _) 
@@ -49,13 +49,10 @@ transferF (LetNode args value) (callFact, _)
 
 transferF _ _ = []
 
-unzipArgs :: WithTopAndBot [WithTopAndBot ExpressionFix] -> [Label] -> [(Label, ExpressionFix)]
-unzipArgs (PElem actualArgs) formalArgs = concatMap foo $ zipExactNote "unzipArgs" formalArgs actualArgs
+unzipArgs :: WithTopAndBot [WithTopAndBot ExpressionFix] -> [Label] -> [(Label, WithTopAndBot ExpressionFix)]
+unzipArgs (PElem actualArgs) formalArgs = zipExactNote "unzipArgs" formalArgs actualArgs
 unzipArgs Bot _ = []
 unzipArgs Top _ = []
-
-foo (formalArg, PElem actualArg) = [(formalArg, actualArg)]
-foo _ = []
 
 runAv :: Pass ArgFact ArgFact
 runAv = runPassF PassParams

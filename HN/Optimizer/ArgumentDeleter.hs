@@ -12,8 +12,7 @@ import HN.Optimizer.Utils
 
 cp :: DefinitionNode -> AFType -> Maybe DefinitionNode
 cp ArgNode (_, PElem x) = Just $ LetNode [] x
-cp ArgNode (_, Bot) = Nothing
-cp ArgNode _ = error "ooo"
+cp ArgNode (_, _) = Nothing
 cp (LetNode [] _) _ = Nothing
 cp (LetNode l x) (PElem f, _) = (\l -> LetNode l x) <$> rewriteFormalArgs f l
 cp _ _ = Nothing

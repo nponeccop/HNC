@@ -1,0 +1,14 @@
+hnMain = {
+	natr f = {
+		g x total = sum total (f x)
+		natrec g 0 100
+	}
+	sqr = {
+		x = {
+			id x = sum x 0
+			natr id
+		}
+		mul x x
+	}
+	print (sub sqr (natr sqr))
+}
