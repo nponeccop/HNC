@@ -4,9 +4,10 @@ module Utils.Kmett (unzippedPara, mapValues) where
 import Control.Newtype
 import Data.Bifunctor
 import Data.Bifunctor.Tannen
+import Data.Functor.Adjunction
 import Data.Functor.Foldable
 
-unzippedPara f = para $ \a -> f (fmap fst a) (fmap snd a)
+unzippedPara f = para $ uncurry f . unzipR
 
 instance Newtype (Tannen f p a b) (f (p a b)) where
 	pack = Tannen
