@@ -4,6 +4,7 @@
 
 Install Haskell Platform then run:
 ```
+cabal sandbox init
 cabal update
 cabal install --only-dependencies
 configure
@@ -16,15 +17,25 @@ dist\build\spl-hnc\spl-hnc hn_tests\euler6.hn
 Install GHC or Haskell Platform and run:
 
 ```
+cabal sandbox init
 cabal update
 cabal install happy
-PATH=$PATH:~/.cabal/bin
 cabal install --only-dependencies
 
 cabal configure
 cabal build
 ./dist/build/spl-hnc/spl-hnc ./hn_tests/euler6.hn
 ```
+
+## Arch Linux
+
+Add 2 ArchHaskell binary repositories to `pacman.conf`
+
+```
+pacman -S haskell-{foo,bar,quux}
+```
+
+Do the general steps for *nix above
 
 # Advanced use
 
@@ -34,13 +45,12 @@ cabal build
 - follow instructions below to feed generated `.cpp` files to a C++ compiler 
   and linker either directly or by using our extension to Boost.Build.
 
-You'll need MSVC/GCC, Boost and Boost.
+You'll need MSVC/GCC, Boost and Boost.Build.
 
 # Under the hood
 
 HNC is an open-source cross-platform compiler based on modern technologies: Glasgow Haskell Platform, 
-UUAGC attribute grammar preprocessor, Parsec parsing library, HOOPL graph optimization library. 
-The codebase is tiny: less than 4 KLOC, in the spirit of VPRI Ometa.
+UUAGC attribute grammar preprocessor, Parsec parsing library, HOOPL graph optimization library, unification-fd structural unification library. The codebase is tiny: less than 4 KLOC, in the spirit of VPRI Ometa.
 
 ## State of affairs
 
@@ -54,21 +64,24 @@ but mostly because we are too lazy to write more examples.
 - Parser
 - Type inference using UUAG, including injection of explicit template parameters when C++ doesn't infer them
 - Identifier- and scope-preserving translation from AST into graph IR and back using HOOPL dominator analysis
-- A rudimentary and buggy optimizer of the IR using HOOPL
+- An optimizer of the IR using HOOPL (almost; only inlining and dead code elimination)
 - Compiler of closures into C++ functors using UUAG (almost)
 - C++ pretty printer (almost)
 - A Boost.Build plugin to integrate .hn files into C++ projects
 
+## Recent advances as of Jul 21 2015
+
+- Fixed almost all optimizer bugs
+- Working on loop generation
+
 ## What is not done
 
 - Proper error reporting
-- Loops and assignments
-- The inliner is buggy for HOFs
+- Assignments
 - The instantiator of polymorphic code into monomorphic is not implemented
 - Module system, namespace support, HNI implementation and C++ integration in general are rudimentary or missing
 - Priorities of C++ infix operators are broken
 - RAII should be used with care
-- Our Boost-based implementation of a generalization of <code>std::bind1st</code> only works under MSVC
 - SPL support is almost missing
 - Polymorphic constants like “empty list” are not supported
 
@@ -99,13 +112,13 @@ and platform should work too. However, the scripts to run test suite are not the
 To run `deref1.cpp` test manually with GCC, run
 
 ```
-gcc -c -I../cpplib/include deref1.cpp
+gcc -I../cpplib/include deref1.cpp ../cpplib/lib.cpp -lstdc++ --std=c++0x
 ```
 
 from `hn_tests` folder if Boost headers are installed globally to `/usr/include`, or
 
 ```
-gcc -c -I../cpplib/include -Ifolder-containing-boost-subfolder deref1.cpp
+gcc -I../cpplib/include -Ifolder-containing-boost-subfolder deref1.cpp  ../cpplib/lib.cpp -lstdc++ --std=c++0x
 ```
 
 if Boost headers are manually unpacked locally.
