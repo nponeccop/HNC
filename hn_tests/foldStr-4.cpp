@@ -29,5 +29,10 @@ std::pair<t1, ff::ptr<int>> foldStr(boost::function<t1 (t1, int)> f, t1 e, ff::p
 {
 	typedef foldStr_impl<t1> local;
 	local impl = { f };
-	return ff::whileF<std::pair<t1, ff::ptr<int>>>(&local::loopCond<t1>, hn::bind(impl, &local::loopTrans), ff::pair(e, ss));
+	std::pair<t1, ff::ptr<int>> loop = ff::pair(e, ss);
+	while (local::loopCond(loop))
+	{
+		loop = impl.loopTrans(loop);
+	}
+	return loop;
 };

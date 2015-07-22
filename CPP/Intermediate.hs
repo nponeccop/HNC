@@ -39,11 +39,11 @@ data CppQualifier
 	| CppParentVar
 	| CppContextMethodStatic
 	| CppCurrentClassMethodStatic
-		deriving (Show)
+		deriving (Eq, Show)
 
 data CppLocalVarDef
-    =   CppVar CppType String CppExpression
---    |   CppStatement CppExpression
+    = CppVar CppType String CppExpression
+	| CppWhile CppType String CppExpression CppExpression [CppLocalVarDef] CppExpression
 
 data CppContext
 	=	CppContext

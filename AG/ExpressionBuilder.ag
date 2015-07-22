@@ -18,9 +18,11 @@
 ATTR ASTExpression ExpressionList
 	[ atomTransformer : {CppQualifier -> String -> T ->  String -> String} | | ]
 
-ATTR ASTExpression	[  | | sem : CppExpression ]
+ATTR ASTExpression	[ isTop : Bool | | sem : CppExpression ]
 
 ATTR ExpressionList [ | | sem USE {:} {[]} : {[CppExpression]} ]
+
+ATTR ASTExpression ASTLetIn [ | | isWhile : Bool ]
 
 SEM ASTExpression
 	-- в С++ нет дифференциации литералов по типам, и литералы могут быть
@@ -28,6 +30,7 @@ SEM ASTExpression
 	-- требуется
 	| Constant
 		lhs.sem = CppLiteral @c
+		lhs.isWhile = False
 	| Atom
 		-- Конструированием атома С++ из атома HN0 занимаются две функции из
 		-- модуля CPP.BackendTools
@@ -38,14 +41,22 @@ SEM ASTExpression
 		-- конструирования абстрактного представления и делегации десериализации в строку
 		-- инстансу Show CppExpression из модуля CPP.Visualise
 		--
-		lhs.sem = CppAtom $  @lhs.atomTransformer (uncondLookup @name @lhs.qualifiers) @name (uncondLookup @name @lhs.definitionTypes) $ @name ++ xtrace "fixTA" (fixTA @loc.templateArgs @lhs.abstractedTv)
+		lhs.isWhile = @name == "whileF" && @loc.qualifier == CppFqMethod "ff"
+		loc.qualifier = uncondLookup @name @lhs.qualifiers
+		lhs.sem = CppAtom $ @lhs.atomTransformer @loc.qualifier @name (uncondLookup @name @lhs.definitionTypes) $ @name ++ xtrace "fixTA" (fixTA @loc.templateArgs @lhs.abstractedTv)
 
 	-- аппликация транслируется тоже тривиально
 	-- для функции и аргумента выставляются соответствующие ФВП обработки
 	| Application
+		lhs.isWhile = @lhs.isTop && @fn.isWhile
+		fn.isTop = False
 		fn.atomTransformer = transformFunction
-		arg.atomTransformer = transformArgument
+		arg.atomTransformer = if @lhs.isTop && @fn.isWhile then transformWhile else transformArgument
 		lhs.sem = CppApplication @fn.sem @arg.sem
+
+SEM ExpressionList
+	| Cons
+		hd.isTop = False
 
 SEM ASTLetIn
 	-- ФВП обработки по умолчанию
@@ -53,3 +64,4 @@ SEM ASTLetIn
 	-- таких, как, foo = bar
 	| In
 		value.atomTransformer = transformArgument
+		value.isTop = True

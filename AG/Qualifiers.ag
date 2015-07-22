@@ -56,7 +56,7 @@ SEM ASTDefinition
 		loc.valueQualifiers = M.union @loc.localVars @where.qualifiers
 
 		loc.localVars = { M.fromList $ map (\x -> (x, CppLocal)) $ S.toList $ allWhereVars S.\\ @where.varsFreeInFunctions where
-			allWhereVars = S.fromList $ map (\(CppVar _ name _ ) -> name) @where.cppVarDefinition
+			allWhereVars = S.fromList $ map cppVarName @where.cppVarDefinition
 		}
 
 		where.localVars = @loc.localVars

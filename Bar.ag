@@ -80,7 +80,7 @@ SEM ASTDefinition
 		loc.isFunction = not $ null @params
 		loc.cppDefType = xtrace "Definition.@loc.cppDefType" $ cppType @loc.definitionType
 		lhs.contextMethods = constructJust (not @isFunction) $ @loc.cppDefinition
-		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ CppVar @loc.cppDefType @name @where.sem
+		lhs.cppVarDefinition = constructJust (@loc.isFunction) $ makeCppVar @where.isWhile @loc.cppDefType @name @where.sem
 
 		-- топ-функция, замкнутые переменные и локальные функции
 		lhs.cppDefinition = @loc.cppDefinition
@@ -103,7 +103,7 @@ SEM ASTDefinition
 				,   contextParent   	= xtrace "contextParent" $ constructJust (not @where.declareParent) $ @lhs.parent ++ "_impl"
 				}
 		} where
-			(contextVars, localVars) = partition (\(CppVar _ name _) -> S.member name @where.varsFreeInFunctions) @where.cppVarDefinition
+			(contextVars, localVars) = partition (\v -> S.member (cppVarName v) @where.varsFreeInFunctions) @where.cppVarDefinition
 		}
 
 		where.parent = @name

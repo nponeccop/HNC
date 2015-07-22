@@ -52,7 +52,7 @@ namespace ff
 	IO<T2> bind(IO<T1> a1, boost::function<IO<T2> (T1)> a2)
 	{
 		bind_impl<T1, T2> impl = { a1, a2 };
-		return impl;
+		return IO<T2>(impl);
 	};
 
 	template <typename T2>
@@ -223,7 +223,7 @@ namespace ff
 		return t;
 	}
 
-	bool _not(bool x)
+	inline bool _not(bool x)
 	{
 		return !x;
 	}
@@ -242,6 +242,18 @@ namespace ff
 	std::pair<A, B> pair(A a, B b)
 	{
 		return std::make_pair(a, b);
+	}
+
+	template <typename A, typename B>
+	A fst (std::pair<A, B> p)
+	{
+		return p.first;
+	}
+
+	template <typename A, typename B>
+	B snd (std::pair<A, B> p)
+	{
+		return p.second;
 	}
 
 

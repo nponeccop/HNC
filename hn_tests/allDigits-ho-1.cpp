@@ -19,13 +19,13 @@ struct allDigits_impl
 	{
 		return ff::_not(lt(c, d));
 	};
-	static bool and(bool a, bool b)
+	static bool xand(bool a, bool b)
 	{
 		return ff::_not(ff::_not(a) || ff::_not(b));
 	};
 	static bool between(int a, int b, int c)
 	{
-		return and(geq(a, b), lt(b, c));
+		return xand(geq(a, b), lt(b, c));
 	};
 	static bool isDigit(int c)
 	{
@@ -55,6 +55,10 @@ struct allDigits_impl
 bool allDigits(ff::ptr<int> ss)
 {
 	typedef allDigits_impl local;
-	ff::ptr<int> firstFailure = ff::whileF<ff::ptr<int>>(local::comp<ff::ptr<int>, bool, int>(&local::isDigit, &ff::deref<int>), &ff::next<int>, ss);
+	ff::ptr<int> firstFailure = ss;
+	while (local::comp<ff::ptr<int>, bool, int>(&local::isDigit, &ff::deref<int>)(firstFailure))
+	{
+		firstFailure = ff::next(firstFailure);
+	}
 	return ff::deref(firstFailure) == 0;
 };

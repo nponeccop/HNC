@@ -46,6 +46,26 @@ transformArgument atomQualifier name atomType nta = let
 		CppCurrentClassMethodStatic -> "&self::" ++ nta
 		foo -> error $ "transformArgument:" ++ show foo
 
+makeCppVar False cppType c d = CppVar cppType c d
+makeCppVar True cppType name (CppApplication _ [cond, body, init]) = CppWhile cppType name init cond [] body
+
+cppVarName (CppVar _ name _) = name
+cppVarName (CppWhile _ name _ _ _ _) = name
+
+transformWhile atomQualifier name atomType nta = case atomQualifier of
+		CppFqMethod prefix -> prefix ++ "::" ++ name
+		CppContextMethodStatic -> "local::" ++ name
+		CppContextMethod -> "impl." ++ name
+		CppContextVar -> "impl." ++ name
+		CppArgument -> name
+		CppUpperArgument -> name
+		CppCurrentClassVar -> name
+		CppCurrentClassMethod -> "hn::bind(*this, &self::" ++ nta ++ ")"
+		CppLocal -> name
+		CppParentVar -> "parent->" ++ name
+		CppCurrentClassMethodStatic -> "&self::" ++ nta
+		foo -> error $ "transformArgument:" ++ show foo
+
 
 transformFunction atomQualifier name atomType xnta = let
 		nta = case atomType of

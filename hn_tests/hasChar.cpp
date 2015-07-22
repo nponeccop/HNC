@@ -5,7 +5,7 @@ struct hasChar_impl
 	typedef hasChar_impl self;
 	int c;
 
-	static bool and(bool a, bool b)
+	static bool xand(bool a, bool b)
 	{
 		return ff::_not(ff::_not(a) || ff::_not(b));
 	};
@@ -15,7 +15,7 @@ struct hasChar_impl
 	};
 	bool loopCond(ff::ptr<int> s)
 	{
-		return and(neq(c, ff::deref(s)), neq(ff::deref(s), 0));
+		return xand(neq(c, ff::deref(s)), neq(ff::deref(s), 0));
 	};
 };
 
@@ -23,6 +23,10 @@ bool hasChar(int c, ff::ptr<int> s)
 {
 	typedef hasChar_impl local;
 	local impl = { c };
-	ff::ptr<int> ss = ff::whileF<ff::ptr<int>>(hn::bind(impl, &local::loopCond), &ff::next<int>, s);
+	ff::ptr<int> ss = s;
+	while (impl.loopCond(ss))
+	{
+		ss = ff::next(ss);
+	}
 	return ff::deref(ss) == c;
 };

@@ -1,5 +1,7 @@
 #include "hn/lib.hpp"
+#ifdef _WIN32
 #include <windows.h>
+#endif
 namespace ff {
 
 int incr(int i)
@@ -17,22 +19,23 @@ bool less(int x, int y)
 	return x < y;
 }
 
-
 void printret(const char *msg, int ret)
 {
-	return;
+#ifdef _WIN32
 	char buf[1024];
 	FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), NULL, buf, 1024, NULL);
 	printf("%s: ret=0x%08X; GLE=%s\n", msg, ret, buf);
+#endif
 }
-
 
 IO<int> readnum = IO<int>(&read<int>);
 
+#ifdef _WIN32
 void  UdpSocket::Send(std::string b)
 {
 	printret("UdpSocket::Send::send", send(s, b.data(), b.size(), 0));
 };
+#endif
 
 void UdpSocket::Reply(const std::string & b)
 {
@@ -54,10 +57,12 @@ RaiiSocket::~RaiiSocket()
 //	closesocket(s);
 }
 
+#ifdef _WIN32
 IO<void> udp_reply(UdpSocket & a, std::string b)
 {
 	return boost::bind(&udp_reply_impl, boost::ref(a), b);
 };
+#endif
 
 
 void forever_impl(IO<void> x)
@@ -65,11 +70,11 @@ void forever_impl(IO<void> x)
 	for (;;) x.value();
 }
 
+#ifdef _WIN32
 UdpSocket udp_listen(int x)
 {
 	return x;
 };
-
 
 UdpSocket::UdpSocket (int x)
 {
@@ -101,12 +106,13 @@ std::string UdpSocket::Receive()
 	}
 	return ret;
 }
-
+#endif
 std::string udp_receive_impl(UdpSocket &s)
 {
 	return s.Receive();
 }
 
+#ifdef _WIN32
 IO<std::string> udp_receive(UdpSocket &s)
 {
 	return boost::bind(&udp_receive_impl, boost::ref(s));
@@ -116,11 +122,12 @@ IO<void> forever(IO<void> x)
 {
 	return boost::bind(&forever_impl, x);
 };
-
+#endif
 RaiiSocket::RaiiSocket()
 {
 }
 
+#ifdef _WIN32
 struct WinSockInit
 {
 	WinSockInit()
@@ -131,6 +138,7 @@ struct WinSockInit
 };
 
 WinSockInit init;
+#endif
 };
 
 int main(int, const char*[])

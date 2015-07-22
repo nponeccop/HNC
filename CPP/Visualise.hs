@@ -73,10 +73,14 @@ instance Show CppDefinition where
 				= ("\ttypedef " ++ tn ++ showTemplateArgs templateVars ++ " local;") : if null vars && isNothing parentName then [] else [getContextInit vars parentName]
 
 instance Show CppLocalVarDef where
-    show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
+	show (CppVar a b c) = show a ++ " " ++ b ++ " = " ++ show c ++ ";"
+	show (CppWhile a b init cond _ body)
+		= show a ++ " " ++ b ++ " = " ++ show init ++ ";\n\twhile (" ++ show cond ++ "(" ++  b ++ "))\n\t"
+		++ "{\n\t\t" ++ b ++ " = " ++ show (CppApplication body [CppAtom b]) ++ ";\n\t}"
 
 instance Show CppVarDecl where
 	show (CppVarDecl typ name) = show typ ++ " " ++ name
+
 
 showAtomApplication "ff::_if" [cond, branch1, branch2]
 	= show cond ++ " ? " ++ show branch1 ++ " : " ++ show branch2
