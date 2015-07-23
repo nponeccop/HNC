@@ -14,7 +14,8 @@ cg = fst . compileGraph (M.singleton "incr" $ error "TestFixtures.cg")
 
 compilerTest = formatGraph . cg
 
-runFB = runF >=> runB
+runFB = runF >=> runB firstLabel where
+	firstLabel = runSimpleUniqueMonad freshLabel
 
 test2 = transform runFB
 
@@ -34,4 +35,4 @@ testPostdominators = testFacts (immediatePostdominators . immediateDominators) r
 bar rf1 = runSimpleUniqueMonad . runWithFuel 1000 . rf1 . toTuple . cg where
 	toTuple agraph = (agraph, undefined, undefined)
 
-decompilerTest = withGraph M.empty id 
+decompilerTest = withGraph M.empty $ const id 

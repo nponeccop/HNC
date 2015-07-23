@@ -9,5 +9,6 @@ foldStr f e s = {
 		e = fst loopState
 		pair (f e (deref s)) (next s)
 	}
-	fst (whileF loopCond loopTrans (pair e s))
+	loop = whileF loopCond loopTrans (pair e s)
+	fst loop
 }

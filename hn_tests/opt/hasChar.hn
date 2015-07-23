@@ -1,7 +1,10 @@
 hasChar c s = {
-	loopCond s = {
-		neq a b = _not (eq a b)
-		_not (_or (_not (neq c (deref s))) (_not (neq (deref s) 0)))
+	ss = {
+		loopCond s = {
+			neq a b = _not (eq a b)
+			_not (_or (_not (neq c (deref s))) (_not (neq (deref s) 0)))
+		}
+		whileF loopCond next s
 	}
-	eq (deref (whileF loopCond next s)) c
+	eq (deref ss) c
 }

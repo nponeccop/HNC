@@ -2,6 +2,7 @@
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
+import HN.Intermediate
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.Rewriting
@@ -74,8 +75,9 @@ listLattice = addPoints' "ListFact" $ \_ (OldFact _) (NewFact new) -> error "Joi
 
 -- BACKWARD pass
 
-transferB :: DefinitionNode -> FactBase ListFact -> ListFact
-transferB dn _ = PElem dn
+transferB :: Label -> DefinitionNode -> FactBase ListFact -> ListFact
+transferB ll dn @ (LetNode _ (Application (Atom l) _)) _ | l == ll = Top
+transferB ll dn _ = PElem dn
 
 -- Rewriting: inline definition - rewrite Exit nodes ("call sites") to
 -- remove references to the definition being inlined
@@ -86,14 +88,14 @@ rewriteB xll f = case xll of
 	ArgNode -> Nothing
 	LetNode l expr ->  LetNode l <$> rewriteExpression f expr
 		
-passBL = BwdPass
+passBL whileLabel = BwdPass
 	{ bp_lattice = listLattice
-	, bp_transfer = mkBTransfer $ transferExitB transferB
+	, bp_transfer = mkBTransfer $ transferExitB $ transferB whileLabel
 	, bp_rewrite = pureBRewrite $ rewriteExitB rewriteB
 	}
 
-runB :: Pass Int ListFact
-runB = runPass (analyzeAndRewriteBwd passBL) $ const . mapMap int2list where
+runB :: Label -> Pass Int ListFact
+runB whileLabel = runPass (analyzeAndRewriteBwd $ passBL whileLabel) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
 

@@ -1,0 +1,5 @@
+allDigits ss = {
+	loopCond s = eq (deref s) 0
+	firstFailure = whileF loopCond next ss
+	eq (deref firstFailure) 0
+}
