@@ -11,7 +11,7 @@ author: Andy Melnikov <andy.melnikov@gmail.com>
 maintainer: Andy Melnikov <andy.melnikov@gmail.com>    
 homepage: https://github.com/kayuri/HNC/wiki
 category: compiler
-tested-with: GHC ==7.4.2 GHC ==7.6.3
+tested-with: GHC ==7.10.3
 data-dir: ""
 description: 
     HNC stands for HN compiler. HN is a tool to facilitate writing 
