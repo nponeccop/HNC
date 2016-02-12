@@ -80,6 +80,13 @@ executable spl-hnc
        Utils.Kmett
        Utils.Options
 
+test-suite hn-tests
+  type: detailed-0.9
+  test-module: Test.Cabal
+  build-depends: base, Cabal
+  hs-source-dirs: .
+  default-language: Haskell2010
+
 executable spl-test-hunit-exe
     build-depends: HUnit, QuickCheck, base,
                    bytestring, containers, directory,
