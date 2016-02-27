@@ -15,20 +15,21 @@ ATTR ASTDefinition
 	]
 SEM ASTDefinition
 	| Definition
-		lhs.leanDefinition = LeanDefinition
+		lhs.leanDefinition = LeanDefinition $ "definition " ++ @name ++ " : " ++ showT @loc.definitionType ++ " := " ++ show @where.sem
 
 SEM ASTLetIn
 	| Let
-		lhs.leanDefinition = LeanDefinition
+		lhs.leanDefinition = LeanDefinition "xxx"
 {
 extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
 
 data LeanDefinition
-	= LeanDefinition
-	| LeanLet 
+	= LeanDefinition String
+	| LeanLet deriving Show
 
-showRoot x = "definition hnMain : IO void = " ++ show x
+showRoot x = show (head x) ++ "\n"
 
-instance Show LeanDefinition where
-	show _ = "LeanDef!" 
+showT (TD a b) = a ++ " " ++ joinStr " " (map showT b)
+showT (T x) = x
+showT x = show x
 }
