@@ -1,4 +1,4 @@
-module CPP.CompileTools (parseHN, compileHN, compileFile) where
+module CPP.CompileTools (parseHN, compileHN, compileFile, extractLean) where
 
 import qualified Bar as AG
 import HN.Parser2 (parseFile) 
@@ -15,4 +15,10 @@ compileDefinition2 libraryTypes self = AG.compile2 self inh where
 		AG.library_Inh_Root = libraryTypes
 	}
 
+extractLean' libraryTypes self = AG.extractLean self inh where
+	inh = AG.Inh_Root {
+		AG.library_Inh_Root = libraryTypes
+	}
+
+extractLean inFile libraryTypes = extractLean' libraryTypes <$> parseHN inFile
 

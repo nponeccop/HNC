@@ -29,6 +29,7 @@ options	=
 	, Option "i" ["hni"] (ReqArg (OptString "i") "FILE.hni") "import FILE.hni instead of default lib.hni"
 	, Option [] ["dump-graph"] (NoArg $ OptBool "dump-graph") "dump HOOPL graph"
 	, Option [] ["dump-opt"] (NoArg $ OptBool "dump-opt") "dump optimized HN"
+	, Option [] ["dump-lean"] (NoArg $ OptBool "dump-lean") "dump Lean source"
 	, Option "h?" ["help"] (NoArg $ OptBool "help")  "show this help"
 	]
 	
@@ -55,4 +56,5 @@ ff (O oBool oString oNonOptions) = f where
 		| dumpOptFlag = processWith dumpOpt
 		| optFlag = processWith compileWithOpt
 		| splFlag = convertToSpl <$> parseHN inFile >>= output
+		| b "dump-lean" = processWith extractLean
 		| otherwise = processWith compileFile

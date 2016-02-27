@@ -1,7 +1,7 @@
 imports
 {
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
-module Bar (compile2, Inh_Root(..)) where
+module Bar (compile2, Inh_Root(..), extractLean) where
 
 import Control.Unification
 import Control.Unification.IntVar
@@ -30,7 +30,7 @@ INCLUDE "AG/Qualifiers.ag"
 INCLUDE "AG/TemplateArgs.ag"
 INCLUDE "AG/TypeInference.ag"
 INCLUDE "AG/DefinitionTypes.ag"
-
+INCLUDE "AG/LeanExtractor.ag"
 ATTR ASTExpression [ | | freeVars : {S.Set String} ]
 
 ATTR ExpressionList [ | | freeVars USE {:} {[]} : {[S.Set String]} ]

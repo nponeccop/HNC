@@ -1,0 +1,34 @@
+
+ATTR Root
+	[
+	|
+	|
+		leanDefinition USE {:} {[]} : {[LeanDefinition]}
+
+	]
+
+ATTR ASTDefinition
+	[
+	|
+	|
+		leanDefinition : LeanDefinition
+	]
+SEM ASTDefinition
+	| Definition
+		lhs.leanDefinition = LeanDefinition
+
+SEM ASTLetIn
+	| Let
+		lhs.leanDefinition = LeanDefinition
+{
+extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
+
+data LeanDefinition
+	= LeanDefinition
+	| LeanLet 
+
+showRoot x = "definition hnMain : IO void = " ++ show x
+
+instance Show LeanDefinition where
+	show _ = "LeanDef!" 
+}
