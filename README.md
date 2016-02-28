@@ -1,6 +1,6 @@
 # Quick Start
 
-[![Build Status](https://secure.travis-ci.org/kayuri/HNC.png?branch=master)](http://travis-ci.org/kayuri/HNC)
+[![Build Status](https://secure.travis-ci.org/nponeccop/HNC.png?branch=master)](http://travis-ci.org/nponeccop/HNC)
 
 ## Windows
 
