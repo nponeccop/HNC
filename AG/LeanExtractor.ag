@@ -1,33 +1,35 @@
 
 ATTR Root
-	[
-	|
-	|
-		leanDefinition USE {:} {[]} : {[LeanDefinition]}
-
-	]
+	[ | | leanDefinition USE {:} {[]} : {[String]} ]
 
 ATTR ASTDefinition
-	[
-	|
-	|
-		leanDefinition : LeanDefinition
-	]
+	[ | | leanDefinition : String ]
+
+ATTR ASTLetIn ASTExpression
+	[ | | lean' : ASTExpression ]
+
+ATTR ExpressionList [ | | lean' USE {:} {[]} : {[ASTExpression]} ]
+
 SEM ASTDefinition
 	| Definition
-		lhs.leanDefinition = LeanDefinition $ "definition " ++ @name ++ " : " ++ showT @loc.definitionType ++ " := " ++ show @where.sem
+		lhs.leanDefinition = "definition " ++ @name ++ " : " ++ showT @loc.definitionType ++ " := " ++ showE @where.lean'
 
 SEM ASTLetIn
-	| Let
-		lhs.leanDefinition = LeanDefinition "xxx"
+	| In
+		lhs.lean' = @value.lean'
+
+SEM ASTExpression
+	| Constant
+		lhs.lean' = Constant @c
+	| Atom
+		lhs.lean' = Atom @name
+	| Application
+		lhs.lean' = Application @fn.lean' @arg.lean'
+
 {
 extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
 
-data LeanDefinition
-	= LeanDefinition String
-	| LeanLet deriving Show
-
-showRoot x = show (head x) ++ "\n"
+showRoot x = head x ++ "\n"
 
 showT (TD a b) = a ++ " " ++ joinStr " " (map showT b)
 showT (T x) = x

@@ -1,4 +1,4 @@
-module HN.Visualise (formatHN) where
+module HN.Visualise (formatHN, showE) where
 
 import HN.Intermediate
 import Utils

@@ -15,6 +15,7 @@ import CPP.TypeProducer
 import CPP.BackendTools
 
 import HN.Intermediate
+import HN.Visualise
 import qualified HN.MilnerTools as MT
 import HN.TypeTools
 import SPL.Types
