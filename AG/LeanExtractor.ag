@@ -22,7 +22,7 @@ SEM ASTExpression
 	| Constant
 		lhs.lean' = Constant @c
 	| Atom
-		lhs.lean' = Atom @name
+		lhs.lean' = Atom $ @name ++ showLeanArgs @loc.templateArgs
 	| Application
 		lhs.lean' = Application @fn.lean' @arg.lean'
 
@@ -30,6 +30,10 @@ SEM ASTExpression
 extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
 
 showRoot x = head x ++ "\n"
+
+showLeanArgs x = concatMap f x where
+	f (T x) = " " ++ x
+	f x = " " ++ showT x
 
 showT (TD a b) = a ++ " " ++ joinStr " " (map showT b)
 showT (T x) = x
