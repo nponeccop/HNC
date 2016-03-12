@@ -1,0 +1,1 @@
+definition foo : string := "bar"
