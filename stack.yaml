@@ -1,0 +1,12 @@
+# For more information, see: http://docs.haskellstack.org/en/stable/yaml_configuration.html
+
+resolver: lts-5.2
+
+packages: [ . ]
+
+extra-deps:
+    - uuagc-0.9.52.1
+    - hoopl-3.10.2.1
+    - uuagc-cabal-1.0.6.0
+    - uulib-0.9.22
+
