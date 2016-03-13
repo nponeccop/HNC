@@ -13,7 +13,7 @@ ATTR ExpressionList [ | | lean' USE {:} {[]} : {[ASTExpression]} ]
 SEM ASTDefinition
 	| Definition
 		lhs.leanDefinition = {
-			"definition " ++ @name ++ leanTA (S.toList @loc.templateArgs) ++ (if @loc.isFunction
+			"definition " ++ @name ++ leanTA @loc.templateArgs ++ (if @loc.isFunction
 				then concat (zipWith fff @params $ leanArgs @loc.definitionType) ++ " : " ++ showT (leanRet @loc.definitionType)
 				else  " : " ++ showT @loc.definitionType) ++ " := " ++ showE @where.lean'
 		}
@@ -26,12 +26,20 @@ SEM ASTExpression
 	| Constant
 		lhs.lean' = Constant @c
 	| Atom
-		lhs.lean' = Atom $ @name ++ showLeanArgs @loc.templateArgs
+		lhs.lean' = { if null @loc.templateArgs
+			then Atom @name
+			else Application (Atom @name) (map type2app @loc.templateArgs)
+		}
 	| Application
 		lhs.lean' = Application @fn.lean' @arg.lean'
 
 {
 extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
+
+type2app (T x) = Atom x
+type2app (TV x) = Atom x
+type2app (TU x) = Atom x
+type2app _ = Atom "LeanExtractorERROR942"
 
 fff var t = " " ++ inParens (var ++ " : " ++ showT t)
 
