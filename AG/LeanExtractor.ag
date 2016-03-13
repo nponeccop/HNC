@@ -1,5 +1,5 @@
 
-ATTR Root
+ATTR Root ASTLetIn
 	[ | | leanDefinition USE {:} {[]} : {[String]} ]
 
 ATTR ASTDefinition
@@ -13,9 +13,9 @@ ATTR ExpressionList [ | | lean' USE {:} {[]} : {[ASTExpression]} ]
 SEM ASTDefinition
 	| Definition
 		lhs.leanDefinition = {
-			"definition " ++ @name ++ leanTA @loc.templateArgs ++ (if @loc.isFunction
+			@name ++ leanTA @loc.templateArgs ++ (if @loc.isFunction
 				then concat (zipWith fff @params $ leanArgs @loc.definitionType) ++ " : " ++ showT (leanRet @loc.definitionType)
-				else  " : " ++ showT @loc.definitionType) ++ " := " ++ showE @where.lean'
+				else  " : " ++ showT @loc.definitionType) ++ " := " ++ leanShowLet (@where.leanDefinition) ++ showE @where.lean'
 		}
 
 SEM ASTLetIn
@@ -41,6 +41,9 @@ type2app (TV x) = Atom x
 type2app (TU x) = Atom x
 type2app _ = Atom "LeanExtractorERROR942"
 
+leanShowLet x = concatMap f x where
+	f x = "let " ++ x ++ " in "
+
 fff var t = " " ++ inParens (var ++ " : " ++ showT t)
 
 leanRet (TT l) = last l
@@ -49,7 +52,7 @@ leanArgs (TT l) = init l
 
 leanTA x = concatMap (\x -> " " ++ inParens (x ++ " : *")) x
 
-showRoot x = head x ++ "\n"
+showRoot x = "definition " ++ head x ++ "\n"
 
 showLeanArgs x = concatMap f x where
 	f (T x) = " " ++ x
