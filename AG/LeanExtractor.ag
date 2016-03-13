@@ -14,7 +14,7 @@ SEM ASTDefinition
 	| Definition
 		lhs.leanDefinition = {
 			"definition " ++ @name ++ leanTA (S.toList @loc.templateArgs) ++ (if @loc.isFunction
-				then " " ++ inParens (joinStr ", " (zipWith fff @params $ leanArgs @loc.definitionType)) ++ " : " ++ showT (leanRet @loc.definitionType)
+				then concat (zipWith fff @params $ leanArgs @loc.definitionType) ++ " : " ++ showT (leanRet @loc.definitionType)
 				else  " : " ++ showT @loc.definitionType) ++ " := " ++ showE @where.lean'
 		}
 
@@ -33,7 +33,7 @@ SEM ASTExpression
 {
 extractLean def inh = showRoot $ leanDefinition_Syn_Root $ wrap_Root (sem_Root def) inh
 
-fff var t = var ++ " : " ++ showT t
+fff var t = " " ++ inParens (var ++ " : " ++ showT t)
 
 leanRet (TT l) = last l
 
