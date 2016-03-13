@@ -50,7 +50,7 @@ leanRet (TT l) = last l
 
 leanArgs (TT l) = init l
 
-leanTA x = concatMap (\x -> " " ++ inParens (x ++ " : *")) x
+leanTA x = concatMap (\x -> " " ++ inParens (x ++ " : Type")) x
 
 showRoot x = "definition " ++ head x ++ "\n"
 
