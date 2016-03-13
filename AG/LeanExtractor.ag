@@ -13,8 +13,8 @@ ATTR ExpressionList [ | | lean' USE {:} {[]} : {[ASTExpression]} ]
 SEM ASTDefinition
 	| Definition
 		lhs.leanDefinition = {
-			"definition " ++ @name ++ " " ++ (if @loc.isFunction
-				then inParens (joinStr ", " (zipWith fff @params $ leanArgs @loc.definitionType)) ++ " : " ++ showT (leanRet @loc.definitionType)
+			"definition " ++ @name ++ leanTA (S.toList @loc.templateArgs) ++ (if @loc.isFunction
+				then " " ++ inParens (joinStr ", " (zipWith fff @params $ leanArgs @loc.definitionType)) ++ " : " ++ showT (leanRet @loc.definitionType)
 				else  " : " ++ showT @loc.definitionType) ++ " := " ++ showE @where.lean'
 		}
 
@@ -39,6 +39,8 @@ leanRet (TT l) = last l
 
 leanArgs (TT l) = init l
 
+leanTA x = concatMap (\x -> " " ++ inParens (x ++ " : *")) x
+
 showRoot x = head x ++ "\n"
 
 showLeanArgs x = concatMap f x where
@@ -48,5 +50,7 @@ showLeanArgs x = concatMap f x where
 showT (TD a b) = a ++ " " ++ joinStr " " (map showT b)
 showT (TT a) = joinStr " -> " (map showT a)
 showT (T x) = x
+showT (TU x) = x
+showT (TV x) = x
 showT x = show x
 }
