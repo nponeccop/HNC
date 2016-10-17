@@ -1,6 +1,6 @@
 name: SPL
 version: 0.0.0.920
-cabal-version: >=1.10
+cabal-version: >= 1.23
 build-type: Custom
 license: LGPL
 license-file: COPYING.LESSER
@@ -28,6 +28,9 @@ description:
 source-repository head
     type: git
     location: https://github.com/kayuri/NHC.git
+
+custom-setup
+    setup-depends: uuagc-cabal, Cabal, base, uuagc
 
 executable spl-hnc
     build-depends: HUnit, QuickCheck, base < 5,
