@@ -1,10 +1,9 @@
 {-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
 module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFunctor(..), ExpressionFix, PassResult, Pass, MyGraph, MyBlock) where
 
-import Prelude hiding ((<*>), Foldable)
+import Prelude hiding ((<*>))
 import Compiler.Hoopl
 import Data.Functor.Foldable
-import qualified Data.Foldable as F
 import HN.Intermediate
 
 data Node e x where
@@ -26,19 +25,19 @@ argNode label = node label ArgNode
 data ExpressionFunctor a 
 	=   ApplicationF a [a]
 	|   AtomF Label
-	|   ConstantF Const deriving (Functor, F.Foldable, Eq)
+	|   ConstantF Const deriving (Functor, Foldable, Eq)
 	
 type ExpressionFix = Expression Label 
 	
 type instance Base ExpressionFix = ExpressionFunctor
 
-instance Foldable ExpressionFix where
+instance Recursive ExpressionFix where
 	project x = case x of
 		Atom x -> AtomF x
 		Constant x -> ConstantF x
 		Application a b -> ApplicationF a b
 		
-instance Unfoldable ExpressionFix where
+instance Corecursive ExpressionFix where
 	embed x = case x of
 		AtomF x -> Atom x
 		ConstantF x -> Constant x

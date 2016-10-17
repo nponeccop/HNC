@@ -2,8 +2,7 @@
 module HN.Optimizer.ArgumentValues (runAv, ArgFact, AFType) where
 
 import Compiler.Hoopl
-import qualified Data.Foldable as F
-import Data.Functor.Foldable hiding (Fix, Foldable)
+import Data.Functor.Foldable
 import qualified Data.Map as M
 import Safe.Exact
 
@@ -22,7 +21,7 @@ type ArgFact = (AFType, M.Map Label AFType)
 type SingleArgLattice a = DataflowLattice (WithTopAndBot a)
 
 deriving instance Show ChangeFlag
-deriving instance Foldable (Prim [a])
+deriving instance Foldable (ListF [a])
 
 singleArgLattice :: Eq a => SingleArgLattice a
 singleArgLattice = flatEqLattice "ArgumentValues"
@@ -38,7 +37,7 @@ varArgs a = case a of
 	_ -> []
 
 process2 :: ExpressionFix -> [(Label, [ExpressionFix])]
-process2 = unzippedPara $ \f s -> F.concat s ++ varArgs f
+process2 = unzippedPara $ \f s -> concat s ++ varArgs f
 
 onlyCall x = (PElem $ map PElem x, bot)
 onlyValue x = (bot,  x)

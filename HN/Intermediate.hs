@@ -2,7 +2,6 @@
 module HN.Intermediate where
 import qualified Data.Set as S
 import Data.Functor.Foldable
-import Prelude hiding (Foldable)
 import SPL.Types (T)
 
 
@@ -47,12 +46,12 @@ data DefinitionBase a b
 
 type instance Base (Definition a) = DefinitionBase a
 
-instance Foldable (Definition a) where
+instance Recursive (Definition a) where
 	project x = case x of
 		Definition a b l -> DefinitionF a b (letValue l) (letWhere l)
 		Assign a l -> AssignF a (letValue l) (letWhere l)
 
-instance Unfoldable (Definition a) where
+instance Corecursive (Definition a) where
 	embed x = case x of
 		DefinitionF name args value prg -> Definition name args $ makeLet value prg
 		AssignF name value prg -> Assign name $ makeLet value prg
