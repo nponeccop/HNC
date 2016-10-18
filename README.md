@@ -2,44 +2,30 @@
 
 [![Build Status](https://secure.travis-ci.org/nponeccop/HNC.png?branch=master)](http://travis-ci.org/nponeccop/HNC)
 
-## Windows
+## Compilation
 
-Install Haskell Platform then run:
+Install Haskell then run:
+
 ```
-cabal sandbox init
 cabal update
-cabal install --only-dependencies
-configure
-build
-dist\build\spl-hnc\spl-hnc hn_tests\euler6.hn
-```
-
-## *nix
-
-Install GHC or Haskell Platform and run:
-
-```
 cabal sandbox init
-cabal update
-cabal install happy
-cabal install --only-dependencies
-
-cabal configure
-cabal build
-./dist/build/spl-hnc/spl-hnc ./hn_tests/euler6.hn
+cabal install
+.cabal-sandbox/bin/spl-hnc -O hn_tests/euler6.hn
 ```
 
 ## Arch Linux
 
-Add 2 ArchHaskell binary repositories to `pacman.conf`
+Add 2 ArchHaskell binary repositories to `pacman.conf`. Install
+some prebuilt packages from there to avoid building them. GHC comes
+as a dependency.
 
 ```
-pacman -S haskell-{foo,bar,quux}
+sudo pacman -S cabal-install haskell-{adjunctions,haskell-src-exts,hunit,logict,parsec,quickcheck,safe}
 ```
 
-Do the general steps for *nix above
+Proceed to the general compilation steps described above
 
-# Advanced use
+## Advanced use
 
 - read wiki
 - run our main test suite (`dist/build/spl-test-hunit-exe/spl-test-hunit-exe`)
