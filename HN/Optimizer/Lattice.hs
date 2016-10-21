@@ -13,33 +13,33 @@ liftedLattice ff name = addPoints' name f where
 plusLattice :: (Num a, Eq a) => DataflowLattice a
 plusLattice = eqBotLattice "IntFact" 0 (+)
 
-eqBotLattice name b j = DataflowLattice 
+eqBotLattice name b j = DataflowLattice
 	{ fact_name = name
 	, fact_bot = b
 	, fact_join = const $ \(OldFact old) (NewFact new) ->
-		if new == b 
+		if new == b
 			then (NoChange, old)
 			else (SomeChange, j old new)
 	}
-	
+
 type UnnamedLattice a = String -> DataflowLattice (WithTopAndBot a)
 
 binaryLattice :: UnnamedLattice Void
 binaryLattice name = addPoints name $ const $ \(OldFact x) -> absurd x
 
 flatEqLattice :: Eq a => UnnamedLattice a
-flatEqLattice = liftedLattice $ \(OldFact o) (NewFact n) -> 
+flatEqLattice = liftedLattice $ \(OldFact o) (NewFact n) ->
 	if o == n then Bot else Top
 
 listLattice :: JoinFun a -> UnnamedLattice [a]
 listLattice = flip $ \name -> addPoints' name . joinLists
 
 joinLists
-  :: (t -> OldFact a -> NewFact a1 -> (ChangeFlag, a))
-     -> t
-     -> OldFact [a]
-     -> NewFact [a1]
-     -> (ChangeFlag, Pointed C b [a])
+	:: (t -> OldFact a -> NewFact a1 -> (ChangeFlag, a))
+	-> t
+	-> OldFact [a]
+	-> NewFact [a1]
+	-> (ChangeFlag, Pointed C b [a])
 
 joinLists _ _ (OldFact o) (NewFact []) = (NoChange, PElem o)
 

@@ -17,7 +17,7 @@ cp (LetNode [] _) _ = Nothing
 cp (LetNode l x) (PElem f, _) = (\l -> LetNode l x) <$> rewriteFormalArgs f l
 cp _ _ = Nothing
 
-rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label] 
+rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label]
 rewriteFormalArgs actualArgs formalArgs
 	= map fst <$> process foo (zipExactNote "Wrong formalArgs during rewrite" formalArgs actualArgs)
 	where

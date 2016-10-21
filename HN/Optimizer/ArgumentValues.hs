@@ -43,7 +43,7 @@ onlyCall x = (PElem $ map PElem x, bot)
 onlyValue x = (bot,  x)
 
 transferF :: DefinitionNode -> AFType -> [(Label, AFType)]
-transferF (LetNode args value) (callFact, _) 
+transferF (LetNode args value) (callFact, _)
 	= mapValues onlyCall (process2 value) ++ mapValues onlyValue (unzipArgs callFact args)
 
 transferF _ _ = []

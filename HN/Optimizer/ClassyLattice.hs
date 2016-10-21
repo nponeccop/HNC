@@ -9,16 +9,14 @@ class Lattice a where
 	join a b= case fact_join dataflowLattice (error "No label") a b of
 		(SomeChange, n) -> Just n
 		_ -> Nothing
-		
 	bot :: a
 	bot = fact_bot dataflowLattice
 	dataflowLattice :: DataflowLattice a
-	
-	dataflowLattice = DataflowLattice 
+	dataflowLattice = DataflowLattice
 		{ fact_name = "hooplLattice"
 		, fact_bot = bot
-		, fact_join = \_ o @ (OldFact oo) n -> maybe (NoChange, oo) ((,) SomeChange) $ join o n 
-		} 
+		, fact_join = \_ o @ (OldFact oo) n -> maybe (NoChange, oo) ((,) SomeChange) $ join o n
+		}
 
 instance Lattice a => Monoid a where
 	mappend a b = fromMaybe a $ join (OldFact a) (NewFact b)

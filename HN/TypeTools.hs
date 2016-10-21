@@ -34,7 +34,7 @@ removeTU x = case x of
 
 addTU s = mapTypeTV f where
 	f x | x `S.member` s = TU x
-  	f x = TV x
+	f x = TV x
 
 
 mapTypeTV f t = subst t where
@@ -42,5 +42,5 @@ mapTypeTV f t = subst t where
 		TU a -> TU a
 		TV a -> f a
 		TT a -> TT $ map subst a
-  		TD a b -> TD a (map subst b)
+		TD a b -> TD a (map subst b)
 		_ -> t

@@ -12,10 +12,10 @@ import HN.Optimizer.Node
 import HN.Optimizer.Pass
 import HN.Optimizer.Utils
 
-type SAFact = WithTopAndBot ExpressionFix 
+type SAFact = WithTopAndBot ExpressionFix
 
 instance Lattice SAFact where
-	dataflowLattice = flatEqLattice "SimpleAlias" 
+	dataflowLattice = flatEqLattice "SimpleAlias"
 
 transferB :: DefinitionNode -> FactBase SAFact -> SAFact
 transferB (LetNode [] aa @ (Atom _)) _ = PElem aa

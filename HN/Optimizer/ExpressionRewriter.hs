@@ -10,7 +10,7 @@ process rewrite = para phi where
 	phi cons = rewrite (applyChildRewrites cons) <|> liftChildRewrites cons
 
 process' rewrite = para phi where
-  phi cons = rewrite (ignoreChildRewrites cons) <|> liftChildRewrites cons
+	phi cons = rewrite (ignoreChildRewrites cons) <|> liftChildRewrites cons
 
 applyChildRewrites cons = embed $ uncurry fromMaybe <$> cons
 

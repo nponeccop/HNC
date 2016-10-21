@@ -5,10 +5,9 @@ import qualified Data.Map as M
 import HN.Optimizer.Pass
 import HN.Optimizer.Node
 
-type Foo n f t1 t2 = (Graph n C C, t1, t2)
-						  -> SimpleFuelMonad
-							   (Graph n C C, FactBase f, MaybeO C f)
-
+type Foo n f t1 t2
+	= (Graph n C C, t1, t2) 
+	-> SimpleFuelMonad (Graph n C C, FactBase f, MaybeO C f) 
 runDominatorF :: Foo Node Doms t1 t2
 runDominatorF = runPass (analyzeAndRewriteFwd domPass) (\_ entry -> mapSingleton entry domEntry)
 

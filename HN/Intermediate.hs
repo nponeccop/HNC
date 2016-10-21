@@ -7,12 +7,13 @@ import SPL.Types (T)
 
 type Program = [Definition String]
 
-data Const      =   ConstString String
-                |   ConstInt    Int
- --               |   ConstReal   Double
- --               |   ConstChar   Char
- --               |   ConstBool   Bool
-                    deriving Eq
+data Const
+	= ConstString String
+	| ConstInt    Int
+--	| ConstReal   Double
+--	| ConstChar   Char
+--	| ConstBool   Bool
+	deriving Eq
 
 type ASTLetIn = LetIn String
 
@@ -33,11 +34,11 @@ insertLet prg (Definition name args (In value)) = Definition name args $ makeLet
 type ASTDefinition = Definition String
 
 data Definition a
-	=   Definition a [a] (LetIn a)
-	|	Assign a (LetIn a)
---	|	While Expression LetIn
---	|	If Expression LetIn LetIn
-    deriving (Eq, Show, Functor)
+	= Definition a [a] (LetIn a)
+	| Assign a (LetIn a)
+--	| While Expression LetIn
+--	| If Expression LetIn LetIn
+	deriving (Eq, Show, Functor)
 
 data DefinitionBase a b
 	= DefinitionF a [a] (Expression a) [b]
@@ -63,11 +64,11 @@ type GType = (S.Set String, T)
 type Root = Program
 
 data Expression a
-    =   Application (Expression a) [Expression a]
-    |   Atom a
-    |   Constant Const
-    |   Lambda [a] (Expression a)
-    deriving (Eq, Functor)
+	=   Application (Expression a) [Expression a]
+	|   Atom a
+	|   Constant Const
+	|   Lambda [a] (Expression a)
+	deriving (Eq, Functor)
 
 instance Show Const where
 	show (ConstString x) = show x
