@@ -107,8 +107,8 @@ rewriteExpression f = process phi where
 		Constant _ -> Nothing
 		Application _ _ -> Nothing
 		Atom a -> case lookupFact a f of
-			Nothing -> error $ "Lone.uncondLookupFact.Nothing"
-			Just Bot -> error $ "Lone.rewriteExitL.Bot"
+			Nothing -> error "Lone.uncondLookupFact.Nothing"
+			Just Bot -> error "Lone.rewriteExitL.Bot"
 			Just (PElem (LetNode [] body)) -> Just body
 			_ -> Nothing
 

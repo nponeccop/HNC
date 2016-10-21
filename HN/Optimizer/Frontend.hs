@@ -16,7 +16,7 @@ import Utils
 import Debug.Trace
 import HN.Optimizer.Visualise
 
-optimizeHN libraryTypes = map (withGraph libraryTypes (\whileLabel -> (fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . passes whileLabel . toTuple)))
+optimizeHN libraryTypes = map (withGraph libraryTypes (\whileLabel -> fromTuple . runSimpleUniqueMonad . runWithFuel infiniteFuel . passes whileLabel . toTuple))
 
 oldInliner whileLabel = runF >=> runB whileLabel
 

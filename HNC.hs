@@ -14,10 +14,10 @@ import HN.Visualise (formatHN)
 import Utils.Options
 
 compileWithOpt inFile libraryTypes 
-	= compileHN libraryTypes <$> optimizeHN libraryTypes <$> parseHN inFile
+	= compileHN libraryTypes . optimizeHN libraryTypes <$> parseHN inFile
 
 dumpOpt inFile libraryTypes 
-	=  formatHN <$> optimizeHN libraryTypes <$> parseHN inFile
+	=  formatHN . optimizeHN libraryTypes <$> parseHN inFile
 
 dumpGraph inFile libraryTypes
 	= formatGraph . fst . compileGraph libraryTypes . head <$> parseHN inFile
@@ -51,7 +51,7 @@ ff (O oBool oString oNonOptions) = f where
 	helpFlag = b "help"
 	processWith f = hni >>= f inFile >>= output
 	f 	| length oNonOptions > 2 = err "Too many files specified in command line"
-		| length oNonOptions == 0 || helpFlag = putStrLn help
+		| null oNonOptions || helpFlag = putStrLn help
 		| dumpGraphFlag = processWith dumpGraph
 		| dumpOptFlag = processWith dumpOpt
 		| optFlag = processWith compileWithOpt

@@ -19,8 +19,7 @@ readFileCRLF name = do
 comp2 f g x y = f $ g x y
 
 dumpOpt inFile libraryTypes 
-	=  formatHN <$> optimizeHN libraryTypes <$> parseHN inFile
-
+	=  formatHN . optimizeHN libraryTypes <$> parseHN inFile
 
 test testName =	liftM2 (comp2 ((testName ++ "_opt") ~:) (~=?))
 	(readFileCRLF $ "hn_tests/opt/" ++ testName ++ ".hn")

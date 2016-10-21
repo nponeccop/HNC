@@ -10,5 +10,5 @@ res =
 		_ -> "no"
 
 
-main = putStrLn $ _in++"\n\n"++(Main.res)
+main = putStrLn $ _in++"\n\n"++Main.res
 

@@ -117,7 +117,7 @@ runTests = do
 
 	rtp2 "main = { y = g\nf }" "main = f where\ny = g;" [simpleEq "main" "f" [simpleEq "y" "g" []]]
 
-	-- тесты mySepBy и связанного бага с распознаванием where
+	-- С‚РµСЃС‚С‹ mySepBy Рё СЃРІСЏР·Р°РЅРЅРѕРіРѕ Р±Р°РіР° СЃ СЂР°СЃРїРѕР·РЅР°РІР°РЅРёРµРј where
 
 	rtp2 "main = { y = g x\nf y }" "main = f y where\ny = g x;" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y"]) [Definition "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
 
