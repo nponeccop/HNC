@@ -25,7 +25,7 @@ transferB (LetNode args (Application aa @ (Atom _) argValues)) _ = pelemJust $ f
 transferB _ _ = bot
 
 rewriteB :: DefinitionNode -> FactBase SAFact -> Maybe DefinitionNode
-rewriteB (LetNode l expr) f = LetNode l <$> process (rewriteExpression f) expr
+rewriteB (LetNode l expr) f = LetNode l <$> rewrite WithChildren (rewriteExpression f) expr
 rewriteB _ _ = Nothing
 
 rewriteExpression :: FactBase SAFact -> Rewrite ExpressionFix

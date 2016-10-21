@@ -19,7 +19,7 @@ cp _ _ = Nothing
 
 rewriteFormalArgs :: [WithTopAndBot ExpressionFix] -> Rewrite [Label]
 rewriteFormalArgs actualArgs formalArgs
-	= map fst <$> process foo (zipExactNote "Wrong formalArgs during rewrite" formalArgs actualArgs)
+	= map fst <$> rewrite WithChildren foo (zipExactNote "Wrong formalArgs during rewrite" formalArgs actualArgs)
 	where
 		foo ((_, PElem _) : tail) = Just tail
 		foo _ = Nothing

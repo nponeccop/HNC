@@ -102,7 +102,7 @@ runB whileLabel = runPass (analyzeAndRewriteBwd $ passBL whileLabel) $ const . m
 type ListFact = WithTopAndBot DefinitionNode
 
 rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression f = process phi where
+rewriteExpression f = rewrite WithChildren phi where
 	phi expr = case expr of
 		Constant _ -> Nothing
 		Application _ _ -> Nothing

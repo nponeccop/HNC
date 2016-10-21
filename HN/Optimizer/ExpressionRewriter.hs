@@ -1,25 +1,23 @@
 {-# LANGUAGE FlexibleContexts #-}
-module HN.Optimizer.ExpressionRewriter (process, process', Rewrite) where
+module HN.Optimizer.ExpressionRewriter (Rewrite, ChildRewrites(..), rewrite) where
 import Control.Applicative
 import Data.Functor.Foldable
 import Data.Maybe
 
 type Rewrite a = a -> Maybe a
 
-process rewrite = para phi where
-	phi cons = rewrite (applyChildRewrites cons) <|> liftChildRewrites cons
+data ChildRewrites = WithChildren | WithoutChildren
 
-process' rewrite = para phi where
-	phi cons = rewrite (ignoreChildRewrites cons) <|> liftChildRewrites cons
+handleChildren flag cons = embed $ f flag <$> cons where
+	f WithChildren = uncurry fromMaybe
+	f WithoutChildren = fst
 
-applyChildRewrites cons = embed $ uncurry fromMaybe <$> cons
-
-ignoreChildRewrites cons = embed $ fst <$> cons
+rewrite flag rewriteFn = para $ \cons -> rewriteFn (handleChildren flag cons) <|> liftChildRewrites cons
 
 hasChildRewrites cons = any (isJust . snd) cons
 
 liftChildRewrites cons = if hasChildRewrites cons
-	then Just $ applyChildRewrites cons
+	then Just $ handleChildren WithChildren cons
 	else Nothing
 
 deep process a = xdeep <$> process a where
