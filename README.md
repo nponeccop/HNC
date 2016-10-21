@@ -100,13 +100,13 @@ and platform should work too. However, the scripts to run test suite are not the
 To run `deref1.cpp` test manually with GCC, run
 
 ```
-gcc -I../cpplib/include deref1.cpp ../cpplib/lib.cpp -lstdc++ --std=c++0x
+gcc -I../cpplib/include test.cpp ../cpplib/lib.cpp -lstdc++ --std=c++0x
 ```
 
 from `hn_tests` folder if Boost headers are installed globally to `/usr/include`, or
 
 ```
-gcc -I../cpplib/include -Ifolder-containing-boost-subfolder deref1.cpp  ../cpplib/lib.cpp -lstdc++ --std=c++0x
+gcc -I../cpplib/include -Ifolder-containing-boost-subfolder test.cpp  ../cpplib/lib.cpp -lstdc++ --std=c++0x
 ```
 
 if Boost headers are manually unpacked locally.
