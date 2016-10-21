@@ -143,7 +143,7 @@ comp (Stype f a i) u e =
 			CL (CInFun (n+1) (InFun ("typ_"++ft) do_type)) (K[CStr k])
 			where
 				ft = "TT [T \"string\", "
-					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
+					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n ([1..]::[Int]))
 					++"T \""++type_name++"\"]"
 				do_type l e =
 					CList l
@@ -154,7 +154,7 @@ comp (Stype f a i) u e =
 --					++"T \""++type_name++"\""
 --					++", TT [TL, TU \"zzz\"], TT [TL, TU \"zzz\"], TU \"zzz\"]"
 				ft = "TT [T \"string\", "++"TT ["
-					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [1..])
+					++ (foldr (\a b -> a++", "++b) "" $ map (\x -> "TU \""++type_name++"_"++show x++"\"") $ take n [(1::Int)..])
 --					++"T \""++type_name++"\", "
 					++"TU \"zzz\"], TT [TL, TU \"zzz\"], T \""++type_name++"\", TU \"zzz\"]"
 				do_ift ((CStr t):f:f2:(CList ((CStr t2):ts)):[]) e =

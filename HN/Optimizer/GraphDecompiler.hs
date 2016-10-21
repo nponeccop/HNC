@@ -2,7 +2,7 @@
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
 import Compiler.Hoopl
-import Data.Functor.Foldable hiding (Foldable)
+import Data.Functor.Foldable
 import qualified Data.Map as M
 import Data.Maybe
 import Safe (fromJustNote)
