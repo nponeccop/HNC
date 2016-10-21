@@ -170,7 +170,7 @@ namespace ff
 		RaiiSocket();
 		~RaiiSocket();
 	};
-
+#ifdef _WIN32
 	struct UdpSocket : public RaiiSocket
 	{
 		sockaddr_in lastSender;
@@ -196,11 +196,10 @@ namespace ff
 
 	UdpSocket udp_connect(std::string, int);
 	UdpSocket udp_listen(int);
-
 	IO<std::string> udp_receive(UdpSocket &);
 	IO<void> udp_send(UdpSocket &, std::string);
 	IO<void> udp_reply(UdpSocket &, std::string);
-
+#endif
 	extern IO<int> time_msec;
 
 	IO<void> forever(IO<void>);

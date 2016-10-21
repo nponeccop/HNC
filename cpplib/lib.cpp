@@ -35,7 +35,6 @@ void  UdpSocket::Send(std::string b)
 {
 	printret("UdpSocket::Send::send", send(s, b.data(), b.size(), 0));
 };
-#endif
 
 void UdpSocket::Reply(const std::string & b)
 {
@@ -51,13 +50,11 @@ void udp_reply_impl(UdpSocket & s, std::string b)
 UdpSocket::~UdpSocket()
 {
 }
-
 RaiiSocket::~RaiiSocket()
 {
 //	closesocket(s);
 }
 
-#ifdef _WIN32
 IO<void> udp_reply(UdpSocket & a, std::string b)
 {
 	return boost::bind(&udp_reply_impl, boost::ref(a), b);
@@ -106,13 +103,11 @@ std::string UdpSocket::Receive()
 	}
 	return ret;
 }
-#endif
 std::string udp_receive_impl(UdpSocket &s)
 {
 	return s.Receive();
 }
 
-#ifdef _WIN32
 IO<std::string> udp_receive(UdpSocket &s)
 {
 	return boost::bind(&udp_receive_impl, boost::ref(s));
@@ -122,12 +117,11 @@ IO<void> forever(IO<void> x)
 {
 	return boost::bind(&forever_impl, x);
 };
-#endif
+
 RaiiSocket::RaiiSocket()
 {
 }
 
-#ifdef _WIN32
 struct WinSockInit
 {
 	WinSockInit()
