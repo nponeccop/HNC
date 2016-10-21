@@ -3,9 +3,9 @@ module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
 import HN.Intermediate
+import HN.Optimizer.ExpressionRewriter
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
-import HN.Optimizer.Rewriting
 import HN.Optimizer.Utils
 
 {-
@@ -98,4 +98,17 @@ runB :: Label -> Pass Int ListFact
 runB whileLabel = runPass (analyzeAndRewriteBwd $ passBL whileLabel) $ const . mapMap int2list where
 	int2list 1 = Bot
 	int2list _ = Top
+
+type ListFact = WithTopAndBot DefinitionNode
+
+rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
+rewriteExpression f = process phi where
+	phi expr = case expr of
+		Constant _ -> Nothing
+		Application _ _ -> Nothing
+		Atom a -> case lookupFact a f of
+			Nothing -> error $ "Lone.uncondLookupFact.Nothing"
+			Just Bot -> error $ "Lone.rewriteExitL.Bot"
+			Just (PElem (LetNode [] body)) -> Just body
+			_ -> Nothing
 

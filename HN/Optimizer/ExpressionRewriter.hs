@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-module HN.Optimizer.ExpressionRewriter where
+module HN.Optimizer.ExpressionRewriter (process, process', Rewrite) where
 import Control.Applicative
 import Data.Functor.Foldable
 import Data.Maybe

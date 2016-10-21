@@ -69,7 +69,6 @@ executable spl-hnc
        HN.Optimizer.Lattice
        HN.Optimizer.Node
        HN.Optimizer.Pass
-       HN.Optimizer.Rewriting
        HN.Optimizer.SimpleAlias
        HN.Optimizer.Utils
        HN.Optimizer.Visualise
