@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor, TypeFamilies #-}
+{-# LANGUAGE DeriveFunctor, DeriveFoldable, LambdaCase, TypeFamilies #-}
 module HN.Intermediate where
 import qualified Data.Set as S
 import Data.Functor.Foldable
@@ -79,3 +79,23 @@ instance Show a => Show (Expression a) where
 		Constant c -> show c
 		Atom aa -> show aa
 		Application a b -> show a ++ concatMap (\b -> ' ' : show b) b
+
+data ExpressionFunctor b a
+	= ApplicationF a [a]
+	| AtomF b
+	| ConstantF Const deriving (Functor, Foldable, Eq)
+
+type instance Base (Expression b) = ExpressionFunctor b
+
+instance Recursive (Expression a) where
+	project = \case
+		Atom x -> AtomF x
+		Constant x -> ConstantF x
+		Application a b -> ApplicationF a b
+
+instance Corecursive (Expression a) where
+	embed = \case
+		AtomF x -> Atom x
+		ConstantF x -> Constant x
+		ApplicationF a b -> Application a b
+

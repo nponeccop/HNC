@@ -1,5 +1,5 @@
-{-# LANGUAGE GADTs, DeriveFunctor, DeriveFoldable, TypeFamilies, FlexibleInstances #-}
-module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFunctor(..), ExpressionFix, PassResult, Pass, MyGraph, MyBlock) where
+{-# LANGUAGE GADTs #-}
+module HN.Optimizer.Node (node, argNode, DefinitionNode(..), Node(..), ExpressionFix, PassResult, Pass, MyGraph, MyBlock) where
 
 import Prelude hiding ((<*>))
 import Compiler.Hoopl
@@ -15,33 +15,13 @@ instance NonLocal Node where
 	successors (Exit (LetNode _ e)) = cata exprSuccessors e
 	successors _ = []
 
-exprSuccessors (ApplicationF a b) = concat $ a : b
-exprSuccessors (ConstantF _) = []
 exprSuccessors (AtomF a) = [a]
+exprSuccessors x = concat x
 
 node l dn = mkFirst (Entry l) <*> mkLast (Exit dn)
 argNode label = node label ArgNode
 
-data ExpressionFunctor a 
-	=   ApplicationF a [a]
-	|   AtomF Label
-	|   ConstantF Const deriving (Functor, Foldable, Eq)
-	
 type ExpressionFix = Expression Label 
-	
-type instance Base ExpressionFix = ExpressionFunctor
-
-instance Recursive ExpressionFix where
-	project x = case x of
-		Atom x -> AtomF x
-		Constant x -> ConstantF x
-		Application a b -> ApplicationF a b
-		
-instance Corecursive ExpressionFix where
-	embed x = case x of
-		AtomF x -> Atom x
-		ConstantF x -> Constant x
-		ApplicationF a b -> Application a b
 
 data DefinitionNode
 	= LetNode [Label] ExpressionFix

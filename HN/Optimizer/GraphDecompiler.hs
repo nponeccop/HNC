@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, TupleSections #-}
+{-# LANGUAGE GADTs #-}
 module HN.Optimizer.GraphDecompiler (decompileGraph) where
 
 import Compiler.Hoopl

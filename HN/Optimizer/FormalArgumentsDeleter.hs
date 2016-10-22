@@ -1,4 +1,3 @@
-{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction, FlexibleContexts, FlexibleInstances #-}
 module HN.Optimizer.FormalArgumentsDeleter (runB) where
 
 import Compiler.Hoopl hiding ((<*>))
