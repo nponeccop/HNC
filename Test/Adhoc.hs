@@ -5,19 +5,13 @@ module Main where
 import Utils
 
 import HN.Parser2
-import Test.ParserTest
 import HN.Intermediate
 import HN.SplExport
 
 import CPP.Visualise ()
-import CPP.TypeProducer
 
-import SPL.Types
 import qualified SPL.Top
-import HN_Tests (testSet)
-import FFI.TypeParser (sp3, parseType)
-import Data.Either (isRight)
-import Test.HUnit
+import Test.HnParser (testSet)
 
 simpleParse  = head . fromRight . parseProg
 

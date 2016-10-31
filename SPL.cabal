@@ -114,6 +114,7 @@ executable spl-test-hunit-exe
       SPL.Top
       Test.Compiler
       Test.FFI
+      Test.HnParser
       Test.Main
       Test.Optimizer.FileTest
       Test.Optimizer.WithParsing

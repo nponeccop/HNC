@@ -1,5 +1,5 @@
 
-module HN_Tests (tests, testSet) where
+module Test.HnParser (tests, testSet) where
 
 import HN.Parser2
 import Test.HUnit

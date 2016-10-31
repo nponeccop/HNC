@@ -21,7 +21,7 @@ import Test.Optimizer.FileTest
 
 import SPL.Interpretator
 import Test.SPLQuickCheck
-import qualified HN_Tests
+import qualified Test.HnParser
 
 ttt x = TestCase $ assertEqual (x ++ "\n" ++ show fp) True $ typeCheck fp where
 	fp = fullParse x
@@ -71,7 +71,7 @@ main = do
 	ioTests <- Test.TypeParser.iotests
 	simpleTests $
 		optTests ++
-		HN_Tests.tests ++
+		Test.HnParser.tests ++
 		tests2 ++
 		Main.tests ++
 		compilerTests ++
