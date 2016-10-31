@@ -36,10 +36,7 @@ testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
 
 main = do
 	putStrLn  "\n***\nNOTE all the 3 commended tests compile but crash in check3!!!!!!!!\n***\n\n"
---	testCheck3
---	rt convertDef
---	rt $ SPL.Top.check0 . convertDef
+	testCheck3
+	rt convertDef
+	rt $ SPL.Top.check0 . convertDef
 	return ()
-
-	mapM_ (print . sp3 parseType) $ [ "aaa", "aaa bbb", "aaa -> bbb", "List a -> a", "Int -> Int" ]
-
