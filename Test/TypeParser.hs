@@ -1,10 +1,13 @@
-module Test.TypeParser where
+module Test.TypeParser (tests, iotests) where
+
+import Test.HUnit
 
 import FFI.TypeParser
 import Utils
 import SPL.Types
 import FFI.Visualise
 import SPL.Top
+import Test.ParserTest (parserTest)
 
 t a b c d = st a b $ sp3 c d
 
@@ -27,9 +30,20 @@ tests = [
 	,   t1 "bind"
 	]
 
+tt =
+	let
+		a ?= b = a ~=? parserTest parseType b
+	in
+	[ T "aaa" ?= "aaa"
+	, T "aaa" ?= "aaa bbb" -- TODO failing test
+	, TT [T "aaa", T "bbb"] ?= "aaa -> bbb"
+	, TT [T "List", T "a", T "a"] ?= "List a -> a" -- TODO dubious test
+	, TT [T "Int", T "Int"] ?= "Int -> Int"
+	]
+
 iotests = do
 	a <- readFile "lib/lib.hni"
-	return $ map process $ lines a
+	return $ map process (lines a) ++ tt 
 
 process l = st "lib.hni" l (name ++ " = " ++ showType tt) where
 	(name, tt) = sp3 decl l

@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Test.ParserTest (runTests, runTest2, tests) where
+module Test.ParserTest (runTests, runTest2, tests, parserTest) where
 
 import HN.Parser2
 import Text.Parsec.Prim
