@@ -1,4 +1,4 @@
-module HN.SplExport (convertToSpl, convertExpr) where
+module HN.SplExport (convertToSpl, convertExpr, convertDef) where
 import HN.Intermediate
 import SPL.Visualise (showAsSource)
 import SPL.Types

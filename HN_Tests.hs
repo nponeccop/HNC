@@ -1,27 +1,15 @@
 
-module Main where
-
--- import Visualise
-import Utils
+module HN_Tests (tests, testSet) where
 
 import HN.Parser2
-import Test.ParserTest
-import HN.Intermediate
-import HN.SplExport
+import Test.HUnit
 
-import CPP.Visualise ()
-import CPP.TypeProducer
 
-import SPL.Types
-import qualified SPL.Top
+rtt _in = TestCase $ case parseProg _in of
+	Right _ -> return ()
+	Left msg -> assertFailure $ show msg
 
-simpleParse  = head . fromRight . parseProg
-
--- testCodeGen = rt compileDefinition
-
--- test2 = rt getDefinitionFreeVars
-
-rt f = mapM (print . f . simpleParse) testSet
+tests = map rtt testSet
 
 testSet =
 	[
@@ -67,27 +55,3 @@ testSet =
 		-- parameter name conflicts with inferred type variable name
 	,	"main a f = filter f a"
 	]
-	{-
-defaultEnv = Env 1 $ M.fromList $ map (\(a, b) -> (a, simpleParse2 b)) [
-		("head",  "(List 1) -> 1" )
-	,	("plus1", "Int -> Int" )
-	]
--}
-testCheck3 = mapM (print . SPL.Top.check0 . convertExpr) [
-		Constant (ConstInt 123),
-		Atom "a",
-		Application (Atom "sum") $ map (Constant . ConstInt) [1, 2],
-		Application (Atom "incr") [Atom "x"]
-	]
-
-main = do
-	runTests
-
---	testCheck3
---	rt convertDef
---	rt $ SPL.Top.check0 . convertDef
-
---	testCodeGen
-	return ()
-
---	mapM (print . simpleParse2) $ [ "aaa", "aaa bbb", "aaa -> bbb", "(List 1) -> 1", "Int -> Int" ]
