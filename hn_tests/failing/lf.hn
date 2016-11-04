@@ -1,0 +1,7 @@
+foo x = {
+	bar = {
+		quux s = sum s 42
+		mul (quux 2) (quux 3)
+	}
+	mul bar bar
+}

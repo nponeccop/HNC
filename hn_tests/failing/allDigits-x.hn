@@ -1,0 +1,7 @@
+allDigits ss = {
+	firstFailure = {
+		loopCond s = deref s
+		loopCond ss
+	}
+	eq firstFailure 0
+}

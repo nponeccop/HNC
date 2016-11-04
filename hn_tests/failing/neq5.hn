@@ -1,0 +1,5 @@
+foo = {
+	neq a b = _not (eq a b)
+	neq5 x = neq 5 x
+	whileF neq5 incr 0
+}
