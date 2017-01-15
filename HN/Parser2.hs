@@ -33,33 +33,31 @@ constant = Constant <$> (
 	<|>
 	(ConstString <$> literal))
 
-argument = constant <|> parens <|> atom
-
 atom = Atom <$> identifier
 
-simpleExpression = constant <|> try application <|> atom
+simpleExpression x = do
+	xx <-
+		constant
+		<|>
+		(parens >>= app)
+		<|>
+		do
+			a <- atom
+			app a <|> return a
+	return $ makeLet xx x
 
-mySepBy atom2 sep = do
-	a <- atom2
-	bb <- try (sep >> mySepBy atom2 sep) <|> return []
-	return $ a : bb
+app a = Application a <$> (many1 . try  $ char ' ' >> (function <|> constant))
 
-parens = between (char '(') (char ')') application
-
-application =
-	do
-		a <- function
-		char ' '
-		b <- mySepBy argument $ char ' '
-		return $ Application a b
+parens = between (char '(') (char ')') (function >>= app)
 
 function = atom	<|> parens
 
 compoundExpression = between nlIndent2 nlDedent2 $ do
-	x <- mySepBy definition nlIndent
-	nlIndent
-	xx <- simpleExpression
-	return $ makeLet xx x
+	x <- many1 . try $ do
+		a <- definition
+		nlIndent
+		return a
+	simpleExpression x
 
 indent = many $ char '\t'
 
@@ -67,25 +65,25 @@ _assignment = do
 	indent
 	i <- identifier
 	string " := "
-	Assign i . In <$> simpleExpression
+	Assign i <$> simpleExpression []
 
 definition = do
 	indent
-	(fn:args) <- mySepBy identifier (char ' ')
-	string " = "
-	Definition fn args <$> (compoundExpression <|> (In <$> simpleExpression))
+	fn:args <- many1 $ try $ do
+		a <- identifier
+		char ' '
+		return a
+	string "= "
+	Definition fn args <$> (compoundExpression <|> simpleExpression [])
 
-nlIndent = do
-	nl
-	indent
-	return ""
+nlIndent = nl >> indent
 
 nlIndent2 = void $ do
 	char '{'
-	string " " <|> (nl >> indent)
+	string " " <|> nlIndent
 
 nlDedent2 = void $ do
-	string " " <|> (nl >> indent)
+	string " " <|> nlIndent
 	char '}'
 
 program = sepBy definition nl
