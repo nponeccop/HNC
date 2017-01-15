@@ -10,7 +10,6 @@ import qualified Data.Map as M
 import Control.Monad ((>=>))
 
 import Utils
-import qualified HN.Parser2 as P
 import SPL.Types
 import HN.Parser2
 
@@ -18,7 +17,9 @@ importHni = readFile >=> return . M.fromList . map parseDecl . lines
 
 parseDecl = sp3 decl
 
-sp3 x = fromRight . P.parseString x
+-- TODO use Parsec.parseFromFile instead of runP hack
+sp3 x = fromRight . parseString where
+	parseString = runP x () "test.hn0" . packL
 
 typePolyVar = fmap TU $ string "?" >> identifier
 

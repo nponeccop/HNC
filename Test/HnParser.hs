@@ -2,10 +2,11 @@
 module Test.HnParser (tests, testSet) where
 
 import HN.Parser2
+import Test.ParserTest (parseString)
 import Test.HUnit
 
 
-rtt _in = TestCase $ case parseProg _in of
+rtt _in = TestCase $ case parseString program _in of
 	Right _ -> return ()
 	Left msg -> assertFailure $ show msg
 

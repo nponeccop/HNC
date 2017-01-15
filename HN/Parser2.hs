@@ -10,57 +10,28 @@
 -----------------------------------------------------------------------------------------
 {-# LANGUAGE NoMonomorphismRestriction, FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-module HN.Parser2 (
-	program, parseString, application, expression, mySepBy,
-	atom2, newExpression, simpleDefinition, whereClause, parseProg, parseFile, identifier, parseAndProcessFile) where
+module HN.Parser2 (program, identifier) where
 import Text.Parsec.Prim
-import Text.Parsec.ByteString
 import Text.Parsec.Combinator
 import Text.Parsec.Char
 
 import HN.Intermediate
-import Utils
 import Control.Monad
 
-pzero = parserZero
-
-parseString p = runP p () "test.hn0" . packL
-
-xletter = letter <|> char '_'
-
 identifier
-	= liftM2 (:) xletter $ many $ xletter <|> digit
+	= liftM2 (:) xletter $ many $ xletter <|> digit where
+		xletter = letter <|> char '_'
 
 literal = between q q $ many $ noneOf "\"" where q = char '"' --"
 
-cr = char '\r'
-lf = char '\n'
-nl = optional cr >> lf
-
-constructLambda h (Lambda args ex) = Lambda (h:args) ex
-
-lambdaTail =
-	do
-		h <- identifier
-		char ' '
-		t <- lambdaTail
-		return $ constructLambda h t
-	<|>
-	do
-		string "-> "
-		e <- expression
-		return $ Lambda [] e
-
-lambda = do
-	string "\\ "
-	lambdaTail
+nl = optional cr >> lf where
+	cr = char '\r'
+	lf = char '\n'
 
 expression =
 	(Constant . ConstInt . read) <$> many1 digit
 	<|>
 	(Constant . ConstString) <$> literal
-	<|>
-	lambda
 	<|>
 	try application
 	<|>
@@ -90,7 +61,7 @@ atom = do
 atom2 =
 		do
 			try (string "where")
-			pzero
+			mzero
 		<|>
 		atom
 
@@ -108,7 +79,7 @@ mySepBy atom2 sep = try (do
 
 parens = do
 	char '('
-	x <- lambda <|> application
+	x <- application
 	char ')'
 	return x
 
@@ -176,8 +147,3 @@ simple =
 
 program = sepBy simple $ many1 nl
 
-parseProg = parseString program
-
-parseFile = parseFromFile program
-
-parseAndProcessFile inFile f = (f . head . fromRight) <$> parseFile inFile

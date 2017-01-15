@@ -1,12 +1,14 @@
 module CPP.CompileTools (parseHN, compileHN, compileFile, extractLean) where
 
+import Text.Parsec.ByteString (parseFromFile)
+
 import qualified Bar as AG
-import HN.Parser2 (parseFile) 
+import HN.Parser2 (program)
 import Utils
 
 compileFile inFile libraryTypes = compileHN libraryTypes <$> parseHN inFile
 
-parseHN inFile  = fromRight <$> parseFile inFile
+parseHN inFile  = fromRight <$> parseFromFile program inFile
 
 compileHN libraryTypes = ("#include <hn/lib.hpp>\n\n" ++) . joinStr "\n" . map show . compileDefinition2 libraryTypes 
 

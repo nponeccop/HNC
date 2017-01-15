@@ -12,8 +12,9 @@ import CPP.Visualise ()
 
 import qualified SPL.Top
 import Test.HnParser (testSet)
+import Test.ParserTest (parseString)
 
-simpleParse  = head . fromRight . parseProg
+simpleParse  = head . fromRight . parseString program
 
 -- testCodeGen = rt compileDefinition
 

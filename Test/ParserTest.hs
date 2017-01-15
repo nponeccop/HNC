@@ -1,11 +1,13 @@
 {-# LANGUAGE FlexibleContexts #-}
-module Test.ParserTest (runTests, runTest2, tests, parserTest) where
+module Test.ParserTest (runTest2, tests, parserTest, parseString) where
+-- module Test.ParserTest (runTests, runTest2, tests, parserTest) where
 
-import HN.Parser2
+-- import HN.Parser2
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
-import HN.Intermediate
+import Utils (packL)
+-- import HN.Intermediate
 
 import Test.HUnit
 
@@ -13,43 +15,47 @@ import Test.HUnit
 -- New test suite
 ---------------------------------------------------
 
+parseString p = runP p () "test.hn0" . packL
+
 parserTest s _in = case parseString s _in of
 	Right x -> x
 	Left x -> error $ show x
 
 rtt name parser _in out = name ~: out ~=? parserTest parser _in
 
-rttp name = rtt name program
+-- rttp name = rtt name program
 
 
 ---------------------------------------------------
 -- Old adhoc tests
 ---------------------------------------------------
 
+{-
 xx = mySepBy simpleDefinition (string "\n")
 
 simpleEq a b w = Definition a [] $ makeLet (Atom b) w
 
 newExpressionT d = newExpression $ \a b -> Definition d [] $ makeLet a b
-
+-}
 numbers = many hexDigit
 
+{-
 runTest program _in expectedOut = putStr $ case parseString program _in of
 		(Left error)  -> "\nParseError\n\n" ++ _in ++ "\n\n" ++ show error ++ "\n\n\n"
 		(Right parsed) -> runTest2 parsed _in expectedOut
-
+-}
 runTest2 actualOut _in expectedOut = if actualOut == expectedOut then "." else failedTest _in expectedOut actualOut
 
 failedTest _in expectedOut parsed = "\nWrong result\n\n" ++ _in ++ "\n- " ++ show expectedOut ++ "\n- " ++ show parsed ++ "\n"
 
-rtp = runTest program
+--rtp = runTest program
 
 semicolon = string " ; "
 
 ppp = many semicolon
 
 pppp = sepBy numbers semicolon
-
+{-
 rtp2 p1 p2 x = do
 	rtp p1 x
 	rtp p2 x
@@ -62,12 +68,13 @@ testNewExpression = do
 	runTest (newExpressionT "a") "{ c = d\ne = f\nb }" (Definition "a" [] $ makeLet  (Atom "b") [Definition "c" [] $ makeLet (Atom "d") [], Definition "e" []  $ makeLet (Atom "f") []])
 	runTest xx "c = d\ne = f\nb }" [simpleEq "c" "d" [], simpleEq "e" "f" []]
 	rtp "a b c = d" [Definition "a" ["b", "c"]  $ makeLet (Atom "d") []]
+-}
 
 tests = "Parser" ~:
 	[ rtt "semicolon" semicolon " ; " " ; "
 	, rtt "ppp" ppp " ; " [" ; "]
 	, rtt "pppp" pppp "1 ; 2" ["1", "2"]
-	, rttp "eq" "c = e" [simpleEq "c" "e" []]
+{-	, rttp "eq" "c = e" [simpleEq "c" "e" []]
 	, rttp "eq-eq" "a = b\nc = d" [simpleEq "a" "b" [],simpleEq "c" "d" []]
 	, rtt "where" whereClause " where\nc = d;" [simpleEq "c" "d" []]
 	, rtt "" expression "\\ b -> c" $ Lambda ["b"] (Atom "c")
@@ -102,8 +109,9 @@ tests = "Parser" ~:
 	, rttp "" "main = { y z = g z\nf y y }" [Definition "main" [] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
 	, rttp "" "main f = { y z = g z\nf y y }" [Definition "main" ["f"]  $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition "y" ["z"] $ makeLet (Application (Atom "g") [Atom "z"]) []]]
 	, rttp "" "main x = { y = g x\nf y y }" [Definition "main" ["x"] $ makeLet (Application (Atom "f") [Atom "y",Atom "y"]) [Definition  "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
+-}
 	]
-
+{-
 runTests = do
 	testNewExpression
 
@@ -126,6 +134,6 @@ runTests = do
 	rtp2 "main = { y = \\ z -> g z\n\\ x -> f y y }" "main = \\ x -> f y y where\ny = \\ z -> g z;" [Definition "main" [] $ makeLet (Lambda ["x"] (Application (Atom "f") [Atom "y",Atom "y"])) [Definition "y" [] $ makeLet (Lambda ["z"] (Application (Atom "g") [Atom "z"])) []]]
 
 	rtp2 "main = { y = g x\n\\ x -> f y y }" "main = \\ x -> f y y where\ny = g x;" [Definition "main" []  $ makeLet (Lambda ["x"] (Application (Atom "f") [Atom "y",Atom "y"])) [Definition "y" [] $ makeLet (Application (Atom "g") [Atom "x"]) []]]
-
 	-- to flush line-buffered stdout
 	putStrLn "";
+-}
