@@ -28,80 +28,38 @@ nl = optional cr >> lf where
 	cr = char '\r'
 	lf = char '\n'
 
-expression =
-	(Constant . ConstInt . read) <$> many1 digit
+constant = Constant <$> (
+	(ConstInt . read <$> many1 digit)
 	<|>
-	(Constant . ConstString) <$> literal
-	<|>
-	try application
-	<|>
-	atom2
+	(ConstString <$> literal))
 
-argument =
-	do
-		a <- many1 digit
-		return $ Constant (ConstInt $ read a)
-	<|>
-	do
-		a <- literal
-		return $ Constant (ConstString a)
-	<|>
-	parens
-	<|>
-		do
-			string "where"
-			parserZero
-	<|>
-	atom
+argument = constant <|> parens <|> atom
 
-atom = do
-	a <- identifier
-	return $ Atom a
+atom = Atom <$> identifier
 
-atom2 =
-		do
-			try (string "where")
-			mzero
-		<|>
-		atom
+simpleExpression = constant <|> try application <|> atom
 
-mySepBy atom2 sep = try (do
+mySepBy atom2 sep = do
 	a <- atom2
-	bb <- do
-		sep
-		mySepBy atom2 sep
+	bb <- try (sep >> mySepBy atom2 sep) <|> return []
+	return $ a : bb
 
-	return (a : bb))
-	<|>
-	do
-		a <- atom2
-		return [a]
-
-parens = do
-	char '('
-	x <- application
-	char ')'
-	return x
-
+parens = between (char '(') (char ')') application
 
 application =
 	do
 		a <- function
-		string " "
+		char ' '
 		b <- mySepBy argument $ char ' '
 		return $ Application a b
 
 function = atom	<|> parens
 
-newExpression def = do
-	char '{'
-	string " " <|> nlIndent
-	x <- mySepBy simpleDefinition nlIndent
+compoundExpression = between nlIndent2 nlDedent2 $ do
+	x <- mySepBy definition nlIndent
 	nlIndent
-	xx <- expression
-	string " " <|> nlIndent
-	char '}'
-	return $ def xx x
+	xx <- simpleExpression
+	return $ makeLet xx x
 
 indent = many $ char '\t'
 
@@ -109,41 +67,26 @@ _assignment = do
 	indent
 	i <- identifier
 	string " := "
-	(Assign i . In) <$> expression
+	Assign i . In <$> simpleExpression
 
-
-simpleDefinition = 	do
+definition = do
 	indent
-	parms <- mySepBy identifier (char ' ')
+	(fn:args) <- mySepBy identifier (char ' ')
 	string " = "
-	let def v w = Definition (head parms) (tail parms) $ makeLet v w
-	(
-		newExpression def
-		<|>
-		(do
-			b <- expression
-			return $ def  b []))
+	Definition fn args <$> (compoundExpression <|> (In <$> simpleExpression))
 
 nlIndent = do
-	many1 nl
-	many $ string "\t"
-	return []
-
-
-
-whereClause = do
-	string " where"
 	nl
-	p <- program
-	string ";"
-	return p
+	indent
+	return ""
 
-simple =
-	do
-		a <- simpleDefinition
-		w <- option [] whereClause
-		return $ case a of Definition a p l -> Definition a p $ makeLet (letValue l) (w ++ letWhere l)
+nlIndent2 = void $ do
+	char '{'
+	string " " <|> (nl >> indent)
 
+nlDedent2 = void $ do
+	string " " <|> (nl >> indent)
+	char '}'
 
-program = sepBy simple $ many1 nl
+program = sepBy definition nl
 
