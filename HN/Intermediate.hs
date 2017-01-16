@@ -29,8 +29,6 @@ letWhere (In _) = []
 makeLet :: Expression a -> [Definition a] -> LetIn a
 makeLet v = foldr Let (In v)
 
-insertLet prg (Definition name args (In value)) = Definition name args $ makeLet value prg
-
 type ASTDefinition = Definition String
 
 data Definition a
@@ -67,7 +65,6 @@ data Expression a
 	=   Application (Expression a) [Expression a]
 	|   Atom a
 	|   Constant Const
-	|   Lambda [a] (Expression a)
 	deriving (Eq, Functor)
 
 instance Show Const where
