@@ -69,11 +69,9 @@ _assignment = do
 
 definition = do
 	indent
-	fn:args <- many1 $ try $ do
-		a <- identifier
-		char ' '
-		return a
-	string "= "
+	fn <- try identifier
+	args <- many . try $ char ' ' >> identifier
+	string " = "
 	Definition fn args <$> (compoundExpression <|> simpleExpression [])
 
 nlIndent = nl >> indent
