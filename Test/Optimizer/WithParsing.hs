@@ -3,8 +3,8 @@ import qualified Data.Map as M
 import Test.HUnit hiding (test)
 import Text.Parsec.ByteString (parseFromFile)
 
-import HN.Parser2
 import HN.Optimizer.Frontend (withGraph)
+import Parser.Parser
 import Utils (fromRight)
 
 fakeLib :: M.Map String a

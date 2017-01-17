@@ -72,10 +72,11 @@ executable spl-hnc
        HN.Optimizer.SimpleAlias
        HN.Optimizer.Utils
        HN.Optimizer.Visualise
-       HN.Parser2
        HN.SplExport
        HN.TypeTools
        HN.Visualise
+       Parser.Parser
+       Parser.AST
        SPL.Types
        SPL.Visualise
        Utils

@@ -10,13 +10,13 @@
 -----------------------------------------------------------------------------------------
 {-# LANGUAGE NoMonomorphismRestriction, FlexibleContexts #-}
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
-module HN.Parser2 (program, identifier) where
+module Parser.Parser (program, identifier) where
+import Control.Monad
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
 
-import HN.Intermediate
-import Control.Monad
+import Parser.AST
 
 identifier
 	= liftM2 (:) xletter $ many $ xletter <|> digit where

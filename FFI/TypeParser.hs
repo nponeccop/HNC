@@ -11,7 +11,7 @@ import Control.Monad ((>=>))
 
 import Utils
 import SPL.Types
-import HN.Parser2
+import Parser.Parser (identifier)
 
 importHni = readFile >=> return . M.fromList . map parseDecl . lines
 

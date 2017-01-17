@@ -3,7 +3,7 @@ module CPP.CompileTools (parseHN, compileHN, compileFile, extractLean) where
 import Text.Parsec.ByteString (parseFromFile)
 
 import qualified Bar as AG
-import HN.Parser2 (program)
+import Parser.Parser (program)
 import Utils
 
 compileFile inFile libraryTypes = compileHN libraryTypes <$> parseHN inFile

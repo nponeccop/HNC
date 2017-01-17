@@ -1,7 +1,7 @@
 
 module Test.HnParser (tests, testSet) where
 
-import HN.Parser2
+import Parser.Parser
 import Test.ParserTest (parseString)
 import Test.HUnit
 

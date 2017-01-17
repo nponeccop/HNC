@@ -4,10 +4,9 @@ module Main where
 -- import Visualise
 import Utils
 
-import HN.Parser2
 import HN.Intermediate
 import HN.SplExport
-
+import Parser.Parser
 import CPP.Visualise ()
 
 import qualified SPL.Top
