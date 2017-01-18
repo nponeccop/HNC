@@ -79,6 +79,7 @@ executable spl-hnc
        Parser.AST
        SPL.Types
        SPL.Visualise
+       Unifier.Unifier
        Utils
        Utils.Kmett
        Utils.Options

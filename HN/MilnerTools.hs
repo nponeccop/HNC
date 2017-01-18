@@ -1,16 +1,17 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, DeriveFunctor, DeriveTraversable, DeriveFoldable, NoMonomorphismRestriction, FlexibleContexts #-}
-module HN.MilnerTools where-- (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply) where
+module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply, UTerm(..), IntVar(..)) where
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Control.Unification
-import Control.Unification.IntVar
+import Control.Unification (Fallible(..), lookupVar, applyBindings, getFreeVars, freeVar)
+import Control.Unification.IntVar (IntVar(..), IntBindingT, runIntBindingT)
 import Control.Monad.State
 import Control.Monad.Trans.Except
 import Utils
 import HN.TypeTools
 import HN.Intermediate (Const (..))
 import qualified SPL.Types as Old
+import Unifier.Unifier
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
 -- argument types are not generalized, thus S.empty
@@ -18,18 +19,6 @@ freshAtoms a counter = zipWith (\a i -> (a, (S.empty, tv i))) a [counter..]
 
 instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
-
-data T a = T String | TT [a] | TD String [a] | TU String deriving (Eq, Show, Functor, Traversable, Foldable)
-
-maybeZip a b | length a == length b = Just $ zipWith (curry Right) a b
-maybeZip _ _ = Nothing
-
-instance Unifiable T where
-	zipMatch (TT a1) (TT a2) = TT <$> maybeZip a1 a2
-	zipMatch (T a) (T b) | a == b = Just $ T a
-	zipMatch (TU a) (TU b) | a == b = Just $ TU a
-	zipMatch (TD l1 a1) (TD l2 a2) | l1 == l2 = TD l1 <$> maybeZip a1 a2
-	zipMatch _ _ = Nothing
 
 instance Fallible T IntVar String where
 	occursFailure _ _ = "ooo"
