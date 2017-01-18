@@ -3,16 +3,15 @@ module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, 
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Control.Unification (lookupVar, applyBindings, getFreeVars, freeVar, subsumes, unify)
-import Control.Unification.IntVar (IntVar(..), IntBindingT, runIntBindingT)
-import Control.Unification.Types (UFailure(..))
+import Control.Unification (lookupVar, applyBindings, getFreeVars, freeVar)
+import Control.Unification.IntVar (IntVar(..), runIntBindingT)
 import Control.Monad.State
-import Control.Monad.Trans.Except
 import Utils
 import HN.TypeTools
 import HN.Intermediate (Const (..))
 import qualified SPL.Types as Old
 import Unifier.Unifier
+import Unifier.Restricted
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
 -- argument types are not generalized, thus S.empty
@@ -27,7 +26,7 @@ xget = lift get
 xput :: M.Map String Int -> MyStack ()
 xput = lift . put
 
-type MyStack a = IntBindingT T (State (M.Map String Int)) a
+type MyStack a = WithEnv (State (M.Map String Int)) a
 
 runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
 
@@ -45,9 +44,6 @@ convertTv (Old.TV a) = do
 			return ii
 
 subsumesM x y = runErrorT2 (subsumes x y) >> exportBindings
-
-runErrorT2 :: ExceptT (UFailure T IntVar) m a -> m (Either (UFailure T IntVar) a)
-runErrorT2 = runExceptT
 
 exportBindings = do
 	x <- fmap reverseMap xget
