@@ -3,8 +3,9 @@ module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, 
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
-import Control.Unification (Fallible(..), lookupVar, applyBindings, getFreeVars, freeVar)
+import Control.Unification (lookupVar, applyBindings, getFreeVars, freeVar, subsumes, unify)
 import Control.Unification.IntVar (IntVar(..), IntBindingT, runIntBindingT)
+import Control.Unification.Types (UFailure(..))
 import Control.Monad.State
 import Control.Monad.Trans.Except
 import Utils
@@ -19,10 +20,6 @@ freshAtoms a counter = zipWith (\a i -> (a, (S.empty, tv i))) a [counter..]
 
 instantiatedType counter (tu, t) = (counter + S.size tu, convert $ mapTypeTV (\a -> fromMaybe (Old.TV a) (M.lookup a substitutions)) t) where
 	substitutions = M.fromDistinctAscList $ zipWith (\a b -> (a, tv b)) (S.toAscList tu) [counter..]
-
-instance Fallible T IntVar String where
-	occursFailure _ _ = "ooo"
-	mismatchFailure _ _ = "mmm"
 
 xget :: MyStack (M.Map String Int)
 xget = lift get
@@ -49,7 +46,7 @@ convertTv (Old.TV a) = do
 
 subsumesM x y = runErrorT2 (subsumes x y) >> exportBindings
 
-runErrorT2 :: ExceptT String m a -> m (Either String a)
+runErrorT2 :: ExceptT (UFailure T IntVar) m a -> m (Either (UFailure T IntVar) a)
 runErrorT2 = runExceptT
 
 exportBindings = do

@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveTraversable #-}
-module Unifier.Unifier (T(..), UTerm(..), unify, subsumes) where
+module Unifier.Unifier (T(..), UTerm(..)) where
 import Control.Unification
 
 data T a 
