@@ -49,7 +49,7 @@ SEM ASTDefinition
 		-- В значении определения локальные определения видны по-другому, чем в локальных
 		-- определениях:
 
-		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) $ (if @lhs.isLocalVar && not @loc.isFunction then id else M.map moveQualifierDown) @lhs.qualifiers
+		where.qualifiers = M.union (M.fromList $ zip @params $ repeat CppArgument) $ (if @lhs.isLocalVar && not @loc.isFunction then id else fmap moveQualifierDown) @lhs.qualifiers
 
 		-- в значении определения видны как параметры определения (но уже
 		-- в виде CppArgument!), так и where-определения

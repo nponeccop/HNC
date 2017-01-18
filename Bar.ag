@@ -3,6 +3,7 @@ imports
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 module Bar (compile2, Inh_Root(..), extractLean) where
 
+import Control.Monad (void)
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List

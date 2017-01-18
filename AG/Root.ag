@@ -14,10 +14,10 @@ SEM Root
 	| Cons
 		hd.level = 0
 		hd.counter = 0
-		hd.generalizedTypes = fmap (\t -> (typeTv t, t)) @lhs.library
+		hd.generalizedTypes = (\t -> (typeTv t, t)) <$> @lhs.library
 		hd.definitionTypes = @lhs.library
-		hd.qualifiers = M.map (const $ CppFqMethod "ff") @lhs.library
-		hd.finalSubstitution = fmap snd @hd.generalizedTypeM >> return ()
+		hd.qualifiers = const (CppFqMethod "ff") <$> @lhs.library
+		hd.finalSubstitution = void @hd.generalizedTypeM
 		hd.parent = "OH,PARENT (ASSERTION)"
 		hd.isLocalVar = False
 		tl.library = M.insert @hd.name @hd.definitionType @lhs.library
