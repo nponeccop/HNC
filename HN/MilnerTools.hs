@@ -48,7 +48,6 @@ runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBin
 convert (Old.T a) = return $ UTerm $ T a
 convert (Old.TT a) = (UTerm . TT) <$> Prelude.mapM convert a
 convert (Old.TD n a) = (UTerm . TD n) <$> Prelude.mapM convert a
-convert (Old.TU a) = return $ UTerm $ TU a
 convert a @ (Old.TV _) = convertTv a
 
 convertTv (Old.TV a) = do
@@ -73,7 +72,6 @@ revert x m = mrevert x where
 	mrevert (UTerm x) = f x
 	mrevert (UVar (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
 	f (T x) = Old.T x
-	f (TU x) = Old.TU x
 	f (TT x) = Old.TT $ map mrevert x
 	f (TD s x) = Old.TD s $ map mrevert x
 
