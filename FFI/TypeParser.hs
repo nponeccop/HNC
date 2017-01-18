@@ -21,9 +21,9 @@ parseDecl = sp3 decl
 sp3 x = fromRight . parseString where
 	parseString = runP x () "test.hn0" . packL
 
-typePolyVar = fmap TU $ string "?" >> identifier
+typePolyVar = fmap TV $ string "?" >> identifier
 
-typeVar = fmap TV $ string "??" >> identifier
+typeVar = fmap TU $ string "??" >> identifier
 
 decl = do
 	a <- identifier

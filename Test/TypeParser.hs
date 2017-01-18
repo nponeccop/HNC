@@ -15,11 +15,11 @@ t1 name = t ("full-" ++ name ++ ": " ++ showType tt) (name, tt) decl $ name ++ "
 	tt = tracedUncondLookup "aaa" name get_types
 
 tests = [
-	    t "typePolyVar" (TU "aaa") typePolyVar "?aaa"
-	,   t "typeVar" (TV "bbb") typeVar "??bbb"
-	,   t "parseType-TU" (TU "aaa") parseType "?aaa"
-	,   t "parseType-TV" (TV "bbb") parseType "??bbb"
-	,   t "simpleDecl1" ("baba211", TU "iddqd") decl "baba211 = ?iddqd"
+	    t "typePolyVar" (TV "aaa") typePolyVar "?aaa"
+	,   t "typeVar" (TU "bbb") typeVar "??bbb"
+	,   t "parseType-TU" (TV "aaa") parseType "?aaa"
+	,   t "parseType-TV" (TU "bbb") parseType "??bbb"
+	,   t "simpleDecl1" ("baba211", TV "iddqd") decl "baba211 = ?iddqd"
 	,   t "simpleDecl2" ("b", T "idDqd") decl "b = idDqd"
 	,   t "fun" (TT [T "a", T "b"]) fun "a -> b"
 	,   t "manyArgs" (TT [T "a", T "b", T "b"]) fun "a b -> b"

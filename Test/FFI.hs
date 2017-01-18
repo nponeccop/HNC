@@ -9,5 +9,5 @@ mk s e = st s e $ showType $ uncondLookup s get_types
 tests =
 	[
 		mk "sum" "num num -> num"
-	,	mk "bind" "IO<?a> (?a -> IO<?b>) -> IO<?b>"
+	,	mk "bind" "IO<??a> (??a -> IO<??b>) -> IO<??b>"
 	]

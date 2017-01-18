@@ -8,8 +8,8 @@ showType t = case t of
 	T x -> x
 	TT x -> concatMap (\x -> showTypeP x ++ " ") (init x) ++ "-> " ++ showType (last x)
 	TD a b -> a ++ inAngular (joinStr " " (map showType b))
-	TU a ->  "?" ++ a
-	TV a -> "??" ++ a
+	TV a ->  "?" ++ a
+	TU a -> "??" ++ a
 	_ -> show t
 
 showTypeP x = case x of

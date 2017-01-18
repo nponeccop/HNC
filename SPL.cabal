@@ -105,6 +105,7 @@ executable spl-test-hunit-exe
     hs-source-dirs: .
     ghc-options: -Wall -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind
     other-modules:
+      Bar
       FFI.Visualise
       SPL.Check3
       SPL.Code
