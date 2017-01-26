@@ -1,6 +1,7 @@
 # Quick Start
 
 [![Build Status](https://secure.travis-ci.org/nponeccop/HNC.png?branch=master)](http://travis-ci.org/nponeccop/HNC)
+[![Stories in Ready](https://badge.waffle.io/nponeccop/HNC.png?label=ready&title=Ready)](https://waffle.io/nponeccop/HNC)
 
 ## Compilation
 
