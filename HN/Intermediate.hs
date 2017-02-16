@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveFunctor, DeriveFoldable, LambdaCase, TypeFamilies #-}
-module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionFunctor(..), LetIn(..), Root, DefinitionBase(..)) where
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveTraversable #-}
+module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionF(..), LetIn(..), Root, DefinitionBase(..)) where
 import qualified Data.Set as S
 import Data.Functor.Foldable
+import Data.Functor.Foldable.TH
 
 import Parser.AST
 import SPL.Types (T)
@@ -41,22 +44,4 @@ type GType = (S.Set String, T)
 
 type Root = Program
 
-data ExpressionFunctor b a
-	= ApplicationF a [a]
-	| AtomF b
-	| ConstantF Const deriving (Functor, Foldable, Eq)
-
-type instance Base (Expression b) = ExpressionFunctor b
-
-instance Recursive (Expression a) where
-	project = \case
-		Atom x -> AtomF x
-		Constant x -> ConstantF x
-		Application a b -> ApplicationF a b
-
-instance Corecursive (Expression a) where
-	embed = \case
-		AtomF x -> Atom x
-		ConstantF x -> Constant x
-		ApplicationF a b -> Application a b
-
+makeBaseFunctor ''Expression

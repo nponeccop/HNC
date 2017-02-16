@@ -3,7 +3,7 @@ module HN.Optimizer.Visualise (foo, formatGraph) where
 import Compiler.Hoopl
 import Data.Functor.Foldable
 import HN.Optimizer.Node (Node(..), DefinitionNode(..))
-import HN.Intermediate (ExpressionFunctor(..))
+import HN.Intermediate (ExpressionF(..))
 import Utils
 
 instance Show (Node e x) where
@@ -18,7 +18,7 @@ instance Show DefinitionNode where
 		ArgNode -> " :: @"
 		LibNode -> " :: #"
 
-instance (Show a, Show b) => Show (ExpressionFunctor a b) where
+instance (Show a, Show b) => Show (ExpressionF a b) where
 	show = \case
 		ConstantF c -> show c
 		AtomF aa -> show aa
