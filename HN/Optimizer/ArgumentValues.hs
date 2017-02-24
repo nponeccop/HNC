@@ -2,7 +2,6 @@
 module HN.Optimizer.ArgumentValues (runAv, ArgFact, AFType) where
 
 import Compiler.Hoopl
-import Data.Functor.Foldable
 import qualified Data.Map as M
 import Safe.Exact
 
@@ -21,7 +20,6 @@ type ArgFact = (AFType, M.Map Label AFType)
 type SingleArgLattice a = DataflowLattice (WithTopAndBot a)
 
 deriving instance Show ChangeFlag
-deriving instance Foldable (ListF [a])
 
 singleArgLattice :: Eq a => SingleArgLattice a
 singleArgLattice = flatEqLattice "ArgumentValues"
