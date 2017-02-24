@@ -6,9 +6,9 @@ license: LGPL
 license-file: COPYING.LESSER
 bug-reports: https://github.com/kayuri/HNC/issues
 synopsis: A source-to-source translator of a variant of ML core into C++.
-description:  
+description:
 author: Andy Melnikov <andy.melnikov@gmail.com>
-maintainer: Andy Melnikov <andy.melnikov@gmail.com>    
+maintainer: Andy Melnikov <andy.melnikov@gmail.com>
 homepage: https://github.com/kayuri/HNC/wiki
 category: compiler
 tested-with: GHC ==7.10.3, GHC ==8.0.1
@@ -18,12 +18,12 @@ extra-source-files:
     AG/*.ag
     uuagc_options
 data-dir: ""
-description: 
-    HNC stands for HN compiler. HN is a tool to facilitate writing 
-    C programs. It is a macro language for C. It is not embedded 
+description:
+    HNC stands for HN compiler. HN is a tool to facilitate writing
+    C programs. It is a macro language for C. It is not embedded
     in C but uses a new syntax and a new type system to express C
-    programs. It can be used by humans to prototype programs or 
-    separate functions in C or as an intermediate language 
+    programs. It can be used by humans to prototype programs or
+    separate functions in C or as an intermediate language
     for C generators.
 source-repository head
     type: git
