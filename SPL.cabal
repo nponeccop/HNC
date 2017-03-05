@@ -99,8 +99,44 @@ executable spl-test-hunit-exe
                    unification-fd >=0.10, recursion-schemes,
                    transformers, safe, bifunctors, newtype, adjunctions
     main-is: Test/Main.hs
-    other-modules: Bar
-    buildable: True
+    other-modules:
+        CPP.BackendTools
+        CPP.CompileTools
+        CPP.Intermediate
+        CPP.TypeProducer
+        CPP.Visualise
+        FFI.TypeParser
+        HN.Intermediate
+        HN.MilnerTools
+        HN.Optimizer.ArgumentDeleter
+        HN.Optimizer.ArgumentValues
+        HN.Optimizer.Arity
+        HN.Optimizer.ClassyLattice
+        HN.Optimizer.Dominator
+        HN.Optimizer.ExpressionRewriter
+        HN.Optimizer.FormalArgumentsDeleter
+        HN.Optimizer.Frontend
+        HN.Optimizer.GraphCompiler
+        HN.Optimizer.GraphDecompiler
+        HN.Optimizer.Inbound
+        HN.Optimizer.Inliner2
+        HN.Optimizer.LabelFor
+        HN.Optimizer.Lattice
+        HN.Optimizer.Node
+        HN.Optimizer.Pass
+        HN.Optimizer.SimpleAlias
+        HN.Optimizer.Utils
+        HN.Optimizer.Visualise
+        HN.TypeTools
+        HN.Visualise
+        Parser.AST
+        Parser.Parser
+        SPL.Types
+        SPL.Visualise
+        Unifier.Restricted
+        Unifier.Unifier
+        Utils
+        Utils.Kmett
     default-language: Haskell2010
     hs-source-dirs: .
     ghc-options: -Wall -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind
@@ -140,6 +176,17 @@ executable spli
     default-language: Haskell2010
     hs-source-dirs: .
     ghc-options: -fno-warn-tabs
+    other-modules:
+        SPL.Check3
+        SPL.Code
+        SPL.Compiler
+        SPL.Interpretator
+        SPL.Lib.Bignum
+        SPL.Lib.Str
+        SPL.Optimizer1
+        SPL.Parser2
+        SPL.Top
+        SPL.Types
 
 executable splm
     build-depends: HUnit, QuickCheck, base,
@@ -152,6 +199,18 @@ executable splm
     ghc-options: -fno-warn-tabs
     hs-source-dirs: .
     ghc-options: -fno-warn-tabs
+    other-modules:
+        SPL.Check3
+        SPL.Code
+        SPL.Compiler
+        SPL.Interpretator
+        SPL.Lib.Bignum
+        SPL.Lib.Str
+        SPL.Optimizer1
+        SPL.Parser2
+        SPL.Top
+        SPL.Types
+
 
 executable spl-test-adhoc-hn
     build-depends: HUnit, QuickCheck, base,
@@ -163,6 +222,26 @@ executable spl-test-adhoc-hn
     default-language: Haskell98
     hs-source-dirs: .
     ghc-options: -Wall -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind
+    other-modules:
+        CPP.Intermediate
+        CPP.Visualise
+        HN.Intermediate
+        HN.SplExport
+        Parser.AST
+        Parser.Parser
+        SPL.Check3
+        SPL.Code
+        SPL.Compiler
+        SPL.Lib.Bignum
+        SPL.Lib.Str
+        SPL.Optimizer1
+        SPL.Parser2
+        SPL.Top
+        SPL.Types
+        SPL.Visualise
+        Test.HnParser
+        Test.ParserTest
+        Utils
 
 executable spl-test-adhoc-spl
     build-depends: HUnit, QuickCheck, base,
@@ -174,4 +253,16 @@ executable spl-test-adhoc-spl
     default-language: Haskell98
     hs-source-dirs: .
     ghc-options: -fno-warn-tabs
+    other-modules:
+        SPL.Check3
+        SPL.Code
+        SPL.Compiler
+        SPL.Interpretator
+        SPL.Lib.Bignum
+        SPL.Lib.Str
+        SPL.Optimizer1
+        SPL.Parser2
+        SPL.Top
+        SPL.Types
+        Test.SPL
 
