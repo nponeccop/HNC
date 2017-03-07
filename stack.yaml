@@ -1,8 +1,6 @@
 # For more information, see: http://docs.haskellstack.org/en/stable/yaml_configuration.html
 
-resolver: lts-8.3
-
-packages: [ . ]
+resolver: lts-8.4
 
 extra-deps:
     - uuagc-0.9.52.1
