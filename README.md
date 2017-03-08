@@ -5,7 +5,18 @@
 
 ## Compilation
 
-Install Haskell then run:
+HNC is buildable by both `cabal sandbox` and `stack`, on Windows, Linux and MacOS, in 64 or 32 bits.
+
+### Stack
+
+```
+stack update
+stack setup
+stack install
+$(stack path --local-bin)/spl-hnc -O hn_tests/euler6.hn
+```
+
+### Cabal sandbox
 
 ```
 cabal update
@@ -16,19 +27,24 @@ cabal install
 
 ## Arch Linux
 
-Add 2 ArchHaskell binary repositories to `pacman.conf`. Install
-some prebuilt packages from there to avoid building them. GHC comes
+On Arch you can shorten build time by using prebuilt libraries
+from [ArchHaskell](https://wiki.archlinux.org/index.php/ArchHaskell) project. 
+
+Add 2 ArchHaskell binary repositories (`haskell-core` and `haskell-web`) to `pacman.conf`. Install
+the following prebuilt packages from there to avoid building them. GHC comes
 as a dependency.
 
 ```
 sudo pacman -S cabal-install haskell-{adjunctions,haskell-src-exts,hunit,logict,parsec,quickcheck,safe}
 ```
 
-Proceed to the general compilation steps described above
+Proceed to the general compilation steps for Cabal sandbox described above
 
 ## Advanced use
 
+- run tests (`spl-test-hunit-exe` is the primary suite)
 - read wiki
+- talk to me at https://gitter.im/nponeccop/HNC
 - run our main test suite (`dist/build/spl-test-hunit-exe/spl-test-hunit-exe`)
 - run `hnc` with either `-O` or `--dump-opt` option to see our first attempts at optimization
 - follow instructions below to feed generated `.cpp` files to a C++ compiler 
@@ -58,10 +74,16 @@ but mostly because we are too lazy to write more examples.
 - C++ pretty printer (almost)
 - A Boost.Build plugin to integrate .hn files into C++ projects
 
-## Recent advances as of Jul 21 2015
+## Advances as of Mar 8 2017
+
+- Split Parser and Unifier into separate self-contained components
+- Joined efforts with https://groupoid.space and https://github.com/ptol/oczor projects
+- Working on extracting other components to make HNC a sort of toy compiler construction framework
+- Working on loop generation
+
+## Advances as of Jul 21 2015
 
 - Fixed almost all optimizer bugs
-- Working on loop generation
 
 ## What is not done
 
