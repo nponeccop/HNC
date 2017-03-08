@@ -1,7 +1,9 @@
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, TemplateHaskell, TypeFamilies #-}
 module Utils.Kmett (unzippedPara, mapValues) where
 
-import Control.Newtype
+import Control.Lens.Iso
+import Control.Lens.TH
+import Control.Lens.Wrapped
 import Data.Bifunctor
 import Data.Bifunctor.Tannen
 import Data.Functor.Adjunction
@@ -9,9 +11,8 @@ import Data.Functor.Foldable
 
 unzippedPara f = para $ uncurry f . unzipR
 
-instance Newtype (Tannen f p a b) (f (p a b)) where
-	pack = Tannen
-	unpack = runTannen	
+mapValues x = under (_Wrapping Tannen) $ second x
 
-mapValues x = under Tannen $ second x
+makeWrapped ''Tannen
+
 
