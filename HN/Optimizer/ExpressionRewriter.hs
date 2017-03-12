@@ -23,4 +23,4 @@ composeRewrites :: Rewrite a -> Rewrite a -> Rewrite a
 composeRewrites f g x = maybe (f x) (Just . dropR f) $ g x
 
 dropR :: Rewrite a -> a -> a
-dropR a x = fromMaybe x (a x)
+dropR = (fromMaybe <*>)
