@@ -5,3 +5,8 @@ hn_tests/tmp-*.cpp
 *.swp
 .cabal-sandbox/*
 cabal.sandbox.config
+.DS_Store
+.stack-work/
+.idea/
+.ideaHaskellLib/
+*.iml

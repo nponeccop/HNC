@@ -1,7 +1,21 @@
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
-module SPL.Types (T (..), C (..), St (..), InFun (..)) where
+{-# LANGUAGE DeriveFoldable     #-}
+{-# LANGUAGE DeriveFunctor      #-}
+{-# LANGUAGE DeriveGeneric      #-}
+{-# LANGUAGE DeriveTraversable  #-}
+{-# LANGUAGE FlexibleContexts   #-}
+{-# LANGUAGE FlexibleInstances  #-}
+{-# LANGUAGE LambdaCase         #-}
+{-# LANGUAGE RankNTypes         #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TemplateHaskell    #-}
+{-# LANGUAGE TypeFamilies       #-}
+
+module SPL.Types (TF (..), T (..), C (..), St (..), InFun (..)) where
 
 import Data.Map
+import Data.Functor.Foldable.TH
+import Data.Functor.Foldable
 
 -- type
 data T =
@@ -14,6 +28,8 @@ data T =
 	| TL
 	| TUL [T]
 	deriving (Eq, Show, Read)
+
+makeBaseFunctor ''T
 
 -- code
 data InFun =
@@ -48,6 +64,3 @@ data C =
 	| CStruct (Map [Char] C)
 	| CF Integer
 	deriving (Eq, Show)
-
-
-

@@ -6,10 +6,10 @@ import HN.Optimizer.Pass
 import HN.Optimizer.Node
 
 type Foo n f t1 t2
-	= (Graph n C C, t1, t2) 
-	-> SimpleFuelMonad (Graph n C C, FactBase f, MaybeO C f) 
+	= (Graph n C C, t1, t2)
+	-> SimpleFuelMonad (Graph n C C, FactBase f, MaybeO C f)
 runDominatorF :: Foo Node Doms t1 t2
-runDominatorF = runPass (analyzeAndRewriteFwd domPass) (\_ entry -> mapSingleton entry domEntry)
+runDominatorF = runPass (analyzeAndRewriteFwd domPass) (const (flip mapSingleton domEntry))
 
 graphPostdominators g = runSimpleUniqueMonad $ runWithFuel infiniteFuel $
 	runDominatorF (g, undefined, undefined) >>= \(_, f, _) -> return $ immediatePostdominators $ immediateDominators f
