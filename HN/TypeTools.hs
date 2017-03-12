@@ -1,14 +1,5 @@
-{-# LANGUAGE DeriveFoldable     #-}
-{-# LANGUAGE DeriveFunctor      #-}
-{-# LANGUAGE DeriveGeneric      #-}
-{-# LANGUAGE DeriveTraversable  #-}
 {-# LANGUAGE FlexibleContexts   #-}
-{-# LANGUAGE FlexibleInstances  #-}
 {-# LANGUAGE LambdaCase         #-}
-{-# LANGUAGE RankNTypes         #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TemplateHaskell    #-}
-{-# LANGUAGE TypeFamilies       #-}
 {-# LANGUAGE ViewPatterns       #-}
 
 module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv) where
@@ -28,20 +19,24 @@ instance Ord a => Monoid (Union a) where
    mappend (Union a) (Union b) = Union $ S.union a b
    mempty = Union S.empty
 
+isFunctionType :: T -> Bool
 isFunctionType (TT _) = True
 isFunctionType _ = False
 
+hasFunctionalType :: [T] -> Bool
 hasFunctionalType = isJust . find isFunctionType . init
 
+cppCannotInferReturnType :: [T] -> Bool
 cppCannotInferReturnType x = not . S.null $ typeTu (last x) S.\\ typeTu (TT $ init x)
 
+tv :: Show a => a -> T
 tv x = TV $ 't' : show x
 
 foldMapCata :: (Recursive t, Monoid a, Foldable (Base t)) => (Base t a -> a) -> t -> a
 foldMapCata = cata . flip (liftA2 (<>)) F.fold
 
-collectSet :: (Recursive t, Foldable (Base t), Ord a) => (Base t (S.Set a) -> Maybe a) -> t -> S.Set a
-collectSet vp (foldMapCata (maybe mempty S.singleton . vp) -> a) = a
+collectSet :: (Foldable (Base t), Ord a, Recursive t) => (Base t (Union a) -> Maybe a) -> t -> S.Set a
+collectSet vp (foldMapCata (Union . maybe mempty S.singleton . vp) -> Union a) = a
 
 matchTTU :: TF t -> Maybe String
 matchTTU = \case (TUF a) -> Just a; _ -> Nothing
@@ -58,6 +53,7 @@ typeTv = collectSet matchTTV
 mapTypeTV :: (String -> T) -> T -> T
 mapTypeTV f = cata $ \case TVF a -> f a; t -> embed t
 
+addTU :: S.Set String -> T -> T
 addTU s = mapTypeTV f where
-	f x | x `S.member` s = TU x
-	f x = TV x
+  f x | x `S.member` s = TU x
+  f x = TV x
