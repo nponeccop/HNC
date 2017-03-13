@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, TemplateHaskell, TypeFamilies #-}
-module Utils.Kmett (unzippedPara, mapValues) where
+module Utils.Kmett (unzippedPara, mapValues, foldMapCata) where
 
 import Control.Lens.Iso
 import Control.Lens.TH
@@ -7,7 +7,9 @@ import Control.Lens.Wrapped
 import Data.Bifunctor
 import Data.Bifunctor.Tannen
 import Data.Functor.Adjunction
-import Data.Functor.Foldable
+import Data.Functor.Foldable (para, cata)
+import Data.Monoid
+import Data.Foldable
 
 unzippedPara f = para $ uncurry f . unzipR
 
@@ -15,4 +17,4 @@ mapValues x = under (_Wrapping Tannen) $ second x
 
 makeWrapped ''Tannen
 
-
+foldMapCata f = cata (\x -> f x <> fold x)
