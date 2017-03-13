@@ -5,3 +5,4 @@ hn_tests/tmp-*.cpp
 *.swp
 .cabal-sandbox/*
 cabal.sandbox.config
+.stack-work/
