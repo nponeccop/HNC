@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, LambdaCase, ViewPatterns, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts, LambdaCase, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies #-}
 
 module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv) where
 
@@ -8,6 +8,7 @@ import Data.Foldable
 import Data.Functor.Foldable
 import Data.Functor.Foldable.TH
 import Data.Maybe
+import Utils.Kmett (foldMapCata)
 
 makeBaseFunctor ''T
 
@@ -31,9 +32,7 @@ addTU s = mapTypeTV f where
 tCata :: (TF a -> a) -> T -> a
 tCata = cata
 
-collectSet vp = tCata $ \case
-       (vp -> Just v) -> S.singleton v
-       x -> S.unions $ toList x
+collectSet vp = foldMapCata (maybe S.empty S.singleton . vp)
 
 matchTTU = \case
        TUF a -> Just a
