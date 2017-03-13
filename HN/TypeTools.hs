@@ -1,40 +1,48 @@
+{-# LANGUAGE FlexibleContexts, LambdaCase, ViewPatterns, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies #-}
+
 module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv) where
+
 import SPL.Types
 import qualified Data.Set as S
-import Data.List
+import Data.Foldable
+import Data.Functor.Foldable
+import Data.Functor.Foldable.TH
 import Data.Maybe
----
---
+
+makeBaseFunctor ''T
+
 isFunctionType (TT _) = True
 isFunctionType _ = False
 
-hasFunctionalType x = isJust $ find isFunctionType $ init x
+hasFunctionalType = isJust . find isFunctionType . init
 
-cppCannotInferReturnType x = not $ S.null $ typeTu (last x) S.\\ typeTu (TT $ init x)
+cppCannotInferReturnType x = not . S.null $ typeTu (last x) S.\\ typeTu (TT $ init x)
 
 tv x = TV $ 't' : show x
 
-typeTu x = let union = S.unions . map typeTu in case x of
-	TU v -> S.singleton v
-	TT l -> union l
-	TD _ l -> union l
-	_    -> S.empty
+typeTu = collectSet matchTTU
 
-typeTv x = let union = S.unions . map typeTv in case x of
-		TV v -> S.singleton v
-		TT l -> union l
-		TD _ l -> union l
-		_    -> S.empty
+typeTv = collectSet matchTTV
 
 addTU s = mapTypeTV f where
 	f x | x `S.member` s = TU x
 	f x = TV x
 
+tCata :: (TF a -> a) -> T -> a
+tCata = cata
 
-mapTypeTV f t = subst t where
-	subst t = case t of
-		TU a -> TU a
-		TV a -> f a
-		TT a -> TT $ map subst a
-		TD a b -> TD a (map subst b)
-		_ -> t
+collectSet vp = tCata $ \case
+       (vp -> Just v) -> S.singleton v
+       x -> S.unions $ toList x
+
+matchTTU = \case
+       TUF a -> Just a
+       _ -> Nothing
+
+matchTTV = \case
+       TVF a -> Just a
+       _ -> Nothing
+
+mapTypeTV f = tCata $ \case
+       TVF a -> f a
+       t -> embed t
