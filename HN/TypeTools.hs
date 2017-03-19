@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts, LambdaCase, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies #-}
 
-module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv) where
+module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv, TF(..)) where
 
 import SPL.Types
 import qualified Data.Set as S

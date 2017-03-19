@@ -1,5 +1,9 @@
+{-# LANGUAGE TypeFamilies #-}
 module CPP.TypeProducer where
 
+import Data.Functor.Foldable
+
+import HN.TypeTools
 import SPL.Types
 import CPP.Intermediate
 
@@ -15,14 +19,11 @@ cppPrimitiveType x = case x of
 	"ptr" -> "ff::ptr"
 	_ -> x
 
-cppType (T x) = CppTypePrimitive $ cppPrimitiveType x
-
-cppType (TT l) = CppTypeFunction (last cppL) (init cppL) where
-	cppL = map cppType l
-
-cppType (TD polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) $ map cppType typeArgs
-
-cppType (TU x) = CppTypePrimitive x
-cppType (TV x) = cppType (TU x)
-
-cppType x = CppTypePrimitive $ "unknown<" ++ show x ++ ">"
+cppType :: T -> CppType
+cppType x = cata f x where
+        f (TF x) = CppTypePrimitive $ cppPrimitiveType x
+        f (TTF l) = CppTypeFunction (last l) (init l)
+        f (TDF polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) typeArgs
+        f (TUF x) = CppTypePrimitive x
+        f (TVF x) = CppTypePrimitive x
+        f x = error "unsupported type in TypeProducer.cppType"
