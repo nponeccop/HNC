@@ -10,7 +10,7 @@ windowsLineMode = NewlineMode { inputNL  = CRLF, outputNL = CRLF }
 
 readFileCRLF name = do
 	h <- openFile name ReadMode
- 	hSetNewlineMode h windowsLineMode
+	hSetNewlineMode h windowsLineMode
 	hGetContents h
 
 comp2 f g x y = f $ g x y
@@ -20,7 +20,7 @@ test testName =	liftM2 (comp2 (testName ~:) (~=?))
 	(importHni "lib/lib.hni" >>= compileFile ("hn_tests/" ++ testName ++ ".hn"))
 
 iotests =
-	(map fst . filter (\x -> snd x == ".hn") . map (break (== '.'))) <$> getDirectoryContents "hn_tests" 
+	(map fst . filter (\x -> snd x == ".hn") . map (break (== '.'))) <$> getDirectoryContents "hn_tests"
 	>>=	mapM test
 
 

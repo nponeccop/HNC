@@ -11,8 +11,8 @@ main = do
 	ffi <- importHni "lib/lib.hni"
 	putStrLn $ foo $ run avPass $ fst $ compileGraph ffi $ head ast
 
-run pass graph = case runSimpleUniqueMonad . runWithFuel infiniteFuel $ 
-	analyzeAndRewriteFwd pass entry graph $ 
+run pass graph = case runSimpleUniqueMonad . runWithFuel infiniteFuel $
+	analyzeAndRewriteFwd pass entry graph $
 	mkFactBase (fp_lattice pass) [(runSimpleUniqueMonad freshLabel, fact_bot $ fp_lattice pass)] of
 	(_, newFacts, _) -> newFacts
 

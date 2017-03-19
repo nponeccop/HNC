@@ -13,12 +13,12 @@ windowsLineMode = NewlineMode { inputNL  = CRLF, outputNL = CRLF }
 
 readFileCRLF name = do
 	h <- openFile name ReadMode
- 	hSetNewlineMode h windowsLineMode
+	hSetNewlineMode h windowsLineMode
 	hGetContents h
 
 comp2 f g x y = f $ g x y
 
-dumpOpt inFile libraryTypes 
+dumpOpt inFile libraryTypes
 	=  formatHN . optimizeHN libraryTypes <$> parseHN inFile
 
 test testName =	liftM2 (comp2 ((testName ++ "_opt") ~:) (~=?))

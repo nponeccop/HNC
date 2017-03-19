@@ -35,13 +35,13 @@ tCata = cata
 collectSet vp = foldMapCata (maybe S.empty S.singleton . vp)
 
 matchTTU = \case
-       TUF a -> Just a
-       _ -> Nothing
+	TUF a -> Just a
+	_ -> Nothing
 
 matchTTV = \case
-       TVF a -> Just a
-       _ -> Nothing
+	TVF a -> Just a
+	_ -> Nothing
 
 mapTypeTV f = tCata $ \case
-       TVF a -> f a
-       t -> embed t
+	TVF a -> f a
+	t -> embed t

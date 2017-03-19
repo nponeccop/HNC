@@ -2,9 +2,9 @@
 module Unifier.Unifier (T(..), UTerm(..)) where
 import Control.Unification
 
-data T a 
-	= T String 
-	| TT [a] 
+data T a
+	= T String
+	| TT [a]
 	| TD String [a]
 	deriving (Eq, Show, Functor, Traversable, Foldable)
 

@@ -15,7 +15,7 @@ instance Arbitrary SPL.Types.C where
 		arb_cbool l 0 = oneof $ return (CBool True) : l
 		arb_cbool _ sz = oneof [arb_less (sz - 1), arb_fooBool (sz - 1)]
 
- 		arb_sum sz = arb_binaryFunc sz f (arb_cnum []) (arb_cnum []) where
+		arb_sum sz = arb_binaryFunc sz f (arb_cnum []) (arb_cnum []) where
 			f x y = CL (CVal "sum") $ K [x, y]
 		arb_less sz = arb_binaryFunc sz f (arb_cnum []) (arb_cnum []) where
 			f x y = CL (CVal "less") $ K [x, y]

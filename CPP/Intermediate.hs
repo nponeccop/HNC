@@ -5,23 +5,22 @@ import HN.Intermediate
 type CppProgram = [CppDefinition]
 
 data CppDefinition
-    =   CppFunctionDef
-        {
-        	functionLevel			:: Int
-		,   functionTemplateArgs	:: [String]
-        ,	functionIsStatic		:: Bool
-		,  	functionContext			:: Maybe CppContext
-        ,	functionReturnType		:: CppType
-        ,	functionName        	:: String
-        ,   functionArgs    		:: [CppVarDecl]
-        ,   functionLocalVars       :: [CppLocalVarDef]
-        ,   functionRetExpr         :: CppExpression
-        }
+	= CppFunctionDef
+		{ functionLevel			:: Int
+		, functionTemplateArgs	:: [String]
+		, functionIsStatic		:: Bool
+		, functionContext			:: Maybe CppContext
+		, functionReturnType		:: CppType
+		, functionName        	:: String
+		, functionArgs    		:: [CppVarDecl]
+		, functionLocalVars       :: [CppLocalVarDef]
+		, functionRetExpr         :: CppExpression
+		}
 
 data CppExpression
-    =   CppApplication CppExpression [CppExpression]
-    |   CppAtom String
-    |   CppLiteral Const
+	= CppApplication CppExpression [CppExpression]
+	| CppAtom String
+	| CppLiteral Const
 --    |	CppPtr CppExpression
 --    |	CppField CppExpression String
 
@@ -42,23 +41,22 @@ data CppQualifier
 		deriving (Eq, Show)
 
 data CppLocalVarDef
-    = CppVar CppType String CppExpression
+	= CppVar CppType String CppExpression
 	| CppWhile CppType String CppExpression CppExpression [CppLocalVarDef] CppExpression
 
 data CppContext
-	=	CppContext
-		{
-			contextLevel 		:: Int
-		,	contextTemplateArgs :: [String]
-		,	contextTypeName		:: String
-		,	contextVars			:: [CppLocalVarDef]
-		,	contextMethods		:: CppProgram
-		,	contextDeclareSelf	:: Bool
-		,	contextParent		:: Maybe String
+	= CppContext
+		{ contextLevel 		:: Int
+		, contextTemplateArgs :: [String]
+		, contextTypeName		:: String
+		, contextVars			:: [CppLocalVarDef]
+		, contextMethods		:: CppProgram
+		, contextDeclareSelf	:: Bool
+		, contextParent		:: Maybe String
 		}
 
 data CppVarDecl
-    =   CppVarDecl CppType String
+	= CppVarDecl CppType String
 
 data CppType
 	= CppTypePrimitive String

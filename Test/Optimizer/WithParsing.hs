@@ -13,17 +13,17 @@ fakeLib = M.fromList $ zip ["print", "sub", "mul", "natrec", "sum", "incr"] $ re
 parseAndProcessFile inFile f = (f . head . fromRight) <$> parseFromFile program inFile
 
 realTest inFile = TestCase $ do
-        x <- parseAndProcessFile inFile id
-        x @=? withGraph fakeLib (const id) x
+	x <- parseAndProcessFile inFile id
+	x @=? withGraph fakeLib (const id) x
 
 tests = "WithParsing" ~:  map (\x -> realTest ("hn_tests/" ++ x ++ ".hn"))
-        [
--- "locals14"
-         "where2"
-        , "where"
-        , "plusX"
-        --, "locals2"
-        --, "euler6"
-        ]
+	[
+	-- "locals14"
+	 "where2"
+	, "where"
+	, "plusX"
+	--, "locals2"
+	--, "euler6"
+	]
 
 main = runTestTT tests
