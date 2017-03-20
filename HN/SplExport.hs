@@ -1,4 +1,9 @@
+{-# LANGUAGE LambdaCase #-}
+
 module HN.SplExport (convertToSpl, convertExpr, convertDef) where
+
+import Data.Functor.Foldable
+
 import HN.Intermediate
 import SPL.Visualise (showAsSource)
 import SPL.Types
@@ -6,12 +11,12 @@ import Utils (joinStr)
 
 convertToSpl = (\x -> show x ++ "\n" ++ joinStr "\n" (map showAsSource x)) . map convertDef
 
-convertExpr (Constant (ConstInt i)) = CNum i
-convertExpr (Constant (ConstString i)) = CStr i
-
-convertExpr (Atom a) = CVal a
-convertExpr (Application a b) = CL (convertExpr a) (K $ map convertExpr b)
-convertExpr expr = error $ show expr
+convertExpr :: Expression String -> C
+convertExpr = cata $ \case
+	ConstantF (ConstInt i) -> CNum i
+	ConstantF (ConstString i) -> CStr i
+	AtomF a -> CVal a
+	ApplicationF a b -> CL a $ K b
 
 convertDef (Definition _ arguments l)
 	= (case arguments of
