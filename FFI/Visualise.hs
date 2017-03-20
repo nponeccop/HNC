@@ -1,21 +1,22 @@
-module FFI.Visualise where
+{-# LANGUAGE LambdaCase #-}
+module FFI.Visualise (showType) where
 
+import Data.Functor.Foldable
+
+import HN.TypeTools
 import SPL.Types
 import Utils
-import qualified Data.Map as M
 
-showType t = case t of
-	T x -> x
-	TT x -> concatMap (\x -> showTypeP x ++ " ") (init x) ++ "-> " ++ showType (last x)
-	TD a b -> a ++ inAngular (joinStr " " (map showType b))
-	TV a ->  "?" ++ a
-	TU a -> "??" ++ a
-	_ -> show t
+showType (TT y) = showTT $ showTypeP <$> y
+showType t = showTypeP t
 
-showTypeP x = case x of
-	TT _ -> inParens (showType x)
-	_ -> showType x
+showTT x = concatMap (++ " ") (init x) ++ "-> " ++ last x
 
-
-showAsFFI typeEnv = concatMap f $ M.toList typeEnv where
-	f (name, t) = name ++ " = " ++ showType t ++ "\n"
+showTypeP :: T -> String
+showTypeP = cata $ \case
+	TF x -> x
+	TTF x -> inParens $ showTT x
+	TDF a b -> a ++ inAngular (joinStr " " b)
+	TVF x -> "?" ++ x
+	TUF x -> "??" ++ x
+	t -> show t
