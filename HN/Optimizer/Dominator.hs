@@ -16,4 +16,4 @@ graphPostdominators g = runSimpleUniqueMonad $ runWithFuel infiniteFuel $
 
 immediatePostdominators :: LabelMap Label -> M.Map Label [Label]
 immediatePostdominators = foldr f M.empty . mapToList where
-	f (k, v) =  M.insertWith (\_ o -> k : o) v [k]
+	f (k, v) =  M.insertWith (const (k :)) v [k]
