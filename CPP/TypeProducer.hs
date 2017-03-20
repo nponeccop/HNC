@@ -1,4 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE LambdaCase #-}
+
 module CPP.TypeProducer where
 
 import Data.Functor.Foldable
@@ -20,10 +22,10 @@ cppPrimitiveType x = case x of
 	_ -> x
 
 cppType :: T -> CppType
-cppType x = cata f x where
-	f (TF x) = CppTypePrimitive $ cppPrimitiveType x
-	f (TTF l) = CppTypeFunction (last l) (init l)
-	f (TDF polyType typeArgs) = CppTypePolyInstance (cppPrimitiveType polyType) typeArgs
-	f (TUF x) = CppTypePrimitive x
-	f (TVF x) = CppTypePrimitive x
-	f x = error "unsupported type in TypeProducer.cppType"
+cppType = cata $ \case
+	TF x -> CppTypePrimitive $ cppPrimitiveType x
+	TTF l -> CppTypeFunction (last l) (init l)
+	TDF polyType typeArgs -> CppTypePolyInstance (cppPrimitiveType polyType) typeArgs
+	TUF x -> CppTypePrimitive x
+	TVF x -> CppTypePrimitive x
+	_ -> error "unsupported type in TypeProducer.cppType"
