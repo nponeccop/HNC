@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, LambdaCase, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts, LambdaCase, TemplateHaskell, DeriveFunctor, DeriveFoldable, DeriveTraversable, NoMonomorphismRestriction, TypeFamilies, StandaloneDeriving #-}
 
 module HN.TypeTools (isFunctionType, hasFunctionalType, cppCannotInferReturnType, typeTu, typeTv, mapTypeTV, addTU, tv, TF(..)) where
 
@@ -11,6 +11,8 @@ import Data.Maybe
 import Utils.Kmett (foldMapCata)
 
 makeBaseFunctor ''T
+
+deriving instance Show a => Show (TF a)
 
 isFunctionType (TT _) = True
 isFunctionType _ = False
