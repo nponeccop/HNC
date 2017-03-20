@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable,  MultiParamTypeClasses, FlexibleContexts #-}
+{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable,  MultiParamTypeClasses, FlexibleContexts, LambdaCase #-}
 module HN.Optimizer.ArgumentValues (runAv, ArgFact, AFType) where
 
 import Compiler.Hoopl
@@ -30,7 +30,7 @@ instance Lattice (WithTopAndBot [WithTopAndBot ExpressionFix]) where
 instance Lattice (WithTopAndBot ExpressionFix) where
 	dataflowLattice = flatEqLattice "AV.Value"
 
-varArgs a = case a of
+varArgs = \case
 	ApplicationF (Atom var) xx -> [(var, xx)]
 	_ -> []
 
