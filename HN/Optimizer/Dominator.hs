@@ -15,8 +15,5 @@ graphPostdominators g = runSimpleUniqueMonad $ runWithFuel infiniteFuel $
 	runDominatorF (g, undefined, undefined) >>= \(_, f, _) -> return $ immediatePostdominators $ immediateDominators f
 
 immediatePostdominators :: LabelMap Label -> M.Map Label [Label]
-immediatePostdominators l = xx where
-	ll = mapToList l
-	xx :: M.Map Label [Label]
-	xx = foldr f M.empty ll
-	f (k, v) =  M.insertWith (\_ o -> k : o) v [k]
+immediatePostdominators = foldr f M.empty . mapToList where
+	f (k, v) =  M.insertWith (const (k :)) v [k]
