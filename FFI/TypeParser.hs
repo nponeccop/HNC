@@ -3,6 +3,7 @@
 
 module FFI.TypeParser (sp3, decl, fun, parseType, typePolyVar, typeVar, importHni) where
 
+import qualified System.IO.Strict as SIS
 import Text.Parsec.Prim
 import Text.Parsec.Combinator
 import Text.Parsec.Char
@@ -13,7 +14,7 @@ import Utils
 import SPL.Types
 import Parser.Parser (identifier)
 
-importHni = readFile >=> return . M.fromList . map parseDecl . lines
+importHni = SIS.readFile >=> return . M.fromList . map parseDecl . lines
 
 parseDecl = sp3 decl
 

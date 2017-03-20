@@ -36,7 +36,7 @@ executable spl-hnc
     build-depends: HUnit, QuickCheck, base < 5,
                    bytestring, containers, directory,
                    hoopl >=3.10.1.0, mtl, parsec,
-                   unification-fd >=0.10, recursion-schemes,
+                   unification-fd >=0.10, recursion-schemes, strict,
                    transformers, safe, bifunctors, lens, adjunctions
     main-is: HNC.hs
     buildable: True
@@ -95,7 +95,7 @@ test-suite hn-tests
 executable spl-test-hunit-exe
     build-depends: HUnit, QuickCheck, base,
                    bytestring, containers, directory,
-                   hoopl >=3.10.1.0, mtl, parsec,
+                   hoopl >=3.10.1.0, mtl, parsec, strict,
                    unification-fd >=0.10, recursion-schemes,
                    transformers, safe, bifunctors, lens, adjunctions
     main-is: Test/Main.hs
