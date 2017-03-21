@@ -24,28 +24,22 @@ transferExitB :: (DefinitionNode -> FactBase f -> f)  -> Node e x -> Fact x f ->
 transferExitB _ (Entry _)  f = f
 transferExitB tf (Exit n) f = tf n f
 
+mergeFact label current base = let
+	update fact = (fact, M.insert label fact base)
+	in case M.lookup label base of
+		Nothing -> update current
+		Just baseFact -> case join (OldFact baseFact) (NewFact current) of
+			Nothing -> (baseFact, base)
+			Just newFact -> update newFact
+
 transferMapExitB :: Lattice f => (DefinitionNode -> FactBase f -> f) -> Node e x -> Fact x (MapFact f) -> MapFact f
-transferMapExitB _ (Entry l) o @ (curFact, factBase) = newFact where
-	baseFact = M.lookup l factBase
-	newFact = case baseFact of
-		Nothing -> (curFact, M.insert l curFact factBase)
-		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
-			Nothing -> (baseFact, factBase)
-			Just newFact -> (newFact, M.insert l newFact factBase)
+transferMapExitB _ (Entry l) (curFact, factBase) = mergeFact l curFact factBase
 transferMapExitB tf (Exit dn) f = (tf dn (mapMap fst $ convertFactBase f), bot)
 
 type MapFact f = (f, M.Map Label f)
 
 transferMapExitF :: Lattice f => (DefinitionNode -> f -> [(Label, f)]) -> Node e x -> MapFact f -> Fact x (MapFact f)
-transferMapExitF _ (Entry l) (curFact, factBase) = newFact where
-	update newFact = (newFact, M.insert l newFact factBase)
-	baseFact = M.lookup l factBase
-	newFact = case baseFact of
-		Nothing -> update curFact
-		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
-			Nothing -> (baseFact, factBase)
-			Just newFact -> update newFact
-
+transferMapExitF _ (Entry l) (curFact, factBase) = mergeFact l curFact factBase
 transferMapExitF tf nn @ (Exit n) (f, m) = distributeFact nn $ (,) bot $ foldr (uncurry $ M.insertWith mereJoin) m $ tf n f
 
 noTransferMapF :: Lattice f => FwdTransfer Node (MapFact f)

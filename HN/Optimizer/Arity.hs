@@ -2,22 +2,15 @@
 module HN.Optimizer.Arity (runB) where
 
 import Compiler.Hoopl
-import qualified Data.Map as M
 
 import HN.Optimizer.ArgumentValues
 import HN.Optimizer.ClassyLattice
 import HN.Optimizer.Node
 import HN.Optimizer.Pass
+import HN.Optimizer.Utils (mergeFact)
 
 transferB' :: Node e x -> Fact x ArgFact -> ArgFact
-transferB' (Entry l) o @ (curFact, factBase) = newFact where
-	baseFact = M.lookup l factBase
-	newFact = case baseFact of
-		Nothing -> (curFact, M.insert l curFact factBase)
-		Just baseFact -> case join (OldFact baseFact) (NewFact curFact) of
-			Nothing -> (baseFact, factBase)
-			Just newFact -> (newFact, M.insert l newFact factBase)
-
+transferB' (Entry l) (curFact, factBase) = mergeFact l curFact factBase
 transferB' (Exit d) o = transferB d o
 
 transferB :: DefinitionNode -> FactBase ArgFact -> ArgFact
