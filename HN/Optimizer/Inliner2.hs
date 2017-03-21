@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction #-}
+{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction, LambdaCase #-}
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
@@ -102,8 +102,7 @@ runB whileLabel = runPass (analyzeAndRewriteBwd $ passBL whileLabel) $ const . m
 type ListFact = WithTopAndBot DefinitionNode
 
 rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression f = rewrite WithChildren phi where
-	phi expr = case expr of
+rewriteExpression f = rewrite WithChildren $ \case
 		Constant _ -> Nothing
 		Application _ _ -> Nothing
 		Atom a -> case lookupFact a f of
