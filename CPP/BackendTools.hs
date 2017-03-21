@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 module CPP.BackendTools where
 
 import CPP.Intermediate
@@ -12,22 +14,22 @@ fixTA x atv = showTemplateArgs $ map (show .  f) x where
 	f x @ (TV v) = if S.member v atv then cppType x else CppTypePrimitive "hn::unused"
 	f x = cppType x
 
-moveQualifierDown x = case x of
-	CppContextVar -> CppCurrentClassVar
-	CppContextMethod -> CppCurrentClassMethod
+moveQualifierDown = \case
+	CppContextVar          -> CppCurrentClassVar
+	CppContextMethod       -> CppCurrentClassMethod
 	CppContextMethodStatic -> CppCurrentClassMethodStatic
-	CppUpperArgument -> CppParentVar
-	CppArgument -> CppUpperArgument
-	_ -> x
+	CppUpperArgument       -> CppParentVar
+	CppArgument            -> CppUpperArgument
+	x                      -> x
 
-nonStaticReference x = case x of
-	CppUpperArgument -> True
-	CppContextVar -> True
-	CppContextMethod ->  True
-	CppCurrentClassVar -> True
+nonStaticReference = \case
+	CppUpperArgument      -> True
+	CppContextVar         -> True
+	CppContextMethod      -> True
+	CppCurrentClassVar    -> True
 	CppCurrentClassMethod -> True
-	CppParentVar -> True
-	_ -> False
+	CppParentVar          -> True
+	_                     -> False
 
 
 transformArgument atomQualifier name atomType nta = let
