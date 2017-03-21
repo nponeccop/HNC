@@ -6,9 +6,7 @@ import qualified Data.Map as M
 
 class Lattice a where
 	join :: OldFact a -> NewFact a -> Maybe a
-	join a b= case fact_join dataflowLattice (error "No label") a b of
-		(SomeChange, n) -> Just n
-		_ -> Nothing
+	join = fromJoinFun $ fact_join dataflowLattice
 	bot :: a
 	bot = fact_bot dataflowLattice
 	dataflowLattice :: DataflowLattice a
