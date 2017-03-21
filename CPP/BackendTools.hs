@@ -10,8 +10,8 @@ import HN.TypeTools
 import qualified Data.Set as S
 
 fixTA x atv = showTemplateArgs $ map (show .  f) x where
-	f x @ (TV v) = if S.member v atv then cppType x else CppTypePrimitive "hn::unused"
-	f x = cppType x
+        f (TV v) | not $ S.member v atv = CppTypePrimitive "hn::unused"
+        f x = cppType x
 
 moveQualifierDown = \case
 	CppContextVar -> CppCurrentClassVar
