@@ -19,7 +19,7 @@ class Lattice a where
 		}
 
 instance Lattice a => Monoid a where
-	mappend a b = fromMaybe a $ join (OldFact a) (NewFact b)
+	mappend = mereJoin
 	mempty = bot
 
 instance (Lattice v, Ord k) => Lattice (M.Map k v) where
