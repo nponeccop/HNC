@@ -9,7 +9,7 @@ import HN.TypeTools
 import SPL.Types
 import CPP.Intermediate
 
-cppPrimitiveType x = case x of
+cppPrimitiveType = \case
 	"num" -> "int"
 	"string" -> "std::string"
 	"boolean" -> "bool"
@@ -19,7 +19,7 @@ cppPrimitiveType x = case x of
 	"udp_socket" -> "ff::UdpSocket"
 	"pair" -> "std::pair"
 	"ptr" -> "ff::ptr"
-	_ -> x
+	x -> x
 
 cppType :: T -> CppType
 cppType = cata $ \case
