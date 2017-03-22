@@ -1,7 +1,9 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts, LambdaCase, NoMonomorphismRestriction, TypeFamilies #-}
+
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
 import Control.Applicative
+import Data.Functor.Foldable
 import qualified Data.Map as M
 
 import HN.Intermediate
@@ -22,8 +24,9 @@ compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		e <- compileExpr $ letValue letIn
 		return $ N.node x (N.LetNode al e) |*><*| y |*><*| foldr (\x y -> N.argNode x |*><*| y) emptyClosedGraph al
 
-compileLet (Let def letIn) = liftA2 (|*><*|) (compileGraph4 def) (compileLet letIn)
-compileLet (In _) = return emptyClosedGraph
+compileLet = cata $ \case
+	LetF def letIn -> liftA2 (|*><*|) (compileGraph4 def) letIn
+	InF _ -> return emptyClosedGraph
 
 -- compileLet :: LetIn -> LabelMapM ()
 -- compileLet (In e) = compileExpr e
