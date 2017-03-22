@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveFunctor, DeriveFoldable, LambdaCase, TypeFamilies #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveTraversable #-}
-module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionF(..), LetIn(..), Root, DefinitionBase(..)) where
+module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionF(..), LetIn(..), LetInF(..), Root, DefinitionBase(..)) where
 import qualified Data.Set as S
 import Data.Functor.Foldable
 import Data.Functor.Foldable.TH
@@ -45,3 +45,4 @@ type GType = (S.Set String, T)
 type Root = Program
 
 makeBaseFunctor ''Expression
+makeBaseFunctor ''LetIn
