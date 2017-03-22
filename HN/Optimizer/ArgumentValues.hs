@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, DeriveFoldable,  MultiParamTypeClasses, FlexibleContexts, LambdaCase #-}
+{-# LANGUAGE GADTs, StandaloneDeriving, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, LambdaCase #-}
 module HN.Optimizer.ArgumentValues (runAv, ArgFact, AFType) where
 
 import Compiler.Hoopl

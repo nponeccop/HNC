@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, DeriveFunctor, DeriveTraversable, DeriveFoldable, NoMonomorphismRestriction, FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, NoMonomorphismRestriction, FlexibleContexts #-}
 module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply, UTerm(..), IntVar(..)) where
 import Data.Maybe
 import qualified Data.Map as M
