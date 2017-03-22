@@ -14,7 +14,7 @@ compileGraph libraryTypes def @ (Definition name _ _) = LabelFor.run $ do
 	x <- freshLabelFor name
 	libLabels <- mapM freshLabelFor $ M.keys libraryTypes
 	gg <- compileGraph5 def x
-	return $ foldr (\x y -> N.node x N.LibNode |*><*| y) emptyClosedGraph libLabels |*><*| gg
+	return $ foldrG (\x -> N.node x N.LibNode) libLabels |*><*| gg
 
 compileGraph4 def @ (Definition name _ _) = freshLabelFor name >>=	compileGraph5 def
 
@@ -22,7 +22,7 @@ compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		al <- mapM freshLabelFor args
 		y <- compileLet letIn
 		e <- compileExpr $ letValue letIn
-		return $ N.node x (N.LetNode al e) |*><*| y |*><*| foldr (\x y -> N.argNode x |*><*| y) emptyClosedGraph al
+		return $ N.node x (N.LetNode al e) |*><*| y |*><*| foldrG N.argNode al
 
 compileLet = cata $ \case
 	LetF def letIn -> liftA2 (|*><*|) (compileGraph4 def) letIn
@@ -33,3 +33,5 @@ compileLet = cata $ \case
 -- compileLet (Let def inner) = compileGraph def >> compileLet inner
 
 compileExpr x = (<$> x) <$> labelFor ()
+
+foldrG t = foldr (\x y -> t x |*><*| y) emptyClosedGraph
