@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 module HN.Optimizer.GraphCompiler (compileGraph) where
 import Compiler.Hoopl
+import Control.Applicative
 import qualified Data.Map as M
 
 import HN.Intermediate
@@ -21,11 +22,7 @@ compileGraph5 (Definition _ args letIn) x = innerScope $ do
 		e <- compileExpr $ letValue letIn
 		return $ N.node x (N.LetNode al e) |*><*| y |*><*| foldr (\x y -> N.argNode x |*><*| y) emptyClosedGraph al
 
-compileLet (Let def letIn) = do
-	y <- compileGraph4 def
-	l <- compileLet letIn
-	return $ l |*><*| y
-
+compileLet (Let def letIn) = liftA2 (|*><*|) (compileGraph4 def) (compileLet letIn)
 compileLet (In _) = return emptyClosedGraph
 
 -- compileLet :: LetIn -> LabelMapM ()
