@@ -32,6 +32,4 @@ compileLet (In _) = return emptyClosedGraph
 -- compileLet (In e) = compileExpr e
 -- compileLet (Let def inner) = compileGraph def >> compileLet inner
 
-compileExpr x = do
-	aa <- labelFor ()
-	return $ fmap aa x
+compileExpr x = labelFor () >>= return . (<$> x)
