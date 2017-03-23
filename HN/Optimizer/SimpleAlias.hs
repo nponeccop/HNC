@@ -25,12 +25,9 @@ transferB (LetNode args (Application aa @ (Atom _) argValues)) _ = pelemJust $ f
 transferB _ _ = bot
 
 rewriteB :: DefinitionNode -> FactBase SAFact -> Maybe DefinitionNode
-rewriteB (LetNode l expr) f = LetNode l <$> rewrite WithChildren (rewriteExpression f) expr
-rewriteB _ _ = Nothing
-
-rewriteExpression :: FactBase SAFact -> Rewrite ExpressionFix
-rewriteExpression f (Atom a) = justPElem =<< lookupFact a f
-rewriteExpression _ _ = Nothing
+rewriteB = rewriteNode WithChildren $ \f n -> case n of
+	(Atom a) -> justPElem =<< lookupFact a f
+	_ -> Nothing
 
 justPElem (PElem a) = Just a
 justPElem _ = Nothing

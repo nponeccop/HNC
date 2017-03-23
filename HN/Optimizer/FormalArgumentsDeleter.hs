@@ -11,20 +11,16 @@ import HN.Optimizer.ArgumentValues (ArgFact)
 import HN.Optimizer.Utils
 
 rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
-rewriteB (LetNode l expr) f = LetNode l <$> rewrite WithoutChildren (rewriteExpression f) expr
-rewriteB _ _ = Nothing
+rewriteB = rewriteNode WithoutChildren $ \f n -> case n of
+	Application aa @ (Atom a) b -> fmap (smartApplication aa . map fst) . rewrite WithChildren deleteArg
+	    =<< zipExactMay b
+	    =<< convertFact
+	    =<< lookupFact a f
+	_ -> Nothing
 
 convertFact :: ArgFact -> Maybe [WithTopAndBot ExpressionFix]
 convertFact ((PElem a, _), _) = Just a
 convertFact _ = Nothing
-
-rewriteExpression f (Application aa @ (Atom a) b)
-	= fmap (smartApplication aa . map fst) . rewrite WithChildren deleteArg
-		=<< zipExactMay b
-		=<< convertFact
-		=<< lookupFact a f
-
-rewriteExpression _ _ = Nothing
 
 smartApplication a [] = a
 smartApplication a b = Application a b
