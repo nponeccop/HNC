@@ -19,12 +19,12 @@ handleChildren WithoutChildren = embed . fmap fst
 
 rewrite flag rewriteFn = para $ liftA2 (<|>) (rewriteFn . handleChildren flag) liftChildRewrites
 
-rewriteNode :: DefinitionNode
-	        -> ChildRewrites
+rewriteNode :: ChildRewrites
 	        -> (FactBase a -> Rewrite ExpressionFix)
+	        -> DefinitionNode
 	        -> FactBase a
 	        -> Maybe DefinitionNode
-rewriteNode (LetNode l expr) c r f = LetNode l <$> rewrite c (r f) expr
+rewriteNode c r (LetNode l expr) f = LetNode l <$> rewrite c (r f) expr
 rewriteNode _ _ _ _ = Nothing
 
 liftChildRewrites cons | any (isJust . snd) cons = Just $ handleChildren WithChildren cons

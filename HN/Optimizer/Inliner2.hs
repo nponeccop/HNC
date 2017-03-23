@@ -83,7 +83,7 @@ transferB ll dn _ = PElem dn
 -- remove references to the definition being inlined
 
 rewriteB :: DefinitionNode -> FactBase ListFact -> Maybe DefinitionNode
-rewriteB n = rewriteNode n WithChildren rewriteExpression
+rewriteB = rewriteNode WithChildren rewriteExpression
 
 passBL whileLabel = BwdPass
 	{ bp_lattice = listLattice

@@ -11,7 +11,7 @@ import HN.Optimizer.ArgumentValues (ArgFact)
 import HN.Optimizer.Utils
 
 rewriteB :: DefinitionNode -> FactBase ArgFact -> Maybe DefinitionNode
-rewriteB n = rewriteNode n WithoutChildren rewriteExpression
+rewriteB = rewriteNode WithoutChildren rewriteExpression
 
 convertFact :: ArgFact -> Maybe [WithTopAndBot ExpressionFix]
 convertFact ((PElem a, _), _) = Just a
