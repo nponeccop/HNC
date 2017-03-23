@@ -83,7 +83,14 @@ transferB ll dn _ = PElem dn
 -- remove references to the definition being inlined
 
 rewriteB :: DefinitionNode -> FactBase ListFact -> Maybe DefinitionNode
-rewriteB = rewriteNode WithChildren rewriteExpression
+rewriteB = rewriteNode WithChildren $ \f n -> case n of
+	Constant _ -> Nothing
+	Application _ _ -> Nothing
+	Atom a -> case lookupFact a f of
+	    Nothing -> error "Lone.uncondLookupFact.Nothing"
+	    Just Bot -> error "Lone.rewriteExitL.Bot"
+	    Just (PElem (LetNode [] body)) -> Just body
+	    _ -> Nothing
 
 passBL whileLabel = BwdPass
 	{ bp_lattice = listLattice
@@ -97,14 +104,3 @@ runB whileLabel = runPass (analyzeAndRewriteBwd $ passBL whileLabel) $ const . m
 	int2list _ = Top
 
 type ListFact = WithTopAndBot DefinitionNode
-
-rewriteExpression :: FactBase ListFact -> Rewrite ExpressionFix
-rewriteExpression f = \case
-		Constant _ -> Nothing
-		Application _ _ -> Nothing
-		Atom a -> case lookupFact a f of
-			Nothing -> error "Lone.uncondLookupFact.Nothing"
-			Just Bot -> error "Lone.rewriteExitL.Bot"
-			Just (PElem (LetNode [] body)) -> Just body
-			_ -> Nothing
-
