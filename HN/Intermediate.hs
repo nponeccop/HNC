@@ -5,7 +5,7 @@ module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition
 import qualified Data.Set as S
 import Data.Functor.Foldable
 import Data.Functor.Foldable.TH
-import qualified Unifier.Unifier as U
+import Control.Unification
 
 import Parser.AST
 import SPL.Types (T)
@@ -47,17 +47,17 @@ type Root = Program
 
 data UTermF t v a = UVarF v | UTermF (t a) deriving (Show, Functor, Traversable, Foldable)
 
-type instance Base (U.UTerm t v) = UTermF t v
+type instance Base (UTerm t v) = UTermF t v
 
-instance Functor t => Recursive (U.UTerm t v) where
-  project = \case
-    U.UVar a -> UVarF a
-    U.UTerm a -> UTermF a
+instance Functor t => Recursive (UTerm t v) where
+	project = \case
+		UVar a -> UVarF a
+		UTerm a -> UTermF a
 
-instance Functor t => Corecursive (U.UTerm t v) where
+instance Functor t => Corecursive (UTerm t v) where
 	embed = \case
-		UVarF a -> U.UVar a
-		UTermF a -> U.UTerm a
+		UVarF a -> UVar a
+		UTermF a -> UTerm a
 
 makeBaseFunctor ''Expression
 makeBaseFunctor ''LetIn
