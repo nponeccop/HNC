@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveFunctor, DeriveFoldable, LambdaCase, TypeFamilies #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveTraversable #-}
-module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionF(..), LetIn(..), LetInF(..), Root, DefinitionBase(..)) where
+module HN.Intermediate (Const(..), Definition(..), Expression(..), ASTDefinition, ASTExpression, ASTLetIn, ExpressionList, GType, letWhere, letValue, makeLet, ExpressionF(..), LetIn(..), LetInF(..), Root, DefinitionBase(..), UTermF(..)) where
 import qualified Data.Set as S
 import Data.Functor.Foldable
 import Data.Functor.Foldable.TH
+import Control.Unification
 
 import Parser.AST
 import SPL.Types (T)
@@ -43,6 +44,20 @@ type ExpressionList  = [ASTExpression]
 type GType = (S.Set String, T)
 
 type Root = Program
+
+data UTermF t v a = UVarF v | UTermF (t a) deriving (Show, Functor, Traversable, Foldable)
+
+type instance Base (UTerm t v) = UTermF t v
+
+instance Functor t => Recursive (UTerm t v) where
+	project = \case
+		UVar a -> UVarF a
+		UTerm a -> UTermF a
+
+instance Functor t => Corecursive (UTerm t v) where
+	embed = \case
+		UVarF a -> UVar a
+		UTermF a -> UTerm a
 
 makeBaseFunctor ''Expression
 makeBaseFunctor ''LetIn

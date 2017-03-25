@@ -1,17 +1,20 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, NoMonomorphismRestriction, FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies, LambdaCase, FlexibleInstances, MultiParamTypeClasses, NoMonomorphismRestriction, FlexibleContexts #-}
+
 module HN.MilnerTools (instantiatedType, freshAtoms, MyStack, unifyM, runStack, subst, closureM, templateArgs, T(..), emptyClosureM, constantType, convertTv, convert, getReverseMap, revert, runApply, UTerm(..), IntVar(..)) where
+
 import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Control.Unification (lookupVar, applyBindings, getFreeVars, freeVar)
-import Control.Unification.IntVar (IntVar(..), runIntBindingT)
+import Control.Unification.IntVar (IntBindingT, IntVar(..), runIntBindingT)
 import Control.Monad.State
 import Utils
-import HN.TypeTools
-import HN.Intermediate (Const (..))
+import HN.Intermediate (Const (..), UTermF (..))
 import qualified SPL.Types as Old
+import HN.TypeTools
 import Unifier.Unifier
 import Unifier.Restricted
+import Data.Functor.Foldable
 -- freshAtoms используется всего в одном месте - при
 -- вычислении атрибута Definition.loc.argAtoms
 -- argument types are not generalized, thus S.empty
@@ -30,11 +33,15 @@ type MyStack a = WithEnv (State (M.Map String Int)) a
 
 runStack x = fst $ fst $ flip runState (M.empty :: M.Map String Int) $ runIntBindingT x
 
-convert (Old.T a) = return $ UTerm $ T a
-convert (Old.TT a) = (UTerm . TT) <$> Prelude.mapM convert a
-convert (Old.TD n a) = (UTerm . TD n) <$> Prelude.mapM convert a
-convert a @ (Old.TV _) = convertTv a
+convert :: Old.T -> IntBindingT T (State (M.Map String Int)) (UTerm T IntVar)
+convert = cata go where
+	go = \case
+		TF a -> return $ UTerm $ T a
+		TTF a -> (UTerm . TT) <$> sequenceA a
+		TDF n a -> (UTerm . TD n) <$> sequenceA a
+		TVF a -> convertTv $ Old.TV a
 
+convertTv :: Old.T -> IntBindingT T (State (M.Map String Int)) (UTerm t IntVar)
 convertTv (Old.TV a) = do
 	m <- xget
 	fmap UVar $ maybe (xfreeVar a m) (return . IntVar) $ M.lookup a m where
@@ -50,12 +57,13 @@ exportBindings = do
 	xget >>= fmap (M.fromList . catMaybes) . mapM (fff x) . M.toList where
 		fff x (tv, iv) = fmap (fmap (\ o -> (tv, revert o x))) $ lookupVar $ IntVar iv
 
-revert x m = mrevert x where
-	mrevert (UTerm x) = f x
-	mrevert (UVar (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
-	f (T x) = Old.T x
-	f (TT x) = Old.TT $ map mrevert x
-	f (TD s x) = Old.TD s $ map mrevert x
+revert :: UTerm T IntVar -> M.Map Int String -> Old.T
+revert x m = cata mrevert x where
+	mrevert (UTermF a) = case a of
+		T a -> Old.T a
+		TT a -> Old.TT a
+		TD s a -> Old.TD s a
+	mrevert (UVarF (IntVar i)) = Old.TV $ tracedUncondLookup "Unification.revert" i m
 
 runApply = fmap fromRight . runErrorT2 . applyBindings
 
