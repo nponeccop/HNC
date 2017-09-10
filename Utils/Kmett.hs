@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, TemplateHaskell, TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, OverlappingInstances, TemplateHaskell, TypeFamilies #-}
 module Utils.Kmett (unzippedPara, mapValues, foldMapCata) where
 
 import Control.Lens.Iso
