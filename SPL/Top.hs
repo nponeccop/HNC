@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-unused-matches #-}
 module SPL.Top where
 
-import Data.Map as M
+import Data.Map as M hiding (take)
 
 import System.IO.Unsafe
 import SPL.Parser2

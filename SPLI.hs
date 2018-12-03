@@ -2,7 +2,7 @@ module Main where
 
 import SPL.Interpretator
 import SPL.Top
-import Data.Map as M hiding (map)
+import Data.Map as M hiding (drop, map, take)
 import System.Environment
 import System.IO
 

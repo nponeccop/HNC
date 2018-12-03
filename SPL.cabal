@@ -41,7 +41,7 @@ executable spl-hnc
     buildable: True
     default-language: Haskell2010
     hs-source-dirs: .
-    ghc-options: -Wall -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind -Widentities
+    ghc-options: -Wall -Wextra -Wno-incomplete-patterns -Wno-tabs -Wno-missing-signatures -Wno-name-shadowing -Wno-orphans -Widentities
     other-modules:
        Bar
        CPP.BackendTools
@@ -74,8 +74,8 @@ executable spl-hnc
        HN.SplExport
        HN.TypeTools
        HN.Visualise
-       Parser.Parser
        Parser.AST
+       Parser.Parser
        SPL.Types
        SPL.Visualise
        Unifier.Restricted
@@ -97,14 +97,16 @@ executable spl-test-hunit-exe
                    hoopl >=3.10.1.0, mtl, parsec, strict,
                    unification-fd >=0.10, recursion-schemes,
                    transformers, safe, bifunctors, lens, adjunctions
-    main-is: Test/Main.hs
+    main-is: Main.hs
     other-modules:
+        Bar
         CPP.BackendTools
         CPP.CompileTools
         CPP.Intermediate
         CPP.TypeProducer
         CPP.Visualise
         FFI.TypeParser
+        FFI.Visualise
         HN.Intermediate
         HN.MilnerTools
         HN.Optimizer.ArgumentDeleter
@@ -130,40 +132,38 @@ executable spl-test-hunit-exe
         HN.Visualise
         Parser.AST
         Parser.Parser
+        SPL.Check3
+        SPL.Code
+        SPL.Compiler
+        SPL.Interpretator
+        SPL.Lib.Bignum
+        SPL.Lib.Str
+        SPL.Optimizer1
+        SPL.Parser2
+        SPL.Top
         SPL.Types
         SPL.Visualise
+        Test.Compiler
+        Test.FFI
+        Test.HnParser
+        Test.Optimizer.FileTest
+        Test.Optimizer.WithParsing
+        Test.ParserTest
+        Test.SPL
+        Test.SPLQuickCheck
+        Test.TestFixtures
+        Test.Tests
+        Test.TypeParser
+        Test.Utils
         Unifier.Restricted
         Unifier.Unifier
         Utils
         Utils.Kmett
+
     default-language: Haskell2010
-    hs-source-dirs: .
-    ghc-options: -Wall -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind
-    other-modules:
-      Bar
-      FFI.Visualise
-      SPL.Check3
-      SPL.Code
-      SPL.Compiler
-      SPL.Interpretator
-      SPL.Lib.Bignum
-      SPL.Lib.Str
-      SPL.Optimizer1
-      SPL.Parser2
-      SPL.Top
-      Test.Compiler
-      Test.FFI
-      Test.HnParser
-      Test.Main
-      Test.Optimizer.FileTest
-      Test.Optimizer.WithParsing
-      Test.ParserTest
-      Test.SPL
-      Test.SPLQuickCheck
-      Test.TestFixtures
-      Test.Tests
-      Test.TypeParser
-      Test.Utils
+    hs-source-dirs: . Test/src
+--    ghc-options: -Wextra -fno-warn-incomplete-patterns -fno-warn-tabs -Wno-missing-local-signatures -fno-warn-missing-signatures -fno-warn-name-shadowing -fno-warn-orphans -fno-warn-unused-do-bind
+    ghc-options: -Wextra -Wno-missing-signatures -Wno-name-shadowing -Wno-tabs -Wno-orphans -Wno-incomplete-patterns -Widentities
 
 executable spli
     build-depends: HUnit, QuickCheck, base,

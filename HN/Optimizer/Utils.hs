@@ -59,6 +59,3 @@ mapSquare1 m l = (fromMaybe bot $ M.lookup l m, m)
 mapSquare :: Lattice f => M.Map Label f -> FactBase (MapFact f)
 mapSquare m = mapFromList $ map ff $ M.keys m where
 	ff l = (l, mapSquare1 m l)
-
-instance Functor LabelMap where
-	fmap = mapMap

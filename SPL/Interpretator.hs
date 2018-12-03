@@ -9,7 +9,7 @@ import System.IO.Unsafe
 import SPL.Optimizer1
 --import Debug.Trace
 
-import Data.Map as M hiding (map, filter)
+import Data.Map as M hiding (map, filter, take)
 
 data P = P ([Char], [Char]) | N (Int, [Char])
 	deriving Show

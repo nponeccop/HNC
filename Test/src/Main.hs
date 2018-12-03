@@ -79,8 +79,8 @@ main = do
 		++ Test.FFI.tests
 		++ Test.TypeParser.tests
 		++ ioTests
-		++ [Test.Tests.tests] 
+		++ [Test.Tests.tests]
 		++ [Test.ParserTest.tests]
-	  	++ []
+		++ []
 	putStrLn "QuickCheck :"
 	Test.QuickCheck.quickCheckWith ( stdArgs { maxSuccess = 50}) prop_Foo

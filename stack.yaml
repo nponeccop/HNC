@@ -1,6 +1,6 @@
 extra-deps:
 - uuagc-0.9.52.1
-- uuagc-cabal-1.0.6.0
-- uulib-0.9.22
-resolver: lts-9.3
+- uuagc-cabal-1.1.0.0
+- uulib-0.9.23
+resolver: lts-11.22
 flags: {}
