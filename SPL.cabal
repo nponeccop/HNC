@@ -1,12 +1,11 @@
 name: SPL
 version: 0.0.0.920
-cabal-version: >= 1.23
+cabal-version: 1.23
 build-type: Custom
 license: LGPL
 license-file: COPYING.LESSER
 bug-reports: https://github.com/kayuri/HNC/issues
 synopsis: A source-to-source translator of a variant of ML core into C++.
-description:
 author: Andy Melnikov <andy.melnikov@gmail.com>
 maintainer: Andy Melnikov <andy.melnikov@gmail.com>
 homepage: https://github.com/kayuri/HNC/wiki
