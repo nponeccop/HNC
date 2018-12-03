@@ -20,8 +20,5 @@ test testName =	liftM2 (comp2 (testName ~:) (~=?))
 	(importHni "lib/lib.hni" >>= compileFile ("hn_tests/" ++ testName ++ ".hn"))
 
 iotests =
-	(map fst . filter (\x -> snd x == ".hn") . map (break (== '.'))) <$> getDirectoryContents "hn_tests"
+	map fst . filter (\x -> snd x == ".hn") . map (break (== '.')) <$> getDirectoryContents "hn_tests"
 	>>=	mapM test
-
-
-

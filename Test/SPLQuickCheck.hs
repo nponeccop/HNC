@@ -37,7 +37,7 @@ instance Arbitrary SPL.Types.C where
 			a2 <- arg2 (sz - arg1sz)
 			return $ f a1 a2
 
-data Foo = Foo C
+newtype Foo = Foo C
 
 instance Show Foo where
 	show (Foo x) = show x ++ "\n\n" ++ showAsSource x

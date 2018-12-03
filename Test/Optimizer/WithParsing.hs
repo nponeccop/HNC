@@ -10,7 +10,7 @@ import Utils (fromRight)
 fakeLib :: M.Map String a
 fakeLib = M.fromList $ zip ["print", "sub", "mul", "natrec", "sum", "incr"] $ repeat $ error "Test.Optimizer.WithParsing.fakeValue"
 
-parseAndProcessFile inFile f = (f . head . fromRight) <$> parseFromFile program inFile
+parseAndProcessFile inFile f = f . head . fromRight <$> parseFromFile program inFile
 
 realTest inFile = TestCase $ do
 	x <- parseAndProcessFile inFile id

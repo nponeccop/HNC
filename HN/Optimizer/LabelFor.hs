@@ -14,12 +14,12 @@ freshLabelFor name = do
 	modify $ M.insert name l *** M.insert l name
 	return l
 
-labelFor () = tracedUncondLookup2 . fst <$> get where
+labelFor () = gets (tracedUncondLookup2 . fst) where
 	tracedUncondLookup2 = flip $ tracedUncondLookup "LabelFor.tracedUncondLookup: "
 
 
 innerScope f = do
-	a <- fst <$> get
+	a <- gets fst
 	b <- f
 	modify $ \(_, l2n) -> (a, l2n)
 	return b

@@ -37,8 +37,8 @@ convert :: Old.T -> IntBindingT T (State (M.Map String Int)) (UTerm T IntVar)
 convert = cata go where
 	go = \case
 		TF a -> return $ UTerm $ T a
-		TTF a -> (UTerm . TT) <$> sequenceA a
-		TDF n a -> (UTerm . TD n) <$> sequenceA a
+		TTF a -> UTerm . TT <$> sequenceA a
+		TDF n a -> UTerm . TD n <$> sequenceA a
 		TVF a -> convertTv $ Old.TV a
 
 convertTv :: Old.T -> IntBindingT T (State (M.Map String Int)) (UTerm t IntVar)

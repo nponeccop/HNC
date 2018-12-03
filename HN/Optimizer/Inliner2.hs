@@ -1,4 +1,4 @@
-{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction, LambdaCase #-}
+{-# LANGUAGE GADTs, TypeFamilies, NoMonomorphismRestriction #-}
 module HN.Optimizer.Inliner2 (runB) where
 
 import Compiler.Hoopl
