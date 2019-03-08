@@ -8,7 +8,6 @@ import Data.Bifunctor
 import Data.Bifunctor.Tannen
 import Data.Functor.Adjunction
 import Data.Functor.Foldable (para, cata)
-import Data.Monoid
 import Data.Foldable
 
 unzippedPara f = para $ uncurry f . unzipR

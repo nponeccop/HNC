@@ -16,7 +16,7 @@ class Lattice a where
 		, fact_join = \_ o @ (OldFact oo) n -> maybe (NoChange, oo) ((,) SomeChange) $ join o n
 		}
 
-instance Lattice a => Monoid a where
+instance (Lattice a, Semigroup a) => Monoid a where
 	mappend = mereJoin
 	mempty = bot
 
