@@ -16,7 +16,6 @@ extra-source-files:
     Bar.ag
     AG/*.ag
     uuagc_options
-data-dir: ""
 description:
     HNC stands for HN compiler. HN is a tool to facilitate writing
     C programs. It is a macro language for C. It is not embedded

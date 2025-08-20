@@ -10,3 +10,5 @@ cabal.sandbox.config
 .idea/
 *.iml
 cabal.config
+
+stack.yaml.lock
